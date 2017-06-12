@@ -1,0 +1,17 @@
+{
+  "name": "node-txlib",
+  "version": "1.0.0",
+  "description": "Airbitz NodeJS tx-lib",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c"
+  },
+  "author": "Stanislav Synko <stan@airbitz.co>",
+  "license": "MIT",
+  "dependencies": {
+    "rfc4648": "^0.9.1",
+    "bcoin": "git+https://github.com/Airbitz/bcoin.git#bip32",
+    "bs58check": "^2.0.2"
+  }
+}
