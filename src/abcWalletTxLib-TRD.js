@@ -18,7 +18,7 @@ const TOKEN_CODES = [PRIMARY_CURRENCY].concat(txLibInfo.supportedTokens)
 const baseUrl = 'http://shitcoin-az-braz.airbitz.co:8080/api/'
 // const baseUrl = 'http://localhost:8080/api/'
 
-export function makeShitcoinPlugin (opts = {}) {
+export function makeBitcoinPlugin (opts = {}) {
   const { io } = opts
 
   return {
