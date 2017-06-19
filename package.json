@@ -5,7 +5,8 @@
   "main": "./lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "postinstall": "rollup -c"
   },
   "author": "Stanislav Synko <stan@airbitz.co>",
   "license": "MIT",
