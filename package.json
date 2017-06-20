@@ -4,7 +4,7 @@
   "description": "Airbitz NodeJS tx-lib",
   "main": "./lib/index.js",
   "scripts": {
-    "postinstall" : "node postinstall.js",
+    "postinstall" : "sh postinstall.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Stanislav Synko <stan@airbitz.co>",
