@@ -11,6 +11,7 @@
   "dependencies": {
     "rfc4648": "^0.9.1",
     "bcoin": "git+https://github.com/Airbitz/bcoin.git#bip32",
-    "bs58check": "^2.0.2"
+    "bs58check": "^2.0.2",
+    "react-native-crypto": "^2.0.1"
   }
 }
