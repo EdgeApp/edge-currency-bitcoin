@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "rfc4648": "^0.9.1",
+    "asyncstorage-down": "^3.1.1",
     "bcoin": "git+https://github.com/Airbitz/bcoin.git#bip32",
     "bs58check": "^2.0.2",
     "react-native-crypto": "^2.0.1",
@@ -20,6 +21,29 @@
     "react-native-randombytes": "^2.2.0",
     "react-native-secp256k1": "https://github.com/Airbitz/react-native-secp256k1.git",
     "react-native-tcp": "^3.2.2",
-    "react-native-udp": "^2.0.0"
+    "react-native-udp": "^2.0.0",
+    "zlib": "browserify-zlib",
+    "console": "console-browserify",
+    "constants": "constants-browserify",
+    "crypto": "react-native-crypto",
+    "dns": "dns.js",
+    "net": "react-native-tcp",
+    "domain": "domain-browser",
+    "http": "react-native-http",
+    "https": "https-browserify",
+    "os": "os-browserify",
+    "path": "path-browserify",
+    "querystring": "querystring-es3",
+    "fs": "react-native-level-fs",
+    "_stream_transform": "readable-stream/transform",
+    "_stream_readable": "readable-stream/readable",
+    "_stream_writable": "readable-stream/writable",
+    "_stream_duplex": "readable-stream/duplex",
+    "_stream_passthrough": "readable-stream/passthrough",
+    "dgram": "react-native-udp",
+    "stream": "stream-browserify",
+    "timers": "timers-browserify",
+    "tty": "tty-browserify",
+    "vm": "vm-browserify"
   }
 }
