@@ -44,23 +44,6 @@
     "tty-browserify": "0.0.0",
     "url": "^0.10.3",
     "util": "^0.10.3",
-    "vm-browserify": "0.0.4",
-    "zlib": "browserify-zlib",
-    "console": "console-browserify",
-    "constants": "constants-browserify",
-    "crypto": "react-native-crypto",
-    "dns": "dns.js",
-    "net": "react-native-tcp",
-    "domain": "domain-browser",
-    "http": "react-native-http",
-    "https": "https-browserify",
-    "os": "os-browserify",
-    "path": "path-browserify",
-    "querystring": "querystring-es3",
-    "fs": "react-native-level-fs",
-    "stream": "stream-browserify",
-    "timers": "timers-browserify",
-    "tty": "tty-browserify",
-    "vm": "vm-browserify"
+    "vm-browserify": "0.0.4"
   }
 }
