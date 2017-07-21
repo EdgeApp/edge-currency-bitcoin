@@ -19,7 +19,7 @@
     "react-native-level-fs": "^3.0.0",
     "react-native-randombytes": "^2.2.0",
     "react-native-secp256k1": "https://github.com/Airbitz/react-native-secp256k1.git",
-    "react-native-tcp": "^3.2.2",
+    "react-native-tcp": "https://github.com/Airbitz/react-native-tcp.git",
     "react-native-udp": "^2.0.0",
     "assert": "^1.4.1",
     "babel-loader": "^7.1.1",
