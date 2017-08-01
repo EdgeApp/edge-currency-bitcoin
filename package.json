@@ -2,8 +2,11 @@
   "name": "airbitz-currency-bitcoin",
   "version": "1.0.0",
   "description": "Airbitz NodeJS tx-lib",
-  "main": "./lib/ios.bundle.js",
+  "main": "./src/index.js",
+  "module": "./src/index.js",
   "scripts": {
+    "prepare": "npm run lint",
+    "lint": "standard 'src/*.js'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Stanislav Synko <stan@airbitz.co>",
@@ -45,5 +48,8 @@
     "url": "^0.10.3",
     "util": "^0.10.3",
     "vm-browserify": "0.0.4"
+  },
+  "devDependencies": {
+    "tcp": "^1.0.0"
   }
 }

@@ -16,7 +16,7 @@ export const txLibInfo = {
         name: 'BTC',
         multiplier: 100000000,
         symbol: 'B'
-      }
+      },
       {
         name: 'mBTC',
         multiplier: 100000,
