@@ -21,7 +21,7 @@ import {
   txLibInfo
 } from "./../txLibInfo.js"
 
-var GAP_LIMIT = 10
+var GAP_LIMIT = 25
 var DATA_STORE_FOLDER = 'txEngineFolderBTC'
 var DATA_STORE_FILE = 'walletLocalData.json'
 
@@ -35,16 +35,18 @@ class ABCTxLibBTC {
 
     // dataStore.init(abcTxLibAccess, options, callbacks)
     var walletLocalFolder = opts.walletLocalFolder
+    console.log("WLF", walletLocalFolder)
     var callbacks = opts.callbacks
 
     this.io = io
     this.keyInfo = keyInfo
     this.abcTxLibCallbacks = callbacks
     this.walletLocalFolder = walletLocalFolder
-    this.txIndex = []
+    this.txIndex = {}
     this.connections = []
     this.walletsScanQueue = []
     this.transactionsStash = []
+    this.cachedLocalData = ""
     this.transactionHistory = {}
     this.transactionTS = {}
     this.increasingLimitLoop = 0
@@ -80,8 +82,6 @@ class ABCTxLibBTC {
       ["e.anonyhost.org", "50001"],
       ["electrum.no-ip.org", "50001"],
       ["electrum-bu-az-wusa2.airbitz.co", "50001"],
-      ["ELECTRUM.not.fyi", "50001"],
-      ["electrum.jdubya.info", "50001"],
       ["electrum-bu-az-wjapan.airbitz.co", "50001"],
       ["kerzane.ddns.net", "50001"]
     ]
@@ -105,7 +105,6 @@ class ABCTxLibBTC {
     return function(wallet, hash) {
       this$1.processAddress(wallet, hash)
     }
-
   }
 
   engineLoop() {
@@ -136,7 +135,7 @@ class ABCTxLibBTC {
 
 
   updateTick() {
-
+    console.log("TICK UPDATE")
     var totalAddresses = this.txUpdateTotalEntries
     var executedAddresses = 0
 
@@ -148,6 +147,8 @@ class ABCTxLibBTC {
         continue
       executedAddresses++
       for (var j in this.txIndex[i].txs) {
+        if (!this.txIndex[i].txs[j])
+          continue
         totalTransactions++
         if (this.txIndex[i].txs[j].executed) {
           executedTransactions++
@@ -158,9 +159,14 @@ class ABCTxLibBTC {
     var addressProgress = executedAddresses / totalAddresses
     var transactionProgress = (totalTransactions > 0) ? executedTransactions / totalTransactions : 0
 
+    if (addressProgress == 1 && totalTransactions == 0) {
+      transactionProgress = 1
+    }
+
     var progress = [addressProgress, transactionProgress]
 
-    console.log("Total TX List:", Object.keys(this.txIndex), "totalAddresses:", totalAddresses, "executedAddresses:", executedAddresses)
+    console.log("Total TX List:", Object.keys(this.txIndex), "totalAddresses:", totalAddresses, "executedAddresses:", executedAddresses, totalTransactions, executedTransactions, transactionProgress)
+
 
     var totalProgress = addressProgress * transactionProgress
 
@@ -171,6 +177,48 @@ class ABCTxLibBTC {
     }
 
     return totalProgress
+  }
+
+  getLocalData() {
+    var this$1 = this
+    return this.walletLocalFolder
+      .folder(DATA_STORE_FOLDER)
+      .file(DATA_STORE_FILE)
+      .getText(DATA_STORE_FOLDER, 'walletLocalData').then(function(result) {
+        if (result !== null) {
+          this.cachedLocalData = result
+          var data = JSON.parse(result)
+          this$1.addresses = data.addresses
+          this$1.electrum.updateCache(data.txIndex)
+          this$1.masterBalance = data.balance
+
+          console.log("balance from cache: ", bcoin.amount.btc(this$1.masterBalance))
+
+          this$1.abcTxLibCallbacks.onBalanceChanged("BTC", this$1.masterBalance)
+        }
+      }, function(error){
+        console.log(error)
+      })
+  }
+
+  updateLocalData() {
+    const data = {
+      txIndex: this.txIndex,
+      addresses: this.addresses,
+      balance: this.masterBalance
+    }
+    const walletJson = JSON.stringify(data)
+    if (this.cachedLocalData == walletJson)
+      return
+
+    this.cachedLocalData = walletJson
+
+    this.walletLocalFolder
+      .folder(DATA_STORE_FOLDER)
+      .file(DATA_STORE_FILE)
+      .setText(walletJson)
+
+    console.log("Writting local data... X425", data)
   }
 
   pushAddress(address) {
@@ -225,7 +273,7 @@ class ABCTxLibBTC {
           this$1.txIndex[wallet].txs[tx].executed = 1
         }
 
-        if (this.txUpdateFinished) {
+        if (this$1.txUpdateFinished) {
           console.log("ADDING TXFROMRAW ", transaction)
           this$1.wallet.db.addTXFromRaw(transaction)
         }
@@ -236,11 +284,13 @@ class ABCTxLibBTC {
     }
 
     var this$1 = this
+
     this.electrum.getAddresHistory(wallet).then(function(transactions) {
+      console.log("GOT full address history ", wallet)
       this$1.txIndex[wallet].executed = 1
       for (var j in transactions) {
         if (typeof this$1.txIndex[wallet].txs[transactions[j].tx_hash] == "object")
-          return
+          continue
         this$1.txIndex[wallet].txs[transactions[j].tx_hash] = {
           height: transactions[j].height,
           data: "",
@@ -257,7 +307,7 @@ class ABCTxLibBTC {
     this.hashUpdateInProgress = 1
     var this$1 = this
 
-    function compileHistoryCallback(j, tx, transactions) {
+    function compileHistoryCallback(i, j, tx, transactions) {
       return function(rawTX) {
         this$1.txIndex[i].txs[tx] = {
           height: transactions[j].height,
@@ -277,22 +327,43 @@ class ABCTxLibBTC {
         }
         if (this$1.txIndex[i].transactionHash == hash)
           return
+        this$1.txIndex[i].transactionHash = hash
         console.log("got new transactions for ", i, this$1.txIndex[i].transactionHash, hash)
 
-        this$1.electrum.getAddresHistory(i).then(function(transactions) {
+        return this$1.electrum.getAddresHistory(i).then(function(transactions) {
+          this$1.txIndex[i].executed = 1
+
+
+          var res = []
+          var gcb
           for (var j in transactions) {
+            if (typeof this$1.txIndex[i].txs[transactions[j].tx_hash] == "object")
+              continue
+            this$1.txIndex[i].txs[transactions[j].tx_hash] = {
+              height: transactions[j].height,
+              data: "",
+              executed: 0
+            }
+            gcb = compileHistoryCallback(i, j, tx, transactions)
             var tx = transactions[j].tx_hash
-            this$1.electrum.getTransaction(tx).then(compileHistoryCallback(j, tx, transactions))
+            res.push(this$1.electrum.getTransaction(tx).then(gcb))
           }
           this$1.updateTick()
+          return Promise.all(res)
         })
       }
     }
-
+    var promIndex = []
+    var cb
     for (var i in this.txIndex) {
       console.log("Subscribing to ", i)
-      this.electrum.subscribeToAddress(i).then(compileCallback(i))
+      cb = compileCallback(i)
+      promIndex.push(this.electrum.subscribeToAddress(i).then(cb))
     }
+
+    Promise.all(promIndex).then(function() {
+      this$1.updateLocalData()
+    })
   }
 
   processElectrumData() {
@@ -369,11 +440,12 @@ class ABCTxLibBTC {
       this$1.wallet.getBalance(0).then(function(result) {
         // console.log("Balance======>",result);
         console.log("Final Balance: ", bcoin.amount.btc(result.unconfirmed + result.confirmed))
+
         this$1.masterBalance = result.confirmed + result.unconfirmed
         this$1.abcTxLibCallbacks.onBalanceChanged("BTC", this$1.masterBalance)
-
         this$1.subscribeToUpdates()
-        this.txUpdateFinished = true
+        this$1.txUpdateFinished = true
+        this$1.updateLocalData()
 
       })
 
@@ -387,7 +459,7 @@ class ABCTxLibBTC {
 
     return this$1.walletdb.open().then(function() {
 
-        console.log("KEYINFO", this$1.keyInfo)
+        // console.log("KEYINFO", this$1.keyInfo)
 
         if (typeof this$1.keyInfo.keys.bitcoinKey == "undefined") {
           console.log("KEY FORMAT VIOLATION!!!! keyInfo.keys.bitcoinKey required", this$1.keyInfo)
@@ -403,30 +475,47 @@ class ABCTxLibBTC {
 
         var key = w.toJSON()
 
-        console.log("XPRIV", key.xprivkey)
+        // console.log("XPRIV", key.xprivkey)
 
         return this$1.walletdb.create({
           "master": key.xprivkey,
-          "id": "AirBitzMain"
+          "id": "ID1"
         })
-      })
-      .then(function(wallet) {
+      }).then(function(wallet) {
 
         this$1.wallet = wallet
+
+        return this$1.getLocalData()
+      })
+      .then(function() {
 
         this$1.wallet.getAccountPaths(0).then(function(result) {
 
           var a
+          var checkList = []
           for (var i in result) {
             a = result[i].toAddress()
 
             console.log(i, "Paths======>", a.toString())
-            this$1.addresses.push(a.toString())
+            checkList.push(a.toString())
+          }
+
+          var fl = 0
+          for (var l in checkList) {
+            if (this$1.addresses.indexOf(checkList[l]) == -1) {
+              fl = 1
+              break
+            }
+          }
+          if (fl) {
+            this$1.addresses = checkList
           }
 
           this$1.txUpdateTotalEntries = this$1.addresses.length
 
           for (var j in this$1.addresses) {
+            // if (j != 0 &&   (typeof this$1.txIndex[this$1.addresses[j]] == "object" && this$1.txIndex[this$1.addresses[j]].executed))
+              // continue
             this$1.processAddress(this$1.addresses[j])
           }
 
@@ -437,11 +526,10 @@ class ABCTxLibBTC {
         this$1.wallet.on('balance', function(balance) {
           // console.log('Balance updated.',this$1.txBalanceUpdateTotal, this$1.txBalanceUpdateProgress);
           if (this$1.txUpdateFinished) {
-
             console.log("STABLE TOP : ", bcoin.amount.btc(balance.unconfirmed))
             this$1.masterBalance = balance.confirmed + balance.unconfirmed
             this$1.abcTxLibCallbacks.onBalanceChanged("BTC", this$1.masterBalance)
-
+            this$1.updateLocalData()
           } else {
             console.log("UNSTABLE TOP : ", bcoin.amount.btc(balance.unconfirmed))
           }
@@ -482,8 +570,6 @@ class ABCTxLibBTC {
 
   // synchronous
   getBalance(options) {
-
-
     var this$1 = this
 
     // setTimeout(function() {
@@ -571,23 +657,25 @@ class ABCTxLibBTC {
   getFreshAddress(options) {
     if (options === void 0) options = {}
 
-    // Algorithm to derive master pub key from master private key
-    //master public key = "pub[masterPrivateKey]". ie. "pub294709fe7a0sb0c8f7398f"
-    // Algorithm to drive an address from index is "[index]-[masterPublicKey]" ie. "102-pub294709fe7a0sb0c8f7398f"
-    // return this$1.wallet.createKey(0).then(function(res){
-    //   return res.getAddress('base58check');
-    // });
-    // return this.masterWallet;
-    if (this.addresses.length > this.wallet.account.receiveDepth) {
+    //Looking for empty available address
+    var txs
+    var res = false
+
+    for (var i in this.txIndex) {
+      txs = Object.keys(this.txIndex[i].txs).length
+      if (txs == 0) {
+        res = this.addresses.indexOf(i)
+        break
+      }
+    }
+
+    if (this.addresses.length > res + GAP_LIMIT) {
       var this$1 = this
       this.wallet.createKey(0).then(function(res) {
-        // console.log(this$1.wallet.getAccount()); 
-        // console.log("watching " + res.getAddress('base58check'));
-        this$1.addresses.push(res.getAddress('base58check'))
+        this$1.pushAddress(res.getAddress('base58check'))
       })
-      return this.addresses[this.wallet.account.receiveDepth]
     }
-    // return this.addressFromIndex(this.walletLocalData.unusedAddressIndex)
+    return this.addresses[res]
   }
 
   // synchronous

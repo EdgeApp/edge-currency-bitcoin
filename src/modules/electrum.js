@@ -33,6 +33,7 @@ class Electrum {
 
         this.connections = []
         this.requests = {}
+        this.cache = {}
         this.serverList = serverIndex
         this.incommingCallback = incommingCallback
 
@@ -83,6 +84,15 @@ class Electrum {
 
     }
 
+    updateCache(data) {
+        this.cache = {}
+        for (var i in data) {
+            for (var j in data[i].txs) {
+                this.cache[j] = data[i].txs[j]
+            }
+        }
+    }
+
     collectGarbage() {
         var now = Date.now()
         var callback, randomIndex
@@ -101,8 +111,11 @@ class Electrum {
                 this.requests[i].requestTime = now
                 randomIndex = getRandomInt(0, MAX_CONNECTIONS - 1)
                     // console.log("RE-REQUESTING", this.connections[randomIndex], this.requests[i].data)
-                this.connections[randomIndex].lastRequest = now
-                this.connections[randomIndex].conn.write(this.requests[i].data + "\n")
+
+                if (this.socketWriteAbstract(randomIndex, this.requests[i].data) == 2) {
+                    this.connections[randomIndex].lastRequest = now
+                }
+
             }
         }
     }
@@ -174,6 +187,27 @@ class Electrum {
         }, 400)
     }
 
+    socketWriteAbstract(index, data) {
+        if (this.connections[index].conn._state == 0) {
+            console.log("HAVE TO RECONNECT", this.connections[index].conn._state)
+            var callback = this.compileDataCallback(index)
+            this.netConnect(this.serverList[index][1], this.serverList[index][0], callback, index)
+            return 0
+        }
+
+        if (this.connections[index].conn._state == 1) {
+            var this$1 = this
+            this.connections[index].prom.then(function() {
+                this$1.connections[index].conn.write(data + "\n")
+            })
+            return 1
+        }
+        if (this.connections[index].conn._state == 2) {
+            this.connections[index].conn.write(data + "\n")
+            return 2
+        }
+    }
+
     write(data) {
 
         var hash = randomHash()
@@ -204,21 +238,7 @@ class Electrum {
 
         this.connections[randomIndex].lastRequest = now
 
-        if (this.connections[randomIndex].conn._state == 0) {
-            console.log("HAVE TO RECONNECT", this.connections[randomIndex].conn._state)
-            var callback = this.compileDataCallback(randomIndex)
-            this.netConnect(this.serverList[randomIndex][1], this.serverList[randomIndex][0], callback, randomIndex)
-        }
-
-        if (this.connections[randomIndex].conn._state == 1) {
-            var this$1 = this
-            this.connections[randomIndex].prom.then(function() {
-                this$1.connections[randomIndex].conn.write(data + "\n")
-            })
-        }
-        if (this.connections[randomIndex].conn._state == 2) {
-            this.connections[randomIndex].conn.write(data + "\n")
-        }
+        this.socketWriteAbstract(randomIndex, data)
 
         return out
     }
@@ -247,6 +267,13 @@ class Electrum {
     getTransaction(transactionID) {
         console.log("Getting transaction ", transactionID)
         var requestString = '{ "id": "[ID]", "method":"blockchain.transaction.get", "params":["' + transactionID + '"] }'
+        if (this.cache[transactionID]) {
+            console.log("USING CACHE", transactionID)
+            var transaction = this.cache[transactionID].data
+            return new Promise((resolve, reject) => {
+                resolve(transaction)
+            })
+        }
         return this.write(requestString)
     }
 
