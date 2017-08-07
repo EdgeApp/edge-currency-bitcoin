@@ -23,7 +23,7 @@ import {
 
 var GAP_LIMIT = 25
 var DATA_STORE_FOLDER = 'txEngineFolderBTC'
-var DATA_STORE_FILE = 'walletLocalData.json'
+var DATA_STORE_FILE = 'wallet_Local_Data.json'
 
 var PRIMARY_CURRENCY = txLibInfo.getInfo.currencyCode
 var TOKEN_CODES = [PRIMARY_CURRENCY].concat(txLibInfo.supportedTokens)
@@ -54,7 +54,6 @@ class ABCTxLibBTC {
     this.addressLimitLoop = 0
     this.txUpdateTotalEntries = 0
     this.txUpdateStarted = false
-    this.txUpdateTotalEntries = 0
     this.txUpdateFinished = false
     this.txUpdateBalanceUpdateStarted = false
     this.txBalanceUpdateTotal = 0
@@ -135,7 +134,7 @@ class ABCTxLibBTC {
 
 
   updateTick() {
-    console.log("TICK UPDATE")
+    console.log("TICK UPDATE", this.txUpdateTotalEntries)
     var totalAddresses = this.txUpdateTotalEntries
     var executedAddresses = 0
 
@@ -167,7 +166,6 @@ class ABCTxLibBTC {
 
     console.log("Total TX List:", Object.keys(this.txIndex), "totalAddresses:", totalAddresses, "executedAddresses:", executedAddresses, totalTransactions, executedTransactions, transactionProgress)
 
-
     var totalProgress = addressProgress * transactionProgress
 
     if (totalProgress == 1 && !this.txUpdateBalanceUpdateStarted) {
@@ -187,16 +185,18 @@ class ABCTxLibBTC {
       .getText(DATA_STORE_FOLDER, 'walletLocalData').then(function(result) {
         if (result !== null) {
           this.cachedLocalData = result
+
           var data = JSON.parse(result)
           this$1.addresses = data.addresses
           this$1.electrum.updateCache(data.txIndex)
           this$1.masterBalance = data.balance
+          this$1.txIndex = data.txIndex
 
           console.log("balance from cache: ", bcoin.amount.btc(this$1.masterBalance))
 
           this$1.abcTxLibCallbacks.onBalanceChanged("BTC", this$1.masterBalance)
         }
-      }, function(error){
+      }, function(error) {
         console.log(error)
       })
   }
@@ -229,12 +229,12 @@ class ABCTxLibBTC {
   deriveAddresses(amount) {
     var this$1 = this
     for (var i = 1; i <= amount; i++) {
-      // console.log("REQUESTING NEW ADDRESS")
+      console.log("REQUESTING NEW ADDRESS")
       this.txUpdateTotalEntries++
         this.wallet.createKey(0).then(function(res) {
           var address = res.getAddress('base58check')
           if (this$1.addresses.indexOf(address) > -1) {
-            // console.log("EXISTING ADDRESS ")
+            console.log("EXISTING ADDRESS ")
             this$1.txUpdateTotalEntries--
               return
           }
@@ -252,15 +252,17 @@ class ABCTxLibBTC {
     }
   }
 
-  processAddress(wallet, hash = -1) {
-    if (typeof this.txIndex[wallet] == "object") {
-      this.txIndex[wallet].hash = hash
-    } else {
+  processAddress(wallet) {
+    var this$1 = this
+
+    if (typeof this.txIndex[wallet] != "object") {
       this.txIndex[wallet] = {
         txs: {},
         executed: 0,
-        transactionHash: hash
+        transactionHash: -1
       }
+    } else {
+      this.txIndex[wallet].executed = 0
     }
 
     function getCallback(tx, wallet) {
@@ -279,90 +281,45 @@ class ABCTxLibBTC {
         }
         this$1.checkGapLimit(wallet)
         this$1.updateTick()
-
       }
     }
 
-    var this$1 = this
-
-    this.electrum.getAddresHistory(wallet).then(function(transactions) {
-      console.log("GOT full address history ", wallet)
-      this$1.txIndex[wallet].executed = 1
-      for (var j in transactions) {
-        if (typeof this$1.txIndex[wallet].txs[transactions[j].tx_hash] == "object")
-          continue
-        this$1.txIndex[wallet].txs[transactions[j].tx_hash] = {
-          height: transactions[j].height,
-          data: "",
-          executed: 0
-        }
-        var tx = transactions[j].tx_hash
-        this$1.electrum.getTransaction(transactions[j].tx_hash).then(getCallback(tx, wallet))
+    this.electrum.subscribeToAddress(wallet).then(function(hash){
+      if (hash == null){
+        console.log("NULL INCOMING", wallet, hash)
+        this$1.txIndex[wallet].transactionHash = hash 
+        this$1.txIndex[wallet].executed = 1
+        this$1.updateTick()
+        return
       }
-      this$1.updateTick()
-    })
-  }
-
-  subscribeToUpdates() {
-    this.hashUpdateInProgress = 1
-    var this$1 = this
-
-    function compileHistoryCallback(i, j, tx, transactions) {
-      return function(rawTX) {
-        this$1.txIndex[i].txs[tx] = {
-          height: transactions[j].height,
-          data: rawTX,
-          executed: 1
-        }
-        this$1.wallet.db.addTXFromRaw(rawTX)
+      if (this$1.txIndex[wallet].transactionHash == hash){
+        console.log("HSAH INCOMING", wallet)
+        this$1.txIndex[wallet].executed = 1
+        this$1.updateTick()
+        return
       }
-    }
 
-    function compileCallback(i) {
-      return function(hash) {
-        if (this$1.txIndex[i].transactionHash == -1) {
-          this$1.txIndex[i].transactionHash = hash
-          console.log("Subscribed to ", i)
-          return
-        }
-        if (this$1.txIndex[i].transactionHash == hash)
-          return
-        this$1.txIndex[i].transactionHash = hash
-        console.log("got new transactions for ", i, this$1.txIndex[i].transactionHash, hash)
+      
+      console.log("got transactions for ", wallet, this$1.txIndex[wallet].transactionHash, hash)
 
-        return this$1.electrum.getAddresHistory(i).then(function(transactions) {
-          this$1.txIndex[i].executed = 1
+      this$1.txIndex[wallet].transactionHash = hash
 
-
-          var res = []
-          var gcb
-          for (var j in transactions) {
-            if (typeof this$1.txIndex[i].txs[transactions[j].tx_hash] == "object")
-              continue
-            this$1.txIndex[i].txs[transactions[j].tx_hash] = {
-              height: transactions[j].height,
-              data: "",
-              executed: 0
-            }
-            gcb = compileHistoryCallback(i, j, tx, transactions)
-            var tx = transactions[j].tx_hash
-            res.push(this$1.electrum.getTransaction(tx).then(gcb))
+      return this$1.electrum.getAddresHistory(wallet).then(function(transactions) {
+        console.log("GOT full address history ", wallet)
+        this$1.txIndex[wallet].executed = 1
+        for (var j in transactions) {
+          if (typeof this$1.txIndex[wallet].txs[transactions[j].tx_hash] == "object")
+            continue
+          this$1.txIndex[wallet].txs[transactions[j].tx_hash] = {
+            height: transactions[j].height,
+            data: "",
+            executed: 0
           }
-          this$1.updateTick()
-          return Promise.all(res)
-        })
-      }
-    }
-    var promIndex = []
-    var cb
-    for (var i in this.txIndex) {
-      console.log("Subscribing to ", i)
-      cb = compileCallback(i)
-      promIndex.push(this.electrum.subscribeToAddress(i).then(cb))
-    }
-
-    Promise.all(promIndex).then(function() {
-      this$1.updateLocalData()
+          var tx = transactions[j].tx_hash
+          this$1.electrum.getTransaction(transactions[j].tx_hash).then(getCallback(tx, wallet))
+        }
+        this$1.updateTick()
+      })
     })
   }
 
@@ -443,7 +400,8 @@ class ABCTxLibBTC {
 
         this$1.masterBalance = result.confirmed + result.unconfirmed
         this$1.abcTxLibCallbacks.onBalanceChanged("BTC", this$1.masterBalance)
-        this$1.subscribeToUpdates()
+        this$1.refreshTransactionHistory()
+
         this$1.txUpdateFinished = true
         this$1.updateLocalData()
 
@@ -452,6 +410,60 @@ class ABCTxLibBTC {
       this$1.abcTxLibCallbacks.onAddressesChecked(1)
     })
 
+  }
+
+  refreshTransactionHistory(){
+    var this$1 = this;
+    return this.wallet.getHistory().then(function (res){
+      var transactionList = []
+      for (var i in res){
+        var tx = res[i].tx
+        var inputs = tx.inputs
+        var address
+        var hash = tx.txid()
+        if (this$1.transactionHistory[hash]){
+          continue
+        }
+        // console.log("inputs ==> ", inputs)
+        var outgoingTransaction = false
+        var totalAmount = 0
+        for (var j in inputs){
+          address = inputs[j].getAddress().toBase58()
+          var addressIndex = this$1.addresses.indexOf(address)
+          if (addressIndex>-1){
+            outgoingTransaction = true
+          }
+          // console.log("I>>",address )
+        }
+        var outputs = tx.outputs
+        // console.log("OUTPUTS ==> ", outputs)
+        for (var j in outputs){
+          
+          address = outputs[j].getAddress().toBase58()
+          var addressIndex = this$1.addresses.indexOf(address)
+          if ( (addressIndex==-1 && outgoingTransaction) || (!outgoingTransaction && addressIndex>-1)){
+            totalAmount+=outputs[j].value
+          }
+          // console.log("O>",address, "V>",outputs[j].value )
+        }
+
+        var d = Math.floor(Date.now()/1000)
+        totalAmount = (outgoingTransaction)?-totalAmount:totalAmount
+
+        var t = new ABCTransaction (hash, d, "BTC", 1, totalAmount, 10000, "signedTx", {})
+
+        this$1.transactionHistory[hash] = t
+        
+        transactionList.push(t)
+
+        // console.log("Transaction type",(outgoingTransaction)?"Spending":"Incoming", "Amount:", totalAmount)
+      }
+      // console.log("TOTAL TRANSACTIONS LIST", transactionList);
+      if (this$1.abcTxLibCallbacks.onTransactionsChanged){
+        this$1.abcTxLibCallbacks.onTransactionsChanged(transactionList)
+      }
+      // return transactionList;
+    });
   }
 
   startEngine() {
@@ -508,14 +520,20 @@ class ABCTxLibBTC {
             }
           }
           if (fl) {
+            console.log("Putting derived index into play")
             this$1.addresses = checkList
+          } else {
+            console.log("Keeping cached index")
           }
 
           this$1.txUpdateTotalEntries = this$1.addresses.length
 
+          console.log("txUpdateTotalEntries-1", this$1.txUpdateTotalEntries, this$1.addresses)
+
           for (var j in this$1.addresses) {
             // if (j != 0 &&   (typeof this$1.txIndex[this$1.addresses[j]] == "object" && this$1.txIndex[this$1.addresses[j]].executed))
-              // continue
+            // continue
+            // console.log("txUpdate=> ", this$1.addresses)
             this$1.processAddress(this$1.addresses[j])
           }
 
@@ -657,6 +675,8 @@ class ABCTxLibBTC {
   getFreshAddress(options) {
     if (options === void 0) options = {}
 
+    console.log("getting fresh address")
+
     //Looking for empty available address
     var txs
     var res = false
@@ -676,17 +696,6 @@ class ABCTxLibBTC {
       })
     }
     return this.addresses[res]
-  }
-
-  // synchronous
-  addGapLimitAddresses(addresses, options) {
-    var this$1 = this
-
-    for (var i in addresses) {
-      if (this$1.walletLocalData.gapLimitAddresses.indexOf(addresses[i]) === -1) {
-        this$1.walletLocalData.gapLimitAddresses.push(addresses[i])
-      }
-    }
   }
 
   // synchronous

@@ -97,11 +97,13 @@ class Electrum {
         var now = Date.now()
         var callback, randomIndex
 
+        console.log("collectGarbage > ")
+
         for (var j in this.connections) {
             // console.log("RECONNECT CHECK", j, this.connections[j].lastResponse, this.connections[j].lastRequest)
             if (this.connections[j].lastRequest - this.connections[j].lastResponse > MAX_CONNECTION_HANG_TIME) {
                 callback = this.compileDataCallback(j)
-                    // console.log("RECONNECTING TO SERVER", this.serverList[j][1], this.serverList[j][0], j)
+                    console.log("RECONNECTING TO SERVER", this.serverList[j][1], this.serverList[j][0], j)
                 return this.netConnect(this.serverList[j][1], this.serverList[j][0], callback, j)
             }
         }
@@ -110,7 +112,7 @@ class Electrum {
             if (now - this.requests[i].requestTime > MAX_REQUEST_TIME && !this.requests[i].executed) {
                 this.requests[i].requestTime = now
                 randomIndex = getRandomInt(0, MAX_CONNECTIONS - 1)
-                    // console.log("RE-REQUESTING", this.connections[randomIndex], this.requests[i].data)
+                    console.log("RE-REQUESTING", this.connections[randomIndex], this.requests[i].data)
 
                 if (this.socketWriteAbstract(randomIndex, this.requests[i].data) == 2) {
                     this.connections[randomIndex].lastRequest = now
@@ -254,13 +256,14 @@ class Electrum {
             this.incommingCallback(data.params[0], data.params[1])
             return
         }
-        if (!this.requests[data.id])
+        if (typeof this.requests[data.id] != "object")
             return
         if (this.requests[data.id].executed)
             return
         var now = Date.now()
         this.connections[this.requests[data.id].connectionIndex].lastResponse = now
         this.requests[data.id].executed = 1
+        // console.log("calling callback, ",data.id, data.result)
         this.requests[data.id].onDataReceived(data.result)
     }
 
@@ -273,6 +276,8 @@ class Electrum {
             return new Promise((resolve, reject) => {
                 resolve(transaction)
             })
+        } else {
+            console.log("NOT USING CACHE", transactionID)
         }
         return this.write(requestString)
     }
