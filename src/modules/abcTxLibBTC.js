@@ -589,12 +589,12 @@ class ABCTxLibBTC {
     // setTimeout(function() {
     //   this$1.collectGarbage()
     // }, 200)
-
-    this.wallet.getBalance(0).then(function(result) {
-      //// console.log("Balance======>",result.confirmed);
-      this$1.masterBalance = result.confirmed + result.unconfirmed
-    })
-
+    if (this.txUpdateFinished){
+      this.wallet.getBalance(0).then(function(result) {
+        //// console.log("Balance======>",result.confirmed);
+        this$1.masterBalance = result.confirmed + result.unconfirmed
+      })  
+    }
     return this.masterBalance
   }
 
