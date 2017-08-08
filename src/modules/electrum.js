@@ -1,6 +1,6 @@
 const MAX_CONNECTIONS = 4
-const MAX_REQUEST_TIME = 500
-const MAX_CONNECTION_HANG_TIME = 1000
+const MAX_REQUEST_TIME = 5000
+const MAX_CONNECTION_HANG_TIME = 7500
 
 // Replacing net module for ReactNative
 var net = require('react-native-tcp')
