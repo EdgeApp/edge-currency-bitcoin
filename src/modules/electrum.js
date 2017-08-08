@@ -52,13 +52,13 @@ class Electrum {
             this$1.globalRecievedData[index] += string
             var result = []
             if (this$1.globalRecievedData[index].indexOf("\n") > -1) {
-                // console.log("stringbeforesplit ",this$1.globalRecievedData[index])
+                // // console.log("stringbeforesplit ",this$1.globalRecievedData[index])
                 var mdata = this$1.globalRecievedData[index].split("\n")
                 for (var k = 0; k <= mdata.length - 1; k++) {
                     if (mdata[k].length < 3) {
                         continue
                     }
-                    // console.log("ssbefore parsing, mk ",mdata[k])
+                    // // console.log("ssbefore parsing, mk ",mdata[k])
                     var res = false
                     try {
                         res = JSON.parse(mdata[k])
@@ -66,12 +66,12 @@ class Electrum {
                     } catch (e) {}
                 }
             } else {
-                // console.log("ssbefore parsing, s ",this$1.globalRecievedData[index])
+                // // console.log("ssbefore parsing, s ",this$1.globalRecievedData[index])
                 try {
                     data = JSON.parse(this$1.globalRecievedData[index])
                     result.push(data)
                 } catch (e) {
-                    console.log("parse error", e)
+                    // console.log("parse error", e)
                 }
             }
             if (result.length > 0) {
@@ -97,13 +97,13 @@ class Electrum {
         var now = Date.now()
         var callback, randomIndex
 
-        console.log("collectGarbage > ")
+        // console.log("collectGarbage > ")
 
         for (var j in this.connections) {
-            // console.log("RECONNECT CHECK", j, this.connections[j].lastResponse, this.connections[j].lastRequest)
+            // // console.log("RECONNECT CHECK", j, this.connections[j].lastResponse, this.connections[j].lastRequest)
             if (this.connections[j].lastRequest - this.connections[j].lastResponse > MAX_CONNECTION_HANG_TIME) {
                 callback = this.compileDataCallback(j)
-                    console.log("RECONNECTING TO SERVER", this.serverList[j][1], this.serverList[j][0], j)
+                    // console.log("RECONNECTING TO SERVER", this.serverList[j][1], this.serverList[j][0], j)
                 return this.netConnect(this.serverList[j][1], this.serverList[j][0], callback, j)
             }
         }
@@ -112,7 +112,7 @@ class Electrum {
             if (now - this.requests[i].requestTime > MAX_REQUEST_TIME && !this.requests[i].executed) {
                 this.requests[i].requestTime = now
                 randomIndex = getRandomInt(0, MAX_CONNECTIONS - 1)
-                    console.log("RE-REQUESTING", this.connections[randomIndex], this.requests[i].data)
+                    // console.log("RE-REQUESTING", this.connections[randomIndex], this.requests[i].data)
 
                 if (this.socketWriteAbstract(randomIndex, this.requests[i].data) == 2) {
                     this.connections[randomIndex].lastRequest = now
@@ -140,23 +140,23 @@ class Electrum {
         connection.on("data", callback)
 
         connection.on("close", function(e) {
-            console.log("[] recieved close", e)
+            // console.log("[] recieved close", e)
         })
 
         connection.on("connect", function(e) {
-            console.log("[] recieved connect", e)
+            // console.log("[] recieved connect", e)
         })
 
         connection.on("error", function(e) {
-            console.log("[] recieved error", e)
+            // console.log("[] recieved error", e)
         })
 
         connection.on("onerror", function(e) {
-            console.log("[] recieved close", e)
+            // console.log("[] recieved close", e)
         })
 
         connection.on("end", function(e) {
-            console.log("[] recieved end", e)
+            // console.log("[] recieved end", e)
         })
 
         var conn = {
@@ -191,7 +191,7 @@ class Electrum {
 
     socketWriteAbstract(index, data) {
         if (this.connections[index].conn._state == 0) {
-            console.log("HAVE TO RECONNECT", this.connections[index].conn._state)
+            // console.log("HAVE TO RECONNECT", this.connections[index].conn._state)
             var callback = this.compileDataCallback(index)
             this.netConnect(this.serverList[index][1], this.serverList[index][0], callback, index)
             return 0
@@ -234,7 +234,7 @@ class Electrum {
             requestTime: Date.now()
         }
 
-        console.log("writing into", randomIndex, data)
+        // console.log("writing into", randomIndex, data)
 
         var now = Date.now()
 
@@ -251,7 +251,7 @@ class Electrum {
     }
 
     handleData(data) {
-        console.log("Incoming data", data)
+        // console.log("Incoming data", data)
         if (data.method == "blockchain.address.subscribe" && data.params.length == 2) {
             this.incommingCallback(data.params[0], data.params[1])
             return
@@ -263,27 +263,27 @@ class Electrum {
         var now = Date.now()
         this.connections[this.requests[data.id].connectionIndex].lastResponse = now
         this.requests[data.id].executed = 1
-        // console.log("calling callback, ",data.id, data.result)
+        // // console.log("calling callback, ",data.id, data.result)
         this.requests[data.id].onDataReceived(data.result)
     }
 
     getTransaction(transactionID) {
-        console.log("Getting transaction ", transactionID)
+        // console.log("Getting transaction ", transactionID)
         var requestString = '{ "id": "[ID]", "method":"blockchain.transaction.get", "params":["' + transactionID + '"] }'
         if (this.cache[transactionID]) {
-            console.log("USING CACHE", transactionID)
+            // console.log("USING CACHE", transactionID)
             var transaction = this.cache[transactionID].data
             return new Promise((resolve, reject) => {
                 resolve(transaction)
             })
         } else {
-            console.log("NOT USING CACHE", transactionID)
+            // console.log("NOT USING CACHE", transactionID)
         }
         return this.write(requestString)
     }
 
     getAddresHistory(wallet) {
-        console.log("Getting history for ", wallet)
+        // console.log("Getting history for ", wallet)
         var requestString = '{ "id": "[ID]", "method":"blockchain.address.get_history", "params":["' + wallet + '"] }'
         return this.write(requestString)
     }

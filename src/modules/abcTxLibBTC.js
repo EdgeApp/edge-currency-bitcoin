@@ -1,8 +1,4 @@
 //Replacing native crypto modules for ReactNative
-var masterCrypto = require('react-native-crypto')
-var secp256k1 = require('react-native-secp256k1')
-
-var crypto = masterCrypto
 
 import {
   Electrum
@@ -35,7 +31,7 @@ class ABCTxLibBTC {
 
     // dataStore.init(abcTxLibAccess, options, callbacks)
     var walletLocalFolder = opts.walletLocalFolder
-    console.log("WLF", walletLocalFolder)
+    //console.log("WLF", walletLocalFolder)
     var callbacks = opts.callbacks
 
     this.io = io
@@ -134,7 +130,7 @@ class ABCTxLibBTC {
 
 
   updateTick() {
-    console.log("TICK UPDATE", this.txUpdateTotalEntries)
+    //console.log("TICK UPDATE", this.txUpdateTotalEntries)
     var totalAddresses = this.txUpdateTotalEntries
     var executedAddresses = 0
 
@@ -164,13 +160,13 @@ class ABCTxLibBTC {
 
     var progress = [addressProgress, transactionProgress]
 
-    console.log("Total TX List:", Object.keys(this.txIndex), "totalAddresses:", totalAddresses, "executedAddresses:", executedAddresses, totalTransactions, executedTransactions, transactionProgress)
+    //console.log("Total TX List:", Object.keys(this.txIndex), "totalAddresses:", totalAddresses, "executedAddresses:", executedAddresses, totalTransactions, executedTransactions, transactionProgress)
 
     var totalProgress = addressProgress * transactionProgress
 
     if (totalProgress == 1 && !this.txUpdateBalanceUpdateStarted) {
       this.txUpdateBalanceUpdateStarted = 1
-      console.log("PROCESSING ELECTRUM")
+      //console.log("PROCESSING ELECTRUM")
       this.processElectrumData()
     }
 
@@ -192,12 +188,12 @@ class ABCTxLibBTC {
           this$1.masterBalance = data.balance
           this$1.txIndex = data.txIndex
 
-          console.log("balance from cache: ", bcoin.amount.btc(this$1.masterBalance))
+          //console.log("balance from cache: ", bcoin.amount.btc(this$1.masterBalance))
 
           this$1.abcTxLibCallbacks.onBalanceChanged("BTC", this$1.masterBalance)
         }
       }, function(error) {
-        console.log(error)
+        //console.log(error)
       })
   }
 
@@ -218,7 +214,7 @@ class ABCTxLibBTC {
       .file(DATA_STORE_FILE)
       .setText(walletJson)
 
-    console.log("Writting local data... X425", data)
+    //console.log("Writting local data... X425", data)
   }
 
   pushAddress(address) {
@@ -229,16 +225,16 @@ class ABCTxLibBTC {
   deriveAddresses(amount) {
     var this$1 = this
     for (var i = 1; i <= amount; i++) {
-      console.log("REQUESTING NEW ADDRESS")
+      //console.log("REQUESTING NEW ADDRESS")
       this.txUpdateTotalEntries++
         this.wallet.createKey(0).then(function(res) {
           var address = res.getAddress('base58check')
           if (this$1.addresses.indexOf(address) > -1) {
-            console.log("EXISTING ADDRESS ")
+            //console.log("EXISTING ADDRESS ")
             this$1.txUpdateTotalEntries--
               return
           }
-          // console.log("PUSHING NEW ADDRESS")
+          //// console.log("PUSHING NEW ADDRESS")
           this$1.pushAddress(address)
         })
     }
@@ -268,7 +264,7 @@ class ABCTxLibBTC {
     function getCallback(tx, wallet) {
       return function(transaction) {
         if (typeof this$1.txIndex[wallet].txs[tx] == "undefined") {
-          // console.log("BADTX", tx, wallet, this$1.txIndex[wallet], this$1.txIndex[wallet].txs)
+          //// console.log("BADTX", tx, wallet, this$1.txIndex[wallet], this$1.txIndex[wallet].txs)
           return
         } else {
           this$1.txIndex[wallet].txs[tx].data = transaction
@@ -276,7 +272,7 @@ class ABCTxLibBTC {
         }
 
         if (this$1.txUpdateFinished) {
-          console.log("ADDING TXFROMRAW ", transaction)
+          //console.log("ADDING TXFROMRAW ", transaction)
           this$1.wallet.db.addTXFromRaw(transaction)
         }
         this$1.checkGapLimit(wallet)
@@ -286,26 +282,26 @@ class ABCTxLibBTC {
 
     this.electrum.subscribeToAddress(wallet).then(function(hash){
       if (hash == null){
-        console.log("NULL INCOMING", wallet, hash)
+        //console.log("NULL INCOMING", wallet, hash)
         this$1.txIndex[wallet].transactionHash = hash 
         this$1.txIndex[wallet].executed = 1
         this$1.updateTick()
         return
       }
       if (this$1.txIndex[wallet].transactionHash == hash){
-        console.log("HSAH INCOMING", wallet)
+        //console.log("HSAH INCOMING", wallet)
         this$1.txIndex[wallet].executed = 1
         this$1.updateTick()
         return
       }
 
       
-      console.log("got transactions for ", wallet, this$1.txIndex[wallet].transactionHash, hash)
+      //console.log("got transactions for ", wallet, this$1.txIndex[wallet].transactionHash, hash)
 
       this$1.txIndex[wallet].transactionHash = hash
 
       return this$1.electrum.getAddresHistory(wallet).then(function(transactions) {
-        console.log("GOT full address history ", wallet)
+        //console.log("GOT full address history ", wallet)
         this$1.txIndex[wallet].executed = 1
         for (var j in transactions) {
           if (typeof this$1.txIndex[wallet].txs[transactions[j].tx_hash] == "object")
@@ -331,7 +327,7 @@ class ABCTxLibBTC {
       return bytes
     }
 
-    // console.log("Start Electrum Update Process");
+    //// console.log("Start Electrum Update Process");
 
     var txMappedTxList = []
 
@@ -395,8 +391,8 @@ class ABCTxLibBTC {
 
     Promise.all(promiseList).then(function() {
       this$1.wallet.getBalance(0).then(function(result) {
-        // console.log("Balance======>",result);
-        console.log("Final Balance: ", bcoin.amount.btc(result.unconfirmed + result.confirmed))
+        //// console.log("Balance======>",result);
+        //console.log("Final Balance: ", bcoin.amount.btc(result.unconfirmed + result.confirmed))
 
         this$1.masterBalance = result.confirmed + result.unconfirmed
         this$1.abcTxLibCallbacks.onBalanceChanged("BTC", this$1.masterBalance)
@@ -424,7 +420,7 @@ class ABCTxLibBTC {
         if (this$1.transactionHistory[hash]){
           continue
         }
-        // console.log("inputs ==> ", inputs)
+        //// console.log("inputs ==> ", inputs)
         var outgoingTransaction = false
         var totalAmount = 0
         for (var j in inputs){
@@ -433,10 +429,10 @@ class ABCTxLibBTC {
           if (addressIndex>-1){
             outgoingTransaction = true
           }
-          // console.log("I>>",address )
+          //// console.log("I>>",address )
         }
         var outputs = tx.outputs
-        // console.log("OUTPUTS ==> ", outputs)
+        //// console.log("OUTPUTS ==> ", outputs)
         for (var j in outputs){
           
           address = outputs[j].getAddress().toBase58()
@@ -444,7 +440,7 @@ class ABCTxLibBTC {
           if ( (addressIndex==-1 && outgoingTransaction) || (!outgoingTransaction && addressIndex>-1)){
             totalAmount+=outputs[j].value
           }
-          // console.log("O>",address, "V>",outputs[j].value )
+          //// console.log("O>",address, "V>",outputs[j].value )
         }
 
         var d = Math.floor(Date.now()/1000)
@@ -456,9 +452,9 @@ class ABCTxLibBTC {
         
         transactionList.push(t)
 
-        // console.log("Transaction type",(outgoingTransaction)?"Spending":"Incoming", "Amount:", totalAmount)
+        //// console.log("Transaction type",(outgoingTransaction)?"Spending":"Incoming", "Amount:", totalAmount)
       }
-      // console.log("TOTAL TRANSACTIONS LIST", transactionList);
+      //// console.log("TOTAL TRANSACTIONS LIST", transactionList);
       if (this$1.abcTxLibCallbacks.onTransactionsChanged){
         this$1.abcTxLibCallbacks.onTransactionsChanged(transactionList)
       }
@@ -471,10 +467,10 @@ class ABCTxLibBTC {
 
     return this$1.walletdb.open().then(function() {
 
-        // console.log("KEYINFO", this$1.keyInfo)
+        //// console.log("KEYINFO", this$1.keyInfo)
 
         if (typeof this$1.keyInfo.keys.bitcoinKey == "undefined") {
-          console.log("KEY FORMAT VIOLATION!!!! keyInfo.keys.bitcoinKey required", this$1.keyInfo)
+          //console.log("KEY FORMAT VIOLATION!!!! keyInfo.keys.bitcoinKey required", this$1.keyInfo)
           return false
         }
 
@@ -487,7 +483,7 @@ class ABCTxLibBTC {
 
         var key = w.toJSON()
 
-        // console.log("XPRIV", key.xprivkey)
+        //// console.log("XPRIV", key.xprivkey)
 
         return this$1.walletdb.create({
           "master": key.xprivkey,
@@ -508,7 +504,7 @@ class ABCTxLibBTC {
           for (var i in result) {
             a = result[i].toAddress()
 
-            console.log(i, "Paths======>", a.toString())
+            //console.log(i, "Paths======>", a.toString())
             checkList.push(a.toString())
           }
 
@@ -520,20 +516,20 @@ class ABCTxLibBTC {
             }
           }
           if (fl) {
-            console.log("Putting derived index into play")
+            //console.log("Putting derived index into play")
             this$1.addresses = checkList
           } else {
-            console.log("Keeping cached index")
+            //console.log("Keeping cached index")
           }
 
           this$1.txUpdateTotalEntries = this$1.addresses.length
 
-          console.log("txUpdateTotalEntries-1", this$1.txUpdateTotalEntries, this$1.addresses)
+          //console.log("txUpdateTotalEntries-1", this$1.txUpdateTotalEntries, this$1.addresses)
 
           for (var j in this$1.addresses) {
             // if (j != 0 &&   (typeof this$1.txIndex[this$1.addresses[j]] == "object" && this$1.txIndex[this$1.addresses[j]].executed))
             // continue
-            // console.log("txUpdate=> ", this$1.addresses)
+            //// console.log("txUpdate=> ", this$1.addresses)
             this$1.processAddress(this$1.addresses[j])
           }
 
@@ -542,16 +538,16 @@ class ABCTxLibBTC {
         })
 
         this$1.wallet.on('balance', function(balance) {
-          // console.log('Balance updated.',this$1.txBalanceUpdateTotal, this$1.txBalanceUpdateProgress);
+          //// console.log('Balance updated.',this$1.txBalanceUpdateTotal, this$1.txBalanceUpdateProgress);
           if (this$1.txUpdateFinished) {
-            console.log("STABLE TOP : ", bcoin.amount.btc(balance.unconfirmed))
+            //console.log("STABLE TOP : ", bcoin.amount.btc(balance.unconfirmed))
             this$1.masterBalance = balance.confirmed + balance.unconfirmed
             this$1.abcTxLibCallbacks.onBalanceChanged("BTC", this$1.masterBalance)
             this$1.updateLocalData()
           } else {
-            console.log("UNSTABLE TOP : ", bcoin.amount.btc(balance.unconfirmed))
+            //console.log("UNSTABLE TOP : ", bcoin.amount.btc(balance.unconfirmed))
           }
-          // console.log("Balance======>",result);
+          //// console.log("Balance======>",result);
         })
 
       })
@@ -595,7 +591,7 @@ class ABCTxLibBTC {
     // }, 200)
 
     this.wallet.getBalance(0).then(function(result) {
-      // console.log("Balance======>",result.confirmed);
+      //// console.log("Balance======>",result.confirmed);
       this$1.masterBalance = result.confirmed + result.unconfirmed
     })
 
@@ -675,7 +671,7 @@ class ABCTxLibBTC {
   getFreshAddress(options) {
     if (options === void 0) options = {}
 
-    console.log("getting fresh address")
+    //console.log("getting fresh address")
 
     //Looking for empty available address
     var txs
@@ -723,7 +719,7 @@ class ABCTxLibBTC {
 
     var $this = this
 
-    // console.log();
+    //// console.log();
     // return;
     //1BynMxKHRyASZDNhX4q6pRtdzAb2m8d7jM
 
@@ -779,18 +775,18 @@ class ABCTxLibBTC {
         rate: fee
       }
 
-      console.log("signing", options)
+      //console.log("signing", options)
 
       return this$1.wallet.send(options).then(function(tx) {
 
-        console.log("after TX CREATED", tx)
+        //console.log("after TX CREATED", tx)
           // Need to pass our passphrase back in to sign
 
 
 
         var rawTX = tx.toRaw().toString("hex")
 
-        console.log('RAW tx:', rawTX)
+        //console.log('RAW tx:', rawTX)
 
         abcTransaction.date = Date.now() / 1000
         abcTransaction.signedTx = rawTX
@@ -799,7 +795,7 @@ class ABCTxLibBTC {
 
 
         // request.post({ url:'https://insight.bitpay.com/api/tx/send', form: {rawtx:rawTX} }, function(err,httpResponse,body){ 
-        //   console.log("Transaction status", body)
+        ////   console.log("Transaction status", body)
         // })
 
         // return this$1.pool.broadcast(tx);
@@ -820,7 +816,7 @@ class ABCTxLibBTC {
 
       this$1.tcpClientWrite(requestString + "\n")
 
-      console.log("\n" + requestString + "\n")
+      //console.log("\n" + requestString + "\n")
 
       resolve(abcTransaction)
 
