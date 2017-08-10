@@ -4,9 +4,6 @@
   "description": "",
   "main": "./lib/index.js",
   "module": "./lib/index.es.js",
-  "directories": {
-    "test": "test"
-  },
   "scripts": {
     "lint": "standard 'src/*.js'",
     "build": "rollup -c",
@@ -17,6 +14,10 @@
   "contributors": [
     "thehobbit85 <thehobbit85@gmail.com>",
     "Stan <stan@airbitz.co>"
+  ],
+  "files": [
+    "changelog.md",
+    "lib/*"
   ],
   "license": "ISC",
   "dependencies": {
