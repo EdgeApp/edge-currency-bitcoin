@@ -5,7 +5,7 @@ import {
 } from "./electrum"
 
 //including Bcoin Engine
-var bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require("../../vendor/bcoin.js")
+let bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require("../../vendor/bcoin.js")
 
 import {
   ABCTransaction
