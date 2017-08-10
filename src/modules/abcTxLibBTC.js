@@ -5,9 +5,7 @@ import {
 } from "./electrum"
 
 //including Bcoin Engine
-var bcoin = require("../../vendor/bcoin.js")
-
-var net = require('react-native-tcp')
+var bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require("../../vendor/bcoin.js")
 
 import {
   ABCTransaction
@@ -16,6 +14,7 @@ import {
 import {
   txLibInfo
 } from "./../txLibInfo.js"
+
 
 var GAP_LIMIT = 25
 var DATA_STORE_FOLDER = 'txEngineFolderBTC'
@@ -283,7 +282,7 @@ class ABCTxLibBTC {
     this.electrum.subscribeToAddress(wallet).then(function(hash){
       if (hash == null){
         //console.log("NULL INCOMING", wallet, hash)
-        this$1.txIndex[wallet].transactionHash = hash 
+        this$1.txIndex[wallet].transactionHash = hash
         this$1.txIndex[wallet].executed = 1
         this$1.updateTick()
         return
@@ -295,7 +294,7 @@ class ABCTxLibBTC {
         return
       }
 
-      
+
       //console.log("got transactions for ", wallet, this$1.txIndex[wallet].transactionHash, hash)
 
       this$1.txIndex[wallet].transactionHash = hash
@@ -434,7 +433,7 @@ class ABCTxLibBTC {
         var outputs = tx.outputs
         //// console.log("OUTPUTS ==> ", outputs)
         for (var j in outputs){
-          
+
           address = outputs[j].getAddress().toBase58()
           var addressIndex = this$1.addresses.indexOf(address)
           if ( (addressIndex==-1 && outgoingTransaction) || (!outgoingTransaction && addressIndex>-1)){
@@ -449,7 +448,7 @@ class ABCTxLibBTC {
         var t = new ABCTransaction (hash, d, "BTC", 1, totalAmount, 10000, "signedTx", {})
 
         this$1.transactionHistory[hash] = t
-        
+
         transactionList.push(t)
 
         //// console.log("Transaction type",(outgoingTransaction)?"Spending":"Incoming", "Amount:", totalAmount)
@@ -593,7 +592,7 @@ class ABCTxLibBTC {
       this.wallet.getBalance(0).then(function(result) {
         //// console.log("Balance======>",result.confirmed);
         this$1.masterBalance = result.confirmed + result.unconfirmed
-      })  
+      })
     }
     return this.masterBalance
   }
@@ -794,7 +793,7 @@ class ABCTxLibBTC {
         resolve(abcTransaction)
 
 
-        // request.post({ url:'https://insight.bitpay.com/api/tx/send', form: {rawtx:rawTX} }, function(err,httpResponse,body){ 
+        // request.post({ url:'https://insight.bitpay.com/api/tx/send', form: {rawtx:rawTX} }, function(err,httpResponse,body){
         ////   console.log("Transaction status", body)
         // })
 
@@ -839,3 +838,4 @@ class ABCTxLibBTC {
 export {
   ABCTxLibBTC
 }
+
