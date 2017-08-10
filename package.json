@@ -10,6 +10,7 @@
   "scripts": {
     "lint": "standard 'src/*.js'",
     "build": "rollup -c",
+    "prepare": "npm run build",
     "test": "ENV=NODEJS mocha",
     "pretest": "npm run build"
   },
