@@ -1,6 +1,6 @@
 const MAX_CONNECTIONS = 4
-const MAX_REQUEST_TIME = 5000
-const MAX_CONNECTION_HANG_TIME = 7500
+const MAX_REQUEST_TIME = 1000
+const MAX_CONNECTION_HANG_TIME = 2500
 
 // Replacing net module for ReactNative
 var net = require('react-native-tcp')
@@ -265,6 +265,11 @@ class Electrum {
         this.requests[data.id].executed = 1
         // // console.log("calling callback, ",data.id, data.result)
         this.requests[data.id].onDataReceived(data.result)
+    }
+
+    getBlockHeader(height){
+        var requestString = '{ "id": "[ID]", "method":"blockchain.block.get_header", "params": ["' + height + '"] }'
+        return this.write(requestString)
     }
 
     getTransaction(transactionID) {
