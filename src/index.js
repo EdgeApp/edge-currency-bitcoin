@@ -18,13 +18,18 @@ function getParameterByName (param, url) {
   return decodeURIComponent(results[2].replace(/\+/g, ' '))
 }
 
+function valid (address) {
+    let testAddress = cs.createValidator(0x00)
+    return testAddress(address)
+}
+
 class BitcoinPlugin(opts) {
     static async makePlugin (opts = {io:{}}) {
         return {
             currencyInfo: txLibInfo.getInfo,
 
             createMasterKeys: function(walletType) {
-                if (walletType === 'bitcoin') {
+                if (walletType === coininfo.getInfo.currencyName) {
                     let master = new bcoin.masterkey()
                     mnemonic = new bcoin.mnemonic(null)
                     let key = bcoin.hd.fromMnemonic(mnemonic, null)
@@ -46,27 +51,26 @@ class BitcoinPlugin(opts) {
             },
             parseUri: (uri) => {
                 let parsedUri = parse(uri)
-
+                let info = coininfo.info
                 let address = parsedUri.host || parsedUri.path
                 if (!address) throw new Error('InvalidUriError')
                 address = address.replace('/', '') // Remove any slashes
-                if (!testAddress(address)) throw new Error('InvalidPublicAddressError')
+                if (!valid(address)) throw new Error('InvalidPublicAddressError')
 
                 let nativeAmount = null
                 let currencyCode = null
 
                 if (typeof parsedUri.scheme !== 'undefined' &&
-                      parsedUri.scheme !== 'bitcoin') throw new Error('InvalidUriError')
+                      parsedUri.scheme !== info.currencyName) throw new Error('InvalidUriError')
 
                 let amountStr = getParameterByName('amount', uri)
-                let testAddress = cs.createValidator(0x00)
 
                 if (amountStr && typeof amountStr === 'string') {
                     let amount = parseFloat(amountStr)
                     let multiplier = coininfo.getInfo
-                        .denominations.find(e => e === 'BTC').multiplier.toString()
+                        .denominations.find(e => e === info.currencyCode).multiplier.toString()
                     nativeAmount = bns.mulf(amount, multiplier)
-                    currencyCode = 'BTC'
+                    currencyCode = info.currencyCode
                 }
 
                 return {
