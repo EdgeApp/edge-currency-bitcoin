@@ -1,6 +1,6 @@
 .idea/
 .nyc_output
 /coverage
+/lib
+lib
 /node_modules
-/db/
-npm-debug.log
