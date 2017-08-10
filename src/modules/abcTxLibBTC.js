@@ -15,10 +15,10 @@ import {
   txLibInfo
 } from "./../txLibInfo.js"
 
-
 var GAP_LIMIT = 25
 var DATA_STORE_FOLDER = 'txEngineFolderBTC'
-var DATA_STORE_FILE = 'wallet_Local_Data.json'
+var DATA_STORE_FILE = 'walletLocalDataV4.json'
+var HEADER_STORE_FILE = 'headersV1.json'
 
 var PRIMARY_CURRENCY = txLibInfo.getInfo.currencyCode
 var TOKEN_CODES = [PRIMARY_CURRENCY].concat(txLibInfo.supportedTokens)
@@ -30,7 +30,7 @@ class ABCTxLibBTC {
 
     // dataStore.init(abcTxLibAccess, options, callbacks)
     var walletLocalFolder = opts.walletLocalFolder
-    //console.log("WLF", walletLocalFolder)
+      //console.log("WLF", walletLocalFolder)
     var callbacks = opts.callbacks
 
     this.io = io
@@ -41,6 +41,7 @@ class ABCTxLibBTC {
     this.connections = []
     this.walletsScanQueue = []
     this.transactionsStash = []
+    this.headerList = {}
     this.cachedLocalData = ""
     this.transactionHistory = {}
     this.transactionTS = {}
@@ -165,7 +166,7 @@ class ABCTxLibBTC {
 
     if (totalProgress == 1 && !this.txUpdateBalanceUpdateStarted) {
       this.txUpdateBalanceUpdateStarted = 1
-      //console.log("PROCESSING ELECTRUM")
+        //console.log("PROCESSING ELECTRUM")
       this.processElectrumData()
     }
 
@@ -186,14 +187,54 @@ class ABCTxLibBTC {
           this$1.electrum.updateCache(data.txIndex)
           this$1.masterBalance = data.balance
           this$1.txIndex = data.txIndex
+          if (typeof data.headerList != "undefined")
+            this$1.headerList = data.headerList
 
-          //console.log("balance from cache: ", bcoin.amount.btc(this$1.masterBalance))
+          console.log("Balance from cache: ", bcoin.amount.btc(this$1.masterBalance))
+
+          console.log("headersList", this$1.headerList)
 
           this$1.abcTxLibCallbacks.onBalanceChanged("BTC", this$1.masterBalance)
+
+          return this$1.walletLocalFolder
+            .folder(DATA_STORE_FOLDER)
+            .file(HEADER_STORE_FILE)
+            .getText(DATA_STORE_FOLDER, 'walletLocalData').then(function(result) {
+              if (!result) {
+                console.log("Something wrong with local headers ... X723", data.headerList)
+                return
+              }
+
+              var data = JSON.parse(result)
+
+              if (typeof data.headerList != "undefined"){
+                console.log("GOT local headers", data.headerList)
+                this$1.headerList = data.headerList
+              } else {
+                console.log("Something wrong with local headers ... X722", data)
+              }
+
+            }, function(error) {
+              console.log(error)
+            });
         }
       }, function(error) {
-        //console.log(error)
+        console.log(error)
       })
+  }
+
+  updateHeadersLocalData() {
+    const headerData = {
+      headerList: this.headerList
+    }
+    const headerJson = JSON.stringify(headerData)
+
+    this.walletLocalFolder
+      .folder(DATA_STORE_FOLDER)
+      .file(HEADER_STORE_FILE)
+      .setText(headerJson)
+
+    console.log("Writting header file to disk ... X426", headerJson)
   }
 
   updateLocalData() {
@@ -201,6 +242,7 @@ class ABCTxLibBTC {
       txIndex: this.txIndex,
       addresses: this.addresses,
       balance: this.masterBalance
+
     }
     const walletJson = JSON.stringify(data)
     if (this.cachedLocalData == walletJson)
@@ -213,7 +255,7 @@ class ABCTxLibBTC {
       .file(DATA_STORE_FILE)
       .setText(walletJson)
 
-    //console.log("Writting local data... X425", data)
+    console.log("Writting local data to disk ... X425", data)
   }
 
   pushAddress(address) {
@@ -279,21 +321,20 @@ class ABCTxLibBTC {
       }
     }
 
-    this.electrum.subscribeToAddress(wallet).then(function(hash){
-      if (hash == null){
+    this.electrum.subscribeToAddress(wallet).then(function(hash) {
+      if (hash == null) {
         //console.log("NULL INCOMING", wallet, hash)
         this$1.txIndex[wallet].transactionHash = hash
         this$1.txIndex[wallet].executed = 1
         this$1.updateTick()
         return
       }
-      if (this$1.txIndex[wallet].transactionHash == hash){
+      if (this$1.txIndex[wallet].transactionHash == hash) {
         //console.log("HSAH INCOMING", wallet)
         this$1.txIndex[wallet].executed = 1
         this$1.updateTick()
         return
       }
-
 
       //console.log("got transactions for ", wallet, this$1.txIndex[wallet].transactionHash, hash)
 
@@ -303,8 +344,10 @@ class ABCTxLibBTC {
         //console.log("GOT full address history ", wallet)
         this$1.txIndex[wallet].executed = 1
         for (var j in transactions) {
-          if (typeof this$1.txIndex[wallet].txs[transactions[j].tx_hash] == "object")
+          if (typeof this$1.txIndex[wallet].txs[transactions[j].tx_hash] == "object") {
+            this$1.txIndex[wallet].txs[transactions[j].tx_hash].height = transactions[j].height;
             continue
+          }
           this$1.txIndex[wallet].txs[transactions[j].tx_hash] = {
             height: transactions[j].height,
             data: "",
@@ -407,58 +450,117 @@ class ABCTxLibBTC {
 
   }
 
-  refreshTransactionHistory(){
-    var this$1 = this;
-    return this.wallet.getHistory().then(function (res){
-      var transactionList = []
-      for (var i in res){
-        var tx = res[i].tx
-        var inputs = tx.inputs
-        var address
-        var hash = tx.txid()
-        if (this$1.transactionHistory[hash]){
+  getNewHeadersList() {
+    var i, j
+    let result = []
+    for (var i in this.txIndex) {
+      for (var j in this.txIndex[i].txs) {
+        let h = this.txIndex[i].txs[j].height
+
+        if (h < 0)
           continue
+
+        if (typeof this.headerList[h] == "undefined" && result.indexOf(h) == -1) {
+          result.push(h)
         }
-        //// console.log("inputs ==> ", inputs)
-        var outgoingTransaction = false
-        var totalAmount = 0
-        for (var j in inputs){
-          address = inputs[j].getAddress().toBase58()
-          var addressIndex = this$1.addresses.indexOf(address)
-          if (addressIndex>-1){
-            outgoingTransaction = true
-          }
-          //// console.log("I>>",address )
-        }
-        var outputs = tx.outputs
-        //// console.log("OUTPUTS ==> ", outputs)
-        for (var j in outputs){
-
-          address = outputs[j].getAddress().toBase58()
-          var addressIndex = this$1.addresses.indexOf(address)
-          if ( (addressIndex==-1 && outgoingTransaction) || (!outgoingTransaction && addressIndex>-1)){
-            totalAmount+=outputs[j].value
-          }
-          //// console.log("O>",address, "V>",outputs[j].value )
-        }
-
-        var d = Math.floor(Date.now()/1000)
-        totalAmount = (outgoingTransaction)?-totalAmount:totalAmount
-
-        var t = new ABCTransaction (hash, d, "BTC", 1, totalAmount, 10000, "signedTx", {})
-
-        this$1.transactionHistory[hash] = t
-
-        transactionList.push(t)
-
-        //// console.log("Transaction type",(outgoingTransaction)?"Spending":"Incoming", "Amount:", totalAmount)
       }
-      //// console.log("TOTAL TRANSACTIONS LIST", transactionList);
-      if (this$1.abcTxLibCallbacks.onTransactionsChanged){
-        this$1.abcTxLibCallbacks.onTransactionsChanged(transactionList)
+    }
+    console.log("OLD/NEW LIST HEADERS", this.headerList, result)
+    return result
+  }
+
+  pullBlockHeaders() {
+    let newHeadersList = this.getNewHeadersList()
+    var this$1 = this
+    let prom = []
+
+    function getCallback(i) {
+      return function(block) {
+        console.log("Setting block", i, block.timestamp)
+        this$1.headerList[i] = block
       }
-      // return transactionList;
-    });
+    }
+
+    for (var i in newHeadersList) {
+      prom.push(this.electrum.getBlockHeader(newHeadersList[i]).then(getCallback(newHeadersList[i])))
+    }
+
+    return Promise.all(prom).then(function(){
+      if (newHeadersList.length > 1) {
+        this$1.updateHeadersLocalData()
+      }
+      return new Promise(function(resolve,reject){
+        resolve()
+      })
+    })
+  }
+
+  refreshTransactionHistory() {
+    var this$1 = this;
+
+    return this.pullBlockHeaders().then(function() {
+      // console.log("HEADERS COMPILED", this$1.headerList)
+
+      this$1.wallet.getHistory().then(function(res) {
+        var transactionList = []
+        for (var i in res) {
+          var tx = res[i].tx
+          var inputs = tx.inputs
+          var address
+          var hash = tx.txid()
+          if (this$1.transactionHistory[hash]) {
+            continue
+          }
+          //// console.log("inputs ==> ", inputs)
+          var outgoingTransaction = false
+          var totalAmount = 0
+          var ts = Math.floor(Date.now() / 1000)
+          for (var j in inputs) {
+            address = inputs[j].getAddress().toBase58()
+            var addressIndex = this$1.addresses.indexOf(address)
+            if (addressIndex > -1) {
+              if (typeof this$1.headerList[this$1.txIndex[this$1.addresses[addressIndex]].txs[hash].height] != "undefined") {
+                ts = this$1.headerList[this$1.txIndex[this$1.addresses[addressIndex]].txs[hash].height].timestamp
+                  console.log("Getting timestamp from list, input", ts)
+              }
+              outgoingTransaction = true
+            }
+            //// console.log("I>>",address )
+          }
+          var outputs = tx.outputs
+            //// console.log("OUTPUTS ==> ", outputs)
+          for (var j in outputs) {
+
+            address = outputs[j].getAddress().toBase58()
+            var addressIndex = this$1.addresses.indexOf(address)
+            if (addressIndex > -1 && typeof this$1.headerList[this$1.txIndex[this$1.addresses[addressIndex]].txs[hash].height] != "undefined") {
+              ts = this$1.headerList[this$1.txIndex[this$1.addresses[addressIndex]].txs[hash].height].timestamp
+                console.log("Getting timestamp from list, output", ts)
+            }
+            if ((addressIndex == -1 && outgoingTransaction) || (!outgoingTransaction && addressIndex > -1)) {
+              totalAmount += outputs[j].value
+            }
+            //// console.log("O>",address, "V>",outputs[j].value )
+          }
+
+          var d = ts
+          totalAmount = (outgoingTransaction) ? -totalAmount : totalAmount
+
+          var t = new ABCTransaction(hash, d, "BTC", 1, totalAmount, 10000, "signedTx", {})
+
+          this$1.transactionHistory[hash] = t
+
+          transactionList.push(t)
+
+          //// console.log("Transaction type",(outgoingTransaction)?"Spending":"Incoming", "Amount:", totalAmount)
+        }
+        console.log("TOTAL TRANSACTIONS LIST", transactionList, this$1.headerList);
+        if (this$1.abcTxLibCallbacks.onTransactionsChanged) {
+          this$1.abcTxLibCallbacks.onTransactionsChanged(transactionList)
+        }
+        // return transactionList;
+      })
+    })
   }
 
   startEngine() {
@@ -588,7 +690,7 @@ class ABCTxLibBTC {
     // setTimeout(function() {
     //   this$1.collectGarbage()
     // }, 200)
-    if (this.txUpdateFinished){
+    if (this.txUpdateFinished) {
       this.wallet.getBalance(0).then(function(result) {
         //// console.log("Balance======>",result.confirmed);
         this$1.masterBalance = result.confirmed + result.unconfirmed
@@ -779,7 +881,7 @@ class ABCTxLibBTC {
       return this$1.wallet.send(options).then(function(tx) {
 
         //console.log("after TX CREATED", tx)
-          // Need to pass our passphrase back in to sign
+        // Need to pass our passphrase back in to sign
 
 
 
@@ -838,4 +940,3 @@ class ABCTxLibBTC {
 export {
   ABCTxLibBTC
 }
-
