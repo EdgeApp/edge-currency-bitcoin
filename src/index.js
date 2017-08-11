@@ -5,7 +5,7 @@ import { ABCTxLibBTC } from './modules/abcTxLibBTC.js'
 import { txLibInfo } from './txLibInfo.js'
 
 // including Bcoin Engine
-let bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require('../../vendor/bcoin.js')
+let bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require('../vendor/bcoin.js')
 
 function getParameterByName (param, url) {
   const name = param.replace(/[[\]]/g, '\\$&')
