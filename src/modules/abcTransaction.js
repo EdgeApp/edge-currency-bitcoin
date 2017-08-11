@@ -1,5 +1,5 @@
 class ABCTransaction {
-  constructor(txid, date, currencyCode, blockHeightNative, nativeAmount, nativeNetworkFee, signedTx, otherParams) {
+  constructor (txid, date, currencyCode, blockHeightNative, nativeAmount, nativeNetworkFee, signedTx, otherParams) {
     this.txid = txid
     this.date = date
     this.currencyCode = currencyCode
