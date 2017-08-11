@@ -27,8 +27,35 @@ class BitcoinPlugin {
     return {
       currencyInfo: txLibInfo.getInfo,
 
+      createPrivateKey: (walletType) => {
+        if (txLibInfo.getInfo.walletTypes.filter(x => x === walletType.type)) { // fix lowercase
+          let masterkey = Buffer.from(io.random(32)) // bcoin.hd.PrivateKey.generate().privateKey.toString('base64')
+          return { keys: { bitcoinKey: masterkey.toString('base64') } }
+        } else return null
+      },
+
+      derivePublicKey: (walletInfo) => {
+        if (txLibInfo.getInfo.walletTypes.filter(x => x === walletInfo.type)) {
+          var a = Buffer.from(walletInfo.keys.bitcoinKey, 'base64')
+          console.log(a);
+          var b = a.toString('hex')
+          console.log(b);
+          let masterPublicKey = bcoin.hd.Mnemonic.fromEntropy(a)
+          console.log(masterPublicKey);
+          // console.log(bcoin.crypto)
+          // let masterPublicKey = new bcoin.hd.PrivateKey({privateKey: walletInfo.keys.masterPrivateKey})
+          // console.log(masterPublicKey)
+          return Object.assign({}, walletInfo, {
+            keys: { masterPublicKey }
+          })
+        } else {
+          throw new Error('InvalidWalletType')
+        }
+      },
+
+      // XXX Deprecated. To be removed once Core supports createPrivateKey and derivePublicKey -paulvp
       createMasterKeys: function (walletType) {
-        if (walletType === txLibInfo.getInfo.currencyName) {
+        if (walletType.replace('wallet:', '').toLowerCase() === txLibInfo.getInfo.currencyName.toLowerCase()) {
           let master = new bcoin.masterkey()
           let mnemonic = new bcoin.mnemonic(null)
           let key = bcoin.hd.fromMnemonic(mnemonic, null)
