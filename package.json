@@ -17,7 +17,8 @@
   ],
   "files": [
     "changelog.md",
-    "lib/*"
+    "lib/*",
+    "vendor/*"
   ],
   "license": "ISC",
   "dependencies": {
