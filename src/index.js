@@ -21,6 +21,25 @@ function valid (address) {
   return testAddress(address)
 }
 
+let privateKeyInitializers = {
+  'wallet:bitcoin': (io) => ({
+    type: 'wallet:bitcoin',
+    keys: { bitcoinKey: Buffer.from(io.random(32)).toString('base64') }
+  })
+}
+
+let publicKeyInitializers = {
+  'wallet:bitcoin': (walletInfo) => {
+    if (!walletInfo.keys.bitcoinKey) throw new Error('InvalidKeyName')
+    return Object.assign({}, walletInfo, {
+      keys: {
+        bitcoinKey: walletInfo.keys.bitcoinKey,
+        bitcoinXpub: bcoin.hd.PrivateKey.fromSeed(Buffer.from(walletInfo.keys.bitcoinKey, 'base64')).xpubkey()
+      }
+    })
+  }
+}
+
 class BitcoinPlugin {
   static async makePlugin (opts = {io: {}}) {
     let io = opts.io
@@ -28,29 +47,14 @@ class BitcoinPlugin {
       currencyInfo: txLibInfo.getInfo,
 
       createPrivateKey: (walletType) => {
-        if (txLibInfo.getInfo.walletTypes.filter(x => x === walletType.type)) { // fix lowercase
-          let masterkey = Buffer.from(io.random(32)) // bcoin.hd.PrivateKey.generate().privateKey.toString('base64')
-          return { keys: { bitcoinKey: masterkey.toString('base64') } }
-        } else return null
+        if (!privateKeyInitializers[walletType]) throw new Error('InvalidWalletType')
+        return privateKeyInitializers[walletType](io)
       },
 
       derivePublicKey: (walletInfo) => {
-        if (txLibInfo.getInfo.walletTypes.filter(x => x === walletInfo.type)) {
-          var a = Buffer.from(walletInfo.keys.bitcoinKey, 'base64')
-          console.log(a);
-          var b = a.toString('hex')
-          console.log(b);
-          let masterPublicKey = bcoin.hd.Mnemonic.fromEntropy(a)
-          console.log(masterPublicKey);
-          // console.log(bcoin.crypto)
-          // let masterPublicKey = new bcoin.hd.PrivateKey({privateKey: walletInfo.keys.masterPrivateKey})
-          // console.log(masterPublicKey)
-          return Object.assign({}, walletInfo, {
-            keys: { masterPublicKey }
-          })
-        } else {
-          throw new Error('InvalidWalletType')
-        }
+        if (!publicKeyInitializers[walletInfo.type]) throw new Error('InvalidWalletType')
+        if (!walletInfo.keys) throw new Error('InvalidKeyName')
+        return publicKeyInitializers[walletInfo.type](walletInfo)
       },
 
       // XXX Deprecated. To be removed once Core supports createPrivateKey and derivePublicKey -paulvp
@@ -78,7 +82,7 @@ class BitcoinPlugin {
       parseUri: (uri) => {
         let parsedUri = parse(uri)
         let info = txLibInfo.getInfo
-        if (typeof parsedUri.scheme !== 'undefined' &&
+        if (parsedUri.scheme &&
             parsedUri.scheme.toLowerCase() !== info.currencyName.toLowerCase()) throw new Error('InvalidUriError')
 
         let address = parsedUri.host || parsedUri.path
@@ -108,37 +112,24 @@ class BitcoinPlugin {
       },
       encodeUri: (obj) => {
         if (!obj.publicAddress || !valid(obj.publicAddress)) throw new Error('InvalidPublicAddressError')
-        if (!obj.nativeAmount && !obj.label && !obj.message) {
-          return obj.publicAddress
-        } else {
-          let queryString = ''
-          let info = txLibInfo.getInfo
-          if (obj.nativeAmount) {
-            let currencyCode = obj.currencyCode || info.currencyCode
-            let multiplier = txLibInfo.getInfo.denominations.find(e => e.name === currencyCode).multiplier.toString()
-            if (typeof multiplier !== 'string') {
-              multiplier = multiplier.toString()
-            }
-            let amount = bns.divf(obj.nativeAmount, multiplier)
-
-            queryString += 'amount=' + amount.toString() + '&'
-          }
-          if (obj.label) {
-            queryString += 'label=' + obj.label + '&'
-          }
-          if (obj.message) {
-            queryString += 'message=' + obj.message + '&'
-          }
-          queryString = queryString.substr(0, queryString.length - 1)
-
-          const serializeObj = {
-            scheme: info.currencyName.toLowerCase(),
-            path: obj.publicAddress,
-            query: queryString
-          }
-          const url = serialize(serializeObj)
-          return url
+        if (!obj.nativeAmount && !obj.label && !obj.message) return obj.publicAddress
+        let queryString = ''
+        let info = txLibInfo.getInfo
+        if (obj.nativeAmount) {
+          let currencyCode = obj.currencyCode || info.currencyCode
+          let multiplier = txLibInfo.getInfo.denominations.find(e => e.name === currencyCode).multiplier.toString()
+          let amount = bns.divf(obj.nativeAmount, multiplier)
+          queryString += 'amount=' + amount.toString() + '&'
         }
+        if (obj.label) queryString += 'label=' + obj.label + '&'
+        if (obj.message) queryString += 'message=' + obj.message + '&'
+        queryString = queryString.substr(0, queryString.length - 1)
+
+        return serialize({
+          scheme: info.currencyName.toLowerCase(),
+          path: obj.publicAddress,
+          query: queryString
+        })
       }
     }
   }

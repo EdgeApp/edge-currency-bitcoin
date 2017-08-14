@@ -1,7 +1,6 @@
 /* global describe it */
 let BitcoinPlugin = require('../lib/index.js').BitcoinPlugin
 let assert = require('assert')
-const { bns } = require('biggystring')
 
 let opts = {
   io: {
@@ -9,29 +8,6 @@ let opts = {
     random: (size) => Array(size).fill(0).map((x, i) => i)
   }
 }
-// describe('Plugin', function () {
-//   it('Get currency info', function () {
-//     BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
-//       assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
-//     })
-//   })
-//   it('Get block height', function () {
-//     BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
-//       const walletInfoPrivate = bitcoinPlugin.createPrivateKey('wallet:bitcoin')
-//       const walletInfoPublic = bitcoinPlugin.derivePublicKey(walletInfoPrivate)
-//       const keys = Object.assign({}, walletInfoPrivate.keys, walletInfoPublic.keys)
-//       const walletInfo = walletInfoPublic
-//       walletInfo.keys = keys
-//       const engine = bitcoinPlugin.makeEngine(walletInfo)
-
-//       engine.startEngine()
-//       const height = engine.getBlockHeight()
-//       const success = (height === '0' || bns.gt(height, '100000'))
-
-//       assert.equal(success, true)
-//     })
-//   })
-// })
 
 describe('Info', function () {
   let plugin
@@ -72,25 +48,24 @@ describe('createPrivateKey', function () {
 
 describe('derivePublicKey', function () {
   let plugin
+  let walletInfo
 
   before('Plugin', function () {
     BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
       assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
       plugin = bitcoinPlugin
+      walletInfo = plugin.createPrivateKey('wallet:bitcoin')
     })
   })
   it('Valid private key', function () {
-    const walletInfo = plugin.derivePublicKey({
-      type: 'bitcoin',
-      keys: {'bitcoinKey': '12345678abcd'}
-    })
-    assert.equal(walletInfo.keys.masterPublicKey.toLowerCase(), 'pub12345678abcd'.toLowerCase())
+    let tmpInfo = plugin.derivePublicKey(walletInfo)
+    assert.equal(tmpInfo.keys.bitcoinXpub, 'xpub661MyMwAqRbcFiyme9xRZe855HWfYxvTcYoWpX1E8ZW8DGu35DbthdTxz222XRihFsxrdH4BCEe32DBRyKEerW8CUMAB8FDziiNyDG4ecgT')
   })
 
   it('Invalid key name', function () {
     assert.throws(() => {
       plugin.derivePublicKey({
-        type: 'bitcoin',
+        type: 'wallet:bitcoin',
         keys: {'bitcoinKeyz': '12345678abcd'}
       })
     })
