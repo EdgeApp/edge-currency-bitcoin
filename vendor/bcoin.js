@@ -1,5 +1,5 @@
-var masterCrypto = require('react-native-crypto')
-var secp256k1 = require('react-native-secp256k1')
+var masterCrypto = require('crypto')
+var secp256k1 = require('secp256k1')
 
 var crypto = masterCrypto
 
