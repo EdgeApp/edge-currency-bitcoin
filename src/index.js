@@ -44,6 +44,7 @@ class BitcoinPlugin {
   static async makePlugin (opts = {io: {}}) {
     let io = opts.io
     return {
+      pluginName: txLibInfo.getInfo.currencyName.toLowerCase(),
       currencyInfo: txLibInfo.getInfo,
 
       createPrivateKey: (walletType) => {
