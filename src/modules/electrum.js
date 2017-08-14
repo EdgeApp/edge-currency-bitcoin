@@ -3,15 +3,10 @@ const MAX_REQUEST_TIME = 1000
 const MAX_CONNECTION_HANG_TIME = 2500
 
 // Replacing net module for ReactNative
-var net = process.env.ENV === 'NODEJS' ? require('net') : require('react-native-tcp')
+var net = require('net')
 
-function getRandomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
-function randomHash() {
-    return "a" + Math.random().toString(36).substring(7)
-}
+let getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min
+let randomHash = () => 'a' + Math.random().toString(36).substring(7)
 
 class Electrum {
 

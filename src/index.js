@@ -61,8 +61,8 @@ class BitcoinPlugin {
       // XXX Deprecated. To be removed once Core supports createPrivateKey and derivePublicKey -paulvp
       createMasterKeys: function (walletType) {
         if (walletType.replace('wallet:', '').toLowerCase() === txLibInfo.getInfo.currencyName.toLowerCase()) {
-          let master = new bcoin.masterkey()
-          let mnemonic = new bcoin.mnemonic(null)
+          let master = new bcoin.masterkey() // eslint-disable-line new-cap
+          let mnemonic = new bcoin.mnemonic(null) // eslint-disable-line new-cap
           let key = bcoin.hd.fromMnemonic(mnemonic, null)
           master.fromKey(key, mnemonic)
           let hex = master.key.privateKey.toString('base64')

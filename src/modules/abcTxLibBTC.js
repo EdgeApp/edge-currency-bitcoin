@@ -1,19 +1,10 @@
-//Replacing native crypto modules for ReactNative
+// Replacing native crypto modules for ReactNative
+import { Electrum } from './electrum'
+import { ABCTransaction } from './abcTransaction'
+import { txLibInfo } from './../txLibInfo.js'
 
-import {
-  Electrum
-} from "./electrum"
-
-//including Bcoin Engine
+// including Bcoin Engine
 let bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require('../vendor/bcoin.js')
-
-import {
-  ABCTransaction
-} from "./abcTransaction"
-
-import {
-  txLibInfo
-} from "./../txLibInfo.js"
 
 var GAP_LIMIT = 25
 var DATA_STORE_FOLDER = 'txEngineFolderBTC'
@@ -24,13 +15,12 @@ var PRIMARY_CURRENCY = txLibInfo.getInfo.currencyCode
 var TOKEN_CODES = [PRIMARY_CURRENCY].concat(txLibInfo.supportedTokens)
 
 class ABCTxLibBTC {
-
-  constructor(io, keyInfo, opts) {
+  constructor (io, keyInfo, opts) {
     if (opts === void 0) opts = {}
 
     // dataStore.init(abcTxLibAccess, options, callbacks)
     var walletLocalFolder = opts.walletLocalFolder
-      //console.log("WLF", walletLocalFolder)
+    // console.log("WLF", walletLocalFolder)
     var callbacks = opts.callbacks
 
     this.io = io
@@ -42,7 +32,7 @@ class ABCTxLibBTC {
     this.walletsScanQueue = []
     this.transactionsStash = []
     this.headerList = {}
-    this.cachedLocalData = ""
+    this.cachedLocalData = ''
     this.transactionHistory = {}
     this.transactionTS = {}
     this.increasingLimitLoop = 0
