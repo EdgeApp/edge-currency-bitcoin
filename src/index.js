@@ -1,3 +1,4 @@
+import '../shim'
 import { parse, serialize } from 'uri-js'
 import { bns } from 'biggystring'
 import cs from 'coinstring'
