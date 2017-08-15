@@ -59,7 +59,7 @@
     "stream": "0.0.2",
     "stream-browserify": "^2.0.1",
     "string_decoder": "^0.10.31",
-    "timers-browserify": "^2.0.3",    
+    "timers-browserify": "^2.0.3",
     "tty-browserify": "0.0.0",
     "uri-js": "^3.0.2",
     "url": "^0.11.0",

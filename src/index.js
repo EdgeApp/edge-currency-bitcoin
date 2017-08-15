@@ -23,20 +23,17 @@ function valid (address) {
 
 let privateKeyInitializers = {
   'wallet:bitcoin': (io) => ({
-    type: 'wallet:bitcoin',
-    keys: { bitcoinKey: Buffer.from(io.random(32)).toString('base64') }
+    bitcoinKey: Buffer.from(io.random(32)).toString('base64')
   })
 }
 
 let publicKeyInitializers = {
   'wallet:bitcoin': (walletInfo) => {
     if (!walletInfo.keys.bitcoinKey) throw new Error('InvalidKeyName')
-    return Object.assign({}, walletInfo, {
-      keys: {
-        bitcoinKey: walletInfo.keys.bitcoinKey,
-        bitcoinXpub: bcoin.hd.PrivateKey.fromSeed(Buffer.from(walletInfo.keys.bitcoinKey, 'base64')).xpubkey()
-      }
-    })
+    return {
+      bitcoinKey: walletInfo.keys.bitcoinKey,
+      bitcoinXpub: bcoin.hd.PrivateKey.fromSeed(Buffer.from(walletInfo.keys.bitcoinKey, 'base64')).xpubkey()
+    }
   }
 }
 
