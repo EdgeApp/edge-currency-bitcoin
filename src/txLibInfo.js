@@ -8,6 +8,9 @@ export const txLibInfo = {
     walletTypes: [
       'wallet:bitcoin'
     ],
+    blockExplorer: 'https://insight.bitpay.com/block/%s',
+    addressExplorer: 'https://insight.bitpay.com/address/%s',
+    transactionExplorer: 'https://insight.bitpay.com/tx/%s',
     currencyName: 'Bitcoin',
     currencyCode: 'BTC', // The 3 character code for the currency
     denominations: [
