@@ -77,6 +77,7 @@ class BitcoinPlugin {
         let abcTxLib = new ABCTxLibBTC(io, keyInfo, opts)
         return abcTxLib
       },
+
       parseUri: (uri) => {
         let parsedUri = parse(uri)
         let info = txLibInfo.getInfo
@@ -108,6 +109,7 @@ class BitcoinPlugin {
           message: getParameterByName('message', uri)
         }
       },
+
       encodeUri: (obj) => {
         if (!obj.publicAddress || !valid(obj.publicAddress)) throw new Error('InvalidPublicAddressError')
         if (!obj.nativeAmount && !obj.label && !obj.message) return obj.publicAddress
