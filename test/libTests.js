@@ -1,20 +1,23 @@
 /* global describe it */
 let BitcoinPlugin = require('../lib/index.js').BitcoinPlugin
 let assert = require('assert')
+let disklet = require('disklet')
 
 let opts = {
   io: {
     fetch: () => true,
-    random: (size) => Array(size).fill(0).map((x, i) => i)
+    random: (size) => Array(size).fill(0).map((x, i) => i),
+    net: require('net')
   }
 }
 
 describe('Info', function () {
   let plugin
 
-  before('Plugin', function () {
+  before('Plugin', function (done) {
     BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
       plugin = bitcoinPlugin
+      done()
     })
   })
 
@@ -26,9 +29,10 @@ describe('Info', function () {
 describe('createPrivateKey', function () {
   let plugin
 
-  before('Plugin', function () {
+  before('Plugin', function (done) {
     BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
       plugin = bitcoinPlugin
+      done()
     })
   })
 
@@ -37,10 +41,10 @@ describe('createPrivateKey', function () {
   })
 
   it('Create valid key', function () {
-    let walletInfo = plugin.createPrivateKey('wallet:bitcoin')
-    assert.equal(!walletInfo.keys, false)
-    assert.equal(typeof walletInfo.keys.bitcoinKey, 'string')
-    var a = Buffer.from(walletInfo.keys.bitcoinKey, 'base64')
+    let keys = plugin.createPrivateKey('wallet:bitcoin')
+    assert.equal(!keys, false)
+    assert.equal(typeof keys.bitcoinKey, 'string')
+    var a = Buffer.from(keys.bitcoinKey, 'base64')
     var b = a.toString('hex')
     assert.equal(b, '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f')
   })
@@ -48,18 +52,19 @@ describe('createPrivateKey', function () {
 
 describe('derivePublicKey', function () {
   let plugin
-  let walletInfo
+  let keys
 
-  before('Plugin', function () {
+  before('Plugin', function (done) {
     BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
       assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
       plugin = bitcoinPlugin
-      walletInfo = plugin.createPrivateKey('wallet:bitcoin')
+      keys = plugin.createPrivateKey('wallet:bitcoin')
+      done()
     })
   })
   it('Valid private key', function () {
-    let tmpInfo = plugin.derivePublicKey(walletInfo)
-    assert.equal(tmpInfo.keys.bitcoinXpub, 'xpub661MyMwAqRbcFiyme9xRZe855HWfYxvTcYoWpX1E8ZW8DGu35DbthdTxz222XRihFsxrdH4BCEe32DBRyKEerW8CUMAB8FDziiNyDG4ecgT')
+    keys = plugin.derivePublicKey({type: 'wallet:bitcoin', keys: {bitcoinKey: keys.bitcoinKey}})
+    assert.equal(keys.bitcoinXpub, 'xpub661MyMwAqRbcFiyme9xRZe855HWfYxvTcYoWpX1E8ZW8DGu35DbthdTxz222XRihFsxrdH4BCEe32DBRyKEerW8CUMAB8FDziiNyDG4ecgT')
   })
 
   it('Invalid key name', function () {
@@ -186,6 +191,78 @@ describe('encodeUri', function () {
           message: 'Hello World, I miss you !'
         }
       )
+    })
+  })
+})
+
+describe('Engine', function () {
+  let plugin
+  let keys
+  let engine
+
+  before('Plugin', function (done) {
+    BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
+      assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
+      plugin = bitcoinPlugin
+      keys = plugin.createPrivateKey('wallet:bitcoin')
+      keys = plugin.derivePublicKey({type: 'wallet:bitcoin', keys: {bitcoinKey: keys.bitcoinKey}})
+      done()
+    })
+  })
+
+  it('Create Engine', function () {
+    let callbacks = {
+      onAddressesChecked (progressRatio) {
+        console.log('onAddressesCheck', progressRatio)
+      },
+      onBalanceChanged (currencyCode, balance) {
+        console.log('onBalanceChange:' + currencyCode + ' ' + balance)
+      },
+      onBlockHeightChanged (height) {
+        console.log('onBlockHeightChange', height)
+      },
+      onNewTransactions (transactionList) {
+        console.log('onNewTransactions')
+        console.log(transactionList)
+      },
+      onTransactionsChanged (transactionList) {
+        console.log('onTransactionsChanged')
+        console.log(transactionList)
+      }
+    }
+    let walletLocalFolder = disklet.makeMemoryFolder()
+
+    engine = plugin.makeEngine({type: 'wallet:bitcoin', keys}, { callbacks, walletLocalFolder })
+
+    assert.equal(typeof engine.startEngine, 'function', 'startEngine')
+    assert.equal(typeof engine.killEngine, 'function', 'killEngine')
+    assert.equal(typeof engine.enableTokens, 'function', 'enableTokens')
+    assert.equal(typeof engine.getBlockHeight, 'function', 'getBlockHeight')
+    assert.equal(typeof engine.getBalance, 'function', 'getBalance')
+    assert.equal(typeof engine.getNumTransactions, 'function', 'getNumTransactions')
+    assert.equal(typeof engine.getTransactions, 'function', 'getTransactions')
+    assert.equal(typeof engine.getFreshAddress, 'function', 'getFreshAddress')
+    // assert.equal(typeof engine.addGapLimitAddresses, 'function', 'addGapLimitAddresses')
+    assert.equal(typeof engine.isAddressUsed, 'function', 'isAddressUsed')
+    assert.equal(typeof engine.makeSpend, 'function', 'makeSpend')
+    assert.equal(typeof engine.signTx, 'function', 'signTx')
+    assert.equal(typeof engine.broadcastTx, 'function', 'broadcastTx')
+    assert.equal(typeof engine.saveTx, 'function', 'saveTx')
+  })
+
+  it('Start Engine', function (done) {
+    let start = engine.startEngine()
+
+    // demo().then(a => {
+    //   console.log(a)
+    //   done()
+    // })
+    start.then(a => {
+      console.log(a)
+      done()
+    }).catch(a => {
+      console.log(a)
+      done()
     })
   })
 })
