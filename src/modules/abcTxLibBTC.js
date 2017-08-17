@@ -217,19 +217,18 @@ class ABCTxLibBTC {
   }
 
   deriveAddresses (amount) {
-    var this$1 = this
     for (var i = 1; i <= amount; i++) {
       // console.log("REQUESTING NEW ADDRESS")
       this.txUpdateTotalEntries++
-      this.wallet.createKey(0).then(function (res) {
+      this.wallet.createKey(0).then(res => {
         var address = res.getAddress('base58check')
-        if (this$1.addresses.indexOf(address) > -1) {
+        if (this.addresses.indexOf(address) > -1) {
           // console.log("EXISTING ADDRESS ")
-          this$1.txUpdateTotalEntries--
+          this.txUpdateTotalEntries--
           return
         }
         /// / console.log("PUSHING NEW ADDRESS")
-        this$1.pushAddress(address)
+        this.pushAddress(address)
       })
     }
   }
