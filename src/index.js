@@ -1,8 +1,8 @@
 import { parse, serialize } from 'uri-js'
 import { bns } from 'biggystring'
 import cs from 'coinstring'
-import { ABCTxLibBTC } from './modules/abcTxLibBTC.js'
-import { txLibInfo } from './txLibInfo.js'
+import { BitcoinEngine } from './currencyEngineBTC'
+import { txLibInfo } from './currencyInfoBTC'
 
 // including Bcoin Engine
 let bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require('../vendor/bcoin.js')
@@ -37,7 +37,7 @@ let publicKeyInitializers = {
   }
 }
 
-class BitcoinPlugin {
+export class BitcoinPlugin {
   static async makePlugin (opts = {io: {}}) {
     let io = opts.io
     return {
@@ -74,8 +74,8 @@ class BitcoinPlugin {
       },
 
       makeEngine: function (keyInfo, opts = {}) {
-        let abcTxLib = new ABCTxLibBTC(io, keyInfo, opts)
-        return abcTxLib
+        let engine = new BitcoinEngine(io, keyInfo, opts)
+        return engine
       },
 
       parseUri: (uri) => {
@@ -134,5 +134,3 @@ class BitcoinPlugin {
     }
   }
 }
-
-export { BitcoinPlugin }

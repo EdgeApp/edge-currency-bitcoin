@@ -1,4 +1,4 @@
-class ABCTransaction {
+export class ABCTransaction {
   constructor (txid, date, currencyCode, blockHeightNative, nativeAmount, nativeNetworkFee, signedTx, otherParams) {
     this.txid = txid
     this.date = date
@@ -12,8 +12,4 @@ class ABCTransaction {
     this.signedTx = signedTx
     this.otherParams = otherParams
   }
-}
-
-export {
-  ABCTransaction
 }

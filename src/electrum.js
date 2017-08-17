@@ -6,7 +6,7 @@ const MAX_CONNECTION_HANG_TIME = 2500
 let getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min
 let randomHash = () => 'a' + Math.random().toString(36).substring(7)
 
-class Electrum {
+export class Electrum {
   constructor (serverList, callbacks, io) {
     let serverIndex = []
     this.globalRecievedData = []
@@ -275,5 +275,3 @@ class Electrum {
     return this.write(requestString)
   }
 }
-
-export { Electrum }

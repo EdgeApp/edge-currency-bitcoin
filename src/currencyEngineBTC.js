@@ -1,7 +1,7 @@
 // Replacing native crypto modules for ReactNative
 import { Electrum } from './electrum'
 import { ABCTransaction } from './abcTransaction'
-import { txLibInfo } from './../txLibInfo.js'
+import { txLibInfo } from './currencyInfoBTC'
 
 // including Bcoin Engine
 let bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require('../vendor/bcoin.js')
@@ -14,7 +14,7 @@ const HEADER_STORE_FILE = 'headersV1.json'
 const PRIMARY_CURRENCY = txLibInfo.getInfo.currencyCode
 // const TOKEN_CODES = [PRIMARY_CURRENCY].concat(txLibInfo.supportedTokens)
 
-class ABCTxLibBTC {
+export class BitcoinEngine {
   constructor (io, keyInfo, opts = {}) {
     this.io = io
     this.keyInfo = keyInfo
@@ -822,5 +822,3 @@ class ABCTxLibBTC {
     return prom
   }
 }
-
-export { ABCTxLibBTC }
