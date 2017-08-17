@@ -12,7 +12,7 @@ const DATA_STORE_FILE = 'walletLocalDataV4.json'
 const HEADER_STORE_FILE = 'headersV1.json'
 
 const PRIMARY_CURRENCY = txLibInfo.getInfo.currencyCode
-const TOKEN_CODES = [PRIMARY_CURRENCY].concat(txLibInfo.supportedTokens)
+// const TOKEN_CODES = [PRIMARY_CURRENCY].concat(txLibInfo.supportedTokens)
 
 class ABCTxLibBTC {
   constructor (io, keyInfo, opts = {}) {
@@ -81,17 +81,21 @@ class ABCTxLibBTC {
     }
   }
 
-  engineLoop () {
-    this.engineOn = true
-    // this.saveWalletDataStore()
+  subscribeToBlockHeight () {
     this.electrum.on('blockchain.numblocks.subscribe', msg => {
       this.blockHeight = msg.params[0]
-      console.log('continues blockHeight', msg)
+      this.abcTxLibCallbacks.onBlockHeightChanged(this.blockHeight)
     })
     this.electrum.subscribeToBlockHeight().then(blockHeight => {
       this.blockHeight = blockHeight
-      console.log('init blockHeight', blockHeight)
+      this.abcTxLibCallbacks.onBlockHeightChanged(this.blockHeight)
     })
+  }
+
+  engineLoop () {
+    this.engineOn = true
+    // this.saveWalletDataStore()
+    this.subscribeToBlockHeight()
   }
 
   isTokenEnabled (token) {
@@ -142,7 +146,7 @@ class ABCTxLibBTC {
       transactionProgress = 1
     }
 
-    var progress = [addressProgress, transactionProgress]
+    // var progress = [addressProgress, transactionProgress]
 
     // console.log("Total TX List:", Object.keys(this.txIndex), "totalAddresses:", totalAddresses, "executedAddresses:", executedAddresses, totalTransactions, executedTransactions, transactionProgress)
 
@@ -817,6 +821,4 @@ class ABCTxLibBTC {
   }
 }
 
-export {
-  ABCTxLibBTC
-}
+export { ABCTxLibBTC }

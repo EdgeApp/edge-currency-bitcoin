@@ -110,17 +110,16 @@ class Electrum extends EventEmitter {
   }
 
   netConnect (port, host, callback, i) {
-    let reject, resolve
+    let resolveProxy
 
-    const out = new Promise((resolveInner, rejectInner) => {
-      resolve = resolveInner
-      reject = resolveInner
+    const out = new Promise((resolve, reject) => {
+      resolveProxy = resolve
     })
 
     let connection = this.io.net.connect(port, host, () => {
       this.connected = true
       connection._state = 2
-      resolve(1)
+      resolveProxy(1)
     })
     connection._state = 1
     let now = Date.now()
@@ -201,19 +200,19 @@ class Electrum extends EventEmitter {
 
     data = data.replace('[ID]', hash)
 
-    let reject, resolve
+    let rejectProxy, resolveProxy
 
-    const out = new Promise((resolveInner, rejectInner) => {
-      resolve = resolveInner
-      reject = resolveInner
+    const out = new Promise((resolve, reject) => {
+      resolveProxy = resolve
+      rejectProxy = resolve
     })
 
     this.requests[hash] = {
       data: data,
       executed: 0,
       connectionIndex: randomIndex,
-      onDataReceived: resolve,
-      onFailure: reject,
+      onDataReceived: resolveProxy,
+      onFailure: rejectProxy,
       requestTime: Date.now()
     }
 
@@ -279,6 +278,4 @@ class Electrum extends EventEmitter {
   }
 }
 
-export {
-  Electrum
-}
+export { Electrum }
