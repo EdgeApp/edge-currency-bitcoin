@@ -98,7 +98,7 @@ class ABCTxLibBTC {
   engineLoop () {
     this.engineOn = true
     // this.saveWalletDataStore()
-    this.electrum.subscribeToBlockHeight().then(blockHeight => this.onBlockHeightChanged(blockHeight))
+    this.electrum.subscribeToBlockHeight().then(blockHeight => this.onBlockHeightChanged()(blockHeight))
   }
 
   isTokenEnabled (token) {
@@ -654,7 +654,6 @@ class ABCTxLibBTC {
 
       // Copy the appropriate entries from the arrayTransactions
       var returnArray = []
-
       if (numEntries) {
         returnArray = this$1.walletLocalData.transactionsObj[currencyCode].slice(
           startIndex,

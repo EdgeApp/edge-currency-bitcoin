@@ -170,7 +170,6 @@ class Electrum {
   }
 
   socketWriteAbstract (index, data) {
-    console.log(index, data, this.connections[index].conn._state)
     if (this.connections[index].conn._state === 0) {
       var callback = this.compileDataCallback(index)
       this.netConnect(this.serverList[index][1], this.serverList[index][0], callback, index)
