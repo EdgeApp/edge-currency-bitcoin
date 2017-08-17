@@ -210,7 +210,7 @@ describe('Engine', function () {
     })
   })
 
-  it('Create Engine', function () {
+  it('Make Engine', function () {
     let callbacks = {
       onAddressesChecked (progressRatio) {
         console.log('onAddressesCheck', progressRatio)
