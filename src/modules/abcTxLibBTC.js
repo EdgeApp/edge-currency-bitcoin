@@ -506,76 +506,41 @@ class ABCTxLibBTC {
     })
   }
 
-  startEngine () {
+  async startEngine () {
     this.electrum.connect()
     let walletdb = new bcoin.wallet.WalletDB({ db: 'memory' })
-
-    return walletdb.open().then(() => {
-      if (!this.keyInfo.keys || !this.keyInfo.keys.bitcoinKey) throw new Error('Missing Master Key')
-      let key = bcoin.hd.PrivateKey.fromSeed(Buffer.from(this.keyInfo.keys.bitcoinKey, 'base64'))
-      return walletdb.create({
-        'master': key.xprivkey(),
-        'id': 'ID1'
-      })
-    }).then(wallet => {
-      this.wallet = wallet
-      return this.getLocalData()
-    }).then(() => {
-      console.log(2)
-      this.wallet.getAccountPaths(0).then(result => {
-        var a
-        var checkList = []
-        for (var i in result) {
-          a = result[i].toAddress()
-
-          // console.log(i, "Paths======>", a.toString())
-          checkList.push(a.toString())
-        }
-
-        var fl = 0
-        for (var l in checkList) {
-          if (this.addresses.indexOf(checkList[l]) === -1) {
-            fl = 1
-            break
-          }
-        }
-        if (fl) {
-          // console.log("Putting derived index into play")
-          this.addresses = checkList
-        } else {
-          // console.log("Keeping cached index")
-        }
-
-        this.txUpdateTotalEntries = this.addresses.length
-
-        // console.log("txUpdateTotalEntries-1", this.txUpdateTotalEntries, this.addresses)
-
-        for (var j in this.addresses) {
-          // if (j != 0 &&   (typeof this.txIndex[this.addresses[j]] == "object" && this.txIndex[this.addresses[j]].executed))
-          // continue
-          // console.log("txUpdate=> ", this.addresses)
-          this.processAddress(this.addresses[j])
-        }
-      // this.tcpClientConnect()
-      })
-
-      this.wallet.on('balance', balance => {
-        console.log('balance', balance)
-        console.log('Balance updated.', this.txBalanceUpdateTotal, this.txBalanceUpdateProgress)
-        if (this.txUpdateFinished) {
-          console.log('STABLE TOP : ', bcoin.amount.btc(balance.unconfirmed))
-          this.masterBalance = balance.confirmed + balance.unconfirmed
-          this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
-          this.updateLocalData()
-        } else {
-          console.log('UNSTABLE TOP : ', bcoin.amount.btc(balance.unconfirmed))
-        }
-        // console.log('Balance======>', result)
-      })
+    await walletdb.open()
+    if (!this.keyInfo.keys || !this.keyInfo.keys.bitcoinKey) throw new Error('Missing Master Key')
+    let key = bcoin.hd.PrivateKey.fromSeed(Buffer.from(this.keyInfo.keys.bitcoinKey, 'base64'))
+    let wallet = await walletdb.create({
+      'master': key.xprivkey(),
+      'id': 'ID1'
     })
+
+    this.wallet = wallet
+    await this.getLocalData()
+
+    this.wallet.on('balance', balance => {
+      if (this.txUpdateFinished) {
+        this.masterBalance = balance.confirmed + balance.unconfirmed
+        this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
+        this.updateLocalData()
+      }
+    })
+    let accountPath = await this.wallet.getAccountPaths(0)
+
+    let checkList = accountPath.map(path => path.toAddress().toString())
+    for (let l in checkList) {
+      if (this.addresses.indexOf(checkList[l]) === -1) {
+        this.addresses = checkList
+        break
+      }
+    }
+    this.txUpdateTotalEntries = this.addresses.length
+    this.addresses.forEach(address => this.processAddress(address))
   }
 
-  killEngine () {
+  async killEngine () {
     // disconnect network connections
     // clear caches
 
