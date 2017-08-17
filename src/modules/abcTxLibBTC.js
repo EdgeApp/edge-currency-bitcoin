@@ -71,7 +71,11 @@ class ABCTxLibBTC {
     this.masterFeeRecieved = 0
     this.baseUrl = ''
     this.blockHeight = 0
-    this.electrum = new Electrum(this.electrumServers, this.incommingTransaction(), this.io)
+    const callbacks = {
+      incommingTransaction: this.incommingTransaction(),
+      onBlockHeightChanged: this.onBlockHeightChanged()
+    }
+    this.electrum = new Electrum(this.electrumServers, callbacks, this.io)
   }
 
   incommingTransaction () {
@@ -81,21 +85,20 @@ class ABCTxLibBTC {
     }
   }
 
-  subscribeToBlockHeight () {
-    this.electrum.on('blockchain.numblocks.subscribe', msg => {
-      this.blockHeight = msg.params[0]
-      this.abcTxLibCallbacks.onBlockHeightChanged(this.blockHeight)
-    })
-    this.electrum.subscribeToBlockHeight().then(blockHeight => {
-      this.blockHeight = blockHeight
-      this.abcTxLibCallbacks.onBlockHeightChanged(this.blockHeight)
-    })
+  onBlockHeightChanged () {
+    let that = this
+    return function (blockHeight) {
+      if (that.blockHeight < blockHeight) {
+        that.blockHeight = blockHeight
+        that.abcTxLibCallbacks.onBlockHeightChanged(blockHeight)
+      }
+    }
   }
 
   engineLoop () {
     this.engineOn = true
     // this.saveWalletDataStore()
-    this.subscribeToBlockHeight()
+    this.electrum.subscribeToBlockHeight().then(blockHeight => this.onBlockHeightChanged(blockHeight))
   }
 
   isTokenEnabled (token) {

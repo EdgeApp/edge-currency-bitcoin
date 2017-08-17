@@ -1,15 +1,13 @@
 const MAX_CONNECTIONS = 4
 const MAX_REQUEST_TIME = 1000
 const MAX_CONNECTION_HANG_TIME = 2500
-let EventEmitter = require('eventemitter3')
 
 // Replacing net module for ReactNative
 let getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min
 let randomHash = () => 'a' + Math.random().toString(36).substring(7)
 
-class Electrum extends EventEmitter {
-  constructor (serverList, incommingCallback, io) {
-    super()
+class Electrum {
+  constructor (serverList, callbacks, io) {
     let serverIndex = []
     this.globalRecievedData = []
 
@@ -27,7 +25,8 @@ class Electrum extends EventEmitter {
     this.requests = {}
     this.cache = {}
     this.serverList = serverIndex
-    this.incommingCallback = incommingCallback
+    this.incommingCallback = callbacks.incommingCallback
+    this.onBlockHeightChanged = callbacks.onBlockHeightChanged
   }
   compileDataCallback (index) {
     var this$1 = this
@@ -37,10 +36,6 @@ class Electrum extends EventEmitter {
       for (var ui = 0; ui <= data.length - 1; ui++) {
         string += String.fromCharCode(data[ui])
       }
-      try {
-        let msg = JSON.parse(string)
-        this$1.emit(msg.method, msg)
-      } catch (e) {}
       this$1.globalRecievedData[index] += string
       var result = []
       if (this$1.globalRecievedData[index].indexOf('\n') > -1) {
@@ -175,7 +170,7 @@ class Electrum extends EventEmitter {
   }
 
   socketWriteAbstract (index, data) {
-    // console.log(index, data, this.connections[index].conn._state)
+    console.log(index, data, this.connections[index].conn._state)
     if (this.connections[index].conn._state === 0) {
       var callback = this.compileDataCallback(index)
       this.netConnect(this.serverList[index][1], this.serverList[index][0], callback, index)
@@ -239,6 +234,10 @@ class Electrum extends EventEmitter {
     // console.log("Incoming data", data)
     if (data.method === 'blockchain.address.subscribe' && data.params.length === 2) {
       this.incommingCallback(data.params[0], data.params[1])
+      return
+    }
+    if (data.method === 'blockchain.numblocks.subscribe' && data.params.length === 1) {
+      this.onBlockHeightChanged(data.params[0])
       return
     }
     if (typeof this.requests[data.id] !== 'object') return
