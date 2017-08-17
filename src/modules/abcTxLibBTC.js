@@ -26,6 +26,7 @@ class ABCTxLibBTC {
     this.transactionsStash = []
     this.headerList = {}
     this.cachedLocalData = ''
+    this.cachedLocalHeaderData = ''
     this.transactionHistory = {}
     this.transactionTS = {}
     this.increasingLimitLoop = 0
@@ -147,85 +148,67 @@ class ABCTxLibBTC {
     return totalProgress
   }
 
-  getLocalData () {
-    console.log(this.walletLocalFolder)
-    return this.walletLocalFolder
+  async getLocalData () {
+    try {
+      let localWallet = await this.walletLocalFolder
       .folder(DATA_STORE_FOLDER)
       .file(DATA_STORE_FILE)
-      .getText(DATA_STORE_FOLDER, 'walletLocalData').then(result => {
-        // console.log(1, result)
-        if (result !== null) {
-          this.cachedLocalData = result
+      .getText(DATA_STORE_FOLDER, 'walletLocalData')
 
-          var data = JSON.parse(result)
-          this.addresses = data.addresses
-          this.electrum.updateCache(data.txIndex)
-          this.masterBalance = data.balance
-          this.txIndex = data.txIndex
-          if (typeof data.headerList !== 'undefined') this.headerList = data.headerList
+      this.cachedLocalData = localWallet
+      let data = JSON.parse(localWallet)
+      this.addresses = data.addresses
+      this.electrum.updateCache(data.txIndex)
+      this.masterBalance = data.balance
+      this.txIndex = data.txIndex
 
-          console.log('Balance from cache: ', bcoin.amount.btc(this.masterBalance))
-
-          console.log('headersList', this.headerList)
-
-          this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
-
-          return this.walletLocalFolder
-            .folder(DATA_STORE_FOLDER)
-            .file(HEADER_STORE_FILE)
-            .getText(DATA_STORE_FOLDER, 'walletLocalData').then(result => {
-              if (!result) {
-                console.log('Something wrong with local headers ... X723', data.headerList)
-                return
-              }
-
-              var data = JSON.parse(result)
-
-              if (typeof data.headerList !== 'undefined') {
-                console.log('GOT local headers', data.headerList)
-                this.headerList = data.headerList
-              } else {
-                console.log('Something wrong with local headers ... X722', data)
-              }
-            }, error => {
-              console.log(error)
-            })
-        }
-      }, error => {
-        console.log(error)
-      })
-  }
-
-  updateHeadersLocalData () {
-    const headerData = {
-      headerList: this.headerList
+      if (typeof data.headerList !== 'undefined') this.headerList = data.headerList
+      this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
+    } catch (e) {
+      await this.updateLocalData()
     }
-    const headerJson = JSON.stringify(headerData)
-
-    this.walletLocalFolder
+    try {
+      let localHeaders = await this.walletLocalFolder
       .folder(DATA_STORE_FOLDER)
       .file(HEADER_STORE_FILE)
-      .setText(headerJson)
+      .getText(DATA_STORE_FOLDER, 'walletLocalData')
 
-    console.log('Writting header file to disk ... X426', headerJson)
+      let data = JSON.parse(localHeaders)
+      this.cachedLocalHeaderData = JSON.stringify(data.headerList)
+      if (!data.headerList) throw new Error('Something wrong with local headers ... X722', data)
+      this.headerList = data.headerList
+    } catch (e) {
+      await this.updateHeadersLocalData()
+    }
+    return true
   }
 
-  updateLocalData () {
-    const data = {
+  async updateHeadersLocalData () {
+    const headerList = JSON.stringify(this.headerList)
+    if (this.cachedLocalHeaderData === headerList) return true
+    await this.walletLocalFolder
+      .folder(DATA_STORE_FOLDER)
+      .file(HEADER_STORE_FILE)
+      .setText(JSON.stringify({
+        headerList: this.headerList
+      }))
+    this.cachedLocalHeaderData = headerList
+    return true
+  }
+
+  async updateLocalData () {
+    const walletJson = JSON.stringify({
       txIndex: this.txIndex,
       addresses: this.addresses,
       balance: this.masterBalance
-
-    }
-    const walletJson = JSON.stringify(data)
-    if (this.cachedLocalData === walletJson) return
-    this.cachedLocalData = walletJson
-    this.walletLocalFolder
+    })
+    if (this.cachedLocalData === walletJson) return true
+    await this.walletLocalFolder
       .folder(DATA_STORE_FOLDER)
       .file(DATA_STORE_FILE)
       .setText(walletJson)
-
-    console.log('Writting local data to disk ... X425', data)
+    this.cachedLocalData = walletJson
+    return true
   }
 
   pushAddress (address) {
