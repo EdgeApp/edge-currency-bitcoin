@@ -89,6 +89,7 @@
     "json-loader": "^0.5.4",
     "mocha": "^2.4.5",
     "nyc": "^6.0.0",
+    "request": "^2.81.0",
     "rollup": "^0.43.0",
     "rollup-plugin-babel": "^2.7.1",
     "standard": "^10.0.2"

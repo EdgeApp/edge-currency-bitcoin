@@ -1,7 +1,6 @@
 /* global describe it */
 let BitcoinPlugin = require('../lib/index.js').BitcoinPlugin
 let assert = require('assert')
-let disklet = require('disklet')
 
 let opts = {
   io: {
@@ -191,81 +190,6 @@ describe('encodeUri', function () {
           message: 'Hello World, I miss you !'
         }
       )
-    })
-  })
-})
-
-describe('Engine', function () {
-  let plugin
-  let keys
-  let engine
-
-  before('Plugin', function (done) {
-    BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
-      assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
-      plugin = bitcoinPlugin
-      keys = plugin.createPrivateKey('wallet:bitcoin')
-      keys = plugin.derivePublicKey({type: 'wallet:bitcoin', keys: {bitcoinKey: keys.bitcoinKey}})
-      done()
-    })
-  })
-
-  it('Make Engine', function () {
-    let callbacks = {
-      onAddressesChecked (progressRatio) {
-        console.log('onAddressesCheck', progressRatio)
-      },
-      onBalanceChanged (currencyCode, balance) {
-        console.log('onBalanceChange:' + currencyCode + ' ' + balance)
-      },
-      onBlockHeightChanged (height) {
-        console.log('onBlockHeightChange', height)
-      },
-      onNewTransactions (transactionList) {
-        console.log('onNewTransactions')
-        console.log(transactionList)
-      },
-      onTransactionsChanged (transactionList) {
-        console.log('onTransactionsChanged')
-        console.log(transactionList)
-      }
-    }
-    let walletLocalFolder = disklet.makeMemoryFolder()
-
-    engine = plugin.makeEngine({type: 'wallet:bitcoin', keys}, { callbacks, walletLocalFolder })
-
-    assert.equal(typeof engine.startEngine, 'function', 'startEngine')
-    assert.equal(typeof engine.killEngine, 'function', 'killEngine')
-    assert.equal(typeof engine.enableTokens, 'function', 'enableTokens')
-    assert.equal(typeof engine.getBlockHeight, 'function', 'getBlockHeight')
-    assert.equal(typeof engine.getBalance, 'function', 'getBalance')
-    assert.equal(typeof engine.getNumTransactions, 'function', 'getNumTransactions')
-    assert.equal(typeof engine.getTransactions, 'function', 'getTransactions')
-    assert.equal(typeof engine.getFreshAddress, 'function', 'getFreshAddress')
-    // assert.equal(typeof engine.addGapLimitAddresses, 'function', 'addGapLimitAddresses')
-    assert.equal(typeof engine.isAddressUsed, 'function', 'isAddressUsed')
-    assert.equal(typeof engine.makeSpend, 'function', 'makeSpend')
-    assert.equal(typeof engine.signTx, 'function', 'signTx')
-    assert.equal(typeof engine.broadcastTx, 'function', 'broadcastTx')
-    assert.equal(typeof engine.saveTx, 'function', 'saveTx')
-  })
-
-  it('Start Engine', function (done) {
-    engine.startEngine().then(a => {
-      // console.log(engine)
-      done()
-    })
-  })
-  it('Get Transactions', function (done) {
-    engine.getTransactions({
-      startIndex: 0,
-      numEnteries: 100
-    }).then(tx => {
-      console.log(1, tx)
-      done()
-    }).catch(e => {
-      console.log(2, e)
-      done()
     })
   })
 })
