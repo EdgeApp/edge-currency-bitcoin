@@ -115,35 +115,40 @@ class Electrum {
       reject = resolveInner
     })
 
-    var connection = this.io.net.connect(port, host, function () {
+    let connection = this.io.net.connect(port, host, () => {
+      this.connected = true
+      connection._state = 2
       resolve(1)
     })
-    var now = Date.now()
+    connection._state = 1
+    let now = Date.now()
 
     // Setting up callbacks
     connection.on('data', callback)
 
-    connection.on('close', function (e) {
+    connection.on('close', e => {
+      connection._state = 0
       // console.log("[] recieved close", e)
     })
 
-    connection.on('connect', function (e) {
+    connection.on('connect', e => {
       // console.log("[] recieved connect", e)
     })
 
-    connection.on('error', function (e) {
+    connection.on('error', e => {
       // console.log("[] recieved error", e)
     })
 
-    connection.on('onerror', function (e) {
+    connection.on('onerror', e => {
       // console.log("[] recieved close", e)
     })
 
-    connection.on('end', function (e) {
+    connection.on('end', e => {
+      connection._state = 0
       // console.log("[] recieved end", e)
     })
 
-    var conn = {
+    let conn = {
       conn: connection,
       lastRequest: now,
       lastResponse: now,
