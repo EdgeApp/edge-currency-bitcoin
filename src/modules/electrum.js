@@ -37,14 +37,10 @@ class Electrum extends EventEmitter {
       for (var ui = 0; ui <= data.length - 1; ui++) {
         string += String.fromCharCode(data[ui])
       }
-      // console.log('pre', string)
       try {
         let msg = JSON.parse(string)
-        // console.log('post', msg)
-        this.emit(msg.method, msg)
+        this$1.emit(msg.method, msg)
       } catch (e) {}
-      // this.emit(m)
-      // console.log(string)
       this$1.globalRecievedData[index] += string
       var result = []
       if (this$1.globalRecievedData[index].indexOf('\n') > -1) {
