@@ -4,8 +4,11 @@ let assert = require('assert')
 let disklet = require('disklet')
 let Emitter = require('events').EventEmitter
 let request = require('request')
+let _ = require('lodash')
 
+let plugin, keys, engine
 var emitter = new Emitter()
+let walletLocalFolder = disklet.makeMemoryFolder()
 
 let opts = {
   io: {
@@ -39,12 +42,7 @@ let callbacks = {
   }
 }
 
-describe('Engine', function () {
-  let plugin
-  let keys
-  let engine
-  let walletLocalFolder = disklet.makeMemoryFolder()
-
+describe('Engine Creation Errors', function () {
   before('Plugin', function (done) {
     BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
       assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
@@ -69,14 +67,16 @@ describe('Engine', function () {
     })
   })
 
-  it('Error when Making Engine without bitcoin keys', function () {
+  it('Error when Making Engine without bitcoin key', function () {
     let wrongKeys = { bitcoinXpub: keys.pub }
     let engine = plugin.makeEngine({type: 'wallet:bitcoin', keys: wrongKeys}, { callbacks, walletLocalFolder })
     return engine.startEngine().catch(e => {
       assert.equal(e.message, 'Missing Master Key')
     })
   })
+})
 
+describe('Start Engine', function () {
   it('Make Engine', function () {
     engine = plugin.makeEngine({type: 'wallet:bitcoin', keys}, { callbacks, walletLocalFolder })
     assert.equal(typeof engine.startEngine, 'function', 'startEngine')
@@ -97,15 +97,17 @@ describe('Engine', function () {
 
   it('Get BlockHeight', function (done) {
     this.timeout(10000)
+    let end = _.after(2, done)
     request.get('https://blockchain.info/q/getblockcount', (err, res, body) => {
       assert(!err, 'getting block height from a second source')
       emitter.once('onBlockHeightChange', height => {
         assert(height >= body, 'Block height')
         assert(engine.getBlockHeight() >= body, 'Block height')
-        done()
+        end() // Can be "done" since the promise resolves before the event fires but just be on the safe side
       })
       engine.startEngine().then(a => {
-        assert(!engine.getBlockHeight(), 'Shoud init as 0')
+        assert.equal(engine.getBlockHeight(), 0, 'Shoud init as 0')
+        end()
       })
     })
   })
