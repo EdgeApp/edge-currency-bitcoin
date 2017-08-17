@@ -70,6 +70,7 @@ class ABCTxLibBTC {
     this.masterFeeReuqested = 0
     this.masterFeeRecieved = 0
     this.baseUrl = ''
+    this.blockHeight = 0
     this.electrum = new Electrum(this.electrumServers, this.incommingTransaction(), this.io)
   }
 
@@ -82,7 +83,15 @@ class ABCTxLibBTC {
 
   engineLoop () {
     this.engineOn = true
-    this.saveWalletDataStore()
+    // this.saveWalletDataStore()
+    this.electrum.on('blockchain.numblocks.subscribe', blockHeight => {
+      this.blockHeight = blockHeight
+      console.log('continues blockHeight', blockHeight)
+    })
+    this.electrum.subscribeToBlockHeight().then(blockHeight => {
+      this.blockHeight = blockHeight
+      console.log('init blockHeight', blockHeight)
+    })
   }
 
   isTokenEnabled (token) {
@@ -161,7 +170,7 @@ class ABCTxLibBTC {
       this.electrum.updateCache(data.txIndex)
       this.masterBalance = data.balance
       this.txIndex = data.txIndex
-
+      this.blockHeight = data.blockHeight
       if (typeof data.headerList !== 'undefined') this.headerList = data.headerList
       this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
     } catch (e) {
@@ -200,7 +209,8 @@ class ABCTxLibBTC {
     const walletJson = JSON.stringify({
       txIndex: this.txIndex,
       addresses: this.addresses,
-      balance: this.masterBalance
+      balance: this.masterBalance,
+      blockHeight: this.blockHeight
     })
     if (this.cachedLocalData === walletJson) return true
     await this.walletLocalFolder
@@ -538,6 +548,7 @@ class ABCTxLibBTC {
     }
     this.txUpdateTotalEntries = this.addresses.length
     this.addresses.forEach(address => this.processAddress(address))
+    this.engineLoop()
   }
 
   async killEngine () {
