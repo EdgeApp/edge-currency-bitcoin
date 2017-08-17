@@ -71,11 +71,6 @@ export class BitcoinEngine {
     this.masterFeeRecieved = 0
     this.baseUrl = ''
     this.blockHeight = 0
-    const callbacks = {
-      incommingTransaction: this.incommingTransaction(),
-      onBlockHeightChanged: this.onBlockHeightChanged()
-    }
-    this.electrum = new Electrum(this.electrumServers, callbacks, this.io)
   }
 
   incommingTransaction () {
@@ -91,6 +86,7 @@ export class BitcoinEngine {
       if (that.blockHeight < blockHeight) {
         that.blockHeight = blockHeight
         that.abcTxLibCallbacks.onBlockHeightChanged(blockHeight)
+        that.cacheLocalData()
       }
     }
   }
@@ -179,9 +175,9 @@ export class BitcoinEngine {
       this.txIndex = data.txIndex
       this.blockHeight = data.blockHeight
       if (typeof data.headerList !== 'undefined') this.headerList = data.headerList
-      this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
+      this.masterBalance && this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
     } catch (e) {
-      await this.updateLocalData()
+      await this.cacheLocalData()
     }
     try {
       let localHeaders = await this.walletLocalFolder
@@ -194,12 +190,12 @@ export class BitcoinEngine {
       if (!data.headerList) throw new Error('Something wrong with local headers ... X722', data)
       this.headerList = data.headerList
     } catch (e) {
-      await this.updateHeadersLocalData()
+      await this.cacheHeadersLocalData()
     }
     return true
   }
 
-  async updateHeadersLocalData () {
+  async cacheHeadersLocalData () {
     const headerList = JSON.stringify(this.headerList)
     if (this.cachedLocalHeaderData === headerList) return true
     await this.walletLocalFolder
@@ -212,7 +208,7 @@ export class BitcoinEngine {
     return true
   }
 
-  async updateLocalData () {
+  async cacheLocalData () {
     const walletJson = JSON.stringify({
       txIndex: this.txIndex,
       addresses: this.addresses,
@@ -406,7 +402,7 @@ export class BitcoinEngine {
         this$1.refreshTransactionHistory()
 
         this$1.txUpdateFinished = true
-        this$1.updateLocalData()
+        this$1.cacheLocalData()
       })
 
       this$1.abcTxLibCallbacks.onAddressesChecked(1)
@@ -448,7 +444,7 @@ export class BitcoinEngine {
 
     return Promise.all(prom).then(function () {
       if (newHeadersList.length > 1) {
-        this$1.updateHeadersLocalData()
+        this$1.cacheHeadersLocalData()
       }
       return new Promise(function (resolve, reject) {
         resolve()
@@ -524,6 +520,11 @@ export class BitcoinEngine {
   }
 
   async startEngine () {
+    const callbacks = {
+      incommingTransaction: this.incommingTransaction(),
+      onBlockHeightChanged: this.onBlockHeightChanged()
+    }
+    this.electrum = new Electrum(this.electrumServers, callbacks, this.io)
     this.electrum.connect()
     let walletdb = new bcoin.wallet.WalletDB({ db: 'memory' })
     await walletdb.open()
@@ -541,7 +542,7 @@ export class BitcoinEngine {
       if (this.txUpdateFinished) {
         this.masterBalance = balance.confirmed + balance.unconfirmed
         this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
-        this.updateLocalData()
+        this.cacheLocalData()
       }
     })
     let accountPath = await this.wallet.getAccountPaths(0)
@@ -560,10 +561,10 @@ export class BitcoinEngine {
 
   async killEngine () {
     // disconnect network connections
-    // clear caches
-
     this.engineOn = false
-
+    this.electrum = null
+    await this.cacheHeadersLocalData()
+    await this.cacheLocalData()
     return true
   }
 
@@ -588,17 +589,6 @@ export class BitcoinEngine {
 
   // synchronous
   getBalance (options) {
-    var this$1 = this
-
-    // setTimeout(function() {
-    //   this$1.collectGarbage()
-    // }, 200)
-    if (this.txUpdateFinished) {
-      this.wallet.getBalance(0).then(function (result) {
-        /// / console.log("Balance======>",result.confirmed);
-        this$1.masterBalance = result.confirmed + result.unconfirmed
-      })
-    }
     return this.masterBalance
   }
 
