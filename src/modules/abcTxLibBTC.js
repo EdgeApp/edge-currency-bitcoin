@@ -84,9 +84,9 @@ class ABCTxLibBTC {
   engineLoop () {
     this.engineOn = true
     // this.saveWalletDataStore()
-    this.electrum.on('blockchain.numblocks.subscribe', blockHeight => {
-      this.blockHeight = blockHeight
-      console.log('continues blockHeight', blockHeight)
+    this.electrum.on('blockchain.numblocks.subscribe', msg => {
+      this.blockHeight = msg.params[0]
+      console.log('continues blockHeight', msg)
     })
     this.electrum.subscribeToBlockHeight().then(blockHeight => {
       this.blockHeight = blockHeight
