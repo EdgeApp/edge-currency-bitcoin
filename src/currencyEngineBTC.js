@@ -569,7 +569,7 @@ export class BitcoinEngine {
 
   // synchronous
   getBlockHeight () {
-    return this.walletLocalData.blockHeight
+    return this.blockHeight
   }
 
   // asynchronous

@@ -101,9 +101,12 @@ describe('Engine', function () {
       assert(!err, 'getting block height from a second source')
       emitter.once('onBlockHeightChange', height => {
         assert(height >= body, 'Block height')
+        assert(engine.getBlockHeight() >= body, 'Block height')
         done()
       })
-      engine.startEngine()
+      engine.startEngine().then(a => {
+        assert(!engine.getBlockHeight(), 'Shoud init as 0')
+      })
     })
   })
 })
