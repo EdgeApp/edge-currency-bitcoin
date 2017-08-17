@@ -251,17 +251,20 @@ describe('Engine', function () {
   })
 
   it('Start Engine', function (done) {
-    let start = engine.startEngine()
-
-    // demo().then(a => {
-    //   console.log(a)
-    //   done()
-    // })
-    start.then(a => {
-      console.log(a)
+    engine.startEngine().then(a => {
+      // console.log(engine)
       done()
-    }).catch(a => {
-      console.log(a)
+    })
+  })
+  it('Get Transactions', function (done) {
+    engine.getTransactions({
+      startIndex: 0,
+      numEnteries: 100
+    }).then(tx => {
+      console.log(1, tx)
+      done()
+    }).catch(e => {
+      console.log(2, e)
       done()
     })
   })
