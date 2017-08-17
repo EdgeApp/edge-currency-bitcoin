@@ -599,7 +599,7 @@ class ABCTxLibBTC {
   getTransactions (options) {
     var this$1 = this
     if (options === void 0) options = {}
-
+    // console.log(this$1.walletLocalData)
     var currencyCode = PRIMARY_CURRENCY
     if (options != null && options.currencyCode != null) {
       currencyCode = options.currencyCode
