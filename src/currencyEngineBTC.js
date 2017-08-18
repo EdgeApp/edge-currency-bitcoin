@@ -689,23 +689,12 @@ export class BitcoinEngine {
   }
 
   // synchronous
-  isAddressUsed (address, options) {
-    if (options === void 0) options = {}
-
-    var idx = this.findAddress(address)
-    if (idx !== -1) {
-      var addrObj = this.walletLocalData.addressArray[idx]
-      if (addrObj != null) {
-        if (addrObj.txids.length > 0) {
-          return true
-        }
-      }
-    }
-    idx = this.walletLocalData.gapLimitAddresses.indexOf(address)
-    if (idx !== -1) {
-      return true
-    }
-    return false
+  isAddressUsed (address, options = {}) {
+    let validator = cs.createValidator(0x00)
+    if (!validator(address)) throw new Error('Wrong formatted address')
+    if (this.addresses.indexOf(address) === -1) throw new Error('Address not found in wallet')
+    if (!this.txIndex[address]) return true
+    return Object.keys(this.txIndex[address].txs).length !== 0
   }
 
   // synchronous
