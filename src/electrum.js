@@ -229,6 +229,10 @@ export class Electrum {
     return this.write('{ "id": "[ID]", "method": "blockchain.numblocks.subscribe", "params": [] }')
   }
 
+  broadcastTransaction (tx) {
+    return this.write(`{ "id": "[ID]", "method":"blockchain.transaction.broadcast", "params":["${tx}"] }`)
+  }
+
   handleData (data) {
     // console.log("Incoming data", data)
     if (data.method === 'blockchain.address.subscribe' && data.params.length === 2) {

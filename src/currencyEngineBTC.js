@@ -788,19 +788,12 @@ export class BitcoinEngine {
   }
 
   // asynchronous
-  broadcastTx (abcTransaction) {
-    var this$1 = this
-
-    var prom = new Promise(function (resolve, reject) {
-      var requestString = '{ "id": "txsend", "method":"blockchain.transaction.broadcast", "params":["' + abcTransaction.signedTx + '"] }'
-
-      this$1.tcpClientWrite(requestString + '\n')
-
-      // console.log("\n" + requestString + "\n")
-
-      resolve(abcTransaction)
-    })
-    return prom
+  async broadcastTx (abcTransaction) {
+    if (!abcTransaction.signedTx) throw new Error('Tx is not signed')
+    let serverResponse = await this.electrum.broadcastTransaction(abcTransaction.signedTx)
+    if (!serverResponse) throw new Error('Electrum server internal error processing request')
+    if (serverResponse === 'TX decode failed') throw new Error('Tx is not valid')
+    return serverResponse
   }
 
   // asynchronous
