@@ -2,6 +2,7 @@
 import { Electrum } from './electrum'
 import { ABCTransaction } from './abcTransaction'
 import { txLibInfo } from './currencyInfoBTC'
+import cs from 'coinstring'
 
 // including Bcoin Engine
 let bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require('../vendor/bcoin.js')
