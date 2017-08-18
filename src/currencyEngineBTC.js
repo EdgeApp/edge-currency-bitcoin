@@ -660,19 +660,20 @@ export class BitcoinEngine {
     return prom
   }
 
-  // synchronous
-  getFreshAddress (options) {
-    if (options === void 0) options = {}
-
+  // TODO - Cleanup
+  getFreshAddress (options = {}) {
     // console.log("getting fresh address")
 
     // Looking for empty available address
-    var txs
     var res = false
-
+    // console.log(this.addresses)
+    for (let i = 0; i < this.addresses.length; i++) {
+      let address = this.addresses[i]
+      if (!Object.keys(this.txIndex[address].txs).length) return address
+    }
     for (var i in this.txIndex) {
-      txs = Object.keys(this.txIndex[i].txs).length
-      if (txs === 0) {
+      // console.log('i', i)
+      if (Object.keys(this.txIndex[i].txs).length === 0) {
         res = this.addresses.indexOf(i)
         break
       }
