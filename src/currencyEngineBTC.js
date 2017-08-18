@@ -91,12 +91,6 @@ export class BitcoinEngine {
     }
   }
 
-  engineLoop () {
-    this.engineOn = true
-    // this.saveWalletDataStore()
-    this.electrum.subscribeToBlockHeight().then(blockHeight => this.onBlockHeightChanged()(blockHeight))
-  }
-
   isTokenEnabled (token) {
     return this.walletLocalData.enabledTokens.indexOf(token) !== -1
   }
@@ -556,12 +550,10 @@ export class BitcoinEngine {
     }
     this.txUpdateTotalEntries = this.addresses.length
     this.addresses.forEach(address => this.processAddress(address))
-    this.engineLoop()
+    this.electrum.subscribeToBlockHeight().then(blockHeight => this.onBlockHeightChanged(blockHeight))
   }
 
   async killEngine () {
-    // disconnect network connections
-    this.engineOn = false
     this.electrum = null
     await this.cacheHeadersLocalData()
     await this.cacheLocalData()
