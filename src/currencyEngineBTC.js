@@ -520,8 +520,12 @@ export class BitcoinEngine {
     this.electrum.connect()
     let walletdb = new bcoin.wallet.WalletDB({ db: 'memory' })
     await walletdb.open()
-    if (!this.keyInfo.keys || !this.keyInfo.keys.bitcoinKey) throw new Error('Missing Master Key')
-    let key = bcoin.hd.PrivateKey.fromSeed(Buffer.from(this.keyInfo.keys.bitcoinKey, 'base64'))
+
+    if (!this.keyInfo.keys) throw new Error('Missing Master Key')
+    if (!this.keyInfo.keys.bitcoinKey) throw new Error('Missing Master Key')
+
+    let bitcoinKeyBuffer = Buffer.from(this.keyInfo.keys.bitcoinKey, 'base64')
+    let key = bcoin.hd.PrivateKey.fromSeed(bitcoinKeyBuffer)
     let wallet = await walletdb.create({
       'master': key.xprivkey(),
       'id': 'ID1'
