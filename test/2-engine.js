@@ -5,6 +5,7 @@ let disklet = require('disklet')
 let Emitter = require('events').EventEmitter
 let request = require('request')
 let _ = require('lodash')
+let cs = require('coinstring')
 
 let plugin, keys, engine
 var emitter = new Emitter()
@@ -138,17 +139,29 @@ describe('Is Address Used', function () {
     }
   })
 
-  // This test uses private API's to run so it might break if implementation changes even if API remains the same
-  it('Check and address that has history', function (done) {
-    this.timeout(0)
-    let address = '1F1xcRt8H8Wa623KqmkEontwAAVqDSAWCV'
-    engine.pushAddress(address)
-    setTimeout(() => {
-      // console.log('engine.txIndex', engine.txIndex)
-      // console.log('engine.addresses', engine.addresses)
-      assert.notEqual(engine.addresses.indexOf(address), -1, 'Should insert address to list of addresses')
-      assert.equal(engine.isAddressUsed('1F1xcRt8H8Wa623KqmkEontwAAVqDSAWCV'), true, 'This address is a used 3rd party address')
+  // // This test uses private API's to run so it might break if implementation changes even if API remains the same
+  // it('Check and address that has history', function (done) {
+  //   this.timeout(0)
+  //   let address = '1F1xcRt8H8Wa623KqmkEontwAAVqDSAWCV'
+  //   engine.pushAddress(address)
+  //   setTimeout(() => {
+  //     // console.log('engine.txIndex', engine.txIndex)
+  //     // console.log('engine.addresses', engine.addresses)
+  //     assert.notEqual(engine.addresses.indexOf(address), -1, 'Should insert address to list of addresses')
+  //     assert.equal(engine.isAddressUsed('1F1xcRt8H8Wa623KqmkEontwAAVqDSAWCV'), true, 'This address is a used 3rd party address')
+  //     done()
+  //   }, 10000)
+  // })
+})
+
+describe('Get Fresh Address', function () {
+  it('Should provide a non used BTC address when no options are provided', function (done) {
+    let address = engine.getFreshAddress()
+    assert(cs.createValidator(0x00)(address), 'Should be a valid address')
+    request.get('https://blockchain.info/q/getreceivedbyaddress/' + address, (err, res, body) => {
+      assert(!err, 'getting address incoming txs from a second source')
+      assert(body === '0', 'Should have never received coins')
       done()
-    }, 10000)
+    })
   })
 })
