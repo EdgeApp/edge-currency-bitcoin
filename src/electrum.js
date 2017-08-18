@@ -25,7 +25,7 @@ export class Electrum {
     this.requests = {}
     this.cache = {}
     this.serverList = serverIndex
-    this.incommingCallback = callbacks.incommingCallback
+    this.onAddressStatusChanged = callbacks.onAddressStatusChanged
     this.onBlockHeightChanged = callbacks.onBlockHeightChanged
   }
   compileDataCallback (index) {
@@ -188,6 +188,7 @@ export class Electrum {
   }
 
   write (data) {
+    // console.log('Outgoin data', data)
     let hash = randomHash()
 
     let randomIndex = getRandomInt(0, MAX_CONNECTIONS - 1)
@@ -221,11 +222,11 @@ export class Electrum {
     return out
   }
 
-  subscribeToAddress (wallet) {
-    return this.write('{ "id": "[ID]", "method":"blockchain.address.subscribe", "params": ["' + wallet + '"] }')
+  subscribeToAddress (address) {
+    return this.write(`{ "id": "[ID]", "method":"blockchain.address.subscribe", "params": ["${address}"] }`)
   }
 
-  subscribeToBlockHeight (wallet) {
+  subscribeToBlockHeight () {
     return this.write('{ "id": "[ID]", "method": "blockchain.numblocks.subscribe", "params": [] }')
   }
 
@@ -236,7 +237,7 @@ export class Electrum {
   handleData (data) {
     // console.log("Incoming data", data)
     if (data.method === 'blockchain.address.subscribe' && data.params.length === 2) {
-      this.incommingCallback(data.params[0], data.params[1])
+      this.onAddressStatusChanged(data.params[0], data.params[1])
       return
     }
     if (data.method === 'blockchain.numblocks.subscribe' && data.params.length === 1) {
