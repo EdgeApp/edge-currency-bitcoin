@@ -112,3 +112,43 @@ describe('Start Engine', function () {
     })
   })
 })
+
+describe('Is Address Used', function () {
+  it('Checking an empty address', function (done) {
+    assert.equal(engine.isAddressUsed('133oNy5fHMZxwwgyCsovLenTSNTrksEyzd'), false)
+    done()
+  })
+
+  it('Checking a wrong formated address', function (done) {
+    try {
+      engine.isAddressUsed('TestErrorWithWrongAddress')
+    } catch (e) {
+      assert(e, 'Should throw')
+      assert.equal(e.message, 'Wrong formatted address')
+      done()
+    }
+  })
+
+  it('Checking an address we don\'t own', function () {
+    try {
+      assert.equal(engine.isAddressUsed('1F1xcRt8H8Wa623KqmkEontwAAVqDSAWCV'), false)
+    } catch (e) {
+      assert(e, 'Should throw')
+      assert.equal(e.message, 'Address not found in wallet')
+    }
+  })
+
+  // This test uses private API's to run so it might break if implementation changes even if API remains the same
+  it('Check and address that has history', function (done) {
+    this.timeout(0)
+    let address = '1F1xcRt8H8Wa623KqmkEontwAAVqDSAWCV'
+    engine.pushAddress(address)
+    setTimeout(() => {
+      // console.log('engine.txIndex', engine.txIndex)
+      // console.log('engine.addresses', engine.addresses)
+      assert.notEqual(engine.addresses.indexOf(address), -1, 'Should insert address to list of addresses')
+      assert.equal(engine.isAddressUsed('1F1xcRt8H8Wa623KqmkEontwAAVqDSAWCV'), true, 'This address is a used 3rd party address')
+      done()
+    }, 10000)
+  })
+})
