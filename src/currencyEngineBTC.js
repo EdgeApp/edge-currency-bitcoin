@@ -74,21 +74,18 @@ export class BitcoinEngine {
     this.blockHeight = 0
   }
 
-  incommingTransaction () {
+  onAddressStatusChanged () {
     var this$1 = this
     return function (wallet, hash) {
       this$1.processAddress(wallet, hash)
     }
   }
 
-  onBlockHeightChanged () {
-    let that = this
-    return function (blockHeight) {
-      if (that.blockHeight < blockHeight) {
-        that.blockHeight = blockHeight
-        that.abcTxLibCallbacks.onBlockHeightChanged(blockHeight)
-        that.cacheLocalData()
-      }
+  onBlockHeightChanged (blockHeight) {
+    if (this.blockHeight < blockHeight) {
+      this.blockHeight = blockHeight
+      this.abcTxLibCallbacks.onBlockHeightChanged(blockHeight)
+      this.cacheLocalData()
     }
   }
 
@@ -516,8 +513,8 @@ export class BitcoinEngine {
 
   async startEngine () {
     const callbacks = {
-      incommingTransaction: this.incommingTransaction(),
-      onBlockHeightChanged: this.onBlockHeightChanged()
+      onAddressStatusChanged: this.onAddressStatusChanged(),
+      onBlockHeightChanged: this.onBlockHeightChanged.bind(this)
     }
     this.electrum = new Electrum(this.electrumServers, callbacks, this.io)
     this.electrum.connect()
