@@ -17,17 +17,17 @@ export const txLibInfo = {
       // An array of Objects of the possible denominations for this currency
       {
         name: 'BTC',
-        multiplier: 100000000,
+        multiplier: '100000000',
         symbol: 'B'
       },
       {
         name: 'mBTC',
-        multiplier: 100000,
+        multiplier: '100000',
         symbol: 'mB'
       },
       {
         name: 'bits', // The human readable string to describe the denomination
-        multiplier: 100, // The value to multiply the smallest unit of currency to get to the denomination
+        multiplier: '100', // The value to multiply the smallest unit of currency to get to the denomination
         symbol: 'μBTC' // The human readable 1-3 character symbol of the currency, e.g “Ƀ”
       }
     ],
