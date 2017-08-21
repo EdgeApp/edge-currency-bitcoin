@@ -5,7 +5,8 @@ import { txLibInfo } from './currencyInfoBTC'
 import cs from 'coinstring'
 
 // including Bcoin Engine
-let bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require('../vendor/bcoin.js')
+const bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require('../vendor/bcoin.js')
+const Buffer = process.env.ENV === 'NODEJS' ? require('buffer').Buffer : require('buffer/').Buffer
 
 const GAP_LIMIT = 25
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
@@ -525,6 +526,7 @@ export class BitcoinEngine {
     if (!this.keyInfo.keys.bitcoinKey) throw new Error('Missing Master Key')
 
     let bitcoinKeyBuffer = Buffer.from(this.keyInfo.keys.bitcoinKey, 'base64')
+
     let key = bcoin.hd.PrivateKey.fromSeed(bitcoinKeyBuffer)
     let wallet = await walletdb.create({
       'master': key.xprivkey(),

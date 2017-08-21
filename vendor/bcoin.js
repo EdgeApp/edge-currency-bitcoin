@@ -1,5 +1,5 @@
-var masterCrypto = require('crypto')
-var secp256k1 = require('secp256k1')
+var masterCrypto = process.env.ENV === 'NODEJS' ? require('crypto') : require('react-native-crypto')
+var secp256k1 = process.env.ENV === 'NODEJS' ? require('secp256k1') : require('react-native-secp256k1')
 
 var crypto = masterCrypto
 
