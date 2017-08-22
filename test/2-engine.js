@@ -13,7 +13,7 @@ let walletLocalFolder = disklet.makeMemoryFolder()
 
 let opts = {
   io: {
-    fetch: () => true,
+    fetch: require('node-fetch'),
     random: (size) => Array(size).fill(0).map((x, i) => i),
     net: require('net')
   }
@@ -25,20 +25,19 @@ let callbacks = {
     emitter.emit('onAddressesCheck', progressRatio)
   },
   onBalanceChanged (currencyCode, balance) {
-    console.log('onBalanceChange:' + currencyCode + ' ' + balance)
+    console.log('onBalanceChange:', currencyCode, balance)
     emitter.emit('onBalanceChange', currencyCode, balance)
   },
   onBlockHeightChanged (height) {
+    console.log('onBlockHeightChange:', height)
     emitter.emit('onBlockHeightChange', height)
   },
   onNewTransactions (transactionList) {
-    console.log('onNewTransactions')
-    console.log(transactionList)
+    console.log('onNewTransactions:', transactionList)
     emitter.emit('onNewTransactions', transactionList)
   },
   onTransactionsChanged (transactionList) {
-    console.log('onTransactionsChanged')
-    console.log(transactionList)
+    console.log('onTransactionsChanged:', transactionList)
     emitter.emit('onTransactionsChanged', transactionList)
   }
 }
@@ -165,3 +164,34 @@ describe('Get Fresh Address', function () {
     })
   })
 })
+
+// abcSpendInfo = {
+//   networkFeeOption: 'high',
+//   metadata:  {
+//     name: 'Transfer to College Fund',
+//     category: 'Transfer:Wallet:College Fund',
+//   },
+//   spendTargets: [
+//     {
+//       destWallet,
+//       nativeAmount: '210000000' // 2.1 BTC
+//     },
+//   ]
+// }
+
+// describe('Make Spend', function () {
+//   it('Should fail since no spend target is given', function (done) {
+//     let abcSpendInfo = {
+//       networkFeeOption: 'high',
+//       metadata: {
+//         name: 'Transfer to College Fund',
+//         category: 'Transfer:Wallet:College Fund'
+//       }
+//     }
+//     engine.makeSpend(abcSpendInfo).then(a => {
+//       console.log(a)
+//       assert.equal(engine.getBlockHeight(), 0, 'Shoud init as 0')
+//       done()
+//     }).catch(a => console.log('error', a))
+//   })
+// })
