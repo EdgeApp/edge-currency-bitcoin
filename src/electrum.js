@@ -235,7 +235,6 @@ export class Electrum {
   }
 
   handleData (data) {
-    // console.log("Incoming data", data)
     if (data.method === 'blockchain.address.subscribe' && data.params.length === 2) {
       this.onAddressStatusChanged(data.params[0], data.params[1])
       return

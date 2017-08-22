@@ -9,7 +9,8 @@
     "build": "rollup -c",
     "prepare": "npm run build",
     "test": "ENV=NODEJS mocha",
-    "pretest": "npm run build"
+    "pretest": "npm run build",
+    "precommit": "npm run lint && npm run test"
   },
   "contributors": [
     "thehobbit85 <thehobbit85@gmail.com>",
@@ -89,6 +90,7 @@
     "json-loader": "^0.5.4",
     "lodash": "^4.17.4",
     "mocha": "^2.4.5",
+    "node-fetch": "^1.7.2",
     "nyc": "^6.0.0",
     "request": "^2.81.0",
     "rollup": "^0.43.0",
