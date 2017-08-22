@@ -358,34 +358,28 @@ export class BitcoinEngine {
 
     this.txBalanceUpdateTotal = txMappedTxList.length
 
-    var promiseList = []
+    let promiseList = txMappedTxList.map(({data}) => this.wallet.db.addTXFromRaw(data))
 
-    for (var j in txMappedTxList) {
-      promiseList.push(this.wallet.db.addTXFromRaw(txMappedTxList[j].data))
-    }
-
-    Promise.all(promiseList).then(() => {
-      this.wallet.getBalance(0).then(result => {
-        /// / console.log("Balance======>",result);
-        // console.log("Final Balance: ", bcoin.amount.btc(result.unconfirmed + result.confirmed))
-
-        this.walletLocalData.masterBalance = bns.add(result.confirmed.toString(), result.unconfirmed.toString())
-        this.abcTxLibCallbacks.onBalanceChanged('BTC', this.walletLocalData.masterBalance)
-        this.refreshTransactionHistory()
-
-        this.txUpdateFinished = true
-        this.cacheLocalData()
-      })
-
+    Promise.all(promiseList)
+    .then(() => {
       this.abcTxLibCallbacks.onAddressesChecked(1)
+      return this.wallet.getBalance(0)
+    })
+    .then(result => {
+      this.walletLocalData.masterBalance = bns.add(result.confirmed.toString(), result.unconfirmed.toString())
+      this.abcTxLibCallbacks.onBalanceChanged('BTC', this.walletLocalData.masterBalance)
+      this.refreshTransactionHistory()
+
+      this.txUpdateFinished = true
+      this.cacheLocalData()
     })
   }
 
   getNewHeadersList () {
     let result = []
-    for (let i in this.txIndex) {
-      for (let j in this.txIndex[i].txs) {
-        let h = this.txIndex[i].txs[j].height
+    for (let i in this.walletLocalData.txIndex) {
+      for (let j in this.walletLocalData.txIndex[i].txs) {
+        let h = this.walletLocalData.txIndex[i].txs[j].height
         if (h < 0) continue
         if (!this.headerList[h] && result.indexOf(h) === -1) {
           result.push(h)
