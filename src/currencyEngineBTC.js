@@ -16,6 +16,7 @@ const HEADER_STORE_FILE = 'headersV1.json'
 
 const PRIMARY_CURRENCY = txLibInfo.getInfo.currencyCode
 // const TOKEN_CODES = [PRIMARY_CURRENCY].concat(txLibInfo.supportedTokens)
+const DEFUALT_ELECTRUM_SERVERS = txLibInfo.getInfo.defaultsSettings.electrumServers
 
 export class BitcoinEngine {
   constructor (io, keyInfo, opts = {}) {
@@ -23,19 +24,8 @@ export class BitcoinEngine {
     this.keyInfo = keyInfo
     this.abcTxLibCallbacks = opts.callbacks
     this.walletLocalFolder = opts.walletLocalFolder
-    this.electrumServers = opts.electrumServers || [
-      ['h.1209k.com', '50001'],
-      ['electrum-bu-az-weuro.airbitz.co', '50001'],
-      ['electrum-bc-az-eusa.airbitz.co', '50001'],
-      ['electrum-bu-az-ausw.airbitz.co', '50001'],
-      ['electrum.hsmiths.com', '8080'],
-      ['e.anonyhost.org', '50001'],
-      ['electrum.no-ip.org', '50001'],
-      ['electrum-bu-az-wusa2.airbitz.co', '50001'],
-      ['electrum-bu-az-wjapan.airbitz.co', '50001'],
-      ['kerzane.ddns.net', '50001']
-    ]
     this.txIndex = {}
+    this.electrumServers = (opts.optionalSettings && opts.optionalSettings.electrumServers) || DEFUALT_ELECTRUM_SERVERS
     this.headerList = {}
     this.cachedLocalData = ''
     this.cachedLocalHeaderData = ''
