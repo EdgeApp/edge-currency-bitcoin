@@ -656,32 +656,12 @@ export class BitcoinEngine {
     return prom
   }
 
-  // TODO - Cleanup
   getFreshAddress (options = {}) {
-    // console.log("getting fresh address")
-
-    // Looking for empty available address
-    var res = false
-    // console.log(this.addresses)
     for (let i = 0; i < this.addresses.length; i++) {
       let address = this.addresses[i]
       if (!Object.keys(this.txIndex[address].txs).length) return address
     }
-    for (var i in this.txIndex) {
-      // console.log('i', i)
-      if (Object.keys(this.txIndex[i].txs).length === 0) {
-        res = this.addresses.indexOf(i)
-        break
-      }
-    }
-
-    if (this.addresses.length > res + GAP_LIMIT) {
-      var this$1 = this
-      this.wallet.createKey(0).then(function (res) {
-        this$1.pushAddress(res.getAddress('base58check'))
-      })
-    }
-    return this.addresses[res]
+    return false
   }
 
   // synchronous
