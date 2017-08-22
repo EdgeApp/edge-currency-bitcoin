@@ -396,30 +396,26 @@ export class BitcoinEngine {
     return result
   }
 
-  pullBlockHeaders () {
+  async pullBlockHeaders () {
     let newHeadersList = this.getNewHeadersList()
-    var this$1 = this
     let prom = []
 
-    function getCallback (i) {
-      return function (block) {
+    let getCallback = (i) => {
+      return block => {
         // console.log('Setting block', i, block.timestamp)
-        this$1.headerList[i] = block
+        this.headerList[i] = block
       }
     }
 
-    for (var i in newHeadersList) {
+    for (let i in newHeadersList) {
       prom.push(this.electrum.getBlockHeader(newHeadersList[i]).then(getCallback(newHeadersList[i])))
     }
 
-    return Promise.all(prom).then(function () {
-      if (newHeadersList.length > 1) {
-        this$1.cacheHeadersLocalData()
-      }
-      return new Promise(function (resolve, reject) {
-        resolve()
-      })
-    })
+    await Promise.all(prom)
+
+    if (newHeadersList.length > 1) {
+      this.cacheHeadersLocalData()
+    }
   }
 
   async refreshTransactionHistory () {
