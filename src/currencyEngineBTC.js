@@ -153,6 +153,51 @@ export class BitcoinEngine {
     return totalProgress
   }
 
+  async startEngine () {
+    const callbacks = {
+      onAddressStatusChanged: this.processAddress.bind(this),
+      onBlockHeightChanged: this.onBlockHeightChanged.bind(this)
+    }
+    this.electrum = new Electrum(this.electrumServers, callbacks, this.io)
+    this.electrum.connect()
+    let walletdb = new bcoin.wallet.WalletDB({ db: 'memory' })
+    await walletdb.open()
+
+    if (!this.keyInfo.keys) throw new Error('Missing Master Key')
+    if (!this.keyInfo.keys.bitcoinKey) throw new Error('Missing Master Key')
+
+    let bitcoinKeyBuffer = Buffer.from(this.keyInfo.keys.bitcoinKey, 'base64')
+
+    let key = bcoin.hd.PrivateKey.fromSeed(bitcoinKeyBuffer)
+    let wallet = await walletdb.create({
+      'master': key.xprivkey(),
+      'id': 'ID1'
+    })
+
+    this.wallet = wallet
+    await this.getLocalData()
+
+    this.wallet.on('balance', balance => {
+      if (this.txUpdateFinished) {
+        this.masterBalance = bns.add(balance.confirmed.toString(), balance.unconfirmed.toString())
+        this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
+        this.cacheLocalData()
+      }
+    })
+    let accountPath = await this.wallet.getAccountPaths(0)
+
+    let checkList = accountPath.map(path => path.toAddress().toString())
+    for (let l in checkList) {
+      if (this.addresses.indexOf(checkList[l]) === -1) {
+        this.addresses = checkList
+        break
+      }
+    }
+    this.txUpdateTotalEntries = this.addresses.length
+    this.addresses.forEach(address => this.processAddress(address))
+    this.electrum.subscribeToBlockHeight().then(blockHeight => this.onBlockHeightChanged(blockHeight))
+  }
+
   async getLocalData () {
     try {
       let localWallet = await this.walletLocalFolder
@@ -510,51 +555,6 @@ export class BitcoinEngine {
         // return transactionList;
       })
     })
-  }
-
-  async startEngine () {
-    const callbacks = {
-      onAddressStatusChanged: this.onAddressStatusChanged(),
-      onBlockHeightChanged: this.onBlockHeightChanged.bind(this)
-    }
-    this.electrum = new Electrum(this.electrumServers, callbacks, this.io)
-    this.electrum.connect()
-    let walletdb = new bcoin.wallet.WalletDB({ db: 'memory' })
-    await walletdb.open()
-
-    if (!this.keyInfo.keys) throw new Error('Missing Master Key')
-    if (!this.keyInfo.keys.bitcoinKey) throw new Error('Missing Master Key')
-
-    let bitcoinKeyBuffer = Buffer.from(this.keyInfo.keys.bitcoinKey, 'base64')
-
-    let key = bcoin.hd.PrivateKey.fromSeed(bitcoinKeyBuffer)
-    let wallet = await walletdb.create({
-      'master': key.xprivkey(),
-      'id': 'ID1'
-    })
-
-    this.wallet = wallet
-    await this.getLocalData()
-
-    this.wallet.on('balance', balance => {
-      if (this.txUpdateFinished) {
-        this.masterBalance = balance.confirmed + balance.unconfirmed
-        this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
-        this.cacheLocalData()
-      }
-    })
-    let accountPath = await this.wallet.getAccountPaths(0)
-
-    let checkList = accountPath.map(path => path.toAddress().toString())
-    for (let l in checkList) {
-      if (this.addresses.indexOf(checkList[l]) === -1) {
-        this.addresses = checkList
-        break
-      }
-    }
-    this.txUpdateTotalEntries = this.addresses.length
-    this.addresses.forEach(address => this.processAddress(address))
-    this.electrum.subscribeToBlockHeight().then(blockHeight => this.onBlockHeightChanged(blockHeight))
   }
 
   async killEngine () {
