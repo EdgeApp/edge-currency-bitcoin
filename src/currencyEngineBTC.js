@@ -15,7 +15,6 @@ const DATA_STORE_FILE = 'walletLocalDataV4.json'
 const HEADER_STORE_FILE = 'headersV1.json'
 
 const PRIMARY_CURRENCY = txLibInfo.getInfo.currencyCode
-// const TOKEN_CODES = [PRIMARY_CURRENCY].concat(txLibInfo.supportedTokens)
 const DEFUALT_ELECTRUM_SERVERS = txLibInfo.getInfo.defaultsSettings.electrumServers
 
 export class BitcoinEngine {
@@ -24,13 +23,11 @@ export class BitcoinEngine {
     this.keyInfo = keyInfo
     this.abcTxLibCallbacks = opts.callbacks
     this.walletLocalFolder = opts.walletLocalFolder
-    this.txIndex = {}
     this.electrumServers = (opts.optionalSettings && opts.optionalSettings.electrumServers) || DEFUALT_ELECTRUM_SERVERS
     this.headerList = {}
     this.cachedLocalData = ''
     this.cachedLocalHeaderData = ''
     this.transactionHistory = {}
-    this.watchAhead = 10
     this.txUpdateTotalEntries = 0
     this.txUpdateFinished = false
     this.txUpdateBalanceUpdateStarted = false
@@ -39,7 +36,10 @@ export class BitcoinEngine {
       masterBalance: '0',
       blockHeight: 0,
       addresses: [],
-      feesList: []
+      detailedFeeTable: {},
+      simpleFeeTable: {},
+      txIndex: {}
+    }
     this.electrumCallbacks = {
       onAddressStatusChanged: this.processAddress.bind(this),
       onBlockHeightChanged: this.onBlockHeightChanged.bind(this)
@@ -66,13 +66,13 @@ export class BitcoinEngine {
     var totalTransactions = 0
     var executedTransactions = 0
 
-    for (var i in this.txIndex) {
-      if (!this.txIndex[i].executed) continue
+    for (var i in this.walletLocalData.txIndex) {
+      if (!this.walletLocalData.txIndex[i].executed) continue
       executedAddresses++
-      for (var j in this.txIndex[i].txs) {
-        if (!this.txIndex[i].txs[j]) continue
+      for (var j in this.walletLocalData.txIndex[i].txs) {
+        if (!this.walletLocalData.txIndex[i].txs[j]) continue
         totalTransactions++
-        if (this.txIndex[i].txs[j].executed) {
+        if (this.walletLocalData.txIndex[i].txs[j].executed) {
           executedTransactions++
         }
       }
@@ -87,7 +87,7 @@ export class BitcoinEngine {
 
     // var progress = [addressProgress, transactionProgress]
 
-    // console.log("Total TX List:", Object.keys(this.txIndex), "totalAddresses:", totalAddresses, "executedAddresses:", executedAddresses, totalTransactions, executedTransactions, transactionProgress)
+    // console.log("Total TX List:", Object.keys(this.walletLocalData.txIndex), "totalAddresses:", totalAddresses, "executedAddresses:", executedAddresses, totalTransactions, executedTransactions, transactionProgress)
 
     var totalProgress = addressProgress * transactionProgress
 
@@ -147,15 +147,11 @@ export class BitcoinEngine {
       .folder(DATA_STORE_FOLDER)
       .file(DATA_STORE_FILE)
       .getText(DATA_STORE_FOLDER, 'walletLocalData')
-
       this.cachedLocalData = localWallet
       let data = JSON.parse(localWallet)
-      this.walletLocalData.addresses = data.addresses || this.walletLocalData.addresses
+      Object.assign(this.walletLocalData, data)
+      console.log(this.walletLocalData)
       this.electrum.updateCache(data.txIndex)
-      this.walletLocalData.masterBalance = data.balance || this.walletLocalData.masterBalance
-      this.txIndex = data.txIndex || this.txIndex
-      this.walletLocalData.blockHeight = data.blockHeight || this.walletLocalData.blockHeight
-      this.walletLocalData.feesList = data.feesList || this.walletLocalData.feesList
       if (typeof data.headerList !== 'undefined') this.headerList = data.headerList
       this.abcTxLibCallbacks.onBalanceChanged('BTC', this.walletLocalData.masterBalance)
     } catch (e) {
@@ -191,20 +187,13 @@ export class BitcoinEngine {
   }
 
   async cacheLocalData () {
-    const walletJson = JSON.stringify({
-      txIndex: this.txIndex,
-      addresses: this.walletLocalData.addresses,
-      balance: this.walletLocalData.masterBalance,
-      blockHeight: this.walletLocalData.blockHeight,
-      feesList: this.walletLocalData.feesList
-    })
+    const walletJson = JSON.stringify(this.walletLocalData)
     if (this.cachedLocalData === walletJson) return true
     await this.walletLocalFolder
       .folder(DATA_STORE_FOLDER)
       .file(DATA_STORE_FILE)
       .setText(walletJson)
     this.cachedLocalData = walletJson
-
     return true
   }
 
@@ -215,6 +204,7 @@ export class BitcoinEngine {
       this.electrum.connect()
     }
   }
+
   pushAddress (address) {
     this.walletLocalData.addresses.push(address)
     this.processAddress(address)
@@ -339,9 +329,9 @@ export class BitcoinEngine {
       }
     }
 
-    for (let i in this.txIndex) {
-      for (let l in this.txIndex[i].txs) {
-        let data = this.txIndex[i].txs[l].data
+    for (let i in this.walletLocalData.txIndex) {
+      for (let l in this.walletLocalData.txIndex[i].txs) {
+        let data = this.walletLocalData.txIndex[i].txs[l].data
         let hash = l
         let prevOuts = []
         let txd = Buffer.from(data, 'hex')
@@ -438,8 +428,8 @@ export class BitcoinEngine {
         address = inputs[j].getAddress().toBase58()
         let addressIndex = this.walletLocalData.addresses.indexOf(address)
         if (addressIndex > -1) {
-          if (typeof this.headerList[this.txIndex[this.walletLocalData.addresses[addressIndex]].txs[hash].height] !== 'undefined') {
-            ts = this.headerList[this.txIndex[this.walletLocalData.addresses[addressIndex]].txs[hash].height].timestamp
+          if (typeof this.headerList[this.walletLocalData.txIndex[this.walletLocalData.addresses[addressIndex]].txs[hash].height] !== 'undefined') {
+            ts = this.headerList[this.walletLocalData.txIndex[this.walletLocalData.addresses[addressIndex]].txs[hash].height].timestamp
             console.log('Getting timestamp from list, input', ts)
           }
           outgoingTransaction = true
@@ -451,8 +441,8 @@ export class BitcoinEngine {
       for (let j in outputs) {
         address = outputs[j].getAddress().toBase58()
         let addressIndex = this.walletLocalData.addresses.indexOf(address)
-        if (addressIndex > -1 && typeof this.headerList[this.txIndex[this.walletLocalData.addresses[addressIndex]].txs[hash].height] !== 'undefined') {
-          ts = this.headerList[this.txIndex[this.walletLocalData.addresses[addressIndex]].txs[hash].height].timestamp
+        if (addressIndex > -1 && typeof this.headerList[this.walletLocalData.txIndex[this.walletLocalData.addresses[addressIndex]].txs[hash].height] !== 'undefined') {
+          ts = this.headerList[this.walletLocalData.txIndex[this.walletLocalData.addresses[addressIndex]].txs[hash].height].timestamp
           console.log('Getting timestamp from list, output', ts)
         }
         if ((addressIndex === -1 && outgoingTransaction) || (!outgoingTransaction && addressIndex > -1)) {
@@ -572,8 +562,8 @@ export class BitcoinEngine {
     let validator = cs.createValidator(0x00)
     if (!validator(address)) throw new Error('Wrong formatted address')
     if (this.walletLocalData.addresses.indexOf(address) === -1) throw new Error('Address not found in wallet')
-    if (!this.txIndex[address]) return true
-    return Object.keys(this.txIndex[address].txs).length !== 0
+    if (!this.walletLocalData.txIndex[address]) return true
+    return Object.keys(this.walletLocalData.txIndex[address].txs).length !== 0
   }
 
   // synchronous
