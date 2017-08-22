@@ -3,6 +3,7 @@ import { Electrum } from './electrum'
 import { ABCTransaction } from './abcTransaction'
 import { txLibInfo } from './currencyInfoBTC'
 import cs from 'coinstring'
+import { bns } from 'biggystring'
 
 // including Bcoin Engine
 const bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require('../vendor/bcoin.js')
@@ -65,6 +66,7 @@ export class BitcoinEngine {
     this.walletLocalData = {}
     this.walletLocalDataDirty = false
     this.transactionsChangedArray = []
+    this.masterBalance = '0'
     this.globalRecievedData = ['', '', '', '', '', '', '', '', '', '']
     this.addresses = []
     this.masterFee = 0
@@ -430,7 +432,6 @@ export class BitcoinEngine {
       promiseList.push(this.wallet.db.addTXFromRaw(txMappedTxList[j].data))
     }
 
-    Promise.all(promiseList).then(function () {
       this$1.wallet.getBalance(0).then(function (result) {
         /// / console.log("Balance======>",result);
         // console.log("Final Balance: ", bcoin.amount.btc(result.unconfirmed + result.confirmed))
