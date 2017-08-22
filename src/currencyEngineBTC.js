@@ -36,49 +36,26 @@ export class BitcoinEngine {
       ['kerzane.ddns.net', '50001']
     ]
     this.txIndex = {}
-    this.connections = []
-    this.walletsScanQueue = []
-    this.transactionsStash = []
     this.headerList = {}
     this.cachedLocalData = ''
     this.cachedLocalHeaderData = ''
     this.transactionHistory = {}
-    this.transactionTS = {}
-    this.increasingLimitLoop = 0
     this.watchAhead = 10
-    this.addressLimitLoop = 0
     this.txUpdateTotalEntries = 0
-    this.txUpdateStarted = false
     this.txUpdateFinished = false
     this.txUpdateBalanceUpdateStarted = false
     this.txBalanceUpdateTotal = 0
-    this.addressHashMap = {}
-    this.txBalanceUpdateProgress = 0
-    this.txBalanceUpdateFinished = 0
-    this.txUpdateMonitoring = {}
-    this.hashUpdateMonitoring = {}
-    this.engineOn = false
-    this.transactionsDirty = true
-    this.totalPercentageCombined = 0
-    this.addressesChecked = false
-    this.numAddressesChecked = 0
-    this.numAddressesToCheck = 0
-    this.walletLocalData = {}
-    this.walletLocalDataDirty = false
-    this.transactionsChangedArray = []
-    this.masterBalance = '0'
-    this.globalRecievedData = ['', '', '', '', '', '', '', '', '', '']
-    this.addresses = []
-    this.masterFee = 0
-    this.masterFeeReuqested = 0
-    this.masterFeeRecieved = 0
-    this.baseUrl = ''
-    this.blockHeight = 0
+    this.walletLocalData = {
+      masterBalance: '0',
+      blockHeight: 0,
+      addresses: [],
+      feesList: []
+    }
   }
 
   onBlockHeightChanged (blockHeight) {
-    if (this.blockHeight < blockHeight) {
-      this.blockHeight = blockHeight
+    if (this.walletLocalData.blockHeight < blockHeight) {
+      this.walletLocalData.blockHeight = blockHeight
       this.abcTxLibCallbacks.onBlockHeightChanged(blockHeight)
       this.cacheLocalData()
     }
@@ -86,23 +63,6 @@ export class BitcoinEngine {
 
   isTokenEnabled (token) {
     return this.walletLocalData.enabledTokens.indexOf(token) !== -1
-  }
-
-  fetchGet (cmd, params) {
-    return this.io.fetch(this.baseUrl + cmd + '/' + params, {
-      method: 'GET'
-    })
-  }
-
-  fetchPost (cmd, body) {
-    return this.io.fetch(this.baseUrl + cmd, {
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json'
-      },
-      method: 'POST',
-      body: JSON.stringify(body)
-    })
   }
 
   updateTick () {
@@ -173,8 +133,8 @@ export class BitcoinEngine {
 
     this.wallet.on('balance', balance => {
       if (this.txUpdateFinished) {
-        this.masterBalance = bns.add(balance.confirmed.toString(), balance.unconfirmed.toString())
-        this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
+        this.walletLocalData.masterBalance = bns.add(balance.confirmed.toString(), balance.unconfirmed.toString())
+        this.abcTxLibCallbacks.onBalanceChanged('BTC', this.walletLocalData.masterBalance)
         this.cacheLocalData()
       }
     })
@@ -182,13 +142,13 @@ export class BitcoinEngine {
 
     let checkList = accountPath.map(path => path.toAddress().toString())
     for (let l in checkList) {
-      if (this.addresses.indexOf(checkList[l]) === -1) {
-        this.addresses = checkList
+      if (this.walletLocalData.addresses.indexOf(checkList[l]) === -1) {
+        this.walletLocalData.addresses = checkList
         break
       }
     }
-    this.txUpdateTotalEntries = this.addresses.length
-    this.addresses.forEach(address => this.processAddress(address))
+    this.txUpdateTotalEntries = this.walletLocalData.addresses.length
+    this.walletLocalData.addresses.forEach(address => this.processAddress(address))
     this.electrum.subscribeToBlockHeight().then(blockHeight => this.onBlockHeightChanged(blockHeight))
   }
 
@@ -201,13 +161,14 @@ export class BitcoinEngine {
 
       this.cachedLocalData = localWallet
       let data = JSON.parse(localWallet)
-      this.addresses = data.addresses || this.addresses
+      this.walletLocalData.addresses = data.addresses || this.walletLocalData.addresses
       this.electrum.updateCache(data.txIndex)
-      this.masterBalance = data.balance || this.masterBalance
+      this.walletLocalData.masterBalance = data.balance || this.walletLocalData.masterBalance
       this.txIndex = data.txIndex || this.txIndex
-      this.blockHeight = data.blockHeight || this.blockHeight
+      this.walletLocalData.blockHeight = data.blockHeight || this.walletLocalData.blockHeight
+      this.walletLocalData.feesList = data.feesList || this.walletLocalData.feesList
       if (typeof data.headerList !== 'undefined') this.headerList = data.headerList
-      this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
+      this.abcTxLibCallbacks.onBalanceChanged('BTC', this.walletLocalData.masterBalance)
     } catch (e) {
       await this.cacheLocalData()
     }
@@ -243,9 +204,10 @@ export class BitcoinEngine {
   async cacheLocalData () {
     const walletJson = JSON.stringify({
       txIndex: this.txIndex,
-      addresses: this.addresses,
-      balance: this.masterBalance,
-      blockHeight: this.blockHeight
+      addresses: this.walletLocalData.addresses,
+      balance: this.walletLocalData.masterBalance,
+      blockHeight: this.walletLocalData.blockHeight,
+      feesList: this.walletLocalData.feesList
     })
     if (this.cachedLocalData === walletJson) return true
     await this.walletLocalFolder
@@ -258,7 +220,7 @@ export class BitcoinEngine {
   }
 
   pushAddress (address) {
-    this.addresses.push(address)
+    this.walletLocalData.addresses.push(address)
     this.processAddress(address)
   }
 
@@ -268,7 +230,7 @@ export class BitcoinEngine {
       this.txUpdateTotalEntries++
       this.wallet.createKey(0).then(res => {
         var address = res.getAddress('base58check')
-        if (this.addresses.indexOf(address) > -1) {
+        if (this.walletLocalData.addresses.indexOf(address) > -1) {
           // console.log("EXISTING ADDRESS ")
           this.txUpdateTotalEntries--
           return
@@ -280,8 +242,8 @@ export class BitcoinEngine {
   }
 
   checkGapLimit (wallet) {
-    var total = this.addresses.length
-    var walletIndex = this.addresses.indexOf(wallet) + 1
+    var total = this.walletLocalData.addresses.length
+    var walletIndex = this.walletLocalData.addresses.indexOf(wallet) + 1
     if (walletIndex + GAP_LIMIT > total) {
       this.deriveAddresses(walletIndex + GAP_LIMIT - total)
     }
@@ -422,8 +384,8 @@ export class BitcoinEngine {
         /// / console.log("Balance======>",result);
         // console.log("Final Balance: ", bcoin.amount.btc(result.unconfirmed + result.confirmed))
 
-        this.masterBalance = bns.add(result.confirmed.toString(), result.unconfirmed.toString())
-        this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
+        this.walletLocalData.masterBalance = bns.add(result.confirmed.toString(), result.unconfirmed.toString())
+        this.abcTxLibCallbacks.onBalanceChanged('BTC', this.walletLocalData.masterBalance)
         this.refreshTransactionHistory()
 
         this.txUpdateFinished = true
@@ -475,70 +437,57 @@ export class BitcoinEngine {
     })
   }
 
-  refreshTransactionHistory () {
-    var this$1 = this
-
-    return this.pullBlockHeaders().then(function () {
-      // console.log("HEADERS COMPILED", this$1.headerList)
-
-      this$1.wallet.getHistory().then(function (res) {
-        var transactionList = []
-        for (var i in res) {
-          var tx = res[i].tx
-          var inputs = tx.inputs
-          var address
-          var hash = tx.txid()
-          if (this$1.transactionHistory[hash]) {
-            continue
+  async refreshTransactionHistory () {
+    await this.pullBlockHeaders()
+    let res = await this.wallet.getHistory()
+    let transactionList = []
+    for (let i in res) {
+      let tx = res[i].tx
+      let inputs = tx.inputs
+      let address
+      let hash = tx.txid()
+      if (this.transactionHistory[hash]) {
+        continue
+      }
+      /// / console.log("inputs ==> ", inputs)
+      let outgoingTransaction = false
+      let totalAmount = 0
+      let ts = Math.floor(Date.now() / 1000)
+      for (let j in inputs) {
+        address = inputs[j].getAddress().toBase58()
+        let addressIndex = this.walletLocalData.addresses.indexOf(address)
+        if (addressIndex > -1) {
+          if (typeof this.headerList[this.txIndex[this.walletLocalData.addresses[addressIndex]].txs[hash].height] !== 'undefined') {
+            ts = this.headerList[this.txIndex[this.walletLocalData.addresses[addressIndex]].txs[hash].height].timestamp
+            console.log('Getting timestamp from list, input', ts)
           }
-          /// / console.log("inputs ==> ", inputs)
-          var outgoingTransaction = false
-          var totalAmount = 0
-          var ts = Math.floor(Date.now() / 1000)
-          for (let j in inputs) {
-            address = inputs[j].getAddress().toBase58()
-            let addressIndex = this$1.addresses.indexOf(address)
-            if (addressIndex > -1) {
-              if (typeof this$1.headerList[this$1.txIndex[this$1.addresses[addressIndex]].txs[hash].height] !== 'undefined') {
-                ts = this$1.headerList[this$1.txIndex[this$1.addresses[addressIndex]].txs[hash].height].timestamp
-                console.log('Getting timestamp from list, input', ts)
-              }
-              outgoingTransaction = true
-            }
-            /// / console.log("I>>",address )
-          }
-          var outputs = tx.outputs
-            /// / console.log("OUTPUTS ==> ", outputs)
-          for (let j in outputs) {
-            address = outputs[j].getAddress().toBase58()
-            let addressIndex = this$1.addresses.indexOf(address)
-            if (addressIndex > -1 && typeof this$1.headerList[this$1.txIndex[this$1.addresses[addressIndex]].txs[hash].height] !== 'undefined') {
-              ts = this$1.headerList[this$1.txIndex[this$1.addresses[addressIndex]].txs[hash].height].timestamp
-              console.log('Getting timestamp from list, output', ts)
-            }
-            if ((addressIndex === -1 && outgoingTransaction) || (!outgoingTransaction && addressIndex > -1)) {
-              totalAmount += outputs[j].value
-            }
-            /// / console.log("O>",address, "V>",outputs[j].value )
-          }
-
-          var d = ts
-          totalAmount = (outgoingTransaction) ? -totalAmount : totalAmount
-
-          var t = new ABCTransaction(hash, d, 'BTC', 1, totalAmount, 10000, 'signedTx', {})
-
-          this$1.transactionHistory[hash] = t
-
-          transactionList.push(t)
-          /// / console.log("Transaction type",(outgoingTransaction)?"Spending":"Incoming", "Amount:", totalAmount)
+          outgoingTransaction = true
         }
-        // console.log('TOTAL TRANSACTIONS LIST', transactionList, this$1.headerList)
-        if (this$1.abcTxLibCallbacks.onTransactionsChanged) {
-          this$1.abcTxLibCallbacks.onTransactionsChanged(transactionList)
+        /// / console.log("I>>",address )
+      }
+      let outputs = tx.outputs
+        /// / console.log("OUTPUTS ==> ", outputs)
+      for (let j in outputs) {
+        address = outputs[j].getAddress().toBase58()
+        let addressIndex = this.walletLocalData.addresses.indexOf(address)
+        if (addressIndex > -1 && typeof this.headerList[this.txIndex[this.walletLocalData.addresses[addressIndex]].txs[hash].height] !== 'undefined') {
+          ts = this.headerList[this.txIndex[this.walletLocalData.addresses[addressIndex]].txs[hash].height].timestamp
+          console.log('Getting timestamp from list, output', ts)
         }
-        // return transactionList;
-      })
-    })
+        if ((addressIndex === -1 && outgoingTransaction) || (!outgoingTransaction && addressIndex > -1)) {
+          totalAmount += outputs[j].value
+        }
+        /// / console.log("O>",address, "V>",outputs[j].value )
+      }
+      let d = ts
+      totalAmount = (outgoingTransaction) ? -totalAmount : totalAmount
+      let t = new ABCTransaction(hash, d, 'BTC', 1, totalAmount, 10000, 'signedTx', {})
+      this.transactionHistory[hash] = t
+      transactionList.push(t)
+    }
+    if (this.abcTxLibCallbacks.onTransactionsChanged) {
+      this.abcTxLibCallbacks.onTransactionsChanged(transactionList)
+    }
   }
 
   async killEngine () {
@@ -550,7 +499,7 @@ export class BitcoinEngine {
 
   // synchronous
   getBlockHeight () {
-    return this.blockHeight
+    return this.walletLocalData.blockHeight
   }
 
   // asynchronous
@@ -569,17 +518,11 @@ export class BitcoinEngine {
 
   // synchronous
   getBalance (options) {
-    return this.masterBalance
+    return this.walletLocalData.masterBalance
   }
 
   // synchronous
-  getNumTransactions (options) {
-    if (options === void 0) options = {}
-
-    var currencyCode = PRIMARY_CURRENCY
-    if (options != null && options.currencyCode != null) {
-      currencyCode = options.currencyCode
-    }
+  getNumTransactions ({currencyCode = PRIMARY_CURRENCY} = {currencyCode: PRIMARY_CURRENCY}) {
     return this.walletLocalData.transactionsObj[currencyCode].length
   }
 
@@ -641,8 +584,8 @@ export class BitcoinEngine {
   }
 
   getFreshAddress (options = {}) {
-    for (let i = 0; i < this.addresses.length; i++) {
-      let address = this.addresses[i]
+    for (let i = 0; i < this.walletLocalData.addresses.length; i++) {
+      let address = this.walletLocalData.addresses[i]
       if (!Object.keys(this.txIndex[address].txs).length) return address
     }
     return false
@@ -652,13 +595,13 @@ export class BitcoinEngine {
   isAddressUsed (address, options = {}) {
     let validator = cs.createValidator(0x00)
     if (!validator(address)) throw new Error('Wrong formatted address')
-    if (this.addresses.indexOf(address) === -1) throw new Error('Address not found in wallet')
+    if (this.walletLocalData.addresses.indexOf(address) === -1) throw new Error('Address not found in wallet')
     if (!this.txIndex[address]) return true
     return Object.keys(this.txIndex[address].txs).length !== 0
   }
 
   // synchronous
-  makeSpend (abcSpendInfo) {
+  async makeSpend (abcSpendInfo) {
     /// / console.log();
     // return;
     // 1BynMxKHRyASZDNhX4q6pRtdzAb2m8d7jM
@@ -667,72 +610,46 @@ export class BitcoinEngine {
 
     // return;
     // returns an ABCTransaction data structure, and checks for valid info
-    var prom = new Promise((resolve, reject) => {
-      var fee = parseInt(this.masterFee * 100000000) * 0.3
+    let fee = parseInt(this.masterFee * 100000000) * 0.3
 
-      var outputs = []
+    let outputs = []
 
-      outputs.push({
-        currencyCode: 'BTC',
-        address: abcSpendInfo.spendTargets[0].publicAddress,
-        amount: parseInt(abcSpendInfo.spendTargets[0].amountSatoshi)
-      })
-
-      const abcTransaction = new ABCTransaction('', // txid
-        0, // date
-        'BTC', // currencyCode
-        '0', // blockHeightNative
-        abcSpendInfo.spendTargets[0].amountSatoshi, // nativeAmount
-        fee.toString(), // nativeNetworkFee
-        '0', // signedTx
-        {
-          outputs: outputs
-        } // otherParams
-      )
-
-      resolve(abcTransaction)
+    outputs.push({
+      currencyCode: 'BTC',
+      address: abcSpendInfo.spendTargets[0].publicAddress,
+      amount: parseInt(abcSpendInfo.spendTargets[0].amountSatoshi)
     })
-    return prom
+
+    const abcTransaction = new ABCTransaction('', // txid
+      0, // date
+      'BTC', // currencyCode
+      '0', // blockHeightNative
+      abcSpendInfo.spendTargets[0].amountSatoshi, // nativeAmount
+      fee.toString(), // nativeNetworkFee
+      '0', // signedTx
+      {
+        outputs: outputs
+      } // otherParams
+    )
+
+    return abcTransaction
   }
 
   // asynchronous
-  signTx (abcTransaction) {
-    var this$1 = this
-    var prom = new Promise(function (resolve, reject) {
-      var fee = parseInt(this$1.masterFee * 100000000)
-
-      var options = {
-        outputs: [{
-          address: abcTransaction.otherParams.outputs[0].address,
-          value: parseInt(abcTransaction.otherParams.outputs[0].amount)
-        }],
-        rate: fee
-      }
-
-      // console.log("signing", options)
-
-      return this$1.wallet.send(options).then(function (tx) {
-        // console.log("after TX CREATED", tx)
-        // Need to pass our passphrase back in to sign
-
-        var rawTX = tx.toRaw().toString('hex')
-
-        // console.log('RAW tx:', rawTX)
-
-        abcTransaction.date = Date.now() / 1000
-        abcTransaction.signedTx = rawTX
-
-        resolve(abcTransaction)
-
-        // request.post({ url:'https://insight.bitpay.com/api/tx/send', form: {rawtx:rawTX} }, function(err,httpResponse,body){
-        /// /   console.log("Transaction status", body)
-        // })
-
-        // return this$1.pool.broadcast(tx);
-      })
-    })
-
-    return prom
+  async signTx (abcTransaction) {
+    let fee = parseInt(this.masterFee * 100000000)
+    let options = {
+      outputs: [{
+        address: abcTransaction.otherParams.outputs[0].address,
+        value: parseInt(abcTransaction.otherParams.outputs[0].amount)
+      }],
+      rate: fee
+    }
+    let tx = await this.wallet.send(options)
+    let rawTX = tx.toRaw().toString('hex')
+    abcTransaction.date = Date.now() / 1000
+    abcTransaction.signedTx = rawTX
+    return abcTransaction
   }
 
   // asynchronous
