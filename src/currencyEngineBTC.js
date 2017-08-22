@@ -40,6 +40,9 @@ export class BitcoinEngine {
       blockHeight: 0,
       addresses: [],
       feesList: []
+    this.electrumCallbacks = {
+      onAddressStatusChanged: this.processAddress.bind(this),
+      onBlockHeightChanged: this.onBlockHeightChanged.bind(this)
     }
   }
 
@@ -98,11 +101,7 @@ export class BitcoinEngine {
   }
 
   async startEngine () {
-    const callbacks = {
-      onAddressStatusChanged: this.processAddress.bind(this),
-      onBlockHeightChanged: this.onBlockHeightChanged.bind(this)
-    }
-    this.electrum = new Electrum(this.electrumServers, callbacks, this.io)
+    this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
     this.electrum.connect()
     let walletdb = new bcoin.wallet.WalletDB({ db: 'memory' })
     await walletdb.open()
@@ -209,6 +208,13 @@ export class BitcoinEngine {
     return true
   }
 
+  updateSettings (opts) {
+    if (opts.electrumServers) {
+      this.electrumServers = opts.electrumServers
+      this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
+      this.electrum.connect()
+    }
+  }
   pushAddress (address) {
     this.walletLocalData.addresses.push(address)
     this.processAddress(address)
