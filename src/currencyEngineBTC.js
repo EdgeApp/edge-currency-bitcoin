@@ -76,13 +76,6 @@ export class BitcoinEngine {
     this.blockHeight = 0
   }
 
-  onAddressStatusChanged () {
-    var this$1 = this
-    return function (wallet, hash) {
-      this$1.processAddress(wallet, hash)
-    }
-  }
-
   onBlockHeightChanged (blockHeight) {
     if (this.blockHeight < blockHeight) {
       this.blockHeight = blockHeight
@@ -326,7 +319,7 @@ export class BitcoinEngine {
       }
     }
 
-    this.electrum.subscribeToAddress(wallet).then(function (hash) {
+    this$1.electrum.subscribeToAddress(wallet).then(function (hash) {
       if (hash == null) {
         // console.log("NULL INCOMING", wallet, hash)
         this$1.txIndex[wallet].transactionHash = hash
@@ -367,23 +360,18 @@ export class BitcoinEngine {
   }
 
   processElectrumData () {
-    function hexToBytes (hex) {
-      for (var bytes = Buffer.from(hex.length / 2), c = 0; c < hex.length; c += 2) bytes[c / 2] = parseInt(hex.substr(c, 2), 16)
-      return bytes
-    }
-
     /// / console.log("Start Electrum Update Process");
 
-    var txMappedTxList = []
+    let txMappedTxList = []
 
-    function sortMappedList (list) {
-      var _fl = 0
-      var a = {}
+    let sortMappedList = list => {
+      let _fl = 0
+      let a = {}
 
-      for (var _i = 0; _i <= list.length - 2; _i++) {
-        for (var _j = _i + 1; _j <= list.length - 1; _j++) {
+      for (let _i = 0; _i <= list.length - 2; _i++) {
+        for (let _j = _i + 1; _j <= list.length - 1; _j++) {
           _fl = 0
-          for (var _o = 0; _o <= list[_i].prevOuts.length - 1; _o++) {
+          for (let _o = 0; _o <= list[_i].prevOuts.length - 1; _o++) {
             if (list[_i].prevOuts[_o] === list[_j].hash) {
               _fl = 1
             }
@@ -398,17 +386,16 @@ export class BitcoinEngine {
       }
     }
 
-    for (var i in this.txIndex) {
-      for (var l in this.txIndex[i].txs) {
-        var data = this.txIndex[i].txs[l].data
-        var hash = l
+    for (let i in this.txIndex) {
+      for (let l in this.txIndex[i].txs) {
+        let data = this.txIndex[i].txs[l].data
+        let hash = l
+        let prevOuts = []
+        let txd = Buffer.from(data, 'hex')
+        let tx = bcoin.tx.fromRaw(txd)
+        let txjson = tx.toJSON()
 
-        var prevOuts = []
-        var txd = hexToBytes(data)
-        var tx = bcoin.tx.fromRaw(txd)
-        var txjson = tx.toJSON()
-
-        for (var k = 0; k <= txjson.inputs.length - 1; k++) {
+        for (let k = 0; k <= txjson.inputs.length - 1; k++) {
           prevOuts.push(txjson.inputs[k].prevout.hash)
         }
 
@@ -422,8 +409,6 @@ export class BitcoinEngine {
 
     sortMappedList(txMappedTxList)
 
-    var this$1 = this
-
     this.txBalanceUpdateTotal = txMappedTxList.length
 
     var promiseList = []
@@ -432,19 +417,20 @@ export class BitcoinEngine {
       promiseList.push(this.wallet.db.addTXFromRaw(txMappedTxList[j].data))
     }
 
-      this$1.wallet.getBalance(0).then(function (result) {
+    Promise.all(promiseList).then(() => {
+      this.wallet.getBalance(0).then(result => {
         /// / console.log("Balance======>",result);
         // console.log("Final Balance: ", bcoin.amount.btc(result.unconfirmed + result.confirmed))
 
-        this$1.masterBalance = result.confirmed + result.unconfirmed
-        this$1.abcTxLibCallbacks.onBalanceChanged('BTC', this$1.masterBalance)
-        this$1.refreshTransactionHistory()
+        this.masterBalance = bns.add(result.confirmed.toString(), result.unconfirmed.toString())
+        this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
+        this.refreshTransactionHistory()
 
-        this$1.txUpdateFinished = true
-        this$1.cacheLocalData()
+        this.txUpdateFinished = true
+        this.cacheLocalData()
       })
 
-      this$1.abcTxLibCallbacks.onAddressesChecked(1)
+      this.abcTxLibCallbacks.onAddressesChecked(1)
     })
   }
 
@@ -453,15 +439,13 @@ export class BitcoinEngine {
     for (let i in this.txIndex) {
       for (let j in this.txIndex[i].txs) {
         let h = this.txIndex[i].txs[j].height
-
         if (h < 0) continue
-
-        if (typeof this.headerList[h] === 'undefined' && result.indexOf(h) === -1) {
+        if (!this.headerList[h] && result.indexOf(h) === -1) {
           result.push(h)
         }
       }
     }
-    console.log('OLD/NEW LIST HEADERS', this.headerList, result)
+    // console.log('OLD/NEW LIST HEADERS', this.headerList, result)
     return result
   }
 
@@ -472,7 +456,7 @@ export class BitcoinEngine {
 
     function getCallback (i) {
       return function (block) {
-        console.log('Setting block', i, block.timestamp)
+        // console.log('Setting block', i, block.timestamp)
         this$1.headerList[i] = block
       }
     }
@@ -546,10 +530,9 @@ export class BitcoinEngine {
           this$1.transactionHistory[hash] = t
 
           transactionList.push(t)
-
           /// / console.log("Transaction type",(outgoingTransaction)?"Spending":"Incoming", "Amount:", totalAmount)
         }
-        console.log('TOTAL TRANSACTIONS LIST', transactionList, this$1.headerList)
+        // console.log('TOTAL TRANSACTIONS LIST', transactionList, this$1.headerList)
         if (this$1.abcTxLibCallbacks.onTransactionsChanged) {
           this$1.abcTxLibCallbacks.onTransactionsChanged(transactionList)
         }
@@ -676,8 +659,6 @@ export class BitcoinEngine {
 
   // synchronous
   makeSpend (abcSpendInfo) {
-    var $this = this
-
     /// / console.log();
     // return;
     // 1BynMxKHRyASZDNhX4q6pRtdzAb2m8d7jM
@@ -686,8 +667,8 @@ export class BitcoinEngine {
 
     // return;
     // returns an ABCTransaction data structure, and checks for valid info
-    var prom = new Promise(function (resolve, reject) {
-      var fee = parseInt($this.masterFee * 100000000) * 0.3
+    var prom = new Promise((resolve, reject) => {
+      var fee = parseInt(this.masterFee * 100000000) * 0.3
 
       var outputs = []
 
