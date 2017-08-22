@@ -74,10 +74,7 @@ export class BitcoinPlugin {
         }
       },
 
-      makeEngine: function (keyInfo, opts = {}) {
-        let engine = new BitcoinEngine(io, keyInfo, opts)
-        return engine
-      },
+      makeEngine: (keyInfo, opts = {}) => new BitcoinEngine(io, keyInfo, opts),
 
       parseUri: (uri) => {
         let parsedUri = parse(uri)
