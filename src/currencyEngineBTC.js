@@ -239,76 +239,71 @@ export class BitcoinEngine {
     }
   }
 
-  processAddress (wallet) {
-    var this$1 = this
-
-    if (typeof this.txIndex[wallet] !== 'object') {
-      this.txIndex[wallet] = {
+  async processAddress (wallet) {
+    if (typeof this.walletLocalData.txIndex[wallet] !== 'object') {
+      this.walletLocalData.txIndex[wallet] = {
         txs: {},
         executed: 0,
         transactionHash: -1
       }
     } else {
-      this.txIndex[wallet].executed = 0
+      this.walletLocalData.txIndex[wallet].executed = 0
     }
 
-    function getCallback (tx, wallet) {
-      return function (transaction) {
-        if (typeof this$1.txIndex[wallet].txs[tx] === 'undefined') {
-          /// / console.log("BADTX", tx, wallet, this$1.txIndex[wallet], this$1.txIndex[wallet].txs)
+    let getCallback = (tx, wallet) => {
+      return transaction => {
+        if (typeof this.walletLocalData.txIndex[wallet].txs[tx] === 'undefined') {
+          /// / console.log("BADTX", tx, wallet, this.walletLocalData.txIndex[wallet], this.walletLocalData.txIndex[wallet].txs)
           return
         } else {
-          this$1.txIndex[wallet].txs[tx].data = transaction
-          this$1.txIndex[wallet].txs[tx].executed = 1
+          this.walletLocalData.txIndex[wallet].txs[tx].data = transaction
+          this.walletLocalData.txIndex[wallet].txs[tx].executed = 1
         }
 
-        if (this$1.txUpdateFinished) {
+        if (this.txUpdateFinished) {
           // console.log("ADDING TXFROMRAW ", transaction)
-          this$1.wallet.db.addTXFromRaw(transaction)
+          this.wallet.db.addTXFromRaw(transaction)
         }
-        this$1.checkGapLimit(wallet)
-        this$1.updateTick()
+        this.checkGapLimit(wallet)
+        this.updateTick()
       }
     }
+    let hash = await this.electrum.subscribeToAddress(wallet)
 
-    this$1.electrum.subscribeToAddress(wallet).then(function (hash) {
-      if (hash == null) {
-        // console.log("NULL INCOMING", wallet, hash)
-        this$1.txIndex[wallet].transactionHash = hash
-        this$1.txIndex[wallet].executed = 1
-        this$1.updateTick()
-        return
+    if (hash == null) {
+      // console.log("NULL INCOMING", wallet, hash)
+      this.walletLocalData.txIndex[wallet].transactionHash = hash
+      this.walletLocalData.txIndex[wallet].executed = 1
+      this.updateTick()
+      return
+    }
+    if (this.walletLocalData.txIndex[wallet].transactionHash === hash) {
+      // console.log("HSAH INCOMING", wallet)
+      this.walletLocalData.txIndex[wallet].executed = 1
+      this.updateTick()
+      return
+    }
+
+    // console.log("got transactions for ", wallet, this$1.txIndex[wallet].transactionHash, hash)
+
+    this.walletLocalData.txIndex[wallet].transactionHash = hash
+    let transactions = await this.electrum.getAddresHistory(wallet)
+
+    this.walletLocalData.txIndex[wallet].executed = 1
+    for (let j in transactions) {
+      if (typeof this.walletLocalData.txIndex[wallet].txs[transactions[j].tx_hash] === 'object') {
+        this.walletLocalData.txIndex[wallet].txs[transactions[j].tx_hash].height = transactions[j].height
+        continue
       }
-      if (this$1.txIndex[wallet].transactionHash === hash) {
-        // console.log("HSAH INCOMING", wallet)
-        this$1.txIndex[wallet].executed = 1
-        this$1.updateTick()
-        return
+      this.walletLocalData.txIndex[wallet].txs[transactions[j].tx_hash] = {
+        height: transactions[j].height,
+        data: '',
+        executed: 0
       }
-
-      // console.log("got transactions for ", wallet, this$1.txIndex[wallet].transactionHash, hash)
-
-      this$1.txIndex[wallet].transactionHash = hash
-
-      return this$1.electrum.getAddresHistory(wallet).then(function (transactions) {
-        // console.log("GOT full address history ", wallet)
-        this$1.txIndex[wallet].executed = 1
-        for (var j in transactions) {
-          if (typeof this$1.txIndex[wallet].txs[transactions[j].tx_hash] === 'object') {
-            this$1.txIndex[wallet].txs[transactions[j].tx_hash].height = transactions[j].height
-            continue
-          }
-          this$1.txIndex[wallet].txs[transactions[j].tx_hash] = {
-            height: transactions[j].height,
-            data: '',
-            executed: 0
-          }
-          var tx = transactions[j].tx_hash
-          this$1.electrum.getTransaction(transactions[j].tx_hash).then(getCallback(tx, wallet))
-        }
-        this$1.updateTick()
-      })
-    })
+      let tx = transactions[j].tx_hash
+      this.electrum.getTransaction(transactions[j].tx_hash).then(getCallback(tx, wallet))
+    }
+    this.updateTick()
   }
 
   processElectrumData () {
@@ -517,66 +512,61 @@ export class BitcoinEngine {
   }
 
   // asynchronous
-  getTransactions (options) {
-    var this$1 = this
+  async getTransactions (options) {
     if (options === void 0) options = {}
     // console.log(this$1.walletLocalData)
     var currencyCode = PRIMARY_CURRENCY
     if (options != null && options.currencyCode != null) {
       currencyCode = options.currencyCode
     }
-    var prom = new Promise(function (resolve, reject) {
-      var startIndex = 0
-      var numEntries = 0
-      if (options == null) {
-        resolve(this$1.walletLocalData.transactionsObj[currencyCode].slice(0))
-        return
-      }
-      if (options.startIndex != null && options.startIndex > 0) {
-        startIndex = options.startIndex
-        if (
-          startIndex >=
-          this$1.walletLocalData.transactionsObj[currencyCode].length
-        ) {
-          startIndex =
-            this$1.walletLocalData.transactionsObj[currencyCode].length - 1
-        }
-      }
-      if (options.numEntries != null && options.numEntries > 0) {
-        numEntries = options.numEntries
-        if (
-          numEntries + startIndex >
-          this$1.walletLocalData.transactionsObj[currencyCode].length
-        ) {
-          // Don't read past the end of the transactionsObj
-          numEntries =
-            this$1.walletLocalData.transactionsObj[currencyCode].length -
-            startIndex
-        }
-      }
 
-      // Copy the appropriate entries from the arrayTransactions
-      var returnArray = []
-      if (numEntries) {
-        returnArray = this$1.walletLocalData.transactionsObj[currencyCode].slice(
-          startIndex,
-          numEntries + startIndex
-        )
-      } else {
-        returnArray = this$1.walletLocalData.transactionsObj[currencyCode].slice(
+    var startIndex = 0
+    var numEntries = 0
+    if (!options === null) {
+      return this.walletLocalData.transactionsObj[currencyCode].slice(0)
+    }
+    if (options.startIndex != null && options.startIndex > 0) {
+      startIndex = options.startIndex
+      if (
+        startIndex >=
+        this.walletLocalData.transactionsObj[currencyCode].length
+      ) {
+        startIndex =
+          this.walletLocalData.transactionsObj[currencyCode].length - 1
+      }
+    }
+    if (options.numEntries != null && options.numEntries > 0) {
+      numEntries = options.numEntries
+      if (
+        numEntries + startIndex >
+        this.walletLocalData.transactionsObj[currencyCode].length
+      ) {
+        // Don't read past the end of the transactionsObj
+        numEntries =
+          this.walletLocalData.transactionsObj[currencyCode].length -
           startIndex
-        )
       }
-      resolve(returnArray)
-    })
+    }
 
-    return prom
+    // Copy the appropriate entries from the arrayTransactions
+    var returnArray = []
+    if (numEntries) {
+      returnArray = this.walletLocalData.transactionsObj[currencyCode].slice(
+        startIndex,
+        numEntries + startIndex
+      )
+    } else {
+      returnArray = this.walletLocalData.transactionsObj[currencyCode].slice(
+        startIndex
+      )
+    }
+    return returnArray
   }
 
   getFreshAddress (options = {}) {
     for (let i = 0; i < this.walletLocalData.addresses.length; i++) {
       let address = this.walletLocalData.addresses[i]
-      if (!Object.keys(this.txIndex[address].txs).length) return address
+      if (!Object.keys(this.walletLocalData.txIndex[address].txs).length) return address
     }
     return false
   }
