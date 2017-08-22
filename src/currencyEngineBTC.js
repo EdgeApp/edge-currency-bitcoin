@@ -223,8 +223,8 @@ export class BitcoinEngine {
       .getText(DATA_STORE_FOLDER, 'walletLocalData')
 
       let data = JSON.parse(localHeaders)
-      this.cachedLocalHeaderData = JSON.stringify(data.headerList)
       if (!data.headerList) throw new Error('Something wrong with local headers ... X722', data)
+      this.cachedLocalHeaderData = JSON.stringify(data.headerList)
       this.headerList = data.headerList
     } catch (e) {
       await this.cacheHeadersLocalData()
@@ -258,6 +258,7 @@ export class BitcoinEngine {
       .file(DATA_STORE_FILE)
       .setText(walletJson)
     this.cachedLocalData = walletJson
+
     return true
   }
 
