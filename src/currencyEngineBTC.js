@@ -22,6 +22,18 @@ export class BitcoinEngine {
     this.keyInfo = keyInfo
     this.abcTxLibCallbacks = opts.callbacks
     this.walletLocalFolder = opts.walletLocalFolder
+    this.electrumServers = opts.electrumServers || [
+      ['h.1209k.com', '50001'],
+      ['electrum-bu-az-weuro.airbitz.co', '50001'],
+      ['electrum-bc-az-eusa.airbitz.co', '50001'],
+      ['electrum-bu-az-ausw.airbitz.co', '50001'],
+      ['electrum.hsmiths.com', '8080'],
+      ['e.anonyhost.org', '50001'],
+      ['electrum.no-ip.org', '50001'],
+      ['electrum-bu-az-wusa2.airbitz.co', '50001'],
+      ['electrum-bu-az-wjapan.airbitz.co', '50001'],
+      ['kerzane.ddns.net', '50001']
+    ]
     this.txIndex = {}
     this.connections = []
     this.walletsScanQueue = []
@@ -53,19 +65,6 @@ export class BitcoinEngine {
     this.walletLocalData = {}
     this.walletLocalDataDirty = false
     this.transactionsChangedArray = []
-    this.masterBalance = 0
-    this.electrumServers = [
-      ['h.1209k.com', '50001'],
-      ['electrum-bu-az-weuro.airbitz.co', '50001'],
-      ['electrum-bc-az-eusa.airbitz.co', '50001'],
-      ['electrum-bu-az-ausw.airbitz.co', '50001'],
-      ['electrum.hsmiths.com', '8080'],
-      ['e.anonyhost.org', '50001'],
-      ['electrum.no-ip.org', '50001'],
-      ['electrum-bu-az-wusa2.airbitz.co', '50001'],
-      ['electrum-bu-az-wjapan.airbitz.co', '50001'],
-      ['kerzane.ddns.net', '50001']
-    ]
     this.globalRecievedData = ['', '', '', '', '', '', '', '', '', '']
     this.addresses = []
     this.masterFee = 0
