@@ -206,13 +206,13 @@ export class BitcoinEngine {
 
       this.cachedLocalData = localWallet
       let data = JSON.parse(localWallet)
-      this.addresses = data.addresses
+      this.addresses = data.addresses || this.addresses
       this.electrum.updateCache(data.txIndex)
-      this.masterBalance = data.balance
-      this.txIndex = data.txIndex
-      this.blockHeight = data.blockHeight
+      this.masterBalance = data.balance || this.masterBalance
+      this.txIndex = data.txIndex || this.txIndex
+      this.blockHeight = data.blockHeight || this.blockHeight
       if (typeof data.headerList !== 'undefined') this.headerList = data.headerList
-      this.masterBalance && this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
+      this.abcTxLibCallbacks.onBalanceChanged('BTC', this.masterBalance)
     } catch (e) {
       await this.cacheLocalData()
     }
