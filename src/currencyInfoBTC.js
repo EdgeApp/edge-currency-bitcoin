@@ -8,6 +8,20 @@ export const txLibInfo = {
     walletTypes: [
       'wallet:bitcoin'
     ],
+    defaultsSettings: {
+      electrumServers: [
+        ['h.1209k.com', '50001'],
+        ['electrum-bu-az-weuro.airbitz.co', '50001'],
+        ['electrum-bc-az-eusa.airbitz.co', '50001'],
+        ['electrum-bu-az-ausw.airbitz.co', '50001'],
+        ['electrum.hsmiths.com', '8080'],
+        ['e.anonyhost.org', '50001'],
+        ['electrum.no-ip.org', '50001'],
+        ['electrum-bu-az-wusa2.airbitz.co', '50001'],
+        ['electrum-bu-az-wjapan.airbitz.co', '50001'],
+        ['kerzane.ddns.net', '50001']
+      ]
+    },
     blockExplorer: 'https://insight.bitpay.com/block/%s',
     addressExplorer: 'https://insight.bitpay.com/address/%s',
     transactionExplorer: 'https://insight.bitpay.com/tx/%s',
