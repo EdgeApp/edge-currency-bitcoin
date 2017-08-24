@@ -165,7 +165,7 @@ describe('Get Fresh Address', function () {
   })
 })
 
-// abcSpendInfo = {
+// let abcSpendInfo = {
 //   networkFeeOption: 'high',
 //   metadata:  {
 //     name: 'Transfer to College Fund',
@@ -189,8 +189,64 @@ describe('Get Fresh Address', function () {
 //       }
 //     }
 //     engine.makeSpend(abcSpendInfo).then(a => {
-//       console.log(a)
-//       assert.equal(engine.getBlockHeight(), 0, 'Shoud init as 0')
+//       // console.log(a)
+//       done()
+//     }).catch(a => console.log('error', a))
+//   })
+
+//   it('Should transaction build with low fee', function (done) {
+//     let abcSpendInfo = {
+//       networkFeeOption: 'low',
+//       metadata: {
+//         name: 'Transfer to College Fund',
+//         category: 'Transfer:Wallet:College Fund'
+//       }
+//     }
+//     engine.makeSpend(abcSpendInfo).then(a => {
+//       // console.log(a)
+//       done()
+//     }).catch(a => console.log('error', a))
+//   })
+
+//   it('Should transaction build with standard fee', function (done) {
+//     let abcSpendInfo = {
+//       networkFeeOption: 'standard',
+//       metadata: {
+//         name: 'Transfer to College Fund',
+//         category: 'Transfer:Wallet:College Fund'
+//       }
+//     }
+//     engine.makeSpend(abcSpendInfo).then(a => {
+//       // console.log(a)
+//       done()
+//     }).catch(a => console.log('error', a))
+//   })
+
+//   it('Should transaction build with high fee', function (done) {
+//     let abcSpendInfo = {
+//       networkFeeOption: 'high',
+//       metadata: {
+//         name: 'Transfer to College Fund',
+//         category: 'Transfer:Wallet:College Fund'
+//       }
+//     }
+//     engine.makeSpend(abcSpendInfo).then(a => {
+//       // console.log(a)
+//       done()
+//     }).catch(a => console.log('error', a))
+//   })
+
+//   it('Should transaction build with custom fee', function (done) {
+//     let abcSpendInfo = {
+//       networkFeeOption: 'custom',
+//       customNetworkFee: '10000',
+//       metadata: {
+//         name: 'Transfer to College Fund',
+//         category: 'Transfer:Wallet:College Fund'
+//       }
+//     }
+//     engine.makeSpend(abcSpendInfo).then(a => {
+//       // console.log(a)
 //       done()
 //     }).catch(a => console.log('error', a))
 //   })
