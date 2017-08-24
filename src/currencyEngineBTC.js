@@ -159,6 +159,7 @@ export class BitcoinEngine {
     this.txUpdateTotalEntries = this.walletLocalData.addresses.length
     this.walletLocalData.addresses.forEach(address => this.processAddress(address))
     this.electrum.subscribeToBlockHeight().then(blockHeight => this.onBlockHeightChanged(blockHeight))
+    this.feeUpdater = setInterval(() => this.updateFeeTable(), FEE_UPDATE_INTERVAL)
   }
 
   async getLocalData () {
@@ -483,6 +484,7 @@ export class BitcoinEngine {
 
   async killEngine () {
     this.electrum = null
+    clearInterval(this.feeUpdater)
     await this.cacheHeadersLocalData()
     await this.cacheLocalData()
     return true
