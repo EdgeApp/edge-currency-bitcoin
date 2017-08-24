@@ -9,6 +9,8 @@ export const txLibInfo = {
       'wallet:bitcoin'
     ],
     defaultsSettings: {
+      feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
+      simpleFeeSettings: {low: 6, standard: 2, high: 0},
       electrumServers: [
         ['h.1209k.com', '50001'],
         ['electrum-bu-az-weuro.airbitz.co', '50001'],

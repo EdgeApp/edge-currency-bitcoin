@@ -10,12 +10,15 @@ const bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require('../vend
 const Buffer = process.env.ENV === 'NODEJS' ? require('buffer').Buffer : require('buffer/').Buffer
 
 const GAP_LIMIT = 25
+const FEE_UPDATE_INTERVAL = 10000
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const DATA_STORE_FILE = 'walletLocalDataV4.json'
 const HEADER_STORE_FILE = 'headersV1.json'
 
 const PRIMARY_CURRENCY = txLibInfo.getInfo.currencyCode
 const DEFUALT_ELECTRUM_SERVERS = txLibInfo.getInfo.defaultsSettings.electrumServers
+const DEFUALT_FEE_SERVER = txLibInfo.getInfo.defaultsSettings.feeInfoServer
+const SIMPLE_FEE_SETTINGS = txLibInfo.getInfo.defaultsSettings.simpleFeeSettings
 
 export class BitcoinEngine {
   constructor (io, keyInfo, opts = {}) {
@@ -24,6 +27,7 @@ export class BitcoinEngine {
     this.abcTxLibCallbacks = opts.callbacks
     this.walletLocalFolder = opts.walletLocalFolder
     this.electrumServers = (opts.optionalSettings && opts.optionalSettings.electrumServers) || DEFUALT_ELECTRUM_SERVERS
+    this.feeInfoServer = (opts.optionalSettings && opts.optionalSettings.feeInfoServer) || DEFUALT_FEE_SERVER
     this.headerList = {}
     this.cachedLocalData = ''
     this.cachedLocalHeaderData = ''
@@ -32,6 +36,7 @@ export class BitcoinEngine {
     this.txUpdateFinished = false
     this.txUpdateBalanceUpdateStarted = false
     this.txBalanceUpdateTotal = 0
+    this.feeUpdater = null
     this.walletLocalData = {
       masterBalance: '0',
       blockHeight: 0,
@@ -43,6 +48,21 @@ export class BitcoinEngine {
     this.electrumCallbacks = {
       onAddressStatusChanged: this.processAddress.bind(this),
       onBlockHeightChanged: this.onBlockHeightChanged.bind(this)
+    }
+  }
+
+  updateFeeTable () {
+    this.io.fetch(this.feeInfoServer)
+    .then(res => res.json())
+    .then(fees => (this.walletLocalData.detailedFeeTable = { updated: Date.now(), fees }))
+    .catch(err => console.log(err))
+
+    if (this.electrum && this.electrum.connected) {
+      for (let setting in SIMPLE_FEE_SETTINGS) {
+        this.electrum.getEstimateFee(SIMPLE_FEE_SETTINGS[setting])
+        .then(fee => fee !== -1 && (this.walletLocalData.simpleFeeTable[setting] = { updated: Date.now(), fee }))
+        .catch(err => console.log(err))
+      }
     }
   }
 

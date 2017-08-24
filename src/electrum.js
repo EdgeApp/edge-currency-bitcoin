@@ -230,6 +230,10 @@ export class Electrum {
     return this.write('{ "id": "[ID]", "method": "blockchain.numblocks.subscribe", "params": [] }')
   }
 
+  getEstimateFee (blocksToBeIncludedIn) {
+    return this.write(`{ "id": "[ID]", "method": "blockchain.estimatefee", "params": [${blocksToBeIncludedIn}] }`)
+  }
+
   broadcastTransaction (tx) {
     return this.write(`{ "id": "[ID]", "method":"blockchain.transaction.broadcast", "params":["${tx}"] }`)
   }
