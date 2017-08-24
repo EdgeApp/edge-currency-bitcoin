@@ -54,7 +54,21 @@ export class BitcoinEngine {
   updateFeeTable () {
     this.io.fetch(this.feeInfoServer)
     .then(res => res.json())
-    .then(fees => (this.walletLocalData.detailedFeeTable = { updated: Date.now(), fees }))
+    .then(({ fees }) => {
+      let high = fees[fees.length - 1].minFee
+      for (let i = fees.length - 1; i >= 0; i--) {
+        if (fees[i].maxDelay !== 0) break
+        high = fees[i].minFee
+      }
+      let low = fees[0].minFee
+      let highestMaxDelay = fees[0].maxDelay
+      for (let i = 1; i < fees.length; i++) {
+        low = fees[i].minFee
+        if (fees[i].maxDelay < highestMaxDelay) break
+      }
+      let standard = (low + high) / 2
+      this.walletLocalData.detailedFeeTable = { updated: Date.now(), low, standard, high }
+    })
     .catch(err => console.log(err))
 
     if (this.electrum && this.electrum.connected) {
@@ -599,7 +613,15 @@ export class BitcoinEngine {
 
     // return;
     // returns an ABCTransaction data structure, and checks for valid info
-    let fee = parseInt(this.masterFee * 100000000) * 0.3
+    let feeOption = abcSpendInfo.networkFeeOption
+    let fee
+    if (feeOption === 'custom') {
+      fee = parseInt(abcSpendInfo.customNetworkFee)
+    } else {
+      if (this.walletLocalData.detailedFeeTable) {
+        fee = this.walletLocalData.detailedFeeTable[feeOption]
+      } else fee = this.walletLocalData.simpleFeeTable[feeOption].fee
+    }
 
     let outputs = []
 
