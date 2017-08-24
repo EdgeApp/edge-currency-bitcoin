@@ -159,6 +159,7 @@ export class BitcoinEngine {
     this.txUpdateTotalEntries = this.walletLocalData.addresses.length
     this.walletLocalData.addresses.forEach(address => this.processAddress(address))
     this.electrum.subscribeToBlockHeight().then(blockHeight => this.onBlockHeightChanged(blockHeight))
+    this.updateFeeTable()
     this.feeUpdater = setInterval(() => this.updateFeeTable(), FEE_UPDATE_INTERVAL)
   }
 
