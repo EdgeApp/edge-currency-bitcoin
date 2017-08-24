@@ -101,7 +101,7 @@ describe('Start Engine', function () {
     request.get('https://blockchain.info/q/getblockcount', (err, res, body) => {
       assert(!err, 'getting block height from a second source')
       emitter.once('onBlockHeightChange', height => {
-        assert(height >= body, 'Block height')
+        assert(height >= parseInt(body), 'Block height')
         assert(engine.getBlockHeight() >= body, 'Block height')
         end() // Can be "done" since the promise resolves before the event fires but just be on the safe side
       })
