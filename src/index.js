@@ -23,13 +23,13 @@ function valid (address) {
 }
 
 let privateKeyInitializers = {
-  'wallet:bitcoin': (io) => ({
+  'bitcoin': (io) => ({
     bitcoinKey: Buffer.from(io.random(32)).toString('base64')
   })
 }
 
 let publicKeyInitializers = {
-  'wallet:bitcoin': (walletInfo) => {
+  'bitcoin': (walletInfo) => {
     if (!walletInfo.keys.bitcoinKey) throw new Error('InvalidKeyName')
     return {
       bitcoinKey: walletInfo.keys.bitcoinKey,
@@ -46,11 +46,13 @@ export class BitcoinPlugin {
       currencyInfo: txLibInfo.getInfo,
 
       createPrivateKey: (walletType) => {
+        walletType = walletType.replace('wallet:', '').toLowerCase()
         if (!privateKeyInitializers[walletType]) throw new Error('InvalidWalletType')
         return privateKeyInitializers[walletType](io)
       },
 
       derivePublicKey: (walletInfo) => {
+        walletInfo.type = walletInfo.type.replace('wallet:', '').toLowerCase()
         if (!publicKeyInitializers[walletInfo.type]) throw new Error('InvalidWalletType')
         if (!walletInfo.keys) throw new Error('InvalidKeyName')
         return publicKeyInitializers[walletInfo.type](walletInfo)
