@@ -178,6 +178,45 @@ describe('Get Fresh Address', function () {
 //     },
 //   ]
 // }
+// 1EtvppUprouJtMvZKiyHjLET6Q4cTYdQr9
+// 18htdQXrB6W1TizbcDZhZ9DCSgaqvAdZNP
+// 138P22UGHxa9dUTNwpw4Fhy11T8GJP3iTq
+// 16kj94dkSn7hsqZ51KLw5Cjjm133dx5Zk6
+// 14jG6D1eKj9rsi1yFrwwyRitqf7nriHi5R
+// 19eCBq4WaE8etkE5s4KHqGu9LSJfbUfRFM
+// 1Gfx7qZLJRwzmwQwnJRWKS3kiktti7Wt9B
+// 19KgMxuJyhoFAmCFTc8RVbxAy3QhXd61Fz
+// 1HcQWTTfWEBkfPZY1FxiqkfxajWGLCr1Zr
+
+// let templateSpend = {
+//   networkFeeOption: 0,
+//   metadata: {
+//     name: 'Transfer to College Fund',
+//     category: 'Transfer:Wallet:College Fund'
+//   },
+//   spendTargets: [
+//     {
+//       currencyCode: 'BTC',
+//       publicAddress: '1EtvppUprouJtMvZKiyHjLET6Q4cTYdQr9',
+//       nativeAmount: '210000000' // 2.1 BTC
+//     },
+//     {
+//       currencyCode: 'BTC',
+//       publicAddress: '18htdQXrB6W1TizbcDZhZ9DCSgaqvAdZNP',
+//       nativeAmount: '210000000' // 2.1 BTC
+//     },
+//     {
+//       currencyCode: 'BTC',
+//       publicAddress: '138P22UGHxa9dUTNwpw4Fhy11T8GJP3iTq',
+//       nativeAmount: '210000000' // 2.1 BTC
+//     },
+//     {
+//       currencyCode: 'BTC',
+//       publicAddress: '14jG6D1eKj9rsi1yFrwwyRitqf7nriHi5R',
+//       nativeAmount: '210000000' // 2.1 BTC
+//     }
+//   ]
+// }
 
 // describe('Make Spend', function () {
 //   it('Should fail since no spend target is given', function (done) {
@@ -195,57 +234,28 @@ describe('Get Fresh Address', function () {
 //   })
 
 //   it('Should transaction build with low fee', function (done) {
-//     let abcSpendInfo = {
-//       networkFeeOption: 'low',
-//       metadata: {
-//         name: 'Transfer to College Fund',
-//         category: 'Transfer:Wallet:College Fund'
-//       }
-//     }
-//     engine.makeSpend(abcSpendInfo).then(a => {
+//     engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'low' })).then(a => {
 //       // console.log(a)
 //       done()
 //     }).catch(a => console.log('error', a))
 //   })
 
 //   it('Should transaction build with standard fee', function (done) {
-//     let abcSpendInfo = {
-//       networkFeeOption: 'standard',
-//       metadata: {
-//         name: 'Transfer to College Fund',
-//         category: 'Transfer:Wallet:College Fund'
-//       }
-//     }
-//     engine.makeSpend(abcSpendInfo).then(a => {
+//     engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'standard' })).then(a => {
 //       // console.log(a)
 //       done()
 //     }).catch(a => console.log('error', a))
 //   })
 
 //   it('Should transaction build with high fee', function (done) {
-//     let abcSpendInfo = {
-//       networkFeeOption: 'high',
-//       metadata: {
-//         name: 'Transfer to College Fund',
-//         category: 'Transfer:Wallet:College Fund'
-//       }
-//     }
-//     engine.makeSpend(abcSpendInfo).then(a => {
+//     engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' })).then(a => {
 //       // console.log(a)
 //       done()
 //     }).catch(a => console.log('error', a))
 //   })
 
 //   it('Should transaction build with custom fee', function (done) {
-//     let abcSpendInfo = {
-//       networkFeeOption: 'custom',
-//       customNetworkFee: '10000',
-//       metadata: {
-//         name: 'Transfer to College Fund',
-//         category: 'Transfer:Wallet:College Fund'
-//       }
-//     }
-//     engine.makeSpend(abcSpendInfo).then(a => {
+//     engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'custom', customNetworkFee: '10000' })).then(a => {
 //       // console.log(a)
 //       done()
 //     }).catch(a => console.log('error', a))
