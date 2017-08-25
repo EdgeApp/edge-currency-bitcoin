@@ -617,33 +617,50 @@ export class BitcoinEngine {
     let fee
     if (feeOption === 'custom') {
       fee = parseInt(abcSpendInfo.customNetworkFee)
+    } else if (feeOption === 'standard') {
+      // currencyCode
+      // publicAddress
+      // nativeAmount
+      // destWallet
+      // destMetadata
+      // console.log(abcSpendInfo.spendTargets)
+      let outputs = abcSpendInfo.spendTargets.map(spendTarget => {
+        console.log(spendTarget)
+        return bcoin.primitives.Output.fromJSON({
+          value: parseInt(spendTarget.nativeAmount),
+          script: bcoin.script.fromAddress(spendTarget.publicAddress)
+        })
+      })
+      let dummyTX = await this.wallet.createTX({outputs})
+      console.log(dummyTX)
+      fee = this.walletLocalData.detailedFeeTable[feeOption].fee
     } else {
       if (this.walletLocalData.detailedFeeTable) {
         fee = this.walletLocalData.detailedFeeTable[feeOption]
       } else fee = this.walletLocalData.simpleFeeTable[feeOption].fee
     }
 
-    let outputs = []
+    // let outputs = []
 
-    outputs.push({
-      currencyCode: 'BTC',
-      address: abcSpendInfo.spendTargets[0].publicAddress,
-      amount: parseInt(abcSpendInfo.spendTargets[0].amountSatoshi)
-    })
+    // outputs.push({
+    //   currencyCode: 'BTC',
+    //   address: abcSpendInfo.spendTargets[0].publicAddress,
+    //   amount: parseInt(abcSpendInfo.spendTargets[0].amountSatoshi)
+    // })
 
-    const abcTransaction = new ABCTransaction('', // txid
-      0, // date
-      'BTC', // currencyCode
-      '0', // blockHeightNative
-      abcSpendInfo.spendTargets[0].amountSatoshi, // nativeAmount
-      fee.toString(), // nativeNetworkFee
-      '0', // signedTx
-      {
-        outputs: outputs
-      } // otherParams
-    )
-
-    return abcTransaction
+    // const abcTransaction = new ABCTransaction('', // txid
+    //   0, // date
+    //   'BTC', // currencyCode
+    //   '0', // blockHeightNative
+    //   abcSpendInfo.spendTargets[0].amountSatoshi, // nativeAmount
+    //   fee.toString(), // nativeNetworkFee
+    //   '0', // signedTx
+    //   {
+    //     outputs: outputs
+    //   } // otherParams
+    // )
+    return fee
+    // return abcTransaction
   }
 
   // asynchronous
