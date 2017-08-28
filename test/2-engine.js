@@ -22,23 +22,23 @@ let opts = {
 
 let callbacks = {
   onAddressesChecked (progressRatio) {
-    console.log('onAddressesCheck', progressRatio)
+    // console.log('onAddressesCheck', progressRatio)
     emitter.emit('onAddressesCheck', progressRatio)
   },
   onBalanceChanged (currencyCode, balance) {
-    console.log('onBalanceChange:', currencyCode, balance)
+    // console.log('onBalanceChange:', currencyCode, balance)
     emitter.emit('onBalanceChange', currencyCode, balance)
   },
   onBlockHeightChanged (height) {
-    console.log('onBlockHeightChange:', height)
+    // console.log('onBlockHeightChange:', height)
     emitter.emit('onBlockHeightChange', height)
   },
   onNewTransactions (transactionList) {
-    console.log('onNewTransactions:', transactionList)
+    // console.log('onNewTransactions:', transactionList)
     emitter.emit('onNewTransactions', transactionList)
   },
   onTransactionsChanged (transactionList) {
-    console.log('onTransactionsChanged:', transactionList)
+    // console.log('onTransactionsChanged:', transactionList)
     emitter.emit('onTransactionsChanged', transactionList)
   }
 }
@@ -92,7 +92,7 @@ describe('Start Engine', function () {
     })
     assert.equal(typeof engine.startEngine, 'function', 'startEngine')
     assert.equal(typeof engine.killEngine, 'function', 'killEngine')
-    assert.equal(typeof engine.enableTokens, 'function', 'enableTokens')
+    // assert.equal(typeof engine.enableTokens, 'function', 'enableTokens')
     assert.equal(typeof engine.getBlockHeight, 'function', 'getBlockHeight')
     assert.equal(typeof engine.getBalance, 'function', 'getBalance')
     assert.equal(typeof engine.getNumTransactions, 'function', 'getNumTransactions')
