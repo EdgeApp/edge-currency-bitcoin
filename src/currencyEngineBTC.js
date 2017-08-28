@@ -657,12 +657,8 @@ export class BitcoinEngine {
     return serverResponse
   }
 
-  // asynchronous
   saveTx (abcTransaction) {
-    var prom = new Promise(function (resolve, reject) {
-      resolve(abcTransaction)
-    })
-
-    return prom
+    const tx = bcoin.primitives.TX.fromRaw(abcTransaction.signedTx)
+    this.wallet.db.addTX(tx)
   }
 }
