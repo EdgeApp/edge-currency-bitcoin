@@ -8,7 +8,7 @@ import { txLibInfo } from './currencyInfoBTC'
 const bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require('../vendor/bcoin.js')
 const Buffer = process.env.ENV === 'NODEJS' ? require('buffer').Buffer : require('buffer/').Buffer
 
-function getParameterByName (param, url) {
+const getParameterByName = (param, url) => {
   const name = param.replace(/[[\]]/g, '\\$&')
   const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)')
   const results = regex.exec(url)
@@ -17,25 +17,28 @@ function getParameterByName (param, url) {
   return decodeURIComponent(results[2].replace(/\+/g, ' '))
 }
 
-function valid (address) {
-  let testAddress = cs.createValidator(0x00)
-  return testAddress(address)
-}
+const valid = address => cs.createValidator(0x00)(address)
 
-let privateKeyInitializers = {
-  'bitcoin': (io) => ({
-    bitcoinKey: Buffer.from(io.random(32)).toString('base64')
-  })
-}
+const createRandomPrivateKey = io => ({
+  bitcoinKey: Buffer.from(io.random(32)).toString('base64')
+})
 
-let publicKeyInitializers = {
-  'bitcoin': (walletInfo) => {
-    if (!walletInfo.keys.bitcoinKey) throw new Error('InvalidKeyName')
-    return {
-      bitcoinKey: walletInfo.keys.bitcoinKey,
-      bitcoinXpub: bcoin.hd.PrivateKey.fromSeed(Buffer.from(walletInfo.keys.bitcoinKey, 'base64')).xpubkey()
-    }
+const createPublicKey = (walletInfo, network) => {
+  if (!walletInfo.keys.bitcoinKey) throw new Error('InvalidKeyName')
+  return {
+    bitcoinKey: walletInfo.keys.bitcoinKey,
+    bitcoinXpub: bcoin.hd.PrivateKey.fromSeed(Buffer.from(walletInfo.keys.bitcoinKey, 'base64'), network).xpubkey()
   }
+}
+
+const privateKeyInitializers = {
+  'bitcoin': io => createRandomPrivateKey(io),
+  'testnet': io => createRandomPrivateKey(io)
+}
+
+const publicKeyInitializers = {
+  'bitcoin': walletInfo => createPublicKey(walletInfo, 'main'),
+  'testnet': walletInfo => createPublicKey(walletInfo, 'testnet')
 }
 
 export class BitcoinPlugin {

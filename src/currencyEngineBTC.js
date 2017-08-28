@@ -24,6 +24,11 @@ export class BitcoinEngine {
   constructor (io, keyInfo, opts = {}) {
     this.io = io
     this.keyInfo = keyInfo
+    this.wallet = null
+    // Only lines to change on engine to add network type based wallet //
+    this.network = keyInfo.type === 'wallet:testnet' ? 'testnet' : 'main'
+    this.magicByte = this.network === 'testnet' ? 0x6F : 0x00
+    // /////////////////////////////////////////////////////////////// //
     this.abcTxLibCallbacks = opts.callbacks
     this.walletLocalFolder = opts.walletLocalFolder
     this.electrumServers = (opts.optionalSettings && opts.optionalSettings.electrumServers) || DEFUALT_ELECTRUM_SERVERS
@@ -137,15 +142,14 @@ export class BitcoinEngine {
   async startEngine () {
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
     this.electrum.connect()
-    let walletdb = new bcoin.wallet.WalletDB({ db: 'memory' })
+    let walletdb = new bcoin.wallet.WalletDB({ db: 'memory', network: this.network })
     await walletdb.open()
-
     if (!this.keyInfo.keys) throw new Error('Missing Master Key')
     if (!this.keyInfo.keys.bitcoinKey) throw new Error('Missing Master Key')
 
     let bitcoinKeyBuffer = Buffer.from(this.keyInfo.keys.bitcoinKey, 'base64')
 
-    let key = bcoin.hd.PrivateKey.fromSeed(bitcoinKeyBuffer)
+    let key = bcoin.hd.PrivateKey.fromSeed(bitcoinKeyBuffer, this.network)
     let wallet = await walletdb.create({
       'master': key.xprivkey(),
       'id': 'ID1'
@@ -162,8 +166,7 @@ export class BitcoinEngine {
       }
     })
     let accountPath = await this.wallet.getAccountPaths(0)
-
-    let checkList = accountPath.map(path => path.toAddress().toString())
+    let checkList = accountPath.map(path => path.toAddress(this.network).toString())
     for (let l in checkList) {
       if (this.walletLocalData.addresses.indexOf(checkList[l]) === -1) {
         this.walletLocalData.addresses = checkList
@@ -596,7 +599,7 @@ export class BitcoinEngine {
 
   // synchronous
   isAddressUsed (address, options = {}) {
-    let validator = cs.createValidator(0x00)
+    let validator = cs.createValidator(this.magicByte)
     if (!validator(address)) throw new Error('Wrong formatted address')
     if (this.walletLocalData.addresses.indexOf(address) === -1) throw new Error('Address not found in wallet')
     if (!this.walletLocalData.txIndex[address]) return true
