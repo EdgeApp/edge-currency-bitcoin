@@ -1,5 +1,5 @@
 /* global describe it */
-const BitcoinPlugin = require('../lib/index.js').BitcoinPlugin
+const BitcoinPlugin = require('../lib/index.test.js').BitcoinPlugin
 const assert = require('assert')
 const disklet = require('disklet')
 const Emitter = require('events').EventEmitter
@@ -155,7 +155,7 @@ describe('Is Address Used', function () {
     setTimeout(() => {
       assert.equal(engine.isAddressUsed('mfgNKSNq8375GLZ7uhBJPvzpZxKtL9HUb9'), true)
       done()
-    }, 5000)
+    }, 2000)
   })
 
   // // This test uses private API's to run so it might break if implementation changes even if API remains the same
@@ -185,7 +185,7 @@ describe('Get Fresh Address', function () {
         assert(thirdPartyBalance === 0, 'Should have never received coins')
         done()
       })
-    }, 5000)
+    }, 2000)
   })
 })
 
