@@ -126,12 +126,6 @@ describe('Start Engine', function () {
 })
 
 describe('Is Address Used', function () {
-  it('Checking an empty address', function (done) {
-    // console.log(engine.walletLocalData)
-    assert.equal(engine.isAddressUsed('mfgNKSNq8375GLZ7uhBJPvzpZxKtL9HUb9'), false)
-    done()
-  })
-
   it('Checking a wrong formated address', function (done) {
     try {
       engine.isAddressUsed('TestErrorWithWrongAddress')
@@ -151,6 +145,19 @@ describe('Is Address Used', function () {
     }
   })
 
+  it('Checking an empty address', function (done) {
+    assert.equal(engine.isAddressUsed('mpWoyhXKB9s1E7EyKdoGMR5cxvQNym6PiN'), false)
+    done()
+  })
+
+  it('Checking a non empty address', function (done) {
+    this.timeout(10000)
+    setTimeout(() => {
+      assert.equal(engine.isAddressUsed('mfgNKSNq8375GLZ7uhBJPvzpZxKtL9HUb9'), true)
+      done()
+    }, 5000)
+  })
+
   // // This test uses private API's to run so it might break if implementation changes even if API remains the same
   // it('Check and address that has history', function (done) {
   //   this.timeout(0)
@@ -167,15 +174,18 @@ describe('Is Address Used', function () {
 })
 
 describe('Get Fresh Address', function () {
+  this.timeout(15000)
   it('Should provide a non used BTC address when no options are provided', function (done) {
-    let address = engine.getFreshAddress()
-    assert(cs.createValidator(0x6F)(address), 'Should be a valid address')
-    request.get('http://tbtc.blockr.io/api/v1/address/info/' + address, (err, res, body) => {
-      const thirdPartyBalance = parseInt(JSON.parse(body).data.balance)
-      assert(!err, 'getting address incoming txs from a second source')
-      assert(thirdPartyBalance === 0, 'Should have never received coins')
-      done()
-    })
+    setTimeout(() => {
+      let address = engine.getFreshAddress()
+      assert(cs.createValidator(0x6F)(address), 'Should be a valid address')
+      request.get('http://tbtc.blockr.io/api/v1/address/info/' + address, (err, res, body) => {
+        const thirdPartyBalance = parseInt(JSON.parse(body).data.balance)
+        assert(!err, 'getting address incoming txs from a second source')
+        assert(thirdPartyBalance === 0, 'Should have never received coins')
+        done()
+      })
+    }, 5000)
   })
 })
 
