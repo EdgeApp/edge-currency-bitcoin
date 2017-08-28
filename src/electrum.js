@@ -94,7 +94,7 @@ export class Electrum {
       // console.log(now, this.requests[i], MAX_REQUEST_TIME)
       if (now - this.requests[i].requestTime > MAX_REQUEST_TIME && !this.requests[i].executed) {
         this.requests[i].requestTime = now
-        let randomIndex = getRandomInt(0, MAX_CONNECTIONS - 1)
+        let randomIndex = getRandomInt(0, Math.min(MAX_CONNECTIONS, this.connections.length) - 1)
           // console.log("RE-REQUESTING", this.connections[randomIndex], this.requests[i].data)
 
         if (this.socketWriteAbstract(randomIndex, this.requests[i].data) === 2) {
@@ -191,7 +191,7 @@ export class Electrum {
     // console.log('Outgoin data', data)
     let hash = randomHash()
 
-    let randomIndex = getRandomInt(0, MAX_CONNECTIONS - 1)
+    let randomIndex = getRandomInt(0, Math.min(MAX_CONNECTIONS, this.connections.length) - 1)
 
     data = data.replace('[ID]', hash)
 
