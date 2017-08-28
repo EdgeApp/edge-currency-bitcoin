@@ -7,6 +7,7 @@ import { bns } from 'biggystring'
 import bcoin from 'bcoin'
 
 const GAP_LIMIT = 25
+const MAX_FEE = 10000
 const FEE_UPDATE_INTERVAL = 10000
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const DATA_STORE_FILE = 'walletLocalDataV4.json'
@@ -552,37 +553,28 @@ export class BitcoinEngine {
     if (!abcSpendInfo.spendTargets) throw new Error('Need to provide Spend Targets')
 
     let feeOption = abcSpendInfo.networkFeeOption || 'standard'
-    let fee
+    let rate
+
     if (feeOption === 'custom') {
-      fee = parseInt(abcSpendInfo.customNetworkFee)
-    } else if (feeOption === 'standard') {
-      // currencyCode
-      // publicAddress
-      // nativeAmount
-      // destWallet
-      // destMetadata
-      // let outputs = abcSpendInfo.spendTargets.map(spendTarget => {
-      //   return new bcoin.primitives.Output({
-      //     value: parseInt(spendTarget.nativeAmount),
-      //     script: bcoin.script.fromAddress(spendTarget.publicAddress)
-      //   })
-      // })
-      // let dummyTX = await this.wallet.createTX({outputs})
-      // console.log('dummyTX', dummyTX)
-      fee = this.walletLocalData.detailedFeeTable[feeOption].fee
+      rate = parseInt(abcSpendInfo.customNetworkFee)
     } else {
-      if (this.walletLocalData.detailedFeeTable) {
-        fee = this.walletLocalData.detailedFeeTable[feeOption]
-      } else fee = this.walletLocalData.simpleFeeTable[feeOption].fee
+      rate = this.walletLocalData.detailedFeeTable[feeOption]
     }
 
-    // let outputs = []
+    let outputs = abcSpendInfo.spendTargets.map(spendTarget => {
+      return new bcoin.primitives.Output({
+        value: parseInt(spendTarget.nativeAmount),
+        script: bcoin.script.fromAddress(spendTarget.publicAddress)
+      })
+    })
 
-    // outputs.push({
-    //   currencyCode: 'BTC',
-    //   address: abcSpendInfo.spendTargets[0].publicAddress,
-    //   amount: parseInt(abcSpendInfo.spendTargets[0].amountSatoshi)
-    // })
+    let txOptions = {
+      outputs,
+      rate,
+      maxFee: MAX_FEE
+    }
+    let dummyTX = await this.wallet.createTX(txOptions)
+    console.log(dummyTX)
 
     // const abcTransaction = new ABCTransaction('', // txid
     //   0, // date
@@ -595,7 +587,7 @@ export class BitcoinEngine {
     //     outputs: outputs
     //   } // otherParams
     // )
-    return fee
+    return dummyTX
     // return abcTransaction
   }
 

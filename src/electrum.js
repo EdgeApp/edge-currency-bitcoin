@@ -166,7 +166,7 @@ export class Electrum {
 
     setInterval(() => {
       this.collectGarbage()
-    }, 400)
+    }, 40000)
   }
 
   socketWriteAbstract (index, data) {
