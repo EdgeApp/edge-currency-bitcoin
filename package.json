@@ -11,7 +11,7 @@
     "prepare": "ROLLUPCONFIG=rollup.config.js npm run build",
     "test": "mocha",
     "pretest": "ROLLUPCONFIG=rollup.config.test.js npm run build",
-    "precommit": "npm run lint && npm run test && npm run prepare"
+    "precommit": "npm run lint"
   },
   "contributors": [
     "thehobbit85 <thehobbit85@gmail.com>",
