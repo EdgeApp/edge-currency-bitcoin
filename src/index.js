@@ -5,8 +5,15 @@ import { BitcoinEngine } from './currencyEngineBTC'
 import { txLibInfo } from './currencyInfoBTC'
 
 // including Bcoin Engine
-const bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require('../vendor/bcoin.js')
-const Buffer = process.env.ENV === 'NODEJS' ? require('buffer').Buffer : require('buffer/').Buffer
+// injecting correct modules
+let bcoin, Buffer
+try {
+  bcoin = require('bcoin')
+  Buffer = require('buffer').Buffer
+} catch (e) {
+  bcoin = require('../vendor/bcoin.js')
+  Buffer = require('buffer/').Buffer
+}
 
 const getParameterByName = (param, url) => {
   const name = param.replace(/[[\]]/g, '\\$&')

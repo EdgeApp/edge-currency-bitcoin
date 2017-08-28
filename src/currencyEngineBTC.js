@@ -5,9 +5,15 @@ import { txLibInfo } from './currencyInfoBTC'
 import cs from 'coinstring'
 import { bns } from 'biggystring'
 
-// including Bcoin Engine
-const bcoin = process.env.ENV === 'NODEJS' ? require('bcoin') : require('../vendor/bcoin.js')
-const Buffer = process.env.ENV === 'NODEJS' ? require('buffer').Buffer : require('buffer/').Buffer
+// injecting correct modules
+let bcoin, Buffer
+try {
+  bcoin = require('bcoin')
+  Buffer = require('buffer').Buffer
+} catch (e) {
+  bcoin = require('../vendor/bcoin.js')
+  Buffer = require('buffer/').Buffer
+}
 
 const GAP_LIMIT = 25
 const FEE_UPDATE_INTERVAL = 10000
