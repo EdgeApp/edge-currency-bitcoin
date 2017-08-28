@@ -3,17 +3,7 @@ import { bns } from 'biggystring'
 import cs from 'coinstring'
 import { BitcoinEngine } from './currencyEngineBTC'
 import { txLibInfo } from './currencyInfoBTC'
-
-// including Bcoin Engine
-// injecting correct modules
-let bcoin, Buffer
-try {
-  bcoin = require('bcoin')
-  Buffer = require('buffer').Buffer
-} catch (e) {
-  bcoin = require('../vendor/bcoin.js')
-  Buffer = require('buffer/').Buffer
-}
+import bcoin from 'bcoin'
 
 const getParameterByName = (param, url) => {
   const name = param.replace(/[[\]]/g, '\\$&')

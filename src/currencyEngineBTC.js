@@ -4,16 +4,7 @@ import { ABCTransaction } from './abcTransaction'
 import { txLibInfo } from './currencyInfoBTC'
 import cs from 'coinstring'
 import { bns } from 'biggystring'
-
-// injecting correct modules
-let bcoin, Buffer
-try {
-  bcoin = require('bcoin')
-  Buffer = require('buffer').Buffer
-} catch (e) {
-  bcoin = require('../vendor/bcoin.js')
-  Buffer = require('buffer/').Buffer
-}
+import bcoin from 'bcoin'
 
 const GAP_LIMIT = 25
 const FEE_UPDATE_INTERVAL = 10000
