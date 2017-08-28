@@ -1,15 +1,16 @@
 /* global describe it */
-let BitcoinPlugin = require('../lib/index.js').BitcoinPlugin
-let assert = require('assert')
-let disklet = require('disklet')
-let Emitter = require('events').EventEmitter
-let request = require('request')
-let _ = require('lodash')
-let cs = require('coinstring')
+const BitcoinPlugin = require('../lib/index.js').BitcoinPlugin
+const assert = require('assert')
+const disklet = require('disklet')
+const Emitter = require('events').EventEmitter
+const request = require('request')
+const _ = require('lodash')
+const cs = require('coinstring')
 
 let plugin, keys, engine
 var emitter = new Emitter()
 let walletLocalFolder = disklet.makeMemoryFolder()
+const WALLET_TYPE = 'wallet:testnet'
 
 let opts = {
   io: {
@@ -47,21 +48,21 @@ describe('Engine Creation Errors', function () {
     BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
       assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
       plugin = bitcoinPlugin
-      keys = plugin.createPrivateKey('wallet:bitcoin')
-      keys = plugin.derivePublicKey({type: 'wallet:bitcoin', keys: {bitcoinKey: keys.bitcoinKey}})
+      keys = plugin.createPrivateKey(WALLET_TYPE)
+      keys = plugin.derivePublicKey({type: WALLET_TYPE, keys: {bitcoinKey: keys.bitcoinKey}})
       done()
     })
   })
 
   it('Error when Making Engine without local folder', function () {
-    let engine = plugin.makeEngine({type: 'wallet:bitcoin', keys}, { callbacks })
+    let engine = plugin.makeEngine({type: WALLET_TYPE, keys}, { callbacks })
     return engine.startEngine().catch(e => {
       assert.equal(e.message, 'Cannot read property \'folder\' of undefined')
     })
   })
 
   it('Error when Making Engine without keys', function () {
-    let engine = plugin.makeEngine({type: 'wallet:bitcoin'}, { callbacks, walletLocalFolder })
+    let engine = plugin.makeEngine({type: WALLET_TYPE}, { callbacks, walletLocalFolder })
     return engine.startEngine().catch(e => {
       assert.equal(e.message, 'Missing Master Key')
     })
@@ -69,7 +70,7 @@ describe('Engine Creation Errors', function () {
 
   it('Error when Making Engine without bitcoin key', function () {
     let wrongKeys = { bitcoinXpub: keys.pub }
-    let engine = plugin.makeEngine({type: 'wallet:bitcoin', keys: wrongKeys}, { callbacks, walletLocalFolder })
+    let engine = plugin.makeEngine({type: WALLET_TYPE, keys: wrongKeys}, { callbacks, walletLocalFolder })
     return engine.startEngine().catch(e => {
       assert.equal(e.message, 'Missing Master Key')
     })
@@ -78,7 +79,17 @@ describe('Engine Creation Errors', function () {
 
 describe('Start Engine', function () {
   it('Make Engine', function () {
-    engine = plugin.makeEngine({type: 'wallet:bitcoin', keys}, { callbacks, walletLocalFolder })
+    engine = plugin.makeEngine({type: WALLET_TYPE, keys}, {
+      callbacks,
+      walletLocalFolder,
+      optionalSettings: {
+        electrumServers: [
+          ['testnetnode.arihanc.com', '51001'],
+          ['testnet.hsmiths.com', '53012'],
+          ['hsmithsxurybd7uh.onion', '53011']
+        ]
+      }
+    })
     assert.equal(typeof engine.startEngine, 'function', 'startEngine')
     assert.equal(typeof engine.killEngine, 'function', 'killEngine')
     assert.equal(typeof engine.enableTokens, 'function', 'enableTokens')
@@ -96,13 +107,14 @@ describe('Start Engine', function () {
   })
 
   it('Get BlockHeight', function (done) {
-    this.timeout(10000)
+    this.timeout(15000)
     let end = _.after(2, done)
-    request.get('https://blockchain.info/q/getblockcount', (err, res, body) => {
+    request.get('http://tbtc.blockr.io/api/v1/block/info/last', (err, res, body) => {
       assert(!err, 'getting block height from a second source')
       emitter.once('onBlockHeightChange', height => {
-        assert(height >= parseInt(body), 'Block height')
-        assert(engine.getBlockHeight() >= body, 'Block height')
+        const thirdPartyHeight = parseInt(JSON.parse(body).data.nb)
+        assert(height >= thirdPartyHeight, 'Block height')
+        assert(engine.getBlockHeight() >= thirdPartyHeight, 'Block height')
         end() // Can be "done" since the promise resolves before the event fires but just be on the safe side
       })
       engine.startEngine().then(a => {
@@ -115,7 +127,8 @@ describe('Start Engine', function () {
 
 describe('Is Address Used', function () {
   it('Checking an empty address', function (done) {
-    assert.equal(engine.isAddressUsed('133oNy5fHMZxwwgyCsovLenTSNTrksEyzd'), false)
+    // console.log(engine.walletLocalData)
+    assert.equal(engine.isAddressUsed('mfgNKSNq8375GLZ7uhBJPvzpZxKtL9HUb9'), false)
     done()
   })
 
@@ -131,7 +144,7 @@ describe('Is Address Used', function () {
 
   it('Checking an address we don\'t own', function () {
     try {
-      assert.equal(engine.isAddressUsed('1F1xcRt8H8Wa623KqmkEontwAAVqDSAWCV'), false)
+      assert.equal(engine.isAddressUsed('mnSmvy2q4dFNKQF18EBsrZrS7WEy6CieEE'), false)
     } catch (e) {
       assert(e, 'Should throw')
       assert.equal(e.message, 'Address not found in wallet')
@@ -156,10 +169,11 @@ describe('Is Address Used', function () {
 describe('Get Fresh Address', function () {
   it('Should provide a non used BTC address when no options are provided', function (done) {
     let address = engine.getFreshAddress()
-    assert(cs.createValidator(0x00)(address), 'Should be a valid address')
-    request.get('https://blockchain.info/q/getreceivedbyaddress/' + address, (err, res, body) => {
+    assert(cs.createValidator(0x6F)(address), 'Should be a valid address')
+    request.get('http://tbtc.blockr.io/api/v1/address/info/' + address, (err, res, body) => {
+      const thirdPartyBalance = parseInt(JSON.parse(body).data.balance)
       assert(!err, 'getting address incoming txs from a second source')
-      assert(body === '0', 'Should have never received coins')
+      assert(thirdPartyBalance === 0, 'Should have never received coins')
       done()
     })
   })
