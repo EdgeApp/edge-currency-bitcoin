@@ -602,7 +602,7 @@ export class BitcoinEngine {
     let validator = cs.createValidator(this.magicByte)
     if (!validator(address)) throw new Error('Wrong formatted address')
     if (this.walletLocalData.addresses.indexOf(address) === -1) throw new Error('Address not found in wallet')
-    if (!this.walletLocalData.txIndex[address]) return true
+    if (!this.walletLocalData.txIndex[address]) return false
     return Object.keys(this.walletLocalData.txIndex[address].txs).length !== 0
   }
 
