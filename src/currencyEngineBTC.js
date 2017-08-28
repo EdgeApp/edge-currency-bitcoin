@@ -139,7 +139,13 @@ export class BitcoinEngine {
   async startEngine () {
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
     this.electrum.connect()
-    let walletdb = new bcoin.wallet.WalletDB({ db: 'memory', network: this.network })
+
+    // Needs to replace next 2 lines since it's a super hack //
+    let opts = { db: 'memory' }
+    if (this.network !== 'main') Object.assign(opts, { network: this.network }) // Hack for now as long as we are using nbcoin version
+    // ////////////////////////
+
+    let walletdb = new bcoin.wallet.WalletDB(opts)
     await walletdb.open()
     if (!this.keyInfo.keys) throw new Error('Missing Master Key')
     if (!this.keyInfo.keys.bitcoinKey) throw new Error('Missing Master Key')
