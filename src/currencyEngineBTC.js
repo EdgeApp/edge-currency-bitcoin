@@ -35,7 +35,6 @@ export class BitcoinEngine {
     this.cachedLocalHeaderData = ''
     this.transactionHistory = {}
     this.txUpdateTotalEntries = 0
-    this.txUpdateFinished = false
     this.txUpdateBalanceUpdateStarted = false
     this.txBalanceUpdateTotal = 0
     this.feeUpdater = null
@@ -51,6 +50,11 @@ export class BitcoinEngine {
       onAddressStatusChanged: this.processAddress.bind(this),
       onBlockHeightChanged: this.onBlockHeightChanged.bind(this)
     }
+  }
+
+  async addTxToWallet (rawTx) {
+    const tx = bcoin.primitives.TX.fromRaw(Buffer.from(rawTx, 'hex'))
+    return this.wallet.db.addTX(tx)
   }
 
   updateFeeTable () {
@@ -121,15 +125,10 @@ export class BitcoinEngine {
       transactionProgress = 1
     }
 
-    // var progress = [addressProgress, transactionProgress]
-
-    // console.log("Total TX List:", Object.keys(this.walletLocalData.txIndex), "totalAddresses:", totalAddresses, "executedAddresses:", executedAddresses, totalTransactions, executedTransactions, transactionProgress)
-
     var totalProgress = addressProgress * transactionProgress
 
     if (totalProgress === 1 && !this.txUpdateBalanceUpdateStarted) {
       this.txUpdateBalanceUpdateStarted = 1
-        // console.log("PROCESSING ELECTRUM")
       this.processElectrumData()
     }
 
@@ -162,11 +161,9 @@ export class BitcoinEngine {
     await this.getLocalData()
 
     this.wallet.on('balance', balance => {
-      if (this.txUpdateFinished) {
-        this.walletLocalData.masterBalance = bns.add(balance.confirmed.toString(), balance.unconfirmed.toString())
-        this.abcTxLibCallbacks.onBalanceChanged('BTC', this.walletLocalData.masterBalance)
-        this.cacheLocalData()
-      }
+      this.walletLocalData.masterBalance = bns.add(balance.confirmed.toString(), balance.unconfirmed.toString())
+      this.abcTxLibCallbacks.onBalanceChanged('BTC', this.walletLocalData.masterBalance)
+      this.cacheLocalData()
     })
     let accountPath = await this.wallet.getAccountPaths(0)
     let checkList = accountPath.map(path => path.toAddress(this.network).toString())
@@ -176,6 +173,7 @@ export class BitcoinEngine {
         break
       }
     }
+
     this.txUpdateTotalEntries = this.walletLocalData.addresses.length
     this.walletLocalData.addresses.forEach(address => this.processAddress(address))
     this.electrum.subscribeToBlockHeight().then(blockHeight => this.onBlockHeightChanged(blockHeight))
@@ -254,16 +252,13 @@ export class BitcoinEngine {
 
   deriveAddresses (amount) {
     for (var i = 1; i <= amount; i++) {
-      // console.log("REQUESTING NEW ADDRESS")
       this.txUpdateTotalEntries++
       this.wallet.createKey(0).then(res => {
-        var address = res.getAddress('base58check')
+        var address = res.getAddress('base58check').toString()
         if (this.walletLocalData.addresses.indexOf(address) > -1) {
-          // console.log("EXISTING ADDRESS ")
           this.txUpdateTotalEntries--
           return
         }
-        /// / console.log("PUSHING NEW ADDRESS")
         this.pushAddress(address)
       })
     }
@@ -277,78 +272,59 @@ export class BitcoinEngine {
     }
   }
 
-  async processAddress (wallet) {
-    if (typeof this.walletLocalData.txIndex[wallet] !== 'object') {
-      this.walletLocalData.txIndex[wallet] = {
+  async processAddress (address) {
+    if (typeof this.walletLocalData.txIndex[address] !== 'object') {
+      this.walletLocalData.txIndex[address] = {
         txs: {},
         executed: 0,
         transactionHash: -1
       }
     } else {
-      this.walletLocalData.txIndex[wallet].executed = 0
+      this.walletLocalData.txIndex[address].executed = 0
     }
-
-    let getCallback = (tx, wallet) => {
-      return transaction => {
-        if (typeof this.walletLocalData.txIndex[wallet].txs[tx] === 'undefined') {
-          /// / console.log("BADTX", tx, wallet, this.walletLocalData.txIndex[wallet], this.walletLocalData.txIndex[wallet].txs)
-          return
-        } else {
-          this.walletLocalData.txIndex[wallet].txs[tx].data = transaction
-          this.walletLocalData.txIndex[wallet].txs[tx].executed = 1
-        }
-
-        if (this.txUpdateFinished) {
-          // console.log("ADDING TXFROMRAW ", transaction)
-          this.wallet.db.addTXFromRaw(transaction)
-        }
-        this.checkGapLimit(wallet)
-        this.updateTick()
-      }
-    }
-    let hash = await this.electrum.subscribeToAddress(wallet)
-
-    if (hash == null) {
-      // console.log("NULL INCOMING", wallet, hash)
-      this.walletLocalData.txIndex[wallet].transactionHash = hash
-      this.walletLocalData.txIndex[wallet].executed = 1
+    let hash = await this.electrum.subscribeToAddress(address)
+    if (hash === null) {
+      this.walletLocalData.txIndex[address].transactionHash = hash
+      this.walletLocalData.txIndex[address].executed = 1
       this.updateTick()
       return
     }
-    if (this.walletLocalData.txIndex[wallet].transactionHash === hash) {
-      // console.log("HSAH INCOMING", wallet)
-      this.walletLocalData.txIndex[wallet].executed = 1
+    if (this.walletLocalData.txIndex[address].transactionHash === hash) {
+      this.walletLocalData.txIndex[address].executed = 1
       this.updateTick()
       return
     }
 
-    // console.log("got transactions for ", wallet, this$1.txIndex[wallet].transactionHash, hash)
+    this.walletLocalData.txIndex[address].transactionHash = hash
+    let transactions = await this.electrum.getAddresHistory(address)
 
-    this.walletLocalData.txIndex[wallet].transactionHash = hash
-    let transactions = await this.electrum.getAddresHistory(wallet)
-
-    this.walletLocalData.txIndex[wallet].executed = 1
+    this.walletLocalData.txIndex[address].executed = 1
     for (let j in transactions) {
-      if (typeof this.walletLocalData.txIndex[wallet].txs[transactions[j].tx_hash] === 'object') {
-        this.walletLocalData.txIndex[wallet].txs[transactions[j].tx_hash].height = transactions[j].height
+      if (typeof this.walletLocalData.txIndex[address].txs[transactions[j].tx_hash] === 'object') {
+        this.walletLocalData.txIndex[address].txs[transactions[j].tx_hash].height = transactions[j].height
         continue
       }
-      this.walletLocalData.txIndex[wallet].txs[transactions[j].tx_hash] = {
+      this.walletLocalData.txIndex[address].txs[transactions[j].tx_hash] = {
         height: transactions[j].height,
         data: '',
         executed: 0
       }
-      let tx = transactions[j].tx_hash
-      this.electrum.getTransaction(transactions[j].tx_hash).then(getCallback(tx, wallet))
+      let txHash = transactions[j].tx_hash
+      let transaction = await this.electrum.getTransaction(txHash)
+
+      if (this.walletLocalData.txIndex[address].txs[txHash]) {
+        this.walletLocalData.txIndex[address].txs[txHash].data = transaction
+        this.walletLocalData.txIndex[address].txs[txHash].executed = 1
+      }
+
+      this.addTxToWallet(transaction)
+      this.checkGapLimit(address)
+      this.updateTick()
     }
-    this.updateTick()
   }
 
   processElectrumData () {
-    /// / console.log("Start Electrum Update Process");
-
     let txMappedTxList = []
-
     let sortMappedList = list => {
       let _fl = 0
       let a = {}
@@ -370,7 +346,6 @@ export class BitcoinEngine {
         }
       }
     }
-
     for (let i in this.walletLocalData.txIndex) {
       for (let l in this.walletLocalData.txIndex[i].txs) {
         let data = this.walletLocalData.txIndex[i].txs[l].data
@@ -391,12 +366,9 @@ export class BitcoinEngine {
         })
       }
     }
-
     sortMappedList(txMappedTxList)
-
     this.txBalanceUpdateTotal = txMappedTxList.length
-
-    let promiseList = txMappedTxList.map(({data}) => this.wallet.db.addTXFromRaw(data))
+    let promiseList = txMappedTxList.map(({data}) => this.addTxToWallet(data))
 
     Promise.all(promiseList)
     .then(() => {
@@ -407,8 +379,6 @@ export class BitcoinEngine {
       this.walletLocalData.masterBalance = bns.add(result.confirmed.toString(), result.unconfirmed.toString())
       this.abcTxLibCallbacks.onBalanceChanged('BTC', this.walletLocalData.masterBalance)
       this.refreshTransactionHistory()
-
-      this.txUpdateFinished = true
       this.cacheLocalData()
     })
   }
@@ -424,7 +394,6 @@ export class BitcoinEngine {
         }
       }
     }
-    // console.log('OLD/NEW LIST HEADERS', this.headerList, result)
     return result
   }
 
@@ -433,10 +402,7 @@ export class BitcoinEngine {
     let prom = []
 
     let getCallback = (i) => {
-      return block => {
-        // console.log('Setting block', i, block.timestamp)
-        this.headerList[i] = block
-      }
+      return block => { this.headerList[i] = block }
     }
 
     for (let i in newHeadersList) {
@@ -462,7 +428,6 @@ export class BitcoinEngine {
       if (this.transactionHistory[hash]) {
         continue
       }
-      /// / console.log("inputs ==> ", inputs)
       let outgoingTransaction = false
       let totalAmount = 0
       let ts = Math.floor(Date.now() / 1000)
@@ -476,10 +441,8 @@ export class BitcoinEngine {
           }
           outgoingTransaction = true
         }
-        /// / console.log("I>>",address )
       }
       let outputs = tx.outputs
-        /// / console.log("OUTPUTS ==> ", outputs)
       for (let j in outputs) {
         address = outputs[j].getAddress().toBase58()
         let addressIndex = this.walletLocalData.addresses.indexOf(address)
@@ -490,7 +453,6 @@ export class BitcoinEngine {
         if ((addressIndex === -1 && outgoingTransaction) || (!outgoingTransaction && addressIndex > -1)) {
           totalAmount += outputs[j].value
         }
-        /// / console.log("O>",address, "V>",outputs[j].value )
       }
       let d = ts
       totalAmount = (outgoingTransaction) ? -totalAmount : totalAmount
@@ -611,6 +573,7 @@ export class BitcoinEngine {
 
   // synchronous
   async makeSpend (abcSpendInfo) {
+    if (!abcSpendInfo.spendTargets) throw new Error('Need to provide Spend Targets')
     /// / console.log();
     // return;
     // 1BynMxKHRyASZDNhX4q6pRtdzAb2m8d7jM
@@ -619,7 +582,7 @@ export class BitcoinEngine {
 
     // return;
     // returns an ABCTransaction data structure, and checks for valid info
-    let feeOption = abcSpendInfo.networkFeeOption
+    let feeOption = abcSpendInfo.networkFeeOption || 'standard'
     let fee
     if (feeOption === 'custom') {
       fee = parseInt(abcSpendInfo.customNetworkFee)
@@ -631,14 +594,13 @@ export class BitcoinEngine {
       // destMetadata
       // console.log(abcSpendInfo.spendTargets)
       let outputs = abcSpendInfo.spendTargets.map(spendTarget => {
-        console.log(spendTarget)
-        return bcoin.primitives.Output.fromJSON({
+        return new bcoin.primitives.Output({
           value: parseInt(spendTarget.nativeAmount),
           script: bcoin.script.fromAddress(spendTarget.publicAddress)
         })
       })
       let dummyTX = await this.wallet.createTX({outputs})
-      console.log(dummyTX)
+      console.log('dummyTX', dummyTX)
       fee = this.walletLocalData.detailedFeeTable[feeOption].fee
     } else {
       if (this.walletLocalData.detailedFeeTable) {

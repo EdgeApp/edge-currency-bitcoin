@@ -188,19 +188,17 @@ export class Electrum {
   }
 
   write (data) {
-    // console.log('Outgoin data', data)
-    let hash = randomHash()
-
-    let randomIndex = getRandomInt(0, Math.min(MAX_CONNECTIONS, this.connections.length) - 1)
-
-    data = data.replace('[ID]', hash)
-
     let rejectProxy, resolveProxy
+    const hash = randomHash()
+    const randomIndex = getRandomInt(0, Math.min(MAX_CONNECTIONS, this.connections.length) - 1)
+    data = data.replace('[ID]', hash)
 
     const out = new Promise((resolve, reject) => {
       resolveProxy = resolve
       rejectProxy = resolve
     })
+
+    const now = Date.now()
 
     this.requests[hash] = {
       data: data,
@@ -208,15 +206,9 @@ export class Electrum {
       connectionIndex: randomIndex,
       onDataReceived: resolveProxy,
       onFailure: rejectProxy,
-      requestTime: Date.now()
+      requestTime: now
     }
-
-    // console.log("writing into", randomIndex, data)
-
-    let now = Date.now()
-
     this.connections[randomIndex].lastRequest = now
-
     this.socketWriteAbstract(randomIndex, data)
 
     return out
@@ -234,11 +226,16 @@ export class Electrum {
     return this.write(`{ "id": "[ID]", "method": "blockchain.estimatefee", "params": [${blocksToBeIncludedIn}] }`)
   }
 
+  getAddresHistory (address) {
+    return this.write('{ "id": "[ID]", "method":"blockchain.address.get_history", "params":["' + address + '"] }')
+  }
+
   broadcastTransaction (tx) {
     return this.write(`{ "id": "[ID]", "method":"blockchain.transaction.broadcast", "params":["${tx}"] }`)
   }
 
   handleData (data) {
+    // console.log(data)
     if (data.method === 'blockchain.address.subscribe' && data.params.length === 2) {
       this.onAddressStatusChanged(data.params[0], data.params[1])
       return
@@ -252,8 +249,6 @@ export class Electrum {
     var now = Date.now()
     this.connections[this.requests[data.id].connectionIndex].lastResponse = now
     this.requests[data.id].executed = 1
-    // // console.log("calling callback, ",data.id, data.result)
-    // console.log(data)
     this.requests[data.id].onDataReceived(data.result)
   }
 
@@ -274,12 +269,6 @@ export class Electrum {
     } else {
       // console.log("NOT USING CACHE", transactionID)
     }
-    return this.write(requestString)
-  }
-
-  getAddresHistory (wallet) {
-    // console.log("Getting history for ", wallet)
-    var requestString = '{ "id": "[ID]", "method":"blockchain.address.get_history", "params":["' + wallet + '"] }'
     return this.write(requestString)
   }
 }

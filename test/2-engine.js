@@ -107,7 +107,7 @@ describe('Start Engine', function () {
   })
 
   it('Get BlockHeight', function (done) {
-    this.timeout(15000)
+    this.timeout(10000)
     let end = _.after(2, done)
     request.get('http://tbtc.blockr.io/api/v1/block/info/last', (err, res, body) => {
       assert(!err, 'getting block height from a second source')
@@ -151,30 +151,16 @@ describe('Is Address Used', function () {
   })
 
   it('Checking a non empty address', function (done) {
-    this.timeout(10000)
+    this.timeout(20000)
     setTimeout(() => {
       assert.equal(engine.isAddressUsed('mfgNKSNq8375GLZ7uhBJPvzpZxKtL9HUb9'), true)
       done()
-    }, 2000)
+    }, 5000)
   })
-
-  // // This test uses private API's to run so it might break if implementation changes even if API remains the same
-  // it('Check and address that has history', function (done) {
-  //   this.timeout(0)
-  //   let address = '1F1xcRt8H8Wa623KqmkEontwAAVqDSAWCV'
-  //   engine.pushAddress(address)
-  //   setTimeout(() => {
-  //     // console.log('engine.txIndex', engine.txIndex)
-  //     // console.log('engine.addresses', engine.addresses)
-  //     assert.notEqual(engine.addresses.indexOf(address), -1, 'Should insert address to list of addresses')
-  //     assert.equal(engine.isAddressUsed('1F1xcRt8H8Wa623KqmkEontwAAVqDSAWCV'), true, 'This address is a used 3rd party address')
-  //     done()
-  //   }, 10000)
-  // })
 })
 
 describe('Get Fresh Address', function () {
-  this.timeout(15000)
+  this.timeout(20000)
   it('Should provide a non used BTC address when no options are provided', function (done) {
     setTimeout(() => {
       let address = engine.getFreshAddress()
@@ -185,7 +171,7 @@ describe('Get Fresh Address', function () {
         assert(thirdPartyBalance === 0, 'Should have never received coins')
         done()
       })
-    }, 2000)
+    }, 5000)
   })
 })
 
@@ -202,86 +188,76 @@ describe('Get Fresh Address', function () {
 //     },
 //   ]
 // }
-// 1EtvppUprouJtMvZKiyHjLET6Q4cTYdQr9
-// 18htdQXrB6W1TizbcDZhZ9DCSgaqvAdZNP
-// 138P22UGHxa9dUTNwpw4Fhy11T8GJP3iTq
-// 16kj94dkSn7hsqZ51KLw5Cjjm133dx5Zk6
-// 14jG6D1eKj9rsi1yFrwwyRitqf7nriHi5R
-// 19eCBq4WaE8etkE5s4KHqGu9LSJfbUfRFM
-// 1Gfx7qZLJRwzmwQwnJRWKS3kiktti7Wt9B
-// 19KgMxuJyhoFAmCFTc8RVbxAy3QhXd61Fz
-// 1HcQWTTfWEBkfPZY1FxiqkfxajWGLCr1Zr
 
-// let templateSpend = {
-//   networkFeeOption: 0,
-//   metadata: {
-//     name: 'Transfer to College Fund',
-//     category: 'Transfer:Wallet:College Fund'
-//   },
-//   spendTargets: [
-//     {
-//       currencyCode: 'BTC',
-//       publicAddress: '1EtvppUprouJtMvZKiyHjLET6Q4cTYdQr9',
-//       nativeAmount: '210000000' // 2.1 BTC
-//     },
-//     {
-//       currencyCode: 'BTC',
-//       publicAddress: '18htdQXrB6W1TizbcDZhZ9DCSgaqvAdZNP',
-//       nativeAmount: '210000000' // 2.1 BTC
-//     },
-//     {
-//       currencyCode: 'BTC',
-//       publicAddress: '138P22UGHxa9dUTNwpw4Fhy11T8GJP3iTq',
-//       nativeAmount: '210000000' // 2.1 BTC
-//     },
-//     {
-//       currencyCode: 'BTC',
-//       publicAddress: '14jG6D1eKj9rsi1yFrwwyRitqf7nriHi5R',
-//       nativeAmount: '210000000' // 2.1 BTC
-//     }
-//   ]
-// }
+let templateSpend = {
+  networkFeeOption: 0,
+  metadata: {
+    name: 'Transfer to College Fund',
+    category: 'Transfer:Wallet:College Fund'
+  },
+  spendTargets: [
+    {
+      currencyCode: 'BTC',
+      publicAddress: 'mfgNKSNq8375GLZ7uhBJPvzpZxKtL9HUb9',
+      nativeAmount: '2100000' // 0.021 BTC
+    },
+    {
+      currencyCode: 'BTC',
+      publicAddress: 'mg2ic79wfpvH7oy8tUrfVjxbZ85weJbp2Q',
+      nativeAmount: '4200000' // 0.042 BTC
+    },
+    {
+      currencyCode: 'BTC',
+      publicAddress: 'mhk239abov7CnL85PU5u3hD5HXahPuCMDX',
+      nativeAmount: '1100000' // 0.011 BTC
+    },
+    {
+      currencyCode: 'BTC',
+      publicAddress: 'mjmA4sTWKVFpRtsFPY53MtyGVhUKahRT9L',
+      nativeAmount: '500000' // 0.005 BTC
+    }
+  ]
+}
 
-// describe('Make Spend', function () {
-//   it('Should fail since no spend target is given', function (done) {
-//     let abcSpendInfo = {
-//       networkFeeOption: 'high',
-//       metadata: {
-//         name: 'Transfer to College Fund',
-//         category: 'Transfer:Wallet:College Fund'
-//       }
-//     }
-//     engine.makeSpend(abcSpendInfo).then(a => {
-//       // console.log(a)
-//       done()
-//     }).catch(a => console.log('error', a))
-//   })
+describe('Make Spend', function () {
+  it('Should fail since no spend target is given', function () {
+    let abcSpendInfo = {
+      networkFeeOption: 'high',
+      metadata: {
+        name: 'Transfer to College Fund',
+        category: 'Transfer:Wallet:College Fund'
+      }
+    }
+    return engine.makeSpend(abcSpendInfo).catch(e => {
+      assert(e, 'Should throw')
+      assert(e.message === 'Need to provide Spend Targets')
+    })
+  })
 
-//   it('Should transaction build with low fee', function (done) {
-//     engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'low' })).then(a => {
-//       // console.log(a)
-//       done()
-//     }).catch(a => console.log('error', a))
-//   })
+  it('Should build transaction with low fee', function () {
+    return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'low' })).then(a => {
+      console.log('success', a)
+    }).catch(a => console.log('error', a))
+  })
 
-//   it('Should transaction build with standard fee', function (done) {
-//     engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'standard' })).then(a => {
-//       // console.log(a)
-//       done()
-//     }).catch(a => console.log('error', a))
-//   })
+  it('Should build transaction with standard fee', function () {
+    return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'standard' })).then(a => {
+      console.log('success', a)
+    }).catch(a => console.log('error', a))
+  })
 
-//   it('Should transaction build with high fee', function (done) {
-//     engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' })).then(a => {
-//       // console.log(a)
-//       done()
-//     }).catch(a => console.log('error', a))
-//   })
+  it('Should build transaction with high fee', function () {
+    return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' })).then(a => {
+      console.log('success', a)
+    }).catch(a => console.log('error', a))
+  })
 
-//   it('Should transaction build with custom fee', function (done) {
-//     engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'custom', customNetworkFee: '10000' })).then(a => {
-//       // console.log(a)
-//       done()
-//     }).catch(a => console.log('error', a))
-//   })
-// })
+  it('Should build transaction with custom fee', function () {
+    return engine.makeSpend(Object.assign(templateSpend, {
+      networkFeeOption: 'custom',
+      customNetworkFee: '10000'
+    })).then(a => {
+      console.log('success', a)
+    }).catch(a => console.log('error', a))
+  })
+})
