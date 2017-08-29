@@ -29,8 +29,12 @@ export class BitcoinEngine {
     // /////////////////////////////////////////////////////////////// //
     this.abcTxLibCallbacks = opts.callbacks
     this.walletLocalFolder = opts.walletLocalFolder
-    this.electrumServers = (opts.optionalSettings && opts.optionalSettings.electrumServers) || DEFUALT_ELECTRUM_SERVERS
-    this.feeInfoServer = (opts.optionalSettings && opts.optionalSettings.feeInfoServer) || DEFUALT_FEE_SERVER
+    this.electrumServers = DEFUALT_ELECTRUM_SERVERS
+    this.feeInfoServer = DEFUALT_FEE_SERVER
+    if (opts.optionalSettings && opts.optionalSettings.enableOverrideServers) {
+      this.electrumServers = opts.optionalSettings.electrumServers || this.electrumServers
+      this.feeInfoServer = opts.optionalSettings.feeInfoServer || this.feeInfoServer
+    }
     this.headerList = {}
     this.cachedLocalData = ''
     this.cachedLocalHeaderData = ''
