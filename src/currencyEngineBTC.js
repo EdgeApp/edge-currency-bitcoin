@@ -603,12 +603,11 @@ export class BitcoinEngine {
     let serverResponse = await this.electrum.broadcastTransaction(abcTransaction.signedTx.toString('hex'))
     if (!serverResponse) throw new Error('Electrum server internal error processing request')
     if (serverResponse === 'TX decode failed') throw new Error('Tx is not valid')
-    this.saveTx(abcTransaction)
     return serverResponse
   }
 
-  saveTx (abcTransaction) {
+  async saveTx (abcTransaction) {
     const tx = bcoin.primitives.TX.fromRaw(abcTransaction.signedTx)
-    this.wallet.db.addTX(tx)
+    await this.wallet.db.addTX(tx)
   }
 }
