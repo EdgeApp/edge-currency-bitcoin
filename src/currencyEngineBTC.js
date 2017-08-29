@@ -175,12 +175,10 @@ export class BitcoinEngine {
     }
 
     var totalProgress = addressProgress * transactionProgress
-
     if (totalProgress === 1 && !this.txUpdateBalanceUpdateStarted) {
       this.txUpdateBalanceUpdateStarted = 1
       this.processElectrumData()
     }
-
     return totalProgress
   }
 
@@ -576,9 +574,16 @@ export class BitcoinEngine {
     }
 
     let sumOfTx = abcSpendInfo.spendTargets.reduce((s, spendTarget) => s + parseInt(spendTarget.nativeAmount), 0)
+    let jsonTX = resultedTransaction.getJSON(this.network)
+    let ourReceiveAddresses = jsonTX.outputs
+    .map(({ address }) => address)
+    .filter(address => address && this.walletLocalData.addresses.indexOf(address) !== -1)
 
     const abcTransaction = new ABCTransaction({
-      rawTx: resultedTransaction,
+      ourReceiveAddresses,
+      otherParams: {
+        rawTx: resultedTransaction
+      },
       currencyCode: PRIMARY_CURRENCY,
       txid: null,
       date: null,
@@ -592,9 +597,9 @@ export class BitcoinEngine {
   }
 
   async signTx (abcTransaction) {
-    await this.wallet.sign(abcTransaction.rawTx)
+    await this.wallet.sign(abcTransaction.otherParams.rawTx)
     abcTransaction.data = Date.now() / 1000
-    abcTransaction.signedTx = abcTransaction.rawTx.toRaw()
+    abcTransaction.signedTx = abcTransaction.otherParams.rawTx.toRaw()
     return abcTransaction
   }
 
