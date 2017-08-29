@@ -26,7 +26,7 @@ let callbacks = {
     emitter.emit('onAddressesCheck', progressRatio)
   },
   onBalanceChanged (currencyCode, balance) {
-    // console.log('onBalanceChange:', currencyCode, balance)
+    console.log('onBalanceChange:', currencyCode, balance)
     emitter.emit('onBalanceChange', currencyCode, balance)
   },
   onBlockHeightChanged (height) {
@@ -85,8 +85,7 @@ describe('Start Engine', function () {
       optionalSettings: {
         electrumServers: [
           ['testnetnode.arihanc.com', '51001'],
-          ['testnet.hsmiths.com', '53012'],
-          ['hsmithsxurybd7uh.onion', '53011']
+          ['testnet.hsmiths.com', '53012']
         ]
       }
     })
@@ -219,7 +218,7 @@ let templateSpend = {
   ]
 }
 
-describe('Make Spend', function () {
+describe('Make Spend and Sign', function () {
   it('Should fail since no spend target is given', function () {
     let abcSpendInfo = {
       networkFeeOption: 'high',
@@ -236,20 +235,29 @@ describe('Make Spend', function () {
 
   it('Should build transaction with low fee', function () {
     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'low' })).then(a => {
-      console.log('success', a)
-    }).catch(a => console.log('error', a))
+      console.log('makeSpend', a)
+      return engine.signTx(a)
+    })
+    .then(a => console.log('sign', a))
+    .catch(a => console.log('error', a))
   })
 
   it('Should build transaction with standard fee', function () {
     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'standard' })).then(a => {
-      console.log('success', a)
-    }).catch(a => console.log('error', a))
+      console.log('makeSpend', a)
+      return engine.signTx(a)
+    })
+    .then(a => console.log('sign', a))
+    .catch(a => console.log('error', a))
   })
 
   it('Should build transaction with high fee', function () {
     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' })).then(a => {
-      console.log('success', a)
-    }).catch(a => console.log('error', a))
+      console.log('makeSpend', a)
+      return engine.signTx(a)
+    })
+    .then(a => console.log('sign', a))
+    .catch(a => console.log('error', a))
   })
 
   it('Should build transaction with custom fee', function () {
@@ -257,7 +265,10 @@ describe('Make Spend', function () {
       networkFeeOption: 'custom',
       customNetworkFee: '10000'
     })).then(a => {
-      console.log('success', a)
-    }).catch(a => console.log('error', a))
+      console.log('makeSpend', a)
+      return engine.signTx(a)
+    })
+    .then(a => console.log('sign', a))
+    .catch(a => console.log('error', a))
   })
 })
