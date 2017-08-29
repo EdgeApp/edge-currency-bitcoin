@@ -6,7 +6,7 @@ Implements Bitcoin send/receive functionality per the spec for currency plugins 
 
 Since this package is not on NPM, you will have to use the current git version
 
-npm i git+ssh://git@github.com/Airbitz/airbitz-currency-ethereum.git -s
+npm i git+ssh://git@github.com/Airbitz/airbitz-currency-bitcoin.git -s
 
 ```
 import { BitcoinCurrencyPluginFactory } from `airbitz-currency-bitcoin`
