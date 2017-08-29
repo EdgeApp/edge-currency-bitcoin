@@ -1,5 +1,5 @@
 /* global describe it */
-const BitcoinPlugin = require('../lib/index.test.js').BitcoinPlugin
+const BitcoinCurrencyPluginFactory = require('../lib/index.test.js').BitcoinCurrencyPluginFactory
 const assert = require('assert')
 const disklet = require('disklet')
 const Emitter = require('events').EventEmitter
@@ -45,7 +45,7 @@ let callbacks = {
 
 describe('Engine Creation Errors', function () {
   before('Plugin', function (done) {
-    BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
+    BitcoinCurrencyPluginFactory.makePlugin(opts).then((bitcoinPlugin) => {
       assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
       plugin = bitcoinPlugin
       keys = plugin.createPrivateKey(WALLET_TYPE)
@@ -83,6 +83,7 @@ describe('Start Engine', function () {
       callbacks,
       walletLocalFolder,
       optionalSettings: {
+        enableOverrideServers: true,
         electrumServers: [
           ['testnetnode.arihanc.com', '51001'],
           ['testnet.hsmiths.com', '53012']

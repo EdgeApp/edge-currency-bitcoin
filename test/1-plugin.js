@@ -1,5 +1,5 @@
 /* global describe it */
-let BitcoinPlugin = require('../lib/index.test.js').BitcoinPlugin
+let BitcoinCurrencyPluginFactory = require('../lib/index.test.js').BitcoinCurrencyPluginFactory
 let assert = require('assert')
 
 let opts = {
@@ -14,7 +14,7 @@ describe('Info', function () {
   let plugin
 
   before('Plugin', function (done) {
-    BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
+    BitcoinCurrencyPluginFactory.makePlugin(opts).then((bitcoinPlugin) => {
       plugin = bitcoinPlugin
       done()
     })
@@ -29,7 +29,7 @@ describe('createPrivateKey', function () {
   let plugin
 
   before('Plugin', function (done) {
-    BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
+    BitcoinCurrencyPluginFactory.makePlugin(opts).then((bitcoinPlugin) => {
       plugin = bitcoinPlugin
       done()
     })
@@ -54,7 +54,7 @@ describe('derivePublicKey', function () {
   let keys
 
   before('Plugin', function (done) {
-    BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
+    BitcoinCurrencyPluginFactory.makePlugin(opts).then((bitcoinPlugin) => {
       assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
       plugin = bitcoinPlugin
       keys = plugin.createPrivateKey('wallet:bitcoin')
@@ -89,7 +89,7 @@ describe('parseUri', function () {
   let plugin
 
   before('Plugin', function () {
-    BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
+    BitcoinCurrencyPluginFactory.makePlugin(opts).then((bitcoinPlugin) => {
       assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
       plugin = bitcoinPlugin
     })
@@ -139,7 +139,7 @@ describe('encodeUri', function () {
   let plugin
 
   before('Plugin', function () {
-    BitcoinPlugin.makePlugin(opts).then((bitcoinPlugin) => {
+    BitcoinCurrencyPluginFactory.makePlugin(opts).then((bitcoinPlugin) => {
       plugin = bitcoinPlugin
     })
   })

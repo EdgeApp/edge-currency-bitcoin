@@ -38,7 +38,7 @@ const publicKeyInitializers = {
   'testnet': walletInfo => createPublicKey(walletInfo, 'testnet')
 }
 
-export const BitcoinPlugin = {
+export const BitcoinCurrencyPluginFactory = {
   pluginType: 'currency',
   makePlugin: async (opts = {io: {}}) => {
     let io = opts.io
