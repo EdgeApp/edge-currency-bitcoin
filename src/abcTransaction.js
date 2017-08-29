@@ -1,15 +1,18 @@
 export class ABCTransaction {
-  constructor (txid, date, currencyCode, blockHeightNative, nativeAmount, nativeNetworkFee, signedTx, otherParams) {
+  constructor ({ rawTx, wallet, currencyCode, metadata, txid, date, blockHeight, nativeAmount, providerFee, networkFee, runningBalance, signedTx, ourReceiveAddresses, otherParams }) {
+    this.wallet = wallet
+    this.rawTx = rawTx
+    this.currencyCode = currencyCode
+    this.metadata = metadata
     this.txid = txid
     this.date = date
-    this.currencyCode = currencyCode
-    this.blockHeightNative = blockHeightNative
-    this.blockHeight = 0
+    this.blockHeight = blockHeight
     this.nativeAmount = nativeAmount
-    this.amountSatoshi = nativeAmount
-    this.nativeNetworkFee = nativeNetworkFee
-    this.networkFee = nativeNetworkFee
+    this.providerFee = providerFee
+    this.networkFee = networkFee
+    this.runningBalance = runningBalance
     this.signedTx = signedTx
+    this.ourReceiveAddresses = ourReceiveAddresses
     this.otherParams = otherParams
   }
 }
