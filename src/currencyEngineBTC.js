@@ -238,7 +238,7 @@ export class BitcoinEngine {
     })
     .then(result => {
       this.walletLocalData.masterBalance = bns.add(result.confirmed.toString(), result.unconfirmed.toString())
-      this.abcTxLibCallbacks.onBalanceChanged('BTC', this.walletLocalData.masterBalance)
+      this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
       this.refreshTransactionHistory()
       this.cacheLocalData()
     })
@@ -285,7 +285,7 @@ export class BitcoinEngine {
       }
       let d = ts
       totalAmount = (outgoingTransaction) ? -totalAmount : totalAmount
-      let t = new ABCTransaction(hash, d, 'BTC', 1, totalAmount, 10000, 'signedTx', {})
+      let t = new ABCTransaction(hash, d, PRIMARY_CURRENCY, 1, totalAmount, 10000, 'signedTx', {})
       this.transactionHistory[hash] = t
       transactionList.push(t)
     }
@@ -324,6 +324,31 @@ export class BitcoinEngine {
     }
     return result
   }
+
+  // Needs rewrite
+  checkGapLimit (address) {
+    var total = this.walletLocalData.addresses.length
+    var addressIndex = this.walletLocalData.addresses.indexOf(address) + 1
+    if (addressIndex + GAP_LIMIT > total) {
+      this.deriveAddresses(addressIndex + GAP_LIMIT - total)
+    }
+  }
+
+  // Needs rewrite
+  deriveAddresses (amount) {
+    for (var i = 1; i <= amount; i++) {
+      this.txUpdateTotalEntries++
+      this.wallet.createKey(0).then(res => {
+        var address = res.getAddress('base58check').toString()
+        if (this.walletLocalData.addresses.indexOf(address) > -1) {
+          this.txUpdateTotalEntries--
+          return
+        }
+        this.walletLocalData.addresses.push(address)
+        this.processAddress(address)
+      })
+    }
+  }
   // ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   async startEngine () {
@@ -353,7 +378,7 @@ export class BitcoinEngine {
 
     this.wallet.on('balance', balance => {
       this.walletLocalData.masterBalance = bns.add(balance.confirmed.toString(), balance.unconfirmed.toString())
-      this.abcTxLibCallbacks.onBalanceChanged('BTC', this.walletLocalData.masterBalance)
+      this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
       this.cacheLocalData()
     })
     let accountPath = await this.wallet.getAccountPaths(0)
@@ -368,7 +393,8 @@ export class BitcoinEngine {
     this.txUpdateTotalEntries = this.walletLocalData.addresses.length
     this.walletLocalData.addresses.forEach(address => this.processAddress(address))
     this.electrum.subscribeToBlockHeight().then(blockHeight => this.onBlockHeightChanged(blockHeight))
-    this.updateFeeTable()
+    if (!Object.keys(this.walletLocalData.detailedFeeTable).length) await this.updateFeeTable()
+    else this.updateFeeTable()
     this.feeUpdater = setInterval(() => this.updateFeeTable(), FEE_UPDATE_INTERVAL)
   }
 
@@ -384,7 +410,7 @@ export class BitcoinEngine {
       console.log(this.walletLocalData)
       this.electrum.updateCache(data.txIndex)
       if (typeof data.headerList !== 'undefined') this.headerList = data.headerList
-      this.abcTxLibCallbacks.onBalanceChanged('BTC', this.walletLocalData.masterBalance)
+      this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
     } catch (e) {
       await this.cacheLocalData()
     }
@@ -433,33 +459,6 @@ export class BitcoinEngine {
       this.electrumServers = opts.electrumServers
       this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
       this.electrum.connect()
-    }
-  }
-
-  pushAddress (address) {
-    this.walletLocalData.addresses.push(address)
-    this.processAddress(address)
-  }
-
-  deriveAddresses (amount) {
-    for (var i = 1; i <= amount; i++) {
-      this.txUpdateTotalEntries++
-      this.wallet.createKey(0).then(res => {
-        var address = res.getAddress('base58check').toString()
-        if (this.walletLocalData.addresses.indexOf(address) > -1) {
-          this.txUpdateTotalEntries--
-          return
-        }
-        this.pushAddress(address)
-      })
-    }
-  }
-
-  checkGapLimit (wallet) {
-    var total = this.walletLocalData.addresses.length
-    var walletIndex = this.walletLocalData.addresses.indexOf(wallet) + 1
-    if (walletIndex + GAP_LIMIT > total) {
-      this.deriveAddresses(walletIndex + GAP_LIMIT - total)
     }
   }
 
