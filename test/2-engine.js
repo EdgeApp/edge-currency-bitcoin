@@ -248,7 +248,9 @@ describe('Make Spend and Sign', function () {
       console.log('makeSpend', a)
       return engine.signTx(a)
     })
-    .then(a => console.log('sign', a))
+    .then(a => {
+      console.log('sign', a)
+    })
     .catch(a => console.log('error', a))
   })
 
@@ -264,7 +266,7 @@ describe('Make Spend and Sign', function () {
   it('Should build transaction with custom fee', function () {
     return engine.makeSpend(Object.assign(templateSpend, {
       networkFeeOption: 'custom',
-      customNetworkFee: '10000'
+      customNetworkFee: '1000'
     })).then(a => {
       console.log('makeSpend', a)
       return engine.signTx(a)
