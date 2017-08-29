@@ -7,7 +7,7 @@ import { bns } from 'biggystring'
 import bcoin from 'bcoin'
 
 const GAP_LIMIT = 25
-const MAX_FEE = 10000
+const MAX_FEE = 1000000
 const FEE_UPDATE_INTERVAL = 10000
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const DATA_STORE_FILE = 'walletLocalDataV4.json'
@@ -552,7 +552,7 @@ export class BitcoinEngine {
     if (!abcSpendInfo.spendTargets) throw new Error('Need to provide Spend Targets')
 
     let feeOption = abcSpendInfo.networkFeeOption || 'standard'
-    let rate
+    let rate, resultedTransaction
 
     if (feeOption === 'custom') {
       rate = parseInt(abcSpendInfo.customNetworkFee)
@@ -567,50 +567,43 @@ export class BitcoinEngine {
       })
     })
 
-    let txOptions = {
-      outputs,
-      rate,
-      maxFee: MAX_FEE
+    let txOptions = { outputs, rate: rate * 1000, maxFee: MAX_FEE }
+    try {
+      resultedTransaction = await this.wallet.createTX(txOptions)
+    } catch (e) {
+      if (e.type === 'FundingError') throw new Error('InsufficientFundsError')
+      throw e
     }
-    let dummyTX = await this.wallet.createTX(txOptions)
-    console.log(dummyTX)
 
-    // const abcTransaction = new ABCTransaction('', // txid
-    //   0, // date
-    //   'BTC', // currencyCode
-    //   '0', // blockHeightNative
-    //   abcSpendInfo.spendTargets[0].amountSatoshi, // nativeAmount
-    //   fee.toString(), // nativeNetworkFee
-    //   '0', // signedTx
-    //   {
-    //     outputs: outputs
-    //   } // otherParams
-    // )
-    return dummyTX
-    // return abcTransaction
+    let sumOfTx = abcSpendInfo.spendTargets.reduce((s, spendTarget) => s + parseInt(spendTarget.nativeAmount), 0)
+
+    const abcTransaction = new ABCTransaction({
+      rawTx: resultedTransaction,
+      currencyCode: PRIMARY_CURRENCY,
+      txid: null,
+      date: null,
+      blockHeight: -1,
+      nativeAmount: '-' + (sumOfTx + parseInt(resultedTransaction.getFee())).toString(),
+      networkFee: resultedTransaction.getFee().toString(),
+      runningBalance: this.getBalance(),
+      signedTx: null
+    })
+    return abcTransaction
   }
 
   async signTx (abcTransaction) {
-    let fee = parseInt(this.masterFee * 100000000)
-    let options = {
-      outputs: [{
-        address: abcTransaction.otherParams.outputs[0].address,
-        value: parseInt(abcTransaction.otherParams.outputs[0].amount)
-      }],
-      rate: fee
-    }
-    let tx = await this.wallet.send(options)
-    let rawTX = tx.toRaw().toString('hex')
-    abcTransaction.date = Date.now() / 1000
-    abcTransaction.signedTx = rawTX
+    await this.wallet.sign(abcTransaction.rawTx)
+    abcTransaction.data = Date.now() / 1000
+    abcTransaction.signedTx = abcTransaction.rawTx.toRaw()
     return abcTransaction
   }
 
   async broadcastTx (abcTransaction) {
     if (!abcTransaction.signedTx) throw new Error('Tx is not signed')
-    let serverResponse = await this.electrum.broadcastTransaction(abcTransaction.signedTx)
+    let serverResponse = await this.electrum.broadcastTransaction(abcTransaction.signedTx.toString('hex'))
     if (!serverResponse) throw new Error('Electrum server internal error processing request')
     if (serverResponse === 'TX decode failed') throw new Error('Tx is not valid')
+    this.saveTx(abcTransaction)
     return serverResponse
   }
 
