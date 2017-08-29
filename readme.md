@@ -32,5 +32,5 @@ This plugin exposes the following `otherSettings` which can be set using abcAcco
 ```
 
 `enableOverrideServers` = `true` will force the plugin to ONLY use the electrum servers specified in `electrumServers`.
-`electrumServers` should be in the format [`[DNS name]`, `[port]`]. ie [`h.1209k.com`, `50001`]
-`feeInfoServer` should be the fee server, should have the same API as `https://bitcoinfees.21.co/api/v1/fees/list`
+`electrumServers` should be in the format [`[DNS name]`, `[port]`]. ie [`h.1209k.com`, `50001`].
+`feeInfoServer` should be the fee server, should have the same API as `https://bitcoinfees.21.co/api/v1/fees/list`.
