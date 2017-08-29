@@ -38,8 +38,9 @@ const publicKeyInitializers = {
   'testnet': walletInfo => createPublicKey(walletInfo, 'testnet')
 }
 
-export class BitcoinPlugin {
-  static async makePlugin (opts = {io: {}}) {
+export const BitcoinPlugin = {
+  pluginType: 'currency',
+  makePlugin: async (opts = {io: {}}) => {
     let io = opts.io
     return {
       pluginName: txLibInfo.getInfo.currencyName.toLowerCase(),
