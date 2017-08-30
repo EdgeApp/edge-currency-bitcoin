@@ -120,9 +120,10 @@ export class BitcoinEngine {
       let transactionHashes = await this.electrum.getAddresHistory(address)
       let transactionPromiseArray = transactionHashes.map(rawTransaction => this.handleTransaction(address, rawTransaction))
       let ABCtransaction = await Promise.all(transactionPromiseArray)
+      let filtteredABCtransaction = ABCtransaction.filter(tx => tx)
       localTxObject.executed = 1
       this.cacheLocalData()
-      this.abcTxLibCallbacks.onTransactionsChanged(ABCtransaction)
+      this.abcTxLibCallbacks.onTransactionsChanged(filtteredABCtransaction)
     }
   }
 
@@ -130,9 +131,13 @@ export class BitcoinEngine {
     let localTxObject = this.walletLocalData.txIndex[address]
     let txHash = txId.tx_hash
     if (localTxObject.txs[txHash]) {
-      localTxObject.txs[txHash].abcTransaction.blockHeight = txId.height
-      return localTxObject.txs[txHash].abcTransaction
+      if (localTxObject.txs[txHash].abcTransaction.blockHeight !== txId.height) {
+        localTxObject.txs[txHash].abcTransaction.blockHeight = txId.height
+        return localTxObject.txs[txHash].abcTransaction
+      }
+      return null
     }
+
     localTxObject.txs[txHash] = {
       abcTransaction: {},
       rawTransaction: '',
