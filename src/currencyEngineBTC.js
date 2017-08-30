@@ -352,26 +352,26 @@ export class BitcoinEngine {
 
   async cacheHeadersLocalData () {
     const headerList = JSON.stringify(this.headerList)
-    if (this.cachedLocalHeaderData === headerList) return true
-    await this.walletLocalFolder
+    if (this.cachedLocalHeaderData !== headerList) {
+      await this.walletLocalFolder
       .folder(DATA_STORE_FOLDER)
       .file(HEADER_STORE_FILE)
       .setText(JSON.stringify({
         headerList: this.headerList
       }))
-    this.cachedLocalHeaderData = headerList
-    return true
+      this.cachedLocalHeaderData = headerList
+    }
   }
 
   async cacheLocalData () {
     const walletJson = JSON.stringify(this.walletLocalData)
-    if (this.cachedLocalData === walletJson) return true
-    await this.walletLocalFolder
-      .folder(DATA_STORE_FOLDER)
-      .file(DATA_STORE_FILE)
-      .setText(walletJson)
-    this.cachedLocalData = walletJson
-    return true
+    if (this.cachedLocalData !== walletJson) {
+      await this.walletLocalFolder
+        .folder(DATA_STORE_FOLDER)
+        .file(DATA_STORE_FILE)
+        .setText(walletJson)
+      this.cachedLocalData = walletJson
+    }
   }
 
   updateSettings (opts) {
