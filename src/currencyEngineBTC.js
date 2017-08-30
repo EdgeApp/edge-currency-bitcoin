@@ -621,4 +621,8 @@ export class BitcoinEngine {
     const tx = bcoin.primitives.TX.fromRaw(abcTransaction.signedTx)
     await this.wallet.db.addTX(tx)
   }
+
+  addGapLimitAddresses (addresses) {
+    addresses.forEach(address => this.checkGapLimit(address))
+  }
 }
