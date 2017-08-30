@@ -23,10 +23,12 @@ export class BitcoinEngine {
     this.io = io
     this.keyInfo = keyInfo
     this.wallet = null
+
     // Only lines to change on engine to add network type based wallet //
     this.network = keyInfo.type === 'wallet:testnet' ? 'testnet' : 'main'
     this.magicByte = this.network === 'testnet' ? 0x6F : 0x00
     // /////////////////////////////////////////////////////////////// //
+
     this.abcTxLibCallbacks = opts.callbacks
     this.walletLocalFolder = opts.walletLocalFolder
     this.electrumServers = DEFUALT_ELECTRUM_SERVERS
