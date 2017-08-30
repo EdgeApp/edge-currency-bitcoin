@@ -288,12 +288,19 @@ export class BitcoinEngine {
     await this.getLocalData()
 
     let addTXPromises = []
-    for (let i in this.walletLocalData.txIndex) {
-      let tx = this.walletLocalData.txIndex[i]
-      tx.forEach(({ rawTransaction }) => {
-        const tx = bcoin.primitives.TX.fromRaw(Buffer.from(rawTransaction, 'hex'))
-        addTXPromises.push(this.wallet.db.addTX(tx))
-      })
+    for (let address in this.walletLocalData.txIndex) {
+      let tranasctionsForAddress = this.walletLocalData.txIndex[address].txs
+      for (let txHash in tranasctionsForAddress) {
+        let transactionData = tranasctionsForAddress[txHash]
+        if (!transactionData.abcTransaction && transactionData.data) {
+          addTXPromises.push(this.handleTransaction(address, tranasctionsForAddress[txHash].data))
+        } else if (tranasctionsForAddress[txHash].rawTransaction) {
+          const bcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(tranasctionsForAddress[txHash].rawTransaction, 'hex'))
+          addTXPromises.push(this.wallet.db.addTX(bcoinTX))
+        } else {
+          addTXPromises.push(this.processAddress(address))
+        }
+      }
     }
     await Promise.all(addTXPromises)
 
