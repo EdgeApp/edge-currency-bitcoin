@@ -135,7 +135,7 @@ export class BitcoinEngine {
     let localTxObject = this.walletLocalData.txIndex[address]
     let txHash = txId.tx_hash
     if (localTxObject.txs[txHash]) {
-      localTxObject.txs[txHash].abcTransaction.height = txId.height
+      localTxObject.txs[txHash].abcTransaction.blockHeight = txId.height
       return localTxObject.txs[txHash].abcTransaction
     }
     localTxObject.txs[txHash] = {
