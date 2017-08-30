@@ -146,18 +146,43 @@ export class BitcoinEngine {
     let rawTransaction = await this.electrum.getTransaction(txHash)
     localTxObject.txs[txHash].rawTransaction = rawTransaction
 
-    let tx = bcoin.primitives.TX.fromRaw(Buffer.from(rawTransaction, 'hex'))
-    let txJson = tx.getJSON(this.network)
+    let bcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(rawTransaction, 'hex'))
+    let txJson = bcoinTX.getJSON(this.network)
 
     // Needs to actually build the ABCtransaction Object, calculatin outputs, check if it's our addresses, the works
     // Also needs to check for block headers
-    localTxObject.txs[txHash].abcTransaction = txJson
+    // let outputs = txJson.outputs
+    // let inputs = txJson.inputs
+    // let prevout = txJson.inputs.map(({prevout}) => prevout)
+    // console.log('outputs', outputs)
+    // console.log('inputs', inputs)
+    // console.log('prevout', prevout)
+    let ourReceiveAddresses = txJson.outputs
+    .map(({ address }) => address)
+    .filter(address => this.walletLocalData.addresses.indexOf(address) !== -1)
+    // let networkFee = bcoinTX.getFee().toString()
+    // console.log(networkFee)
+    const abcTransaction = new ABCTransaction({
+      ourReceiveAddresses,
+      networkFee: '0',
+      otherParams: {
+        rawTx: rawTransaction
+      },
+      currencyCode: PRIMARY_CURRENCY,
+      txid: txHash,
+      date: null,
+      blockHeight: txId.height,
+      nativeAmount: '1000',
+      runningBalance: this.getBalance(),
+      signedTx: null
+    })
+    localTxObject.txs[txHash].abcTransaction = abcTransaction
     localTxObject.txs[txHash].executed = 1
     // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // //
 
-    await this.addTxToWallet(rawTransaction)
+    await this.wallet.db.addTX(bcoinTX)
     this.checkGapLimit(address)
-    return txJson
+    return abcTransaction
   }
 
   checkGapLimit (address) {
