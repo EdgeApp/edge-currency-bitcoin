@@ -173,7 +173,7 @@ export class BitcoinEngine {
       date: null,
       blockHeight: txId.height,
       nativeAmount: '1000',
-      runningBalance: this.getBalance(),
+      runningBalance: null,
       signedTx: null
     })
     localTxObject.txs[txHash].abcTransaction = abcTransaction
@@ -471,7 +471,7 @@ export class BitcoinEngine {
       blockHeight: -1,
       nativeAmount: '-' + (sumOfTx + parseInt(resultedTransaction.getFee())).toString(),
       networkFee: resultedTransaction.getFee().toString(),
-      runningBalance: this.getBalance(),
+      runningBalance: null,
       signedTx: null
     })
     return abcTransaction
