@@ -130,7 +130,7 @@ export class BitcoinEngine {
   async handleTransaction (address, txId) {
     let localTxObject = this.walletLocalData.txIndex[address]
     let txHash = txId.tx_hash
-    if (localTxObject.txs[txHash]) {
+    if (localTxObject.txs[txHash] && localTxObject.txs[txHash].abcTransaction) {
       if (localTxObject.txs[txHash].abcTransaction.blockHeight !== txId.height) {
         localTxObject.txs[txHash].abcTransaction.blockHeight = txId.height
         return localTxObject.txs[txHash].abcTransaction
