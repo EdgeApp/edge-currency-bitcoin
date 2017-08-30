@@ -483,7 +483,7 @@ export class BitcoinEngine {
   }
 
   getNumTransactions ({currencyCode = PRIMARY_CURRENCY} = {currencyCode: PRIMARY_CURRENCY}) {
-    return this.walletLocalData.transactionsObj[currencyCode].length
+    return this.walletLocalData.txIndex.reduce((s, addressTxs) => s + addressTxs.length, 0)
   }
 
   async getTransactions (options) {
