@@ -28,6 +28,7 @@ export const txLibInfo = {
     addressExplorer: 'https://insight.bitpay.com/address/%s',
     transactionExplorer: 'https://insight.bitpay.com/tx/%s',
     currencyName: 'Bitcoin',
+    denomCurrencyCode: 'Bits',
     currencyCode: 'BTC', // The 3 character code for the currency
     denominations: [
       // An array of Objects of the possible denominations for this currency
