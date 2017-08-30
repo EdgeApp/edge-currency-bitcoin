@@ -148,31 +148,43 @@ export class BitcoinEngine {
 
     let bcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(rawTransaction, 'hex'))
     let txJson = bcoinTX.getJSON(this.network)
+    let outputs = txJson.outputs
+    let ourFilteredOutputs = outputs.filter(({ address }) => this.walletLocalData.addresses.indexOf(address) !== -1)
+    // let inputs = txJson.inputs
 
     // Needs to actually build the ABCtransaction Object, calculatin outputs, check if it's our addresses, the works
     // Also needs to check for block headers
-    // let outputs = txJson.outputs
-    // let inputs = txJson.inputs
-    // let prevout = txJson.inputs.map(({prevout}) => prevout)
+    // console.log('nativeAmount 2', nativeAmount)
+
+    // let prevout = await Promise.all(txJson.inputs.map(({ prevout }) => this.electrum.getTransaction(prevout.hash)))
+    // let prev  = ''
+    // prevout.
     // console.log('outputs', outputs)
     // console.log('inputs', inputs)
     // console.log('prevout', prevout)
-    let ourReceiveAddresses = txJson.outputs
-    .map(({ address }) => address)
-    .filter(address => this.walletLocalData.addresses.indexOf(address) !== -1)
-    // let networkFee = bcoinTX.getFee().toString()
-    // console.log(networkFee)
+
+    // Getting our received Addresses from the transaction
+    let ourReceiveAddresses = ourFilteredOutputs.map(({ address }) => address)
+
+    // Building Native Amount from our outputs and inputs
+    let nativeAmount = 0
+    nativeAmount += outputs.reduce((sum, { value }) => sum + value, 0)
+
+    // Building network fee
+    let totalOutputAmount = txJson.outputs.reduce((sum, { value }) => sum + value, 0)
+    let totalInputAmount = 0
+
     const abcTransaction = new ABCTransaction({
       ourReceiveAddresses,
-      networkFee: '0',
+      networkFee: (totalInputAmount - totalOutputAmount).toString(),
       otherParams: {
         rawTx: rawTransaction
       },
       currencyCode: PRIMARY_CURRENCY,
       txid: txHash,
-      date: null,
+      date: Date.now() / 1000,
       blockHeight: txId.height,
-      nativeAmount: '1000',
+      nativeAmount: nativeAmount.toString(),
       runningBalance: null,
       signedTx: null
     })
