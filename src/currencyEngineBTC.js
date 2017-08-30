@@ -604,7 +604,6 @@ export class BitcoinEngine {
 
   async signTx (abcTransaction) {
     await this.wallet.sign(abcTransaction.otherParams.rawTx)
-    abcTransaction.data = Date.now() / 1000
     abcTransaction.signedTx = abcTransaction.otherParams.rawTx.toRaw()
     return abcTransaction
   }
