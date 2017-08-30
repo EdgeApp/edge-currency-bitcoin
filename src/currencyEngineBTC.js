@@ -242,7 +242,6 @@ export class BitcoinEngine {
   async startEngine () {
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
     this.electrum.connect()
-
     // Needs to replace next 2 lines since it's a super hack //
     let opts = { db: 'memory' }
     if (this.network !== 'main') Object.assign(opts, { network: this.network }) // Hack for now as long as we are using nbcoin version
@@ -256,13 +255,22 @@ export class BitcoinEngine {
     let bitcoinKeyBuffer = Buffer.from(this.keyInfo.keys.bitcoinKey, 'base64')
 
     let key = bcoin.hd.PrivateKey.fromSeed(bitcoinKeyBuffer, this.network)
-    let wallet = await walletdb.create({
+    this.wallet = await walletdb.create({
       'master': key.xprivkey(),
       'id': 'ID1'
     })
 
-    this.wallet = wallet
     await this.getLocalData()
+
+    let addTXPromises = []
+    for (let i in this.walletLocalData.txIndex) {
+      let tx = this.walletLocalData.txIndex[i]
+      tx.forEach(({ rawTransaction }) => {
+        const tx = bcoin.primitives.TX.fromRaw(Buffer.from(rawTransaction, 'hex'))
+        addTXPromises.push(this.wallet.db.addTX(tx))
+      })
+    }
+    await Promise.all(addTXPromises)
 
     this.wallet.on('balance', balance => {
       this.walletLocalData.masterBalance = bns.add(balance.confirmed.toString(), balance.unconfirmed.toString())
@@ -295,7 +303,6 @@ export class BitcoinEngine {
       this.cachedLocalData = localWallet
       let data = JSON.parse(localWallet)
       Object.assign(this.walletLocalData, data)
-      console.log(this.walletLocalData)
       this.electrum.updateCache(data.txIndex)
       if (typeof data.headerList !== 'undefined') this.headerList = data.headerList
       this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
