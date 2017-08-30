@@ -219,7 +219,7 @@ export class Electrum {
   }
 
   subscribeToBlockHeight () {
-    return this.write('{ "id": "[ID]", "method": "blockchain.numblocks.subscribe", "params": [] }')
+    return this.write(`{ "id": "[ID]", "method": "blockchain.numblocks.subscribe", "params": [] }`)
   }
 
   getEstimateFee (blocksToBeIncludedIn) {
@@ -227,7 +227,7 @@ export class Electrum {
   }
 
   getAddresHistory (address) {
-    return this.write('{ "id": "[ID]", "method":"blockchain.address.get_history", "params":["' + address + '"] }')
+    return this.write(`{ "id": "[ID]", "method":"blockchain.address.get_history", "params":["${address}"] }`)
   }
 
   broadcastTransaction (tx) {
