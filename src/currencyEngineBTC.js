@@ -59,11 +59,6 @@ export class BitcoinEngine {
     }
   }
 
-  async addTxToWallet (rawTx) {
-    const tx = bcoin.primitives.TX.fromRaw(Buffer.from(rawTx, 'hex'))
-    return this.wallet.db.addTX(tx)
-  }
-
   updateFeeTable () {
     this.io.fetch(this.feeInfoServer)
     .then(res => res.json())
