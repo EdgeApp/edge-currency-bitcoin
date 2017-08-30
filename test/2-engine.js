@@ -33,10 +33,6 @@ let callbacks = {
     // console.log('onBlockHeightChange:', height)
     emitter.emit('onBlockHeightChange', height)
   },
-  onNewTransactions (transactionList) {
-    // console.log('onNewTransactions:', transactionList)
-    emitter.emit('onNewTransactions', transactionList)
-  },
   onTransactionsChanged (transactionList) {
     // console.log('onTransactionsChanged:', transactionList)
     emitter.emit('onTransactionsChanged', transactionList)
