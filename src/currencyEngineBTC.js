@@ -54,7 +54,7 @@ export class BitcoinEngine {
       txIndex: {}
     }
     this.electrumCallbacks = {
-      onAddressStatusChanged: this.processAddress.bind(this),
+      onAddressStatusChanged: this.handleTransactionStatusHash.bind(this),
       onBlockHeightChanged: this.onBlockHeightChanged.bind(this)
     }
   }
