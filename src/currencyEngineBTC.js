@@ -109,7 +109,7 @@ export class BitcoinEngine {
 
   async handleTransactionStatusHash (address, hash) {
     let localTxObject = this.walletLocalData.txIndex[address]
-    if (hash === null) {
+    if (!hash) {
       localTxObject.transactionHash = hash
       localTxObject.executed = 1
     }
