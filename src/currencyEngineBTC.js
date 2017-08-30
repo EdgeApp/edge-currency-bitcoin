@@ -487,53 +487,12 @@ export class BitcoinEngine {
   }
 
   async getTransactions (options) {
-    if (options === void 0) options = {}
-    var currencyCode = PRIMARY_CURRENCY
-    if (options != null && options.currencyCode != null) {
-      currencyCode = options.currencyCode
-    }
-
-    var startIndex = 0
-    var numEntries = 0
-    if (!options === null) {
-      return this.walletLocalData.transactionsObj[currencyCode].slice(0)
-    }
-    if (options.startIndex != null && options.startIndex > 0) {
-      startIndex = options.startIndex
-      if (
-        startIndex >=
-        this.walletLocalData.transactionsObj[currencyCode].length
-      ) {
-        startIndex =
-          this.walletLocalData.transactionsObj[currencyCode].length - 1
-      }
-    }
-    if (options.numEntries != null && options.numEntries > 0) {
-      numEntries = options.numEntries
-      if (
-        numEntries + startIndex >
-        this.walletLocalData.transactionsObj[currencyCode].length
-      ) {
-        // Don't read past the end of the transactionsObj
-        numEntries =
-          this.walletLocalData.transactionsObj[currencyCode].length -
-          startIndex
-      }
-    }
-
-    // Copy the appropriate entries from the arrayTransactions
-    var returnArray = []
-    if (numEntries) {
-      returnArray = this.walletLocalData.transactionsObj[currencyCode].slice(
-        startIndex,
-        numEntries + startIndex
-      )
-    } else {
-      returnArray = this.walletLocalData.transactionsObj[currencyCode].slice(
-        startIndex
-      )
-    }
-    return returnArray
+    let transactions = this.walletLocalData.txIndex.reduce((s, addressTxs) => s.concat(addressTxs), [])
+    let abcTransactions = transactions.map(({ abcTransaction }) => abcTransaction)
+    let startIndex = options.startIndex || 0
+    let endIndex = options.numEntries || abcTransactions.length
+    if (startIndex + endIndex > abcTransactions.length) endIndex = abcTransactions.length
+    return abcTransactions.slice(startIndex, endIndex)
   }
 
   getFreshAddress (options = {}) {
