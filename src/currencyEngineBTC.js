@@ -148,31 +148,30 @@ export class BitcoinEngine {
 
     let bcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(rawTransaction, 'hex'))
     let txJson = bcoinTX.getJSON(this.network)
-    let outputs = txJson.outputs
-    let ourFilteredOutputs = outputs.filter(({ address }) => this.walletLocalData.addresses.indexOf(address) !== -1)
-    // let inputs = txJson.inputs
-
-    // Needs to actually build the ABCtransaction Object, calculatin outputs, check if it's our addresses, the works
-    // Also needs to check for block headers
-    // console.log('nativeAmount 2', nativeAmount)
-
-    // let prevout = await Promise.all(txJson.inputs.map(({ prevout }) => this.electrum.getTransaction(prevout.hash)))
-    // let prev  = ''
-    // prevout.
-    // console.log('outputs', outputs)
-    // console.log('inputs', inputs)
-    // console.log('prevout', prevout)
-
-    // Getting our received Addresses from the transaction
-    let ourReceiveAddresses = ourFilteredOutputs.map(({ address }) => address)
-
-    // Building Native Amount from our outputs and inputs
+    let ourReceiveAddresses = []
     let nativeAmount = 0
-    nativeAmount += outputs.reduce((sum, { value }) => sum + value, 0)
-
-    // Building network fee
-    let totalOutputAmount = txJson.outputs.reduce((sum, { value }) => sum + value, 0)
+    let totalOutputAmount = 0
     let totalInputAmount = 0
+
+    // Process tx outputs
+    txJson.outputs.forEach(({ address, value }) => {
+      totalOutputAmount += value
+      if (this.walletLocalData.addresses.indexOf(address) !== -1) {
+        nativeAmount += value
+        ourReceiveAddresses.push(address)
+      }
+    })
+    // Process tx inputs
+    let getPrevout = async ({ hash, index }) => {
+      let prevRawTransaction = await this.electrum.getTransaction(hash)
+      let prevoutBcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(prevRawTransaction, 'hex'))
+      let { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
+      totalInputAmount += value
+      if (this.walletLocalData.addresses.indexOf(address) !== -1) {
+        nativeAmount -= value
+      }
+    }
+    await Promise.all(txJson.inputs.map(({ prevout }) => getPrevout(prevout)))
 
     const abcTransaction = new ABCTransaction({
       ourReceiveAddresses,
@@ -190,7 +189,6 @@ export class BitcoinEngine {
     })
     localTxObject.txs[txHash].abcTransaction = abcTransaction
     localTxObject.txs[txHash].executed = 1
-    // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // // //
 
     await this.wallet.db.addTX(bcoinTX)
     this.checkGapLimit(address)
