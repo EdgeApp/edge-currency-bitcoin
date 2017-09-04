@@ -56,23 +56,26 @@ describe('Engine Creation Errors', function () {
   })
 
   it('Error when Making Engine without local folder', function () {
-    let engine = plugin.makeEngine({type: WALLET_TYPE, keys}, { callbacks })
-    return engine.startEngine().catch(e => {
+    plugin.makeEngine({type: WALLET_TYPE, keys}, { callbacks })
+    .then(engine => engine.startEngine())
+    .catch(e => {
       assert.equal(e.message, 'Cannot read property \'folder\' of undefined')
     })
   })
 
   it('Error when Making Engine without keys', function () {
-    let engine = plugin.makeEngine({type: WALLET_TYPE}, { callbacks, walletLocalFolder })
-    return engine.startEngine().catch(e => {
+    plugin.makeEngine({type: WALLET_TYPE}, { callbacks, walletLocalFolder })
+    .then(engine => engine.startEngine())
+    .catch(e => {
       assert.equal(e.message, 'Missing Master Key')
     })
   })
 
   it('Error when Making Engine without bitcoin key', function () {
     let wrongKeys = { bitcoinXpub: keys.pub }
-    let engine = plugin.makeEngine({type: WALLET_TYPE, keys: wrongKeys}, { callbacks, walletLocalFolder })
-    return engine.startEngine().catch(e => {
+    plugin.makeEngine({type: WALLET_TYPE, keys: wrongKeys}, { callbacks, walletLocalFolder })
+    .then(engine => engine.startEngine())
+    .catch(e => {
       assert.equal(e.message, 'Missing Master Key')
     })
   })
@@ -92,7 +95,7 @@ describe('Start Engine', function () {
 
   it('Make Engine', function () {
     // console.log(walletLocalFolder)
-    engine = plugin.makeEngine({type: WALLET_TYPE, keys}, {
+    plugin.makeEngine({type: WALLET_TYPE, keys}, {
       callbacks,
       walletLocalFolder,
       optionalSettings: {
@@ -102,21 +105,23 @@ describe('Start Engine', function () {
           ['testnet.hsmiths.com', '53012']
         ]
       }
+    }).then(e => {
+      engine = e
+      assert.equal(typeof engine.startEngine, 'function', 'startEngine')
+      assert.equal(typeof engine.killEngine, 'function', 'killEngine')
+      // assert.equal(typeof engine.enableTokens, 'function', 'enableTokens')
+      assert.equal(typeof engine.getBlockHeight, 'function', 'getBlockHeight')
+      assert.equal(typeof engine.getBalance, 'function', 'getBalance')
+      assert.equal(typeof engine.getNumTransactions, 'function', 'getNumTransactions')
+      assert.equal(typeof engine.getTransactions, 'function', 'getTransactions')
+      assert.equal(typeof engine.getFreshAddress, 'function', 'getFreshAddress')
+      // assert.equal(typeof engine.addGapLimitAddresses, 'function', 'addGapLimitAddresses')
+      assert.equal(typeof engine.isAddressUsed, 'function', 'isAddressUsed')
+      assert.equal(typeof engine.makeSpend, 'function', 'makeSpend')
+      assert.equal(typeof engine.signTx, 'function', 'signTx')
+      assert.equal(typeof engine.broadcastTx, 'function', 'broadcastTx')
+      assert.equal(typeof engine.saveTx, 'function', 'saveTx')
     })
-    assert.equal(typeof engine.startEngine, 'function', 'startEngine')
-    assert.equal(typeof engine.killEngine, 'function', 'killEngine')
-    // assert.equal(typeof engine.enableTokens, 'function', 'enableTokens')
-    assert.equal(typeof engine.getBlockHeight, 'function', 'getBlockHeight')
-    assert.equal(typeof engine.getBalance, 'function', 'getBalance')
-    assert.equal(typeof engine.getNumTransactions, 'function', 'getNumTransactions')
-    assert.equal(typeof engine.getTransactions, 'function', 'getTransactions')
-    assert.equal(typeof engine.getFreshAddress, 'function', 'getFreshAddress')
-    // assert.equal(typeof engine.addGapLimitAddresses, 'function', 'addGapLimitAddresses')
-    assert.equal(typeof engine.isAddressUsed, 'function', 'isAddressUsed')
-    assert.equal(typeof engine.makeSpend, 'function', 'makeSpend')
-    assert.equal(typeof engine.signTx, 'function', 'signTx')
-    assert.equal(typeof engine.broadcastTx, 'function', 'broadcastTx')
-    assert.equal(typeof engine.saveTx, 'function', 'saveTx')
   })
 
   it('Get BlockHeight', function (done) {
@@ -249,7 +254,7 @@ describe('Make Spend and Sign', function () {
 
   it('Should build transaction with low fee', function () {
     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'low' })).then(a => {
-      // console.log('makeSpend', a)
+      console.log('makeSpend', a)
       return engine.signTx(a)
     })
     .then(a => {
@@ -260,7 +265,7 @@ describe('Make Spend and Sign', function () {
 
   it('Should build transaction with standard fee', function () {
     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'standard' })).then(a => {
-      // console.log('makeSpend', a)
+      console.log('makeSpend', a)
       return engine.signTx(a)
     })
     .then(a => {
@@ -271,7 +276,7 @@ describe('Make Spend and Sign', function () {
 
   it('Should build transaction with high fee', function () {
     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' })).then(a => {
-      // console.log('makeSpend', a)
+      console.log('makeSpend', a)
       return engine.signTx(a)
     })
     .then(a => {
@@ -285,7 +290,7 @@ describe('Make Spend and Sign', function () {
       networkFeeOption: 'custom',
       customNetworkFee: '1000'
     })).then(a => {
-      // console.log('makeSpend', a)
+      console.log('makeSpend', a)
       return engine.signTx(a)
     })
     .then(a => {
