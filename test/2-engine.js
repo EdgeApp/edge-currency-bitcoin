@@ -6,6 +6,11 @@ const Emitter = require('events').EventEmitter
 const request = require('request')
 const _ = require('lodash')
 const cs = require('coinstring')
+const jsonfile = require('jsonfile')
+
+const DATA_STORE_FOLDER = 'txEngineFolderBTC'
+const DATA_STORE_FILE = 'walletLocalDataV4.json'
+const dummyCachefile = require('path').join(__dirname, './dummyCache.json')
 
 let plugin, keys, engine
 var emitter = new Emitter()
@@ -74,7 +79,19 @@ describe('Engine Creation Errors', function () {
 })
 
 describe('Start Engine', function () {
+  before('Create local cache file', function (done) {
+    jsonfile.readFile(dummyCachefile, function (err, obj) {
+      assert(!err, 'Should have dummyCache file')
+      walletLocalFolder
+      .folder(DATA_STORE_FOLDER)
+      .file(DATA_STORE_FILE)
+      .setText(JSON.stringify(obj))
+      .then(() => done())
+    })
+  })
+
   it('Make Engine', function () {
+    // console.log(walletLocalFolder)
     engine = plugin.makeEngine({type: WALLET_TYPE, keys}, {
       callbacks,
       walletLocalFolder,
@@ -114,7 +131,7 @@ describe('Start Engine', function () {
         end() // Can be "done" since the promise resolves before the event fires but just be on the safe side
       })
       engine.startEngine().then(a => {
-        assert.equal(engine.getBlockHeight(), 0, 'Shoud init as 0')
+        assert.equal(engine.getBlockHeight(), 1180814, 'Should init as 1180814')
         end()
       })
     })
