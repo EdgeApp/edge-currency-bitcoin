@@ -431,7 +431,7 @@ export class BitcoinEngine {
     let transactions = txIndexArray.reduce((s, addressTxs) => {
       return Object.keys(addressTxs.txs).length ? s.concat(this.objectToArray(addressTxs.txs)) : s
     }, [])
-    let abcTransactions = transactions.map(({ abcTransaction }) => abcTransaction)
+    let abcTransactions = transactions.filter(({ executed }) => executed).map(({ abcTransaction }) => abcTransaction)
     let startIndex = (options && options.startIndex) || 0
     let endIndex = (options && options.numEntries) || abcTransactions.length
     if (startIndex + endIndex > abcTransactions.length) endIndex = abcTransactions.length
