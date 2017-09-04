@@ -237,8 +237,12 @@ export class BitcoinEngine {
     }
     var totalProgress = addressProgress * transactionProgress
     if (totalProgress === 1 && !this.txUpdateBalanceUpdateStarted) {
-      this.txUpdateBalanceUpdateStarted = 1
-      this.abcTxLibCallbacks.onTransactionsChanged(this.getTransactions())
+      this.txUpdateBalanceUpdateStarted = true
+      const getTransactionsAsync = async () => {
+        const transactions = await this.getTransactions()
+        this.abcTxLibCallbacks.onTransactionsChanged(transactions)
+      }
+      getTransactionsAsync()
       this.abcTxLibCallbacks.onAddressesChecked(1)
     }
   }
