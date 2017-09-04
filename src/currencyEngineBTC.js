@@ -304,9 +304,10 @@ export class BitcoinEngine {
       let tranasctionsForAddress = this.walletLocalData.txIndex[address].txs
       for (let txHash in tranasctionsForAddress) {
         let transactionData = tranasctionsForAddress[txHash]
-        if (!transactionData.abcTransaction && transactionData.data) {
+        let transactionABCobject = transactionData.abcTransaction
+        if (!transactionABCobject && transactionData.data) {
           addTXPromises.push(this.handleTransaction(address, tranasctionsForAddress[txHash].data))
-        } else if (tranasctionsForAddress[txHash].abcTransaction.otherParams.rawTx) {
+        } else if (transactionABCobject && transactionABCobject.otherParams && transactionABCobject.otherParams.rawTx) {
           const bcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(tranasctionsForAddress[txHash].abcTransaction.otherParams.rawTx, 'hex'))
           addTXPromises.push(this.wallet.db.addTX(bcoinTX))
         } else {
