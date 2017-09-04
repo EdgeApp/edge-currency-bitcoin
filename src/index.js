@@ -77,7 +77,7 @@ export const BitcoinCurrencyPluginFactory = {
         }
       },
 
-      makeEngine: (keyInfo, opts = {}) => new BitcoinEngine(io, keyInfo, opts),
+      makeEngine: (keyInfo, opts = {}) => BitcoinEngine.makeEngine(io, keyInfo, opts),
 
       parseUri: (uri) => {
         let parsedUri = parse(uri)

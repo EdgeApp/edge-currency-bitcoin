@@ -59,6 +59,12 @@ export class BitcoinEngine {
     }
   }
 
+  static async makeEngine (io, keyInfo, opts = {}) {
+    let engine = new BitcoinEngine(io, keyInfo, opts)
+    await engine.loadCachedData()
+    return engine
+  }
+
   updateFeeTable () {
     this.io.fetch(this.feeInfoServer)
     .then(res => res.json())
@@ -298,7 +304,6 @@ export class BitcoinEngine {
       'master': key.xprivkey(),
       'id': 'ID1'
     })
-    await this.getLocalData()
     let addTXPromises = []
     for (let address in this.walletLocalData.txIndex) {
       let tranasctionsForAddress = this.walletLocalData.txIndex[address].txs
@@ -315,8 +320,6 @@ export class BitcoinEngine {
         }
       }
     }
-    const cachedTransactions = await this.getTransactions()
-    this.abcTxLibCallbacks.onTransactionsChanged(cachedTransactions)
     await Promise.all(addTXPromises)
 
     this.wallet.on('balance', balance => {
@@ -341,7 +344,7 @@ export class BitcoinEngine {
     this.feeUpdater = setInterval(() => this.updateFeeTable(), FEE_UPDATE_INTERVAL)
   }
 
-  async getLocalData () {
+  async loadCachedData () {
     try {
       let localWallet = await this.walletLocalFolder
       .folder(DATA_STORE_FOLDER)
@@ -350,6 +353,8 @@ export class BitcoinEngine {
       this.cachedLocalData = localWallet
       let data = JSON.parse(localWallet)
       Object.assign(this.walletLocalData, data)
+      const cachedTransactions = await this.getTransactions()
+      this.abcTxLibCallbacks.onTransactionsChanged(cachedTransactions)
       this.electrum.updateCache(data.txIndex)
       if (typeof data.headerList !== 'undefined') this.headerList = data.headerList
       this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
