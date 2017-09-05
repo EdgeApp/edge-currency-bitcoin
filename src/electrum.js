@@ -23,7 +23,6 @@ export class Electrum {
     this.io = io
     this.connections = []
     this.requests = {}
-    this.cache = {}
     this.serverList = serverIndex
     this.onAddressStatusChanged = callbacks.onAddressStatusChanged
     this.onBlockHeightChanged = callbacks.onBlockHeightChanged
@@ -66,15 +65,6 @@ export class Electrum {
       }
       for (var o = 0; o <= result.length - 1; o++) {
         this$1.handleData(result[o])
-      }
-    }
-  }
-
-  updateCache (data) {
-    this.cache = {}
-    for (var i in data) {
-      for (var j in data[i].txs) {
-        this.cache[j] = data[i].txs[j]
       }
     }
   }
@@ -187,6 +177,24 @@ export class Electrum {
     }
   }
 
+  handleData (data) {
+    // console.log(data)
+    if (data.method === 'blockchain.address.subscribe' && data.params.length === 2) {
+      this.onAddressStatusChanged(data.params[0], data.params[1])
+      return
+    }
+    if (data.method === 'blockchain.numblocks.subscribe' && data.params.length === 1) {
+      this.onBlockHeightChanged(data.params[0])
+      return
+    }
+    if (typeof this.requests[data.id] !== 'object') return
+    if (this.requests[data.id].executed) return
+    var now = Date.now()
+    this.connections[this.requests[data.id].connectionIndex].lastResponse = now
+    this.requests[data.id].executed = 1
+    this.requests[data.id].onDataReceived(data.result)
+  }
+
   write (data) {
     let rejectProxy, resolveProxy
     const hash = randomHash()
@@ -234,41 +242,11 @@ export class Electrum {
     return this.write(`{ "id": "[ID]", "method":"blockchain.transaction.broadcast", "params":["${tx}"] }`)
   }
 
-  handleData (data) {
-    // console.log(data)
-    if (data.method === 'blockchain.address.subscribe' && data.params.length === 2) {
-      this.onAddressStatusChanged(data.params[0], data.params[1])
-      return
-    }
-    if (data.method === 'blockchain.numblocks.subscribe' && data.params.length === 1) {
-      this.onBlockHeightChanged(data.params[0])
-      return
-    }
-    if (typeof this.requests[data.id] !== 'object') return
-    if (this.requests[data.id].executed) return
-    var now = Date.now()
-    this.connections[this.requests[data.id].connectionIndex].lastResponse = now
-    this.requests[data.id].executed = 1
-    this.requests[data.id].onDataReceived(data.result)
-  }
-
   getBlockHeader (height) {
-    var requestString = '{ "id": "[ID]", "method":"blockchain.block.get_header", "params": ["' + height + '"] }'
-    return this.write(requestString)
+    return this.write(`{ "id": "[ID]", "method":"blockchain.block.get_header", "params": ["${height}"] }`)
   }
 
   getTransaction (transactionID) {
-    // console.log("Getting transaction ", transactionID)
-    var requestString = '{ "id": "[ID]", "method":"blockchain.transaction.get", "params":["' + transactionID + '"] }'
-    if (this.cache[transactionID]) {
-      // console.log("USING CACHE", transactionID)
-      var transaction = this.cache[transactionID].data
-      return new Promise((resolve, reject) => {
-        resolve(transaction)
-      })
-    } else {
-      // console.log("NOT USING CACHE", transactionID)
-    }
-    return this.write(requestString)
+    return this.write(`{ "id": "[ID]", "method":"blockchain.transaction.get", "params":["${transactionID}"] }`)
   }
 }
