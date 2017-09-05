@@ -22,7 +22,16 @@ export const txLibInfo = {
         ['electrum-bu-az-wusa2.airbitz.co', '50001'],
         ['electrum-bu-az-wjapan.airbitz.co', '50001'],
         ['kerzane.ddns.net', '50001']
-      ]
+      ],
+      diskPath: {
+        folder: 'txEngineFolderBTC',
+        files: {
+          walletLocalData: 'walletLocalDataV4.json',
+          transactions: 'transactionsV1.json',
+          headerList: 'headersV1.json',
+          transactionsIds: 'transactionsIdsV1.json'
+        }
+      }
     },
     blockExplorer: 'https://insight.bitpay.com/block/%s',
     addressExplorer: 'https://insight.bitpay.com/address/%s',
