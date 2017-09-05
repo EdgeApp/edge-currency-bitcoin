@@ -12,8 +12,10 @@ const path = require('path')
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const DATA_STORE_FILE = 'walletLocalDataV4.json'
 const TRANSACTION_STORE_FILE = 'transactionsV1.json'
+const TRANSACTION_ID_STORE_FILE = 'transactionsIdsV1.json'
 const dummyWalletData = path.join(__dirname, './dummyWalletData.json')
 const dummyTransactions = path.join(__dirname, './dummyTransactions.json')
+const dummyTransactionsIds = path.join(__dirname, './dummyTransactionsIds.json')
 
 let plugin, keys, engine
 var emitter = new Emitter()
@@ -48,6 +50,7 @@ let callbacks = {
 }
 
 describe('Engine Creation Errors', function () {
+  let keys, plugin
   before('Plugin', function () {
     return BitcoinCurrencyPluginFactory.makePlugin(opts).then((bitcoinPlugin) => {
       assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
@@ -61,7 +64,7 @@ describe('Engine Creation Errors', function () {
     return plugin.makeEngine({type: WALLET_TYPE, keys}, { callbacks })
     .then(engine => engine.startEngine())
     .catch(e => {
-      assert.equal(e.message, 'Cannot read property \'folder\' of undefined')
+      assert.equal(e.message, 'Cannot create and engine without a local folder')
     })
   })
 
@@ -86,6 +89,7 @@ describe('Start Engine', function () {
   before('Create local cache file', function (done) {
     let walletData = jsonfile.readFileSync(dummyWalletData)
     let transactions = jsonfile.readFileSync(dummyTransactions)
+    let transactionsIds = jsonfile.readFileSync(dummyTransactionsIds)
     walletLocalFolder
     .folder(DATA_STORE_FOLDER)
     .file(DATA_STORE_FILE)
@@ -95,6 +99,18 @@ describe('Start Engine', function () {
       .file(TRANSACTION_STORE_FILE)
       .setText(JSON.stringify(transactions))
     )
+    .then(() => walletLocalFolder
+      .folder(DATA_STORE_FOLDER)
+      .file(TRANSACTION_ID_STORE_FILE)
+      .setText(JSON.stringify(transactionsIds))
+    )
+    .then(() => BitcoinCurrencyPluginFactory.makePlugin(opts))
+    .then((bitcoinPlugin) => {
+      assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
+      plugin = bitcoinPlugin
+      keys = plugin.createPrivateKey(WALLET_TYPE)
+      keys = plugin.derivePublicKey({type: WALLET_TYPE, keys: {bitcoinKey: keys.bitcoinKey}})
+    })
     .then(done)
   })
 
@@ -126,6 +142,7 @@ describe('Start Engine', function () {
       assert.equal(typeof engine.signTx, 'function', 'signTx')
       assert.equal(typeof engine.broadcastTx, 'function', 'broadcastTx')
       assert.equal(typeof engine.saveTx, 'function', 'saveTx')
+      return true
     })
   })
 
@@ -135,6 +152,7 @@ describe('Start Engine', function () {
     request.get('http://tbtc.blockr.io/api/v1/block/info/last', (err, res, body) => {
       assert(!err, 'getting block height from a second source')
       emitter.once('onBlockHeightChange', height => {
+        console.log('height', height)
         const thirdPartyHeight = parseInt(JSON.parse(body).data.nb)
         assert(height >= thirdPartyHeight, 'Block height')
         assert(engine.getBlockHeight() >= thirdPartyHeight, 'Block height')
