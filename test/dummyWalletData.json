@@ -1,0 +1,13 @@
+{
+	"masterBalance": "2031250",
+	"blockHeight": 1180814,
+	"addresses": ["mnAoeMHqeu8rKwQmuBykxYLnJysNjGjD2F", "mpWoyhXKB9s1E7EyKdoGMR5cxvQNym6PiN"],
+	"detailedFeeTable": {
+		"updated": 1504306290119,
+		"low": 1,
+		"standard": 181,
+		"high": 361
+	},
+	"simpleFeeTable": {},
+	"txIds": ["e9b8d657275f295c196f79713d6fcc029e9c177129f053dff1e1e20a7568228d"]
+}
