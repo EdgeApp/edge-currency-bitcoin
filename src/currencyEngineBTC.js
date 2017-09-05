@@ -38,6 +38,7 @@ export class BitcoinEngine {
     if (opts.optionalSettings && opts.optionalSettings.enableOverrideServers) {
       Object.assign(this, opts.optionalSettings)
     }
+
     this.txUpdateTotalEntries = 0
     this.txUpdateBalanceUpdateStarted = false
     this.headerList = {}
@@ -97,13 +98,13 @@ export class BitcoinEngine {
     if (this.walletLocalData.blockHeight < blockHeight) {
       this.walletLocalData.blockHeight = blockHeight
       this.abcTxLibCallbacks.onBlockHeightChanged(blockHeight)
-      this.saveToDisk('walletLocalData', this.walletLocalData)
+      this.saveToDisk('walletLocalData')
     }
   }
 
   async processAddress (address) {
     if (!this.transactions[address]) {
-      this.transactions[address] = { txs: {}, executed: 0, transactionHash: -1 }
+      this.transactions[address] = { txs: {}, executed: 0, addressStatusHash: null }
     }
     const localTxObject = this.transactions[address]
     localTxObject.executed = 0
@@ -132,8 +133,8 @@ export class BitcoinEngine {
         if (this.transactionsIds.indexOf(txid) === -1) this.transactionsIds.push(txid)
       })
       localTxObject.executed = 1
-      this.saveToDisk('transactions', this.transactions)
-      this.saveToDisk('transactionsIds', this.transactionsIds)
+      this.saveToDisk('transactions')
+      this.saveToDisk('transactionsIds')
       this.abcTxLibCallbacks.onTransactionsChanged(filtteredABCtransaction)
     }
   }
@@ -275,7 +276,7 @@ export class BitcoinEngine {
     }
     await Promise.all(prom)
     if (newHeadersList.length > 1) {
-      this.saveToDisk('headerList', this.headerList)
+      this.saveToDisk('headerList')
     }
   }
 
@@ -328,7 +329,7 @@ export class BitcoinEngine {
     this.wallet.on('balance', balance => {
       this.walletLocalData.masterBalance = bns.add(balance.confirmed.toString(), balance.unconfirmed.toString())
       this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
-      this.saveToDisk('walletLocalData', this.walletLocalData)
+      this.saveToDisk('walletLocalData')
     })
     const accountPath = await this.wallet.getAccountPaths(0)
     const checkList = accountPath.map(path => path.toAddress(this.network).toString())
@@ -352,25 +353,25 @@ export class BitcoinEngine {
   }
 
   // Disk Handeling Functions //
-  async saveToDisk (fileName, data, optionalFileName = '') {
+  async saveToDisk (fileName, optionalFileName = '') {
     try {
       await this.walletLocalFolder
       .folder(this.diskPath.folder)
       .file(this.diskPath.files[fileName] + optionalFileName)
-      .setText(JSON.stringify(data))
+      .setText(JSON.stringify(this[fileName]))
     } catch (e) {
       return e
     }
   }
 
-  async loadFromDisk (fileName, loadInto, optionalFileName = '') {
+  async loadFromDisk (fileName, optionalFileName = '') {
     try {
       const data = await this.walletLocalFolder
       .folder(this.diskPath.folder)
       .file(this.diskPath.files[fileName] + optionalFileName)
       .getText()
       let dataJson = JSON.parse(data)
-      Object.assign(loadInto, dataJson)
+      Object.assign(this[fileName], dataJson)
       return dataJson
     } catch (e) {
       return null
@@ -378,30 +379,30 @@ export class BitcoinEngine {
   }
 
   async loadWalletLocalDataFromDisk () {
-    const localWalletData = await this.loadFromDisk('walletLocalData', this.walletLocalData)
+    const localWalletData = await this.loadFromDisk('walletLocalData')
     if (localWalletData) {
       this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
-    } else await this.saveToDisk('walletLocalData', this.walletLocalData)
+    } else await this.saveToDisk('walletLocalData')
   }
 
   async loadTransactionsFromDisk () {
-    const transactions = await this.loadFromDisk('transactions', this.transactions)
+    const transactions = await this.loadFromDisk('transactions')
     if (transactions) {
       const transactionsFromFile = await this.getTransactions()
       this.abcTxLibCallbacks.onTransactionsChanged(transactionsFromFile)
-    } else await this.saveToDisk('transactions', this.transactions)
+    } else await this.saveToDisk('transactions')
   }
 
   async loadTransactionsIdsFromDisk () {
-    const transactionsIds = await this.loadFromDisk('transactionsIds', this.transactionsIds)
+    const transactionsIds = await this.loadFromDisk('transactionsIds')
     if (transactionsIds) {
       // this.abcTxLibCallbacks.onTxIdChanged(transactionsFromFile)
-    } else await this.saveToDisk('transactionsIds', this.transactionsIds)
+    } else await this.saveToDisk('transactionsIds')
   }
 
   async loadHeadersFromDisk () {
-    const headers = await this.loadFromDisk('headerList', this.headerList)
-    if (!headers) await this.saveToDisk('headerList', this.headerList)
+    const headers = await this.loadFromDisk('headerList')
+    if (!headers) await this.saveToDisk('headerList')
   }
   // //////////////////////// //
 
@@ -416,10 +417,10 @@ export class BitcoinEngine {
   async killEngine () {
     this.electrum = null
     clearInterval(this.feeUpdater)
-    await this.saveToDisk('headerList', this.headerList)
-    await this.saveToDisk('walletLocalData', this.walletLocalData)
-    await this.saveToDisk('transactions', this.transactions)
-    await this.saveToDisk('transactionsIds', this.transactionsIds)
+    await this.saveToDisk('headerList')
+    await this.saveToDisk('walletLocalData')
+    await this.saveToDisk('transactions')
+    await this.saveToDisk('transactionsIds')
     return true
   }
 
