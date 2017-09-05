@@ -11,6 +11,7 @@ const MAX_FEE = 1000000
 const FEE_UPDATE_INTERVAL = 10000
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const DATA_STORE_FILE = 'walletLocalDataV4.json'
+const TRANSACTION_STORE_FILE = 'transactionsV1.json'
 const HEADER_STORE_FILE = 'headersV1.json'
 
 const PRIMARY_CURRENCY = txLibInfo.getInfo.currencyCode
@@ -37,21 +38,17 @@ export class BitcoinEngine {
       this.electrumServers = opts.optionalSettings.electrumServers || this.electrumServers
       this.feeInfoServer = opts.optionalSettings.feeInfoServer || this.feeInfoServer
     }
-    this.headerList = {}
-    this.cachedLocalData = ''
-    this.cachedLocalHeaderData = ''
-    this.transactionHistory = {}
     this.txUpdateTotalEntries = 0
     this.txUpdateBalanceUpdateStarted = false
-    this.txBalanceUpdateTotal = 0
-    this.feeUpdater = null
+    this.transactions = {}
+    this.headerList = {}
     this.walletLocalData = {
       masterBalance: '0',
       blockHeight: 0,
       addresses: [],
       detailedFeeTable: {},
       simpleFeeTable: {},
-      txIndex: {}
+      txIds: []
     }
     this.electrumCallbacks = {
       onAddressStatusChanged: this.handleTransactionStatusHash.bind(this),
@@ -61,7 +58,7 @@ export class BitcoinEngine {
 
   static async makeEngine (io, keyInfo, opts = {}) {
     const engine = new BitcoinEngine(io, keyInfo, opts)
-    await engine.loadCachedData()
+    await engine.loadWalletLocalDataFromDisk()
     return engine
   }
 
@@ -98,15 +95,15 @@ export class BitcoinEngine {
     if (this.walletLocalData.blockHeight < blockHeight) {
       this.walletLocalData.blockHeight = blockHeight
       this.abcTxLibCallbacks.onBlockHeightChanged(blockHeight)
-      this.cacheLocalData()
+      this.saveLocalWalletDataToDisk()
     }
   }
 
   async processAddress (address) {
-    if (!this.walletLocalData.txIndex[address]) {
-      this.walletLocalData.txIndex[address] = { txs: {}, executed: 0, transactionHash: -1 }
+    if (!this.transactions[address]) {
+      this.transactions[address] = { txs: {}, executed: 0, transactionHash: -1 }
     }
-    const localTxObject = this.walletLocalData.txIndex[address]
+    const localTxObject = this.transactions[address]
     localTxObject.executed = 0
     const hash = await this.electrum.subscribeToAddress(address)
     await this.handleTransactionStatusHash(address, hash)
@@ -114,7 +111,7 @@ export class BitcoinEngine {
   }
 
   async handleTransactionStatusHash (address, hash) {
-    const localTxObject = this.walletLocalData.txIndex[address]
+    const localTxObject = this.transactions[address]
     if (!hash) {
       localTxObject.addressStatusHash = hash
       localTxObject.executed = 1
@@ -128,13 +125,13 @@ export class BitcoinEngine {
       const ABCtransaction = await Promise.all(transactionPromiseArray)
       const filtteredABCtransaction = ABCtransaction.filter(tx => tx)
       localTxObject.executed = 1
-      this.cacheLocalData()
+      this.saveLocalTransactionsDataToDisk()
       this.abcTxLibCallbacks.onTransactionsChanged(filtteredABCtransaction)
     }
   }
 
   async handleTransaction (address, txId) {
-    const localTxObject = this.walletLocalData.txIndex[address]
+    const localTxObject = this.transactions[address]
     const txHash = txId.tx_hash
     let transactionData = localTxObject.txs[txHash]
     if (transactionData && transactionData.executed && transactionData.abcTransaction) {
@@ -224,13 +221,13 @@ export class BitcoinEngine {
     var executedAddresses = 0
     var totalTransactions = 0
     var executedTransactions = 0
-    for (const i in this.walletLocalData.txIndex) {
-      if (!this.walletLocalData.txIndex[i].executed) continue
+    for (const i in this.transactions) {
+      if (!this.transactions[i].executed) continue
       executedAddresses++
-      for (const j in this.walletLocalData.txIndex[i].txs) {
-        if (!this.walletLocalData.txIndex[i].txs[j]) continue
+      for (const j in this.transactions[i].txs) {
+        if (!this.transactions[i].txs[j]) continue
         totalTransactions++
-        if (this.walletLocalData.txIndex[i].txs[j].executed) {
+        if (this.transactions[i].txs[j].executed) {
           executedTransactions++
         }
       }
@@ -264,16 +261,16 @@ export class BitcoinEngine {
     }
     await Promise.all(prom)
     if (newHeadersList.length > 1) {
-      this.cacheHeadersLocalData()
+      this.saveLocalHeadersDataToDisk()
     }
   }
 
   // Needs rewrite
   getNewHeadersList () {
     const result = []
-    for (const i in this.walletLocalData.txIndex) {
-      for (const j in this.walletLocalData.txIndex[i].txs) {
-        const h = this.walletLocalData.txIndex[i].txs[j].height
+    for (const i in this.transactions) {
+      for (const j in this.transactions[i].txs) {
+        const h = this.transactions[i].txs[j].height
         if (h < 0) continue
         if (!this.headerList[h] && result.indexOf(h) === -1) {
           result.push(h)
@@ -287,6 +284,8 @@ export class BitcoinEngine {
   async startEngine () {
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
     this.electrum.connect()
+
+    // /////////////Needs to call the next part of the code without waits and with blocking everything elses//////////////////
     // Needs to replace next 2 lines since it's a super hack //
     const opts = { db: 'memory' }
     if (this.network !== 'main') Object.assign(opts, { network: this.network }) // Hack for now as long as we are using nbcoin version
@@ -303,9 +302,12 @@ export class BitcoinEngine {
       'master': key.xprivkey(),
       'id': 'ID1'
     })
+    if (!this.walletLocalData.blockHeight) await this.loadWalletLocalDataFromDisk()
+    await this.loadTransactionsFromDisk()
+    await this.loadHeadersFromDisk()
     const addTXPromises = []
-    for (const address in this.walletLocalData.txIndex) {
-      const tranasctionsForAddress = this.walletLocalData.txIndex[address].txs
+    for (const address in this.transactions) {
+      const tranasctionsForAddress = this.transactions[address].txs
       for (const txHash in tranasctionsForAddress) {
         const transactionData = tranasctionsForAddress[txHash]
         const transactionABCobject = transactionData.abcTransaction
@@ -324,7 +326,7 @@ export class BitcoinEngine {
     this.wallet.on('balance', balance => {
       this.walletLocalData.masterBalance = bns.add(balance.confirmed.toString(), balance.unconfirmed.toString())
       this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
-      this.cacheLocalData()
+      this.saveLocalWalletDataToDisk()
     })
     const accountPath = await this.wallet.getAccountPaths(0)
     const checkList = accountPath.map(path => path.toAddress(this.network).toString())
@@ -341,63 +343,68 @@ export class BitcoinEngine {
     if (!Object.keys(this.walletLocalData.detailedFeeTable).length) await this.updateFeeTable()
     else this.updateFeeTable()
     this.feeUpdater = setInterval(() => this.updateFeeTable(), FEE_UPDATE_INTERVAL)
+    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   }
 
-  async loadCachedData () {
+  // Disk Handeling Functions //
+  async loadFromDisk (fileName, assignTo) {
     try {
-      const localWallet = await this.walletLocalFolder
+      const data = await this.walletLocalFolder
       .folder(DATA_STORE_FOLDER)
-      .file(DATA_STORE_FILE)
+      .file(fileName)
       .getText()
-      this.cachedLocalData = localWallet
-      const data = JSON.parse(localWallet)
-      Object.assign(this.walletLocalData, data)
-      const cachedTransactions = await this.getTransactions()
-      this.abcTxLibCallbacks.onTransactionsChanged(cachedTransactions)
-      this.electrum.updateCache(data.txIndex)
-      if (typeof data.headerList !== 'undefined') this.headerList = data.headerList
+      let dataJson = JSON.parse(data)
+      Object.assign(assignTo, dataJson)
+      return dataJson
+    } catch (e) {
+      return null
+    }
+  }
+
+  async loadWalletLocalDataFromDisk () {
+    const localWalletData = await this.loadFromDisk(DATA_STORE_FILE, this.walletLocalData)
+    if (localWalletData) {
       this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
-    } catch (e) {
-      await this.cacheLocalData()
-    }
+    } else await this.saveLocalWalletDataToDisk()
+  }
+
+  async loadTransactionsFromDisk () {
+    const transactions = await this.loadFromDisk(TRANSACTION_STORE_FILE, this.transactions)
+    if (transactions) {
+      const transactionsFromFile = await this.getTransactions()
+      this.abcTxLibCallbacks.onTransactionsChanged(transactionsFromFile)
+      this.electrum.updateCache(transactions)
+    } else await this.saveLocalTransactionsDataToDisk()
+  }
+
+  async loadHeadersFromDisk () {
+    const headers = await this.loadFromDisk(HEADER_STORE_FILE, this.headerList)
+    if (!headers) await this.saveLocalHeadersDataToDisk()
+  }
+
+  async saveToDisk (fileName, data) {
     try {
-      const localHeaders = await this.walletLocalFolder
+      await this.walletLocalFolder
       .folder(DATA_STORE_FOLDER)
-      .file(HEADER_STORE_FILE)
-      .getText()
-      const data = JSON.parse(localHeaders)
-      if (!data.headerList) throw new Error('Something wrong with local headers ... X722', data)
-      this.cachedLocalHeaderData = JSON.stringify(data.headerList)
-      this.headerList = data.headerList
+      .file(fileName)
+      .setText(JSON.stringify(data))
     } catch (e) {
-      await this.cacheHeadersLocalData()
-    }
-    return true
-  }
-
-  async cacheHeadersLocalData () {
-    const headerList = JSON.stringify(this.headerList)
-    if (this.cachedLocalHeaderData !== headerList) {
-      await this.walletLocalFolder
-      .folder(DATA_STORE_FOLDER)
-      .file(HEADER_STORE_FILE)
-      .setText(JSON.stringify({
-        headerList: this.headerList
-      }))
-      this.cachedLocalHeaderData = headerList
+      return e
     }
   }
 
-  async cacheLocalData () {
-    const walletJsonStringified = JSON.stringify(this.walletLocalData)
-    if (this.cachedLocalData !== walletJsonStringified) {
-      await this.walletLocalFolder
-        .folder(DATA_STORE_FOLDER)
-        .file(DATA_STORE_FILE)
-        .setText(walletJsonStringified)
-      this.cachedLocalData = walletJsonStringified
-    }
+  async saveLocalHeadersDataToDisk () {
+    await this.saveToDisk(HEADER_STORE_FILE, this.headerList)
   }
+
+  async saveLocalWalletDataToDisk () {
+    await this.saveToDisk(DATA_STORE_FILE, this.walletLocalData)
+  }
+
+  async saveLocalTransactionsDataToDisk () {
+    await this.saveToDisk(TRANSACTION_STORE_FILE, this.transactions)
+  }
+  // //////////////////////// //
 
   updateSettings (opts) {
     if (opts.electrumServers) {
@@ -410,8 +417,8 @@ export class BitcoinEngine {
   async killEngine () {
     this.electrum = null
     clearInterval(this.feeUpdater)
-    await this.cacheHeadersLocalData()
-    await this.cacheLocalData()
+    await this.saveLocalHeadersDataToDisk()
+    await this.saveLocalWalletDataToDisk()
     return true
   }
 
@@ -428,11 +435,11 @@ export class BitcoinEngine {
   }
 
   getNumTransactions ({currencyCode = PRIMARY_CURRENCY} = {currencyCode: PRIMARY_CURRENCY}) {
-    return this.objectToArray(this.walletLocalData.txIndex).reduce((s, addressTxs) => s + Object.keys(addressTxs).length, 0)
+    return this.objectToArray(this.transactions).reduce((s, addressTxs) => s + Object.keys(addressTxs).length, 0)
   }
 
   async getTransactions (options) {
-    const txIndexArray = this.objectToArray(this.walletLocalData.txIndex)
+    const txIndexArray = this.objectToArray(this.transactions)
     const transactions = txIndexArray.reduce((s, addressTxs) => {
       return Object.keys(addressTxs.txs).length ? s.concat(this.objectToArray(addressTxs.txs)) : s
     }, [])
@@ -446,7 +453,7 @@ export class BitcoinEngine {
   getFreshAddress (options = {}) {
     for (let i = 0; i < this.walletLocalData.addresses.length; i++) {
       const address = this.walletLocalData.addresses[i]
-      if (!Object.keys(this.walletLocalData.txIndex[address].txs).length) return address
+      if (!Object.keys(this.transactions[address].txs).length) return address
     }
     return false
   }
@@ -455,8 +462,8 @@ export class BitcoinEngine {
     const validator = cs.createValidator(this.magicByte)
     if (!validator(address)) throw new Error('Wrong formatted address')
     if (this.walletLocalData.addresses.indexOf(address) === -1) throw new Error('Address not found in wallet')
-    if (!this.walletLocalData.txIndex[address]) return false
-    return Object.keys(this.walletLocalData.txIndex[address].txs).length !== 0
+    if (!this.transactions[address]) return false
+    return Object.keys(this.transactions[address].txs).length !== 0
   }
 
   async makeSpend (abcSpendInfo) {
