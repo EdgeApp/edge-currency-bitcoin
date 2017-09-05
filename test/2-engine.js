@@ -7,10 +7,13 @@ const request = require('request')
 const _ = require('lodash')
 const cs = require('coinstring')
 const jsonfile = require('jsonfile')
+const path = require('path')
 
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const DATA_STORE_FILE = 'walletLocalDataV4.json'
-const dummyCachefile = require('path').join(__dirname, './dummyCache.json')
+const TRANSACTION_STORE_FILE = 'transactionsV1.json'
+const dummyWalletData = path.join(__dirname, './dummyWalletData.json')
+const dummyTransactions = path.join(__dirname, './dummyTransactions.json')
 
 let plugin, keys, engine
 var emitter = new Emitter()
@@ -81,14 +84,18 @@ describe('Engine Creation Errors', function () {
 
 describe('Start Engine', function () {
   before('Create local cache file', function (done) {
-    jsonfile.readFile(dummyCachefile, function (err, obj) {
-      assert(!err, 'Should have dummyCache file')
-      walletLocalFolder
+    let walletData = jsonfile.readFileSync(dummyWalletData)
+    let transactions = jsonfile.readFileSync(dummyTransactions)
+    walletLocalFolder
+    .folder(DATA_STORE_FOLDER)
+    .file(DATA_STORE_FILE)
+    .setText(JSON.stringify(walletData))
+    .then(() => walletLocalFolder
       .folder(DATA_STORE_FOLDER)
-      .file(DATA_STORE_FILE)
-      .setText(JSON.stringify(obj))
-      .then(done)
-    })
+      .file(TRANSACTION_STORE_FILE)
+      .setText(JSON.stringify(transactions))
+    )
+    .then(done)
   })
 
   it('Make Engine', function () {
