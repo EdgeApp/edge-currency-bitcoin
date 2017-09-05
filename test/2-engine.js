@@ -149,11 +149,10 @@ describe('Start Engine', function () {
   it('Get BlockHeight', function (done) {
     this.timeout(10000)
     let end = _.after(2, done)
-    request.get('http://tbtc.blockr.io/api/v1/block/info/last', (err, res, body) => {
+    request.get('https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY', (err, res, body) => {
       assert(!err, 'getting block height from a second source')
       emitter.once('onBlockHeightChange', height => {
-        console.log('height', height)
-        const thirdPartyHeight = parseInt(JSON.parse(body).data.nb)
+        const thirdPartyHeight = parseInt(JSON.parse(body).height)
         assert(height >= thirdPartyHeight, 'Block height')
         assert(engine.getBlockHeight() >= thirdPartyHeight, 'Block height')
         end() // Can be "done" since the promise resolves before the event fires but just be on the safe side
@@ -206,8 +205,8 @@ describe('Get Fresh Address', function () {
     setTimeout(() => {
       let address = engine.getFreshAddress()
       assert(cs.createValidator(0x6F)(address), 'Should be a valid address')
-      request.get('http://tbtc.blockr.io/api/v1/address/info/' + address, (err, res, body) => {
-        const thirdPartyBalance = parseInt(JSON.parse(body).data.balance)
+      request.get(`https://api.blocktrail.com/v1/tBTC/address/${address}?api_key=MY_APIKEY`, (err, res, body) => {
+        const thirdPartyBalance = parseInt(JSON.parse(body).received)
         assert(!err, 'getting address incoming txs from a second source')
         assert(thirdPartyBalance === 0, 'Should have never received coins')
         done()
