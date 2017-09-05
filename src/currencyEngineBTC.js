@@ -450,6 +450,11 @@ export class BitcoinEngine {
     return abcTransactions.slice(startIndex, endIndex)
   }
 
+  async getTransactiosnByIds (transactionsIds) {
+    const allTransactions = await this.getTransactions()
+    return allTransactions.filter(({ txid }) => transactionsIds.indexOf(txid) !== -1)
+  }
+
   getFreshAddress (options = {}) {
     for (let i = 0; i < this.walletLocalData.addresses.length; i++) {
       const address = this.walletLocalData.addresses[i]
