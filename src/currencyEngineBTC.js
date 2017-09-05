@@ -60,7 +60,7 @@ export class BitcoinEngine {
   }
 
   static async makeEngine (io, keyInfo, opts = {}) {
-    let engine = new BitcoinEngine(io, keyInfo, opts)
+    const engine = new BitcoinEngine(io, keyInfo, opts)
     await engine.loadCachedData()
     return engine
   }
@@ -75,18 +75,18 @@ export class BitcoinEngine {
         high = fees[i].minFee
       }
       let low = fees[0].minFee
-      let highestMaxDelay = fees[0].maxDelay
+      const highestMaxDelay = fees[0].maxDelay
       for (let i = 1; i < fees.length; i++) {
         low = fees[i].minFee
         if (fees[i].maxDelay < highestMaxDelay) break
       }
-      let standard = (low + high) / 2
+      const standard = (low + high) / 2
       this.walletLocalData.detailedFeeTable = { updated: Date.now(), low, standard, high }
     })
     .catch(err => console.log(err))
 
     if (this.electrum && this.electrum.connected) {
-      for (let setting in SIMPLE_FEE_SETTINGS) {
+      for (const setting in SIMPLE_FEE_SETTINGS) {
         this.electrum.getEstimateFee(SIMPLE_FEE_SETTINGS[setting])
         .then(fee => fee !== -1 && (this.walletLocalData.simpleFeeTable[setting] = { updated: Date.now(), fee }))
         .catch(err => console.log(err))
@@ -106,15 +106,15 @@ export class BitcoinEngine {
     if (!this.walletLocalData.txIndex[address]) {
       this.walletLocalData.txIndex[address] = { txs: {}, executed: 0, transactionHash: -1 }
     }
-    let localTxObject = this.walletLocalData.txIndex[address]
+    const localTxObject = this.walletLocalData.txIndex[address]
     localTxObject.executed = 0
-    let hash = await this.electrum.subscribeToAddress(address)
+    const hash = await this.electrum.subscribeToAddress(address)
     await this.handleTransactionStatusHash(address, hash)
     this.updateTick()
   }
 
   async handleTransactionStatusHash (address, hash) {
-    let localTxObject = this.walletLocalData.txIndex[address]
+    const localTxObject = this.walletLocalData.txIndex[address]
     if (!hash) {
       localTxObject.addressStatusHash = hash
       localTxObject.executed = 1
@@ -123,10 +123,10 @@ export class BitcoinEngine {
       localTxObject.executed = 1
     } else {
       localTxObject.addressStatusHash = hash
-      let transactionHashes = await this.electrum.getAddresHistory(address)
-      let transactionPromiseArray = transactionHashes.map(rawTransaction => this.handleTransaction(address, rawTransaction))
-      let ABCtransaction = await Promise.all(transactionPromiseArray)
-      let filtteredABCtransaction = ABCtransaction.filter(tx => tx)
+      const transactionHashes = await this.electrum.getAddresHistory(address)
+      const transactionPromiseArray = transactionHashes.map(rawTransaction => this.handleTransaction(address, rawTransaction))
+      const ABCtransaction = await Promise.all(transactionPromiseArray)
+      const filtteredABCtransaction = ABCtransaction.filter(tx => tx)
       localTxObject.executed = 1
       this.cacheLocalData()
       this.abcTxLibCallbacks.onTransactionsChanged(filtteredABCtransaction)
@@ -134,27 +134,26 @@ export class BitcoinEngine {
   }
 
   async handleTransaction (address, txId) {
-    let localTxObject = this.walletLocalData.txIndex[address]
-    let txHash = txId.tx_hash
+    const localTxObject = this.walletLocalData.txIndex[address]
+    const txHash = txId.tx_hash
     let transactionData = localTxObject.txs[txHash]
-    if (transactionData && transactionData.abcTransaction) {
+    if (transactionData && transactionData.executed && transactionData.abcTransaction) {
       if (transactionData.abcTransaction.blockHeight !== txId.height) {
         transactionData.abcTransaction.blockHeight = txId.height
         return transactionData.abcTransaction
       }
       return null
     }
-
     localTxObject.txs[txHash] = {
       abcTransaction: {},
       executed: 0
     }
     transactionData = localTxObject.txs[txHash]
-    let rawTransaction = await this.electrum.getTransaction(txHash)
+    const rawTransaction = await this.electrum.getTransaction(txHash)
 
-    let bcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(rawTransaction, 'hex'))
-    let txJson = bcoinTX.getJSON(this.network)
-    let ourReceiveAddresses = []
+    const bcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(rawTransaction, 'hex'))
+    const txJson = bcoinTX.getJSON(this.network)
+    const ourReceiveAddresses = []
     let nativeAmount = 0
     let totalOutputAmount = 0
     let totalInputAmount = 0
@@ -168,10 +167,10 @@ export class BitcoinEngine {
       }
     })
     // Process tx inputs
-    let getPrevout = async ({ hash, index }) => {
-      let prevRawTransaction = await this.electrum.getTransaction(hash)
-      let prevoutBcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(prevRawTransaction, 'hex'))
-      let { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
+    const getPrevout = async ({ hash, index }) => {
+      const prevRawTransaction = await this.electrum.getTransaction(hash)
+      const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(prevRawTransaction, 'hex'))
+      const { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
       totalInputAmount += value
       if (this.walletLocalData.addresses.indexOf(address) !== -1) {
         nativeAmount -= value
@@ -202,12 +201,12 @@ export class BitcoinEngine {
   }
 
   checkGapLimit (address) {
-    var total = this.walletLocalData.addresses.length
-    var addressIndex = this.walletLocalData.addresses.indexOf(address) + 1
+    const total = this.walletLocalData.addresses.length
+    const addressIndex = this.walletLocalData.addresses.indexOf(address) + 1
     if (addressIndex + GAP_LIMIT > total) {
       for (let i = 1; i <= addressIndex + GAP_LIMIT - total; i++) {
         this.wallet.createKey(0).then(res => {
-          let address = res.getAddress('base58check').toString()
+          const address = res.getAddress('base58check').toString()
           if (this.walletLocalData.addresses.indexOf(address) === -1) {
             this.txUpdateTotalEntries++
             this.walletLocalData.addresses.push(address)
@@ -221,14 +220,14 @@ export class BitcoinEngine {
   // //////////////////////////////////////////////////////// NEXT 3 FUNCTIONS NEEDS A MAJOR REWRITE ///////////////////////////////////////////////////////
   // Needs Rewrite
   updateTick () {
-    var totalAddresses = this.txUpdateTotalEntries
+    const totalAddresses = this.txUpdateTotalEntries
     var executedAddresses = 0
     var totalTransactions = 0
     var executedTransactions = 0
-    for (var i in this.walletLocalData.txIndex) {
+    for (const i in this.walletLocalData.txIndex) {
       if (!this.walletLocalData.txIndex[i].executed) continue
       executedAddresses++
-      for (var j in this.walletLocalData.txIndex[i].txs) {
+      for (const j in this.walletLocalData.txIndex[i].txs) {
         if (!this.walletLocalData.txIndex[i].txs[j]) continue
         totalTransactions++
         if (this.walletLocalData.txIndex[i].txs[j].executed) {
@@ -236,12 +235,12 @@ export class BitcoinEngine {
         }
       }
     }
-    var addressProgress = executedAddresses / totalAddresses
+    const addressProgress = executedAddresses / totalAddresses
     var transactionProgress = (totalTransactions > 0) ? executedTransactions / totalTransactions : 0
     if (addressProgress === 1 && totalTransactions === 0) {
       transactionProgress = 1
     }
-    var totalProgress = addressProgress * transactionProgress
+    const totalProgress = addressProgress * transactionProgress
     if (totalProgress === 1 && !this.txUpdateBalanceUpdateStarted) {
       this.txUpdateBalanceUpdateStarted = true
       const getTransactionsAsync = async () => {
@@ -255,12 +254,12 @@ export class BitcoinEngine {
 
   // Needs rewrite
   async pullBlockHeaders () {
-    let newHeadersList = this.getNewHeadersList()
-    let prom = []
-    let getCallback = (i) => {
+    const newHeadersList = this.getNewHeadersList()
+    const prom = []
+    const getCallback = (i) => {
       return block => { this.headerList[i] = block }
     }
-    for (let i in newHeadersList) {
+    for (const i in newHeadersList) {
       prom.push(this.electrum.getBlockHeader(newHeadersList[i]).then(getCallback(newHeadersList[i])))
     }
     await Promise.all(prom)
@@ -271,10 +270,10 @@ export class BitcoinEngine {
 
   // Needs rewrite
   getNewHeadersList () {
-    let result = []
-    for (let i in this.walletLocalData.txIndex) {
-      for (let j in this.walletLocalData.txIndex[i].txs) {
-        let h = this.walletLocalData.txIndex[i].txs[j].height
+    const result = []
+    for (const i in this.walletLocalData.txIndex) {
+      for (const j in this.walletLocalData.txIndex[i].txs) {
+        const h = this.walletLocalData.txIndex[i].txs[j].height
         if (h < 0) continue
         if (!this.headerList[h] && result.indexOf(h) === -1) {
           result.push(h)
@@ -289,27 +288,27 @@ export class BitcoinEngine {
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
     this.electrum.connect()
     // Needs to replace next 2 lines since it's a super hack //
-    let opts = { db: 'memory' }
+    const opts = { db: 'memory' }
     if (this.network !== 'main') Object.assign(opts, { network: this.network }) // Hack for now as long as we are using nbcoin version
     // ////////////////////////
-    let walletdb = new bcoin.wallet.WalletDB(opts)
+    const walletdb = new bcoin.wallet.WalletDB(opts)
     await walletdb.open()
 
     if (!this.keyInfo.keys) throw new Error('Missing Master Key')
     if (!this.keyInfo.keys.bitcoinKey) throw new Error('Missing Master Key')
 
-    let bitcoinKeyBuffer = Buffer.from(this.keyInfo.keys.bitcoinKey, 'base64')
-    let key = bcoin.hd.PrivateKey.fromSeed(bitcoinKeyBuffer, this.network)
+    const bitcoinKeyBuffer = Buffer.from(this.keyInfo.keys.bitcoinKey, 'base64')
+    const key = bcoin.hd.PrivateKey.fromSeed(bitcoinKeyBuffer, this.network)
     this.wallet = await walletdb.create({
       'master': key.xprivkey(),
       'id': 'ID1'
     })
-    let addTXPromises = []
-    for (let address in this.walletLocalData.txIndex) {
-      let tranasctionsForAddress = this.walletLocalData.txIndex[address].txs
-      for (let txHash in tranasctionsForAddress) {
-        let transactionData = tranasctionsForAddress[txHash]
-        let transactionABCobject = transactionData.abcTransaction
+    const addTXPromises = []
+    for (const address in this.walletLocalData.txIndex) {
+      const tranasctionsForAddress = this.walletLocalData.txIndex[address].txs
+      for (const txHash in tranasctionsForAddress) {
+        const transactionData = tranasctionsForAddress[txHash]
+        const transactionABCobject = transactionData.abcTransaction
         if (!transactionABCobject && transactionData.data) {
           addTXPromises.push(this.handleTransaction(address, tranasctionsForAddress[txHash].data))
         } else if (transactionABCobject && transactionABCobject.otherParams && transactionABCobject.otherParams.rawTx) {
@@ -327,8 +326,8 @@ export class BitcoinEngine {
       this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
       this.cacheLocalData()
     })
-    let accountPath = await this.wallet.getAccountPaths(0)
-    let checkList = accountPath.map(path => path.toAddress(this.network).toString())
+    const accountPath = await this.wallet.getAccountPaths(0)
+    const checkList = accountPath.map(path => path.toAddress(this.network).toString())
     for (let l in checkList) {
       if (this.walletLocalData.addresses.indexOf(checkList[l]) === -1) {
         this.walletLocalData.addresses = checkList
@@ -346,12 +345,12 @@ export class BitcoinEngine {
 
   async loadCachedData () {
     try {
-      let localWallet = await this.walletLocalFolder
+      const localWallet = await this.walletLocalFolder
       .folder(DATA_STORE_FOLDER)
       .file(DATA_STORE_FILE)
       .getText()
       this.cachedLocalData = localWallet
-      let data = JSON.parse(localWallet)
+      const data = JSON.parse(localWallet)
       Object.assign(this.walletLocalData, data)
       const cachedTransactions = await this.getTransactions()
       this.abcTxLibCallbacks.onTransactionsChanged(cachedTransactions)
@@ -362,11 +361,11 @@ export class BitcoinEngine {
       await this.cacheLocalData()
     }
     try {
-      let localHeaders = await this.walletLocalFolder
+      const localHeaders = await this.walletLocalFolder
       .folder(DATA_STORE_FOLDER)
       .file(HEADER_STORE_FILE)
       .getText()
-      let data = JSON.parse(localHeaders)
+      const data = JSON.parse(localHeaders)
       if (!data.headerList) throw new Error('Something wrong with local headers ... X722', data)
       this.cachedLocalHeaderData = JSON.stringify(data.headerList)
       this.headerList = data.headerList
@@ -433,12 +432,12 @@ export class BitcoinEngine {
   }
 
   async getTransactions (options) {
-    let txIndexArray = this.objectToArray(this.walletLocalData.txIndex)
-    let transactions = txIndexArray.reduce((s, addressTxs) => {
+    const txIndexArray = this.objectToArray(this.walletLocalData.txIndex)
+    const transactions = txIndexArray.reduce((s, addressTxs) => {
       return Object.keys(addressTxs.txs).length ? s.concat(this.objectToArray(addressTxs.txs)) : s
     }, [])
-    let abcTransactions = transactions.filter(({ executed }) => executed).map(({ abcTransaction }) => abcTransaction)
-    let startIndex = (options && options.startIndex) || 0
+    const abcTransactions = transactions.filter(({ executed }) => executed).map(({ abcTransaction }) => abcTransaction)
+    const startIndex = (options && options.startIndex) || 0
     let endIndex = (options && options.numEntries) || abcTransactions.length
     if (startIndex + endIndex > abcTransactions.length) endIndex = abcTransactions.length
     return abcTransactions.slice(startIndex, endIndex)
@@ -446,14 +445,14 @@ export class BitcoinEngine {
 
   getFreshAddress (options = {}) {
     for (let i = 0; i < this.walletLocalData.addresses.length; i++) {
-      let address = this.walletLocalData.addresses[i]
+      const address = this.walletLocalData.addresses[i]
       if (!Object.keys(this.walletLocalData.txIndex[address].txs).length) return address
     }
     return false
   }
 
   isAddressUsed (address, options = {}) {
-    let validator = cs.createValidator(this.magicByte)
+    const validator = cs.createValidator(this.magicByte)
     if (!validator(address)) throw new Error('Wrong formatted address')
     if (this.walletLocalData.addresses.indexOf(address) === -1) throw new Error('Address not found in wallet')
     if (!this.walletLocalData.txIndex[address]) return false
@@ -463,7 +462,7 @@ export class BitcoinEngine {
   async makeSpend (abcSpendInfo) {
     if (!abcSpendInfo.spendTargets) throw new Error('Need to provide Spend Targets')
 
-    let feeOption = abcSpendInfo.networkFeeOption || 'standard'
+    const feeOption = abcSpendInfo.networkFeeOption || 'standard'
     let rate, resultedTransaction
 
     if (feeOption === 'custom') {
@@ -472,14 +471,14 @@ export class BitcoinEngine {
       rate = this.walletLocalData.detailedFeeTable[feeOption]
     }
 
-    let outputs = abcSpendInfo.spendTargets.map(spendTarget => {
+    const outputs = abcSpendInfo.spendTargets.map(spendTarget => {
       return new bcoin.primitives.Output({
         value: parseInt(spendTarget.nativeAmount),
         script: bcoin.script.fromAddress(spendTarget.publicAddress)
       })
     })
 
-    let txOptions = { outputs, rate: rate * 1000, maxFee: MAX_FEE }
+    const txOptions = { outputs, rate: rate * 1000, maxFee: MAX_FEE }
     try {
       resultedTransaction = await this.wallet.createTX(txOptions)
     } catch (e) {
@@ -487,10 +486,10 @@ export class BitcoinEngine {
       throw e
     }
 
-    let sumOfTx = abcSpendInfo.spendTargets.reduce((s, spendTarget) => s + parseInt(spendTarget.nativeAmount), 0)
+    const sumOfTx = abcSpendInfo.spendTargets.reduce((s, spendTarget) => s + parseInt(spendTarget.nativeAmount), 0)
     let ourReceiveAddresses = []
-    for (let i in resultedTransaction.outputs) {
-      let address = resultedTransaction.outputs[i].getAddress()
+    for (const i in resultedTransaction.outputs) {
+      const address = resultedTransaction.outputs[i].getAddress()
       if (address && this.walletLocalData.addresses.indexOf(address) !== -1) ourReceiveAddresses.push(address)
     }
 
@@ -521,7 +520,7 @@ export class BitcoinEngine {
 
   async broadcastTx (abcTransaction) {
     if (!abcTransaction.signedTx) throw new Error('Tx is not signed')
-    let serverResponse = await this.electrum.broadcastTransaction(abcTransaction.signedTx.toString('hex'))
+    const serverResponse = await this.electrum.broadcastTransaction(abcTransaction.signedTx.toString('hex'))
     if (!serverResponse) throw new Error('Electrum server internal error processing request')
     if (serverResponse === 'TX decode failed') throw new Error('Tx is not valid')
     return serverResponse
