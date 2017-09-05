@@ -45,18 +45,17 @@ let callbacks = {
 }
 
 describe('Engine Creation Errors', function () {
-  before('Plugin', function (done) {
-    BitcoinCurrencyPluginFactory.makePlugin(opts).then((bitcoinPlugin) => {
+  before('Plugin', function () {
+    return BitcoinCurrencyPluginFactory.makePlugin(opts).then((bitcoinPlugin) => {
       assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
       plugin = bitcoinPlugin
       keys = plugin.createPrivateKey(WALLET_TYPE)
       keys = plugin.derivePublicKey({type: WALLET_TYPE, keys: {bitcoinKey: keys.bitcoinKey}})
-      done()
     })
   })
 
   it('Error when Making Engine without local folder', function () {
-    plugin.makeEngine({type: WALLET_TYPE, keys}, { callbacks })
+    return plugin.makeEngine({type: WALLET_TYPE, keys}, { callbacks })
     .then(engine => engine.startEngine())
     .catch(e => {
       assert.equal(e.message, 'Cannot read property \'folder\' of undefined')
@@ -64,7 +63,7 @@ describe('Engine Creation Errors', function () {
   })
 
   it('Error when Making Engine without keys', function () {
-    plugin.makeEngine({type: WALLET_TYPE}, { callbacks, walletLocalFolder })
+    return plugin.makeEngine({type: WALLET_TYPE}, { callbacks, walletLocalFolder })
     .then(engine => engine.startEngine())
     .catch(e => {
       assert.equal(e.message, 'Missing Master Key')
@@ -72,8 +71,7 @@ describe('Engine Creation Errors', function () {
   })
 
   it('Error when Making Engine without bitcoin key', function () {
-    let wrongKeys = { bitcoinXpub: keys.pub }
-    plugin.makeEngine({type: WALLET_TYPE, keys: wrongKeys}, { callbacks, walletLocalFolder })
+    return plugin.makeEngine({type: WALLET_TYPE, keys: { bitcoinXpub: keys.pub }}, { callbacks, walletLocalFolder })
     .then(engine => engine.startEngine())
     .catch(e => {
       assert.equal(e.message, 'Missing Master Key')
@@ -89,13 +87,13 @@ describe('Start Engine', function () {
       .folder(DATA_STORE_FOLDER)
       .file(DATA_STORE_FILE)
       .setText(JSON.stringify(obj))
-      .then(() => done())
+      .then(done)
     })
   })
 
   it('Make Engine', function () {
     // console.log(walletLocalFolder)
-    plugin.makeEngine({type: WALLET_TYPE, keys}, {
+    return plugin.makeEngine({type: WALLET_TYPE, keys}, {
       callbacks,
       walletLocalFolder,
       optionalSettings: {
@@ -254,7 +252,7 @@ describe('Make Spend and Sign', function () {
 
   it('Should build transaction with low fee', function () {
     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'low' })).then(a => {
-      console.log('makeSpend', a)
+      // console.log('makeSpend', a)
       return engine.signTx(a)
     })
     .then(a => {
@@ -265,7 +263,7 @@ describe('Make Spend and Sign', function () {
 
   it('Should build transaction with standard fee', function () {
     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'standard' })).then(a => {
-      console.log('makeSpend', a)
+      // console.log('makeSpend', a)
       return engine.signTx(a)
     })
     .then(a => {
@@ -276,7 +274,7 @@ describe('Make Spend and Sign', function () {
 
   it('Should build transaction with high fee', function () {
     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' })).then(a => {
-      console.log('makeSpend', a)
+      // console.log('makeSpend', a)
       return engine.signTx(a)
     })
     .then(a => {
@@ -290,7 +288,7 @@ describe('Make Spend and Sign', function () {
       networkFeeOption: 'custom',
       customNetworkFee: '1000'
     })).then(a => {
-      console.log('makeSpend', a)
+      // console.log('makeSpend', a)
       return engine.signTx(a)
     })
     .then(a => {
