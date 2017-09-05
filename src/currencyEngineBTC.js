@@ -155,7 +155,7 @@ export class BitcoinEngine {
     }
     transactionData = localTxObject.txs[txHash]
     let rawTransaction
-    if (this.transactionsIds.indexOf(txHash) === -1) {
+    if (this.transactionsIds.indexOf(txHash) !== -1) {
       const abcTransactionsArray = await this.getTransactiosnByIds([txHash])
       if (abcTransactionsArray.length === 1) {
         rawTransaction = abcTransactionsArray[0].otherParams.rawTx
