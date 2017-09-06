@@ -1,19 +1,16 @@
-import replace from 'rollup-plugin-replace'
+import babel from 'rollup-plugin-babel'
+
 const packageJson = require('./package.json')
 
 export default {
-  input: 'src/index.js',
+  entry: 'src/index.js',
   external: Object.keys(packageJson.dependencies),
-  plugins: [
-    replace({
-      bufferPlaceHolder: 'buffer'
-    })
-  ],
-  output: [
+  plugins: [babel({})],
+  targets: [
     {
-      file: packageJson['test'],
+      dest: packageJson['test'],
       format: 'cjs',
-      sourcemap: true
+      sourceMap: true
     }
   ]
 }

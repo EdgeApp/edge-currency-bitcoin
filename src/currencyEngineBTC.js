@@ -5,7 +5,6 @@ import { txLibInfo } from './currencyInfoBTC'
 import cs from 'coinstring'
 import { bns } from 'biggystring'
 import bcoin from 'bcoin'
-let BufferJS = require('bufferPlaceHolder').Buffer
 
 const GAP_LIMIT = 25
 const MAX_FEE = 1000000
@@ -176,7 +175,7 @@ export class BitcoinEngine {
       }
     }
     rawTransaction = rawTransaction || await this.electrum.getTransaction(txHash)
-    const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(rawTransaction, 'hex'))
+    const bcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(rawTransaction, 'hex'))
     const txJson = bcoinTX.getJSON(this.network)
     const ourReceiveAddresses = []
     let nativeAmount = 0
@@ -194,7 +193,7 @@ export class BitcoinEngine {
     // Process tx inputs
     const getPrevout = async ({ hash, index }) => {
       const prevRawTransaction = await this.electrum.getTransaction(hash)
-      const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(prevRawTransaction, 'hex'))
+      const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(prevRawTransaction, 'hex'))
       const { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
       totalInputAmount += value
       if (this.walletLocalData.addresses.indexOf(address) !== -1) {
@@ -284,7 +283,7 @@ export class BitcoinEngine {
     const walletdb = new bcoin.wallet.WalletDB(opts)
     await walletdb.open()
 
-    const bitcoinKeyBuffer = BufferJS.from(this.keyInfo.keys.bitcoinKey, 'base64')
+    const bitcoinKeyBuffer = Buffer.from(this.keyInfo.keys.bitcoinKey, 'base64')
     const key = bcoin.hd.PrivateKey.fromSeed(bitcoinKeyBuffer, this.network)
     this.wallet = await walletdb.create({
       'master': key.xprivkey(),
@@ -297,7 +296,7 @@ export class BitcoinEngine {
 
     const transactions = await this.getTransactions()
     const addTXPromises = transactions.map(transaction => {
-      const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(transaction.otherParams.rawTx, 'hex'))
+      const bcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(transaction.otherParams.rawTx, 'hex'))
       return this.wallet.db.addTX(bcoinTX)
     })
     await Promise.all(addTXPromises)
