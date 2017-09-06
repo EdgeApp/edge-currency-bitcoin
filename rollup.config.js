@@ -1,27 +1,24 @@
-import babel from 'rollup-plugin-babel'
 import replace from 'rollup-plugin-replace'
-
 const packageJson = require('./package.json')
 
 export default {
-  entry: 'src/index.js',
+  input: 'src/index.js',
   external: Object.keys(packageJson.dependencies),
   plugins: [
     replace({
-      'import bcoin from \'bcoin\'': 'let bcoin = require(\'../vendor/bcoin.js\') \n let Buffer = require(\'buffer/\').Buffer\n'
-    }),
-    babel({})
+      bufferPlaceHolder: 'buffer/'
+    })
   ],
-  targets: [
+  output: [
     {
-      dest: packageJson['main'],
+      file: packageJson['main'],
       format: 'cjs',
-      sourceMap: true
+      sourcemap: true
     },
     {
-      dest: packageJson['module'],
+      file: packageJson['module'],
       format: 'es',
-      sourceMap: true
+      sourcemap: true
     }
   ]
 }
