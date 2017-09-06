@@ -88,7 +88,11 @@ export class BitcoinEngine {
     if (this.electrum && this.electrum.connected) {
       for (const setting in this.simpleFeeSettings) {
         this.electrum.getEstimateFee(this.simpleFeeSettings[setting])
-        .then(fee => fee !== -1 && (this.walletLocalData.simpleFeeTable[setting] = { updated: Date.now(), fee }))
+        .then(fee => {
+          if (fee !== -1) {
+            this.walletLocalData.simpleFeeTable[setting] = { updated: Date.now(), fee }
+          }
+        })
         .catch(err => console.log(err))
       }
     }
@@ -327,7 +331,9 @@ export class BitcoinEngine {
     await Promise.all(addTXPromises)
 
     this.wallet.on('balance', balance => {
-      this.walletLocalData.masterBalance = bns.add(balance.confirmed.toString(), balance.unconfirmed.toString())
+      const confirmedBalance = balance.confirmed.toString()
+      const unconfirmedBalance = balance.unconfirmed.toString()
+      this.walletLocalData.masterBalance = bns.add(confirmedBalance, unconfirmedBalance)
       this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
       this.saveToDisk('walletLocalData')
     })
@@ -437,18 +443,26 @@ export class BitcoinEngine {
   }
 
   getNumTransactions ({currencyCode = PRIMARY_CURRENCY} = {currencyCode: PRIMARY_CURRENCY}) {
-    return this.objectToArray(this.transactions).reduce((s, addressTxs) => s + Object.keys(addressTxs).length, 0)
+    return this.objectToArray(this.transactions).reduce((s, addressTxs) => {
+      return s + Object.keys(addressTxs).length
+    }, 0)
   }
 
   async getTransactions (options) {
     const txIndexArray = this.objectToArray(this.transactions)
     const transactions = txIndexArray.reduce((s, addressTxs) => {
-      return Object.keys(addressTxs.txs).length ? s.concat(this.objectToArray(addressTxs.txs)) : s
+      if (Object.keys(addressTxs.txs).length) {
+        return s.concat(this.objectToArray(addressTxs.txs))
+      } else return s
     }, [])
-    const abcTransactions = transactions.filter(({ executed }) => executed).map(({ abcTransaction }) => abcTransaction)
+    const abcTransactions = transactions
+      .filter(({ executed }) => executed)
+      .map(({ abcTransaction }) => abcTransaction)
     const startIndex = (options && options.startIndex) || 0
     let endIndex = (options && options.numEntries) || abcTransactions.length
-    if (startIndex + endIndex > abcTransactions.length) endIndex = abcTransactions.length
+    if (startIndex + endIndex > abcTransactions.length) {
+      endIndex = abcTransactions.length
+    }
     return abcTransactions.slice(startIndex, endIndex)
   }
 
@@ -468,7 +482,9 @@ export class BitcoinEngine {
   isAddressUsed (address, options = {}) {
     const validator = cs.createValidator(this.magicByte)
     if (!validator(address)) throw new Error('Wrong formatted address')
-    if (this.walletLocalData.addresses.indexOf(address) === -1) throw new Error('Address not found in wallet')
+    if (this.walletLocalData.addresses.indexOf(address) === -1) {
+      throw new Error('Address not found in wallet')
+    }
     if (!this.transactions[address]) return false
     return Object.keys(this.transactions[address].txs).length !== 0
   }
@@ -500,11 +516,15 @@ export class BitcoinEngine {
       throw e
     }
 
-    const sumOfTx = abcSpendInfo.spendTargets.reduce((s, spendTarget) => s + parseInt(spendTarget.nativeAmount), 0)
+    const sumOfTx = abcSpendInfo.spendTargets.reduce((s, spendTarget) => {
+      return s + parseInt(spendTarget.nativeAmount)
+    }, 0)
     let ourReceiveAddresses = []
     for (const i in resultedTransaction.outputs) {
       const address = resultedTransaction.outputs[i].getAddress()
-      if (address && this.walletLocalData.addresses.indexOf(address) !== -1) ourReceiveAddresses.push(address)
+      if (address && this.walletLocalData.addresses.indexOf(address) !== -1) {
+        ourReceiveAddresses.push(address)
+      }
     }
 
     const abcTransaction = new ABCTransaction({
@@ -534,7 +554,8 @@ export class BitcoinEngine {
 
   async broadcastTx (abcTransaction) {
     if (!abcTransaction.signedTx) throw new Error('Tx is not signed')
-    const serverResponse = await this.electrum.broadcastTransaction(abcTransaction.signedTx.toString('hex'))
+    const signedTxRawString = abcTransaction.signedTx.toString('hex')
+    const serverResponse = await this.electrum.broadcastTransaction(signedTxRawString)
     if (!serverResponse) throw new Error('Electrum server internal error processing request')
     if (serverResponse === 'TX decode failed') throw new Error('Tx is not valid')
     return serverResponse
