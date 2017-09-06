@@ -42,12 +42,9 @@
     "coinstring": "^2.3.0",
     "react-native-crypto": "^2.0.2",
     "react-native-secp256k1": "git+https://github.com/Airbitz/react-native-secp256k1.git",
-    "react-native-tcp": "git+https://github.com/Airbitz/react-native-tcp.git",
     "uri-js": "^3.0.2"
   },
   "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-eslint": "^7.2.3",
     "disklet": "^0.2.4",
     "jsonfile": "^3.0.1",
     "lodash": "^4.17.4",
@@ -55,7 +52,6 @@
     "node-fetch": "^1.7.2",
     "request": "^2.81.0",
     "rollup": "^0.49.2",
-    "rollup-plugin-babel": "^3.0.2",
     "rollup-plugin-replace": "^2.0.0",
     "standard": "^10.0.2"
   }
