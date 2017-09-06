@@ -40,6 +40,7 @@ export class BitcoinEngine {
       Object.assign(this, opts.optionalSettings)
     }
 
+    // Objects to load and save from disk
     this.headerList = {}
     this.walletLocalData = {
       masterBalance: '0',
@@ -50,6 +51,7 @@ export class BitcoinEngine {
     }
     this.transactions = {}
     this.transactionsIds = []
+    // // // // // // // // // // // // //
 
     this.electrumCallbacks = {
       onAddressStatusChanged: this.handleTransactionStatusHash.bind(this),
@@ -274,8 +276,6 @@ export class BitcoinEngine {
   async startEngine () {
     if (!this.keyInfo.keys) throw new Error('Missing Master Key')
     if (!this.keyInfo.keys.bitcoinKey) throw new Error('Missing Master Key')
-
-    // /////////////Needs to call the next part of the code without waits and with blocking everything elses//////////////////
     // Needs to replace next 2 lines since it's a super hack //
     const opts = { db: 'memory' }
     if (this.network !== 'main') Object.assign(opts, { network: this.network }) // Hack for now as long as we are using nbcoin version
@@ -324,7 +324,6 @@ export class BitcoinEngine {
     if (!Object.keys(this.walletLocalData.detailedFeeTable).length) await this.updateFeeTable()
     else this.updateFeeTable()
     this.feeUpdater = setInterval(() => this.updateFeeTable(), FEE_UPDATE_INTERVAL)
-    // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   }
 
   // Disk Handeling Functions //
