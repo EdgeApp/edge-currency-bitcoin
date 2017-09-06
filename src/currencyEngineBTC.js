@@ -16,6 +16,7 @@ export class BitcoinEngine {
     this.io = io
     this.keyInfo = keyInfo
     this.wallet = null
+    this.initialSync = false
 
     // Only lines to change on engine to add network type based wallet //
     this.network = keyInfo.type === 'wallet:testnet' ? 'testnet' : 'main'
@@ -39,8 +40,6 @@ export class BitcoinEngine {
       Object.assign(this, opts.optionalSettings)
     }
 
-    this.txUpdateTotalEntries = 0
-    this.txUpdateBalanceUpdateStarted = false
     this.headerList = {}
     this.walletLocalData = {
       masterBalance: '0',
@@ -108,39 +107,46 @@ export class BitcoinEngine {
 
   async processAddress (address) {
     if (!this.transactions[address]) {
-      this.transactions[address] = { txs: {}, executed: 0, addressStatusHash: null }
+      this.transactions[address] = { txs: {}, addressStatusHash: null }
     }
-    const localTxObject = this.transactions[address]
-    localTxObject.executed = 0
+    this.transactions[address].executed = 0
     const hash = await this.electrum.subscribeToAddress(address)
-    await this.handleTransactionStatusHash(address, hash)
-    this.updateTick()
+    if (hash && hash !== this.transactions[address].addressStatusHash) {
+      await this.handleTransactionStatusHash(address, hash)
+    }
+    this.transactions[address].executed = 1
+    if (!this.initialSync &&
+      this.walletLocalData.addresses.length === Object.keys(this.transactions).length
+    ) {
+      let finishedLoading = true
+      for (const address in this.transactions) {
+        if (!this.transactions[address].executed) {
+          finishedLoading = false
+          break
+        }
+      }
+      if (finishedLoading) {
+        this.abcTxLibCallbacks.onAddressesChecked(1)
+        this.initialSync = true
+      }
+    }
   }
 
   async handleTransactionStatusHash (address, hash) {
     const localTxObject = this.transactions[address]
-    if (!hash) {
-      localTxObject.addressStatusHash = hash
-      localTxObject.executed = 1
-    }
-    if (localTxObject.addressStatusHash === hash) {
-      localTxObject.executed = 1
-    } else {
-      localTxObject.addressStatusHash = hash
-      const transactionHashes = await this.electrum.getAddresHistory(address)
-      const transactionPromiseArray = transactionHashes.map(rawTransaction => {
-        return this.handleTransaction(address, rawTransaction)
-      })
-      const ABCtransaction = await Promise.all(transactionPromiseArray)
-      const filtteredABCtransaction = ABCtransaction.filter(tx => tx)
-      filtteredABCtransaction.forEach(({ txid }) => {
-        if (this.transactionsIds.indexOf(txid) === -1) this.transactionsIds.push(txid)
-      })
-      localTxObject.executed = 1
-      this.saveToDisk('transactions')
-      this.saveToDisk('transactionsIds')
-      this.abcTxLibCallbacks.onTransactionsChanged(filtteredABCtransaction)
-    }
+    localTxObject.addressStatusHash = hash
+    const transactionHashes = await this.electrum.getAddresHistory(address)
+    const transactionPromiseArray = transactionHashes.map(rawTransaction => {
+      return this.handleTransaction(address, rawTransaction)
+    })
+    const ABCtransaction = await Promise.all(transactionPromiseArray)
+    const filtteredABCtransaction = ABCtransaction.filter(tx => tx)
+    filtteredABCtransaction.forEach(({ txid }) => {
+      if (this.transactionsIds.indexOf(txid) === -1) this.transactionsIds.push(txid)
+    })
+    this.saveToDisk('transactions')
+    this.saveToDisk('transactionsIds')
+    this.abcTxLibCallbacks.onTransactionsChanged(filtteredABCtransaction)
   }
 
   async handleTransaction (address, txId) {
@@ -224,7 +230,6 @@ export class BitcoinEngine {
         this.wallet.createKey(0).then(res => {
           const address = res.getAddress('base58check').toString()
           if (this.walletLocalData.addresses.indexOf(address) === -1) {
-            this.txUpdateTotalEntries++
             this.walletLocalData.addresses.push(address)
             this.processAddress(address)
           }
@@ -233,41 +238,7 @@ export class BitcoinEngine {
     }
   }
 
-  // //////////////////////////////////////////////////////// NEXT 3 FUNCTIONS NEEDS A MAJOR REWRITE ///////////////////////////////////////////////////////
-  // Needs Rewrite
-  updateTick () {
-    const totalAddresses = this.txUpdateTotalEntries
-    var executedAddresses = 0
-    var totalTransactions = 0
-    var executedTransactions = 0
-    for (const i in this.transactions) {
-      if (!this.transactions[i].executed) continue
-      executedAddresses++
-      for (const j in this.transactions[i].txs) {
-        if (!this.transactions[i].txs[j]) continue
-        totalTransactions++
-        if (this.transactions[i].txs[j].executed) {
-          executedTransactions++
-        }
-      }
-    }
-    const addressProgress = executedAddresses / totalAddresses
-    var transactionProgress = (totalTransactions > 0) ? executedTransactions / totalTransactions : 0
-    if (addressProgress === 1 && totalTransactions === 0) {
-      transactionProgress = 1
-    }
-    const totalProgress = addressProgress * transactionProgress
-    if (totalProgress === 1 && !this.txUpdateBalanceUpdateStarted) {
-      this.txUpdateBalanceUpdateStarted = true
-      const getTransactionsAsync = async () => {
-        const transactions = await this.getTransactions()
-        this.abcTxLibCallbacks.onTransactionsChanged(transactions)
-      }
-      getTransactionsAsync()
-      this.abcTxLibCallbacks.onAddressesChecked(1)
-    }
-  }
-
+  // //////////////////////////////////////////////////////// NEXT 2 FUNCTIONS NEEDS A MAJOR REWRITE ///////////////////////////////////////////////////////
   // Needs rewrite
   async pullBlockHeaders () {
     const newHeadersList = this.getNewHeadersList()
@@ -345,8 +316,6 @@ export class BitcoinEngine {
         break
       }
     }
-    this.txUpdateTotalEntries = this.walletLocalData.addresses.length
-
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
     this.electrum.connect()
     this.walletLocalData.addresses.forEach(address => this.processAddress(address))
