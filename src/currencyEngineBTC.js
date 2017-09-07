@@ -20,7 +20,7 @@ export class BitcoinEngine {
     this.initialSync = false
 
     // Only lines to change on engine to add network type based wallet //
-    this.network = keyInfo.type === 'wallet:testnet' ? 'testnet' : 'main'
+    this.network = keyInfo.type.includes('testnet') ? 'testnet' : 'main'
     this.magicByte = this.network === 'testnet' ? 0x6F : 0x00
     // /////////////////////////////////////////////////////////////// //
 
@@ -286,9 +286,14 @@ export class BitcoinEngine {
 
     const bitcoinKeyBuffer = BufferJS.from(this.keyInfo.keys.bitcoinKey, 'base64')
     const key = bcoin.hd.PrivateKey.fromSeed(bitcoinKeyBuffer, this.network)
+    const masterPath = this.keyInfo.type.includes('44') ? null : 'm/0'
+    const masterIndex = !masterPath ? null : 32
+
     this.wallet = await walletdb.create({
       'master': key.xprivkey(),
-      'id': 'ID1'
+      'id': 'ID1',
+      masterPath,
+      masterIndex
     })
     if (!this.walletLocalData.blockHeight) await this.loadWalletLocalDataFromDisk()
     if (!this.transactionsIds.length) await this.loadTransactionsIdsFromDisk()

@@ -20,7 +20,7 @@ const dummyTransactionsIds = path.join(__dirname, './dummyTransactionsIds.json')
 let plugin, keys, engine
 var emitter = new Emitter()
 let walletLocalFolder = disklet.makeMemoryFolder()
-const WALLET_TYPE = 'wallet:testnet'
+const WALLET_TYPE = 'wallet:testnet44'
 
 let opts = {
   io: {
@@ -136,7 +136,7 @@ describe('Start Engine', function () {
       assert.equal(typeof engine.getNumTransactions, 'function', 'getNumTransactions')
       assert.equal(typeof engine.getTransactions, 'function', 'getTransactions')
       assert.equal(typeof engine.getFreshAddress, 'function', 'getFreshAddress')
-      // assert.equal(typeof engine.addGapLimitAddresses, 'function', 'addGapLimitAddresses')
+      assert.equal(typeof engine.addGapLimitAddresses, 'function', 'addGapLimitAddresses')
       assert.equal(typeof engine.isAddressUsed, 'function', 'isAddressUsed')
       assert.equal(typeof engine.makeSpend, 'function', 'makeSpend')
       assert.equal(typeof engine.signTx, 'function', 'signTx')
@@ -144,6 +144,7 @@ describe('Start Engine', function () {
       assert.equal(typeof engine.saveTx, 'function', 'saveTx')
       return true
     })
+    .catch(e => console.log(e))
   })
 
   it('Get BlockHeight', function (done) {
@@ -161,6 +162,7 @@ describe('Start Engine', function () {
         assert.equal(engine.getBlockHeight(), 1180814, 'Should init as 1180814')
         end()
       })
+      .catch(e => console.log(e))
     })
   })
 })
