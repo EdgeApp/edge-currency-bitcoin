@@ -4,6 +4,7 @@ import cs from 'coinstring'
 import { BitcoinEngine } from './currencyEngineBTC'
 import { txLibInfo } from './currencyInfoBTC'
 import bcoin from 'bcoin'
+let BufferJS = require('bufferPlaceHolder').Buffer
 
 const getParameterByName = (param, url) => {
   const name = param.replace(/[[\]]/g, '\\$&')
@@ -17,14 +18,14 @@ const getParameterByName = (param, url) => {
 const valid = address => cs.createValidator(0x00)(address)
 
 const createRandomPrivateKey = io => ({
-  bitcoinKey: Buffer.from(io.random(32)).toString('base64')
+  bitcoinKey: BufferJS.from(io.random(32)).toString('base64')
 })
 
 const createPublicKey = (walletInfo, network) => {
   if (!walletInfo.keys.bitcoinKey) throw new Error('InvalidKeyName')
   return {
     bitcoinKey: walletInfo.keys.bitcoinKey,
-    bitcoinXpub: bcoin.hd.PrivateKey.fromSeed(Buffer.from(walletInfo.keys.bitcoinKey, 'base64'), network).xpubkey()
+    bitcoinXpub: bcoin.hd.PrivateKey.fromSeed(BufferJS.from(walletInfo.keys.bitcoinKey, 'base64'), network).xpubkey()
   }
 }
 
