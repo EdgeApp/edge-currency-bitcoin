@@ -40,8 +40,6 @@
     "biggystring": "^1.0.5",
     "buffer": "^5.0.7",
     "coinstring": "^2.3.0",
-    "react-native-crypto": "^2.0.2",
-    "react-native-secp256k1": "git+https://github.com/Airbitz/react-native-secp256k1.git",
     "uri-js": "^3.0.2"
   },
   "devDependencies": {
