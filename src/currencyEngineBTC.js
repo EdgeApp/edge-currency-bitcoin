@@ -144,11 +144,16 @@ export class BitcoinEngine {
     })
     const ABCtransaction = await Promise.all(transactionPromiseArray)
     const filtteredABCtransaction = ABCtransaction.filter(tx => tx)
+    const updatedTransactionIds = []
     filtteredABCtransaction.forEach(({ txid }) => {
+      updatedTransactionIds.push(txid)
       if (this.transactionsIds.indexOf(txid) === -1) this.transactionsIds.push(txid)
     })
     this.saveToDisk('transactions')
     this.saveToDisk('transactionsIds')
+    if (this.abcTxLibCallbacks.onTxidsChanged) {
+      this.abcTxLibCallbacks.onTxidsChanged(updatedTransactionIds)
+    }
     this.abcTxLibCallbacks.onTransactionsChanged(filtteredABCtransaction)
   }
 
@@ -376,7 +381,9 @@ export class BitcoinEngine {
   async loadTransactionsIdsFromDisk () {
     const transactionsIds = await this.loadFromDisk('transactionsIds')
     if (transactionsIds) {
-      // this.abcTxLibCallbacks.onTxIdChanged(transactionsFromFile)
+      if (this.abcTxLibCallbacks.onTxidsChanged) {
+        this.abcTxLibCallbacks.onTxidsChanged(transactionsIds)
+      }
     } else await this.saveToDisk('transactionsIds')
   }
 
