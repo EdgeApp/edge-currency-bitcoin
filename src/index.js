@@ -31,12 +31,16 @@ const createPublicKey = (walletInfo, network) => {
 
 const privateKeyInitializers = {
   'bitcoin': io => createRandomPrivateKey(io),
-  'testnet': io => createRandomPrivateKey(io)
+  'bitcoin44': io => createRandomPrivateKey(io),
+  'testnet': io => createRandomPrivateKey(io),
+  'testnet44': io => createRandomPrivateKey(io)
 }
 
 const publicKeyInitializers = {
   'bitcoin': walletInfo => createPublicKey(walletInfo, 'main'),
-  'testnet': walletInfo => createPublicKey(walletInfo, 'testnet')
+  'bitcoin44': walletInfo => createPublicKey(walletInfo, 'main'),
+  'testnet': walletInfo => createPublicKey(walletInfo, 'testnet'),
+  'testnet44': walletInfo => createPublicKey(walletInfo, 'testnet')
 }
 
 export const BitcoinCurrencyPluginFactory = {
