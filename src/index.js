@@ -4,7 +4,9 @@ import cs from 'coinstring'
 import { BitcoinEngine } from './currencyEngineBTC'
 import { txLibInfo } from './currencyInfoBTC'
 import bcoin from 'bcoin'
-let BufferJS = require('bufferPlaceHolder').Buffer
+
+const BufferJS = require('bufferPlaceHolder').Buffer
+const valid = address => cs.createValidator(0x00)(address)
 
 const getParameterByName = (param, url) => {
   const name = param.replace(/[[\]]/g, '\\$&')
@@ -14,8 +16,6 @@ const getParameterByName = (param, url) => {
   if (!results[2]) return ''
   return decodeURIComponent(results[2].replace(/\+/g, ' '))
 }
-
-const valid = address => cs.createValidator(0x00)(address)
 
 const createRandomPrivateKey = io => ({
   bitcoinKey: BufferJS.from(io.random(32)).toString('base64')
