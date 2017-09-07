@@ -170,7 +170,7 @@ export class BitcoinEngine {
     transactionData = localTxObject.txs[txHash]
     let rawTransaction
     if (this.transactionsIds.indexOf(txHash) !== -1) {
-      const abcTransactionsArray = await this.getTransactiosnByIds([txHash])
+      const abcTransactionsArray = await this.getTransactionsByIds([txHash])
       if (abcTransactionsArray.length === 1) {
         rawTransaction = abcTransactionsArray[0].otherParams.rawTx
       }
@@ -440,7 +440,7 @@ export class BitcoinEngine {
     return abcTransactions.slice(startIndex, endIndex)
   }
 
-  async getTransactiosnByIds (transactionsIds) {
+  async getTransactionsByIds (transactionsIds) {
     const allTransactions = await this.getTransactions()
     return allTransactions.filter(({ txid }) => transactionsIds.indexOf(txid) !== -1)
   }
