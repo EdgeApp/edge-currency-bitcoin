@@ -107,7 +107,7 @@ export class BitcoinEngine {
     const transactions = await this.getTransactions()
     const addTXPromises = transactions.map(transaction => {
       const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(transaction.otherParams.rawTx, 'hex'))
-      return this.wallet.db.addTX(bcoinTX)
+      return this.wallet.add(bcoinTX)
     })
     await Promise.all(addTXPromises)
 
@@ -129,7 +129,9 @@ export class BitcoinEngine {
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
     this.electrum.connect()
     this.walletLocalData.addresses.forEach(address => this.processAddress(address))
-    this.electrum.subscribeToBlockHeight().then(blockHeight => this.onBlockHeightChanged(blockHeight))
+    this.electrum.subscribeToBlockHeight().then(blockHeight => {
+      this.onBlockHeightChanged(blockHeight)
+    })
 
     if (!Object.keys(this.walletLocalData.detailedFeeTable).length) await this.updateFeeTable()
     else this.updateFeeTable()
@@ -228,8 +230,11 @@ export class BitcoinEngine {
     }
 
     const sumOfTx = abcSpendInfo.spendTargets.reduce((s, spendTarget) => {
-      return s + parseInt(spendTarget.nativeAmount)
+      if (this.walletLocalData.addresses.indexOf(spendTarget.publicAddress) !== -1) {
+        return s
+      } else return s - parseInt(spendTarget.nativeAmount)
     }, 0)
+
     let ourReceiveAddresses = []
     for (const i in resultedTransaction.outputs) {
       const address = resultedTransaction.outputs[i].getAddress()
@@ -248,7 +253,7 @@ export class BitcoinEngine {
       txid: null,
       date: null,
       blockHeight: -1,
-      nativeAmount: '-' + (sumOfTx + parseInt(resultedTransaction.getFee())).toString(),
+      nativeAmount: (sumOfTx - parseInt(resultedTransaction.getFee())).toString(),
       networkFee: resultedTransaction.getFee().toString(),
       runningBalance: null,
       signedTx: null
@@ -366,8 +371,8 @@ export class BitcoinEngine {
     const localTxObject = this.transactions[address]
     localTxObject.addressStatusHash = hash
     const transactionHashes = await this.electrum.getAddresHistory(address)
-    const transactionPromiseArray = transactionHashes.map(rawTransaction => {
-      return this.handleTransaction(address, rawTransaction)
+    const transactionPromiseArray = transactionHashes.map(transactionObject => {
+      return this.handleTransaction(address, transactionObject)
     })
     const ABCtransaction = await Promise.all(transactionPromiseArray)
     const filtteredABCtransaction = ABCtransaction.filter(tx => tx)
@@ -384,13 +389,13 @@ export class BitcoinEngine {
     this.abcTxLibCallbacks.onTransactionsChanged(filtteredABCtransaction)
   }
 
-  async handleTransaction (address, txId) {
+  async handleTransaction (address, transactionObj) {
     const localTxObject = this.transactions[address]
-    const txHash = txId.tx_hash
+    const txHash = transactionObj.tx_hash
     let transactionData = localTxObject.txs[txHash]
     if (transactionData && transactionData.executed && transactionData.abcTransaction) {
-      if (transactionData.abcTransaction.blockHeight !== txId.height) {
-        transactionData.abcTransaction.blockHeight = txId.height
+      if (transactionData.abcTransaction.blockHeight !== transactionObj.height) {
+        transactionData.abcTransaction.blockHeight = transactionObj.height
         return transactionData.abcTransaction
       }
       return null
@@ -444,7 +449,7 @@ export class BitcoinEngine {
       currencyCode: PRIMARY_CURRENCY,
       txid: txHash,
       date: Date.now() / 1000,
-      blockHeight: txId.height,
+      blockHeight: transactionObj.height,
       nativeAmount: nativeAmount.toString(),
       runningBalance: null,
       signedTx: null
@@ -452,23 +457,22 @@ export class BitcoinEngine {
     localTxObject.txs[txHash].abcTransaction = abcTransaction
     localTxObject.txs[txHash].executed = 1
 
-    await this.wallet.db.addTX(bcoinTX)
-    this.checkGapLimit(address)
+    await this.wallet.add(bcoinTX)
+    await this.checkGapLimit(address)
     return abcTransaction
   }
 
-  checkGapLimit (address) {
+  async checkGapLimit (address) {
     const total = this.walletLocalData.addresses.length
     const addressIndex = this.walletLocalData.addresses.indexOf(address) + 1
     if (addressIndex + GAP_LIMIT > total) {
       for (let i = 1; i <= addressIndex + GAP_LIMIT - total; i++) {
-        this.wallet.createKey(0).then(res => {
-          const address = res.getAddress('base58check').toString()
-          if (this.walletLocalData.addresses.indexOf(address) === -1) {
-            this.walletLocalData.addresses.push(address)
-            this.processAddress(address)
-          }
-        })
+        const newAddressObj = await this.wallet.createKey(0)
+        const newAddress = newAddressObj.getAddress('base58check').toString()
+        if (this.walletLocalData.addresses.indexOf(newAddress) === -1) {
+          this.walletLocalData.addresses.push(newAddress)
+          this.processAddress(newAddress)
+        }
       }
     }
   }
