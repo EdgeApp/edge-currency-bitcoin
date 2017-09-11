@@ -379,19 +379,23 @@ export class BitcoinEngine {
       await this.handleTransactionStatusHash(address, hash)
     }
     this.transactions[address].executed = 1
-    if (!this.initialSync &&
-      this.walletLocalData.addresses.length === Object.keys(this.transactions).length
-    ) {
-      let finishedLoading = true
-      for (const address in this.transactions) {
-        if (!this.transactions[address].executed) {
-          finishedLoading = false
-          break
+    this.initialSyncCheck()
+  }
+
+  initialSyncCheck () {
+    if (!this.initialSync) {
+      if (this.getAllOurAddresses().length === Object.keys(this.transactions).length) {
+        let finishedLoading = true
+        for (const address in this.transactions) {
+          if (!this.transactions[address].executed) {
+            finishedLoading = false
+            break
+          }
         }
-      }
-      if (finishedLoading) {
-        this.abcTxLibCallbacks.onAddressesChecked(1)
-        this.initialSync = true
+        if (finishedLoading) {
+          this.abcTxLibCallbacks.onAddressesChecked(1)
+          this.initialSync = true
+        }
       }
     }
   }
