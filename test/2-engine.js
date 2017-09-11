@@ -185,14 +185,19 @@ describe('Is Address Used', function () {
   })
 
   it('Checking an empty address', function (done) {
-    assert.equal(engine.isAddressUsed('mpWoyhXKB9s1E7EyKdoGMR5cxvQNym6PiN'), false)
+    assert.equal(engine.isAddressUsed('mkZ4CyfFNR1PSaNy84ZHzV3dwTJVuSECfV'), false)
     done()
   })
 
-  it('Checking a non empty address', function (done) {
+  it('Checking a non empty address from cache', function (done) {
+    assert.equal(engine.isAddressUsed('mnAoeMHqeu8rKwQmuBykxYLnJysNjGjD2F'), true)
+    done()
+  })
+
+  it('Checking a non empty address from network', function (done) {
     this.timeout(20000)
     setTimeout(() => {
-      assert.equal(engine.isAddressUsed('mfgNKSNq8375GLZ7uhBJPvzpZxKtL9HUb9'), true)
+      assert.equal(engine.isAddressUsed('mnXSnPVpkfzjHFd7JQFKaSC5bZYsGz2PxX'), true)
       done()
     }, 5000)
   })
