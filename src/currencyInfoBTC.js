@@ -9,6 +9,9 @@ export const txLibInfo = {
       'wallet:bitcoin'
     ],
     defaultsSettings: {
+      gapLimit: 25,
+      maxFee: 1000000,
+      feeUpdateInterval: 10000,
       feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
       simpleFeeSettings: {low: 6, standard: 2, high: 0},
       electrumServers: [
@@ -29,7 +32,8 @@ export const txLibInfo = {
           walletLocalData: 'walletLocalDataV4.json',
           transactions: 'transactionsV1.json',
           headerList: 'headersV1.json',
-          transactionsIds: 'transactionsIdsV1.json'
+          transactionsIds: 'transactionsIdsV1.json',
+          wallet: 'walletDBv1.json'
         }
       }
     },

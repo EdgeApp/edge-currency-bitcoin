@@ -7,9 +7,6 @@ import { bns } from 'biggystring'
 import bcoin from 'bcoin'
 
 const BufferJS = require('bufferPlaceHolder').Buffer
-const GAP_LIMIT = 25
-const MAX_FEE = 1000000
-const FEE_UPDATE_INTERVAL = 10000
 const PRIMARY_CURRENCY = txLibInfo.getInfo.currencyCode
 
 export class BitcoinEngine {
@@ -36,6 +33,9 @@ export class BitcoinEngine {
     // -  dataStoreFolder: The folder to store all data to disk
     // -  dataStoreFiles: File names for different types of cache
     // simpleFeeSettings: Settings for simple fee algorithem
+    // gapLimit: How many addresses we use as gap,
+    // maxFee: Maximum transaction fee per byte,
+    // feeUpdateInterval: Interval to update fee in miliseconds,
     Object.assign(this, txLibInfo.getInfo.defaultsSettings)
     // If user provided optional settings and wants to overide the defaults
     if (opts.optionalSettings && opts.optionalSettings.enableOverrideServers) {
@@ -136,7 +136,7 @@ export class BitcoinEngine {
     })
     if (!Object.keys(this.walletLocalData.detailedFeeTable).length) await this.updateFeeTable()
     else this.updateFeeTable()
-    this.feeUpdater = setInterval(() => this.updateFeeTable(), FEE_UPDATE_INTERVAL)
+    this.feeUpdater = setInterval(() => this.updateFeeTable(), this.feeUpdateInterval)
   }
 
   async killEngine () {
@@ -222,7 +222,7 @@ export class BitcoinEngine {
       })
     })
 
-    const txOptions = { outputs, rate: rate * 1000, maxFee: MAX_FEE }
+    const txOptions = { outputs, rate: rate * 1000, maxFee: this.maxFee }
     try {
       resultedTransaction = await this.wallet.createTX(txOptions)
     } catch (e) {
@@ -466,8 +466,8 @@ export class BitcoinEngine {
   async checkGapLimit (address) {
     const total = this.walletLocalData.addresses.length
     const addressIndex = this.walletLocalData.addresses.indexOf(address) + 1
-    if (addressIndex + GAP_LIMIT > total) {
-      for (let i = 1; i <= addressIndex + GAP_LIMIT - total; i++) {
+    if (addressIndex + this.gapLimit > total) {
+      for (let i = 1; i <= addressIndex + this.gapLimit - total; i++) {
         const newAddressObj = await this.wallet.createKey(0)
         const newAddress = newAddressObj.getAddress('base58check').toString()
         if (this.walletLocalData.addresses.indexOf(newAddress) === -1) {
