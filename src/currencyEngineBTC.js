@@ -47,7 +47,11 @@ export class BitcoinEngine {
     this.walletLocalData = {
       masterBalance: '0',
       blockHeight: 0,
-      addresses: [],
+      addresses: {
+        receive: [],
+        change: [],
+        nested: []
+      },
       detailedFeeTable: {},
       simpleFeeTable: {}
     }
@@ -65,16 +69,6 @@ export class BitcoinEngine {
     const engine = new BitcoinEngine(io, keyInfo, opts)
     await engine.startWallet()
     return engine
-  }
-  /* --------------------------------------------------------------------- */
-  /* ---------------------------  Public API  ---------------------------- */
-  /* --------------------------------------------------------------------- */
-  updateSettings (opts) {
-    if (opts.electrumServers) {
-      this.electrumServers = opts.electrumServers
-      this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
-      this.electrum.connect()
-    }
   }
 
   async startWallet () {
@@ -117,20 +111,47 @@ export class BitcoinEngine {
       this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
       this.saveToDisk('walletLocalData')
     })
-    const accountPath = await this.wallet.getAccountPaths(0)
-    const checkList = accountPath.map(path => path.toAddress(this.network).toString())
-    for (let l in checkList) {
-      if (this.walletLocalData.addresses.indexOf(checkList[l]) === -1) {
-        this.walletLocalData.addresses = checkList
-        break
+    const account = await this.wallet.getAccount(0)
+    this.deriveAddresses(account, 'receive', 0)
+
+    // Support bip 44 wallets
+    if (this.walletType.includes('44')) {
+      this.deriveAddresses(account, 'change', 1)
+    }
+    // Not supported yet
+    // if (whatever) {
+    //   this.deriveAddresses(account, 'nested', 2)
+    // }
+  }
+
+  deriveAddresses (account, type, typeNum) {
+    const depth = account[type + 'Depth'] - 1
+    const addresses = this.walletLocalData.addresses[type]
+    if (depth + this.gapLimit > addresses.length) {
+      const maxToDerive = depth + this.gapLimit
+      let newAddresses = []
+      for (let i = 0; i < maxToDerive; i++) {
+        const address = account.deriveKey(typeNum, i).toJSON().address
+        newAddresses.push(address)
       }
+      this.walletLocalData.addresses[type] = newAddresses
+    }
+  }
+  /* --------------------------------------------------------------------- */
+  /* ---------------------------  Public API  ---------------------------- */
+  /* --------------------------------------------------------------------- */
+  updateSettings (opts) {
+    if (opts.electrumServers) {
+      this.electrumServers = opts.electrumServers
+      this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
+      this.electrum.connect()
     }
   }
 
   async startEngine () {
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
     this.electrum.connect()
-    this.walletLocalData.addresses.forEach(address => this.processAddress(address))
+    this.getAllOurAddresses().forEach(address => this.processAddress(address))
     this.electrum.subscribeToBlockHeight().then(blockHeight => {
       this.onBlockHeightChanged(blockHeight)
     })
@@ -182,8 +203,8 @@ export class BitcoinEngine {
   }
 
   getFreshAddress (options = {}) {
-    for (let i = 0; i < this.walletLocalData.addresses.length; i++) {
-      const address = this.walletLocalData.addresses[i]
+    for (let i = 0; i < this.walletLocalData.addresses.receive.length; i++) {
+      const address = this.walletLocalData.addresses.receive[i]
       if (!Object.keys(this.transactions[address].txs).length) return address
     }
     return false
@@ -196,10 +217,9 @@ export class BitcoinEngine {
   isAddressUsed (address, options = {}) {
     const validator = cs.createValidator(this.magicByte)
     if (!validator(address)) throw new Error('Wrong formatted address')
-    if (this.walletLocalData.addresses.indexOf(address) === -1) {
+    if (this.getAllOurAddresses().indexOf(address) === -1) {
       throw new Error('Address not found in wallet')
     }
-    if (!this.transactions[address]) return false
     return Object.keys(this.transactions[address].txs).length !== 0
   }
 
@@ -229,9 +249,9 @@ export class BitcoinEngine {
       if (e.type === 'FundingError') throw new Error('InsufficientFundsError')
       throw e
     }
-
+    const allOurAddresses = this.getAllOurAddresses()
     const sumOfTx = abcSpendInfo.spendTargets.reduce((s, spendTarget) => {
-      if (this.walletLocalData.addresses.indexOf(spendTarget.publicAddress) !== -1) {
+      if (allOurAddresses.indexOf(spendTarget.publicAddress) !== -1) {
         return s
       } else return s - parseInt(spendTarget.nativeAmount)
     }, 0)
@@ -239,7 +259,7 @@ export class BitcoinEngine {
     let ourReceiveAddresses = []
     for (const i in resultedTransaction.outputs) {
       const address = resultedTransaction.outputs[i].getAddress()
-      if (address && this.walletLocalData.addresses.indexOf(address) !== -1) {
+      if (address && allOurAddresses.indexOf(address) !== -1) {
         ourReceiveAddresses.push(address)
       }
     }
@@ -296,6 +316,14 @@ export class BitcoinEngine {
   /* --------------------------------------------------------------------- */
   /* ---------------------------  Private API  --------------------------- */
   /* --------------------------------------------------------------------- */
+  getAllOurAddresses () {
+    let allOurAddresses = []
+    for (const typed in this.walletLocalData.addresses) {
+      allOurAddresses = allOurAddresses.concat(this.walletLocalData.addresses[typed])
+    }
+    return allOurAddresses
+  }
+
   objectToArray (obj) {
     return Object.keys(obj).map(key => obj[key])
   }
@@ -421,10 +449,12 @@ export class BitcoinEngine {
     let totalOutputAmount = 0
     let totalInputAmount = 0
 
+    const allOurAddresses = this.getAllOurAddresses()
+
     // Process tx outputs
     txJson.outputs.forEach(({ address, value }) => {
       totalOutputAmount += value
-      if (this.walletLocalData.addresses.indexOf(address) !== -1) {
+      if (allOurAddresses.indexOf(address) !== -1) {
         nativeAmount += value
         ourReceiveAddresses.push(address)
       }
@@ -435,7 +465,7 @@ export class BitcoinEngine {
       const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(prevRawTransaction, 'hex'))
       const { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
       totalInputAmount += value
-      if (this.walletLocalData.addresses.indexOf(address) !== -1) {
+      if (allOurAddresses.indexOf(address) !== -1) {
         nativeAmount -= value
       }
     }
@@ -464,18 +494,20 @@ export class BitcoinEngine {
   }
 
   async checkGapLimit (address) {
-    const total = this.walletLocalData.addresses.length
-    const addressIndex = this.walletLocalData.addresses.indexOf(address) + 1
-    if (addressIndex + this.gapLimit > total) {
-      for (let i = 1; i <= addressIndex + this.gapLimit - total; i++) {
-        const newAddressObj = await this.wallet.createKey(0)
-        const newAddress = newAddressObj.getAddress('base58check').toString()
-        if (this.walletLocalData.addresses.indexOf(newAddress) === -1) {
-          this.walletLocalData.addresses.push(newAddress)
-          this.processAddress(newAddress)
-        }
-      }
-    }
+    // Update To support Bips
+    // const total = this.walletLocalData.addresses.length
+    // const addressIndex = this.walletLocalData.addresses.indexOf(address) + 1
+    // if (addressIndex + this.gapLimit > total) {
+    //   for (let i = 1; i <= addressIndex + this.gapLimit - total; i++) {
+    //     const newAddressObj = await this.wallet.createKey(0)
+    //     const newAddress = newAddressObj.getAddress('base58check').toString()
+    //     if (this.walletLocalData.addresses.indexOf(newAddress) === -1) {
+    //       this.walletLocalData.addresses.push(newAddress)
+    //       this.processAddress(newAddress)
+    //     }
+    //   }
+    // }
+    // Update To support Bips
   }
   /* --------------------------------------------------------------------- */
   /* ----------------------------  Needs Fix  ---------------------------- */
