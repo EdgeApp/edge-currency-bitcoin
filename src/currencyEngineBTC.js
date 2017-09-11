@@ -63,8 +63,7 @@ export class BitcoinEngine {
 
   static async makeEngine (io, keyInfo, opts = {}) {
     const engine = new BitcoinEngine(io, keyInfo, opts)
-    await engine.loadWalletLocalDataFromDisk()
-    await engine.loadTransactionsIdsFromDisk()
+    await engine.startWallet()
     return engine
   }
   /* --------------------------------------------------------------------- */
@@ -78,7 +77,7 @@ export class BitcoinEngine {
     }
   }
 
-  async startEngine () {
+  async startWallet () {
     if (!this.masterKeys) throw new Error('Missing Master Key')
     if (!this.masterKeys.bitcoinKey) throw new Error('Missing Master Key')
     // Needs to replace next 2 lines since it's a super hack //
@@ -99,8 +98,8 @@ export class BitcoinEngine {
       masterPath,
       masterIndex
     })
-    if (!this.walletLocalData.blockHeight) await this.loadWalletLocalDataFromDisk()
-    if (!this.transactionsIds.length) await this.loadTransactionsIdsFromDisk()
+    await this.loadWalletLocalDataFromDisk()
+    await this.loadTransactionsIdsFromDisk()
     await this.loadTransactionsFromDisk()
     await this.loadHeadersFromDisk()
 
@@ -126,13 +125,15 @@ export class BitcoinEngine {
         break
       }
     }
+  }
+
+  async startEngine () {
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
     this.electrum.connect()
     this.walletLocalData.addresses.forEach(address => this.processAddress(address))
     this.electrum.subscribeToBlockHeight().then(blockHeight => {
       this.onBlockHeightChanged(blockHeight)
     })
-
     if (!Object.keys(this.walletLocalData.detailedFeeTable).length) await this.updateFeeTable()
     else this.updateFeeTable()
     this.feeUpdater = setInterval(() => this.updateFeeTable(), FEE_UPDATE_INTERVAL)
