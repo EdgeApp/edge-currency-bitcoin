@@ -62,7 +62,6 @@ describe('Engine Creation Errors', function () {
 
   it('Error when Making Engine without local folder', function () {
     return plugin.makeEngine({type: WALLET_TYPE, keys}, { callbacks })
-    .then(engine => engine.startEngine())
     .catch(e => {
       assert.equal(e.message, 'Cannot create and engine without a local folder')
     })
@@ -70,7 +69,6 @@ describe('Engine Creation Errors', function () {
 
   it('Error when Making Engine without keys', function () {
     return plugin.makeEngine({type: WALLET_TYPE}, { callbacks, walletLocalFolder })
-    .then(engine => engine.startEngine())
     .catch(e => {
       assert.equal(e.message, 'Missing Master Key')
     })
@@ -78,7 +76,6 @@ describe('Engine Creation Errors', function () {
 
   it('Error when Making Engine without bitcoin key', function () {
     return plugin.makeEngine({type: WALLET_TYPE, keys: { bitcoinXpub: keys.pub }}, { callbacks, walletLocalFolder })
-    .then(engine => engine.startEngine())
     .catch(e => {
       assert.equal(e.message, 'Missing Master Key')
     })
