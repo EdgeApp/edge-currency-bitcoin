@@ -1,7 +1,11 @@
 {
 	"masterBalance": "2031250",
 	"blockHeight": 1180814,
-	"addresses": ["mnAoeMHqeu8rKwQmuBykxYLnJysNjGjD2F", "mpWoyhXKB9s1E7EyKdoGMR5cxvQNym6PiN"],
+	"addresses": {
+		"receive": [],
+        "change": ["mnAoeMHqeu8rKwQmuBykxYLnJysNjGjD2F", "mpWoyhXKB9s1E7EyKdoGMR5cxvQNym6PiN"],
+        "nested": []
+	},
 	"detailedFeeTable": {
 		"updated": 1504306290119,
 		"low": 1,
