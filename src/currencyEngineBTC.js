@@ -498,20 +498,29 @@ export class BitcoinEngine {
   }
 
   async checkGapLimit (address) {
-    // Update To support Bips
-    // const total = this.walletLocalData.addresses.length
-    // const addressIndex = this.walletLocalData.addresses.indexOf(address) + 1
-    // if (addressIndex + this.gapLimit > total) {
-    //   for (let i = 1; i <= addressIndex + this.gapLimit - total; i++) {
-    //     const newAddressObj = await this.wallet.createKey(0)
-    //     const newAddress = newAddressObj.getAddress('base58check').toString()
-    //     if (this.walletLocalData.addresses.indexOf(newAddress) === -1) {
-    //       this.walletLocalData.addresses.push(newAddress)
-    //       this.processAddress(newAddress)
-    //     }
-    //   }
-    // }
-    // Update To support Bips
+    const account = await this.wallet.getAccount(0)
+    const path = await this.wallet.getPath(address)
+    let addresses = null
+    switch (path.branch) {
+      case 0:
+        addresses = this.walletLocalData.addresses.receive
+        break
+      case 1:
+        addresses = this.walletLocalData.addresses.change
+        break
+      case 2:
+        addresses = this.walletLocalData.addresses.receive
+        break
+    }
+    const addLen = addresses.length
+    const extra = path.index + this.gapLimit - addLen
+    if (extra > 0) {
+      for (let i = addLen; i < addLen + extra; i++) {
+        const address = account.deriveKey(path.branch, i).toJSON().address
+        addresses.push(address)
+        this.processAddress(address)
+      }
+    }
   }
   /* --------------------------------------------------------------------- */
   /* ----------------------------  Needs Fix  ---------------------------- */
