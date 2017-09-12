@@ -49,8 +49,9 @@ export class BitcoinEngine {
       blockHeight: 0,
       addresses: {
         receive: [],
-        change: [],
-        nested: []
+        change: []
+        // Not supported yet
+        // nested: []
       },
       detailedFeeTable: {},
       simpleFeeTable: {}
@@ -90,6 +91,10 @@ export class BitcoinEngine {
       masterIndex
     })
     await this.wallet.setLookahead(0, this.gapLimit)
+    await this.syncDiskData() 
+  }
+
+  async syncDiskData () {
     await this.loadWalletLocalDataFromDisk()
     await this.loadTransactionsIdsFromDisk()
     await this.loadTransactionsFromDisk()
@@ -109,30 +114,59 @@ export class BitcoinEngine {
       this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
       this.saveToDisk('walletLocalData')
     })
-    const account = await this.wallet.getAccount(0)
-    this.deriveAddresses(account, 'receive', 0)
-
-    // Support for bip 44 wallets
-    if (this.walletType.includes('44')) {
-      this.deriveAddresses(account, 'change', 1)
-    }
-    // Not supported yet
-    // if (whatever) {
-    //   this.deriveAddresses(account, 'nested', 2)
-    // }
+    await this.syncAddresses()
   }
 
-  deriveAddresses (account, type, typeNum) {
-    const depth = account[type + 'Depth'] - 1
-    const addresses = this.walletLocalData.addresses[type]
-    if (depth + this.gapLimit > addresses.length) {
-      const maxToDerive = depth + this.gapLimit
-      let newAddresses = []
-      for (let i = 0; i < maxToDerive; i++) {
-        const address = account.deriveKey(typeNum, i).getAddress('base58check').toString()
-        newAddresses.push(address)
+  async syncAddresses () {
+    const account = await this.wallet.getAccount(0)
+    const receiveDepth = account.receiveDepth - 1 + this.gapLimit
+    const changeDepth = account.receiveDepth - 1 + this.gapLimit
+    // Not supported yet
+    // const nestedDepth = account.receiveDepth - 1 + this.gapLimit
+    const addresses = this.walletLocalData.addresses
+    if (receiveDepth > addresses.receive.length ||
+      (this.walletType.includes('44') && changeDepth > addresses.receive.length)) {
+      const accountPaths = await this.wallet.getPaths(0)
+      const newAddresses = {
+        receive: [],
+        change: []
+        // Not supported yet
+        // nested: []
       }
-      this.walletLocalData.addresses[type] = newAddresses
+      for (let i in accountPaths) {
+        switch (accountPaths[i].branch) {
+          case 0:
+            if (receiveDepth > addresses.receive.length) {
+              newAddresses.receive.push(accountPaths[i].toAddress(this.network).toString())
+            }
+            break
+          case 1:
+            if (this.walletType.includes('44') && changeDepth > addresses.change.length) {
+              newAddresses.change.push(accountPaths[i].toAddress(this.network).toString())
+            }
+            break
+          case 2:
+            // Not supported yet
+            // if (whatever) {
+            //   newAddresses.nested.push(accountPaths[i].toAddress(this.network).toString())
+            // }
+            break
+        }
+      }
+      if (newAddresses.receive.length > addresses.receive.length) {
+        addresses.receive = newAddresses.receive
+      }
+      if (this.walletType.includes('44')) {
+        if (newAddresses.change.length > addresses.change.length) {
+          addresses.change = newAddresses.change
+        }
+      }
+      // Not supported yet
+      // if (whatever) {
+      //   if (newAddresses.nested.length > addresses.nested.length) {
+      //     addresses.nested = newAddresses.nested
+      //   }
+      // }
     }
   }
   /* --------------------------------------------------------------------- */
