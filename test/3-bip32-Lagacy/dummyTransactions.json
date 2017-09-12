@@ -1,12 +1,48 @@
 {	
 	"mfXZU3rapa1VWoNj5j2ekvt1gpNLFyT2Ub": {
-		"txs": {},
+		"txs": {
+			"67a81aa57f4cdf9d3548e59ae993f1ef9d91668abe7dd5fcf35c13344bb33d8e": {
+				"abcTransaction": {
+					"currencyCode": "BTC",
+					"txid": "67a81aa57f4cdf9d3548e59ae993f1ef9d91668abe7dd5fcf35c13344bb33d8e",
+					"date": 1505208144.831,
+					"blockHeight": 1193833,
+					"nativeAmount": "130000000",
+					"networkFee": "100000",
+					"runningBalance": null,
+					"signedTx": null,
+					"ourReceiveAddresses": [ "mfXZU3rapa1VWoNj5j2ekvt1gpNLFyT2Ub" ],
+					"otherParams": { 
+						"rawTx": "01000000012aea7fb0f4df28a4f947f0429dba48c6203d4d3c337078e4e9bea2e3b6285f88930100006a47304402203a6c667d23e61c5e2594f2094566b490580cdccf4e5e1f34bde261a4aab25ed202201f119f6ab8dfacc4fbb4a3aa7f37dc61b428bf42ffa9044acb647e19c6b46c0e01210398c3112ec1c46836b6d33f3dbbbeb3cc209f2970f1afd09fb8d4b8ef4d1a578effffffff0280a4bf07000000001976a914001d5c42db134c4727aa4b5403746087aebdd28188ace0487a9c0b0000001976a914e7e6e42de95637a6905c39a91c2c57d07743a8ac88ac00000000"
+					}
+				},
+				"executed": 1
+			}
+		},
 		"executed": 0,
-		"addressStatusHash": null
+		"addressStatusHash": "4e904c41074eed68d2c1f21e0e9cc7b782bb2dae11c0bd6399141bdafb35cd59"
 	},
 	"mh6kCD1mFjrFP7Di2sgmh7V8WXRy21Cje7": {
-		"txs": {},
-		"executed": 0,
-		"addressStatusHash": null
+		"txs": {
+			"bc370c3abca2641cd4fd80be31a670e9156d60e6f2248dc88c8d6c659b4590cd" :{
+				"abcTransaction": {
+					"currencyCode": "BTC",
+					"txid": "bc370c3abca2641cd4fd80be31a670e9156d60e6f2248dc88c8d6c659b4590cd",
+					"date": 1505208146.152,
+					"blockHeight": 1193833,
+					"nativeAmount": "32500000",
+					"networkFee": "100000",
+					"runningBalance": null,
+					"signedTx": null,
+					"ourReceiveAddresses": [ "mh8MyFhj9ERZ6DczpLJNb3ZQLDn9tqhrU1" ],
+					"otherParams": {
+						"rawTx": "01000000012aea7fb0f4df28a4f947f0429dba48c6203d4d3c337078e4e9bea2e3b6285f888b0100006b483045022100d02d3c65cbdf65586bc65f5b315ea4a2b49bb29a61655e5eae14deedb2b1aa2a02206b7c9edfbc00ccff744b5481de35950b8590d41a56a5adca74cc162d668369e2012103e74bd256d8904271d1871574fe317313b86bac13b0e7da7bd49eb4d9ce55572bffffffff0220e9ef01000000001976a91411aa72b46046ca5ca4e0cfdc0e8bd2cdf12b223b88ac40044aa20b0000001976a9144e15d0c0b6ea199241eca055458dd591a9d1ecba88ac00000000"
+					}
+				},
+				"executed": 1
+			}
+		},
+		"executed": 1,
+		"addressStatusHash": "df4002db7cacadf6afc6c16ff7542298dc3e3cc2cc9fa6f59d803722c7df8c11"
 	}
 }
