@@ -74,11 +74,8 @@ export class BitcoinEngine {
   async startWallet () {
     if (!this.masterKeys) throw new Error('Missing Master Key')
     if (!this.masterKeys.bitcoinKey) throw new Error('Missing Master Key')
-    // Needs to replace next 2 lines since it's a super hack //
-    const opts = { db: 'memory' }
-    if (this.network !== 'main') Object.assign(opts, { network: this.network }) // Hack for now as long as we are using nbcoin version
-    // ////////////////////////
-    const walletdb = new bcoin.wallet.WalletDB(opts)
+
+    const walletdb = new bcoin.wallet.WalletDB({ db: 'memory', network: this.network })
     await walletdb.open()
 
     const bitcoinKeyBuffer = BufferJS.from(this.masterKeys.bitcoinKey, 'base64')
