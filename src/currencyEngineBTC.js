@@ -75,7 +75,7 @@ export class BitcoinEngine {
     if (!this.masterKeys) throw new Error('Missing Master Key')
     if (!this.masterKeys.bitcoinKey) throw new Error('Missing Master Key')
 
-    const walletdb = new bcoin.wallet.WalletDB({ db: 'memory', network: this.network })
+    const walletdb = new bcoin.wallet.WalletDB({ network: this.network })
     await walletdb.open()
 
     const bitcoinKeyBuffer = BufferJS.from(this.masterKeys.bitcoinKey, 'base64')
