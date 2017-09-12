@@ -1,0 +1,31 @@
+{
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "type": "node",
+                "request": "launch",
+                "name": "build",
+                "runtimeExecutable": "npm",
+                "runtimeArgs": [
+                    "run",
+                    "pretest"
+                ],
+                "port": 5858
+            },
+            {
+                "type": "node",
+                "request": "launch",
+                "name": "Mocha Tests",
+                "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+                "args": [
+                    "-u",
+                    "tdd",
+                    "--timeout",
+                    "999999",
+                    "--colors",
+                    "${workspaceRoot}/test"
+                ],
+                "internalConsoleOptions": "openOnSessionStart"
+            }
+        ]
+    }
