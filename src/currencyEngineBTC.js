@@ -100,13 +100,6 @@ export class BitcoinEngine {
     await this.loadTransactionsFromDisk()
     await this.loadHeadersFromDisk()
 
-    const transactions = await this.getTransactions()
-    const addTXPromises = transactions.map(transaction => {
-      const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(transaction.otherParams.rawTx, 'hex'))
-      return this.wallet.add(bcoinTX)
-    })
-    await Promise.all(addTXPromises)
-
     this.wallet.on('balance', balance => {
       const confirmedBalance = balance.confirmed.toString()
       const unconfirmedBalance = balance.unconfirmed.toString()
@@ -114,6 +107,13 @@ export class BitcoinEngine {
       this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
       this.saveToDisk('walletLocalData')
     })
+
+    const transactions = await this.getTransactions()
+    const addTXPromises = transactions.map(transaction => {
+      const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(transaction.otherParams.rawTx, 'hex'))
+      return this.wallet.add(bcoinTX)
+    })
+    await Promise.all(addTXPromises)
     await this.syncAddresses()
   }
 
