@@ -502,6 +502,7 @@ export class BitcoinEngine {
       }
     }
     rawTransaction = rawTransaction || await this.electrum.getTransaction(txHash)
+    const blockHeader = await this.getBlockHeader(transactionObj.height)
     const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(rawTransaction, 'hex'))
     const txJson = bcoinTX.getJSON(this.network)
     const ourReceiveAddresses = []
@@ -530,6 +531,7 @@ export class BitcoinEngine {
       }
     }
     await Promise.all(txJson.inputs.map(({ prevout }) => getPrevout(prevout)))
+    await this.wallet.add(bcoinTX)
 
     const abcTransaction = new ABCTransaction({
       ourReceiveAddresses,
@@ -539,7 +541,7 @@ export class BitcoinEngine {
       },
       currencyCode: PRIMARY_CURRENCY,
       txid: txHash,
-      date: Date.now() / 1000,
+      date: blockHeader.timestamp,
       blockHeight: transactionObj.height,
       nativeAmount: nativeAmount.toString(),
       runningBalance: null,
@@ -547,8 +549,6 @@ export class BitcoinEngine {
     })
     localTxObject.txs[txHash].abcTransaction = abcTransaction
     localTxObject.txs[txHash].executed = 1
-
-    await this.wallet.add(bcoinTX)
     await this.checkGapLimit(address)
     return abcTransaction
   }
@@ -587,36 +587,15 @@ export class BitcoinEngine {
       })
     }
   }
-  /* --------------------------------------------------------------------- */
-  /* ----------------------------  Needs Fix  ---------------------------- */
-  /* --------------------------------------------------------------------- */
-  async pullBlockHeaders () {
-    const newHeadersList = this.getNewHeadersList()
-    const prom = []
-    const getCallback = (i) => {
-      return block => { this.headerList[i] = block }
-    }
-    for (const i in newHeadersList) {
-      prom.push(this.electrum.getBlockHeader(newHeadersList[i]).then(getCallback(newHeadersList[i])))
-    }
-    await Promise.all(prom)
-    if (newHeadersList.length > 1) {
-      this.saveToDisk('headerList')
-    }
-  }
 
-  getNewHeadersList () {
-    const result = []
-    for (const i in this.transactions) {
-      for (const j in this.transactions[i].txs) {
-        const h = this.transactions[i].txs[j].height
-        if (h < 0) continue
-        if (!this.headerList[h] && result.indexOf(h) === -1) {
-          result.push(h)
-        }
-      }
+  async getBlockHeader (height) {
+    if (this.headerList[height]) {
+      return this.headerList[height]
     }
-    return result
+    const header = await this.electrum.getBlockHeader(height)
+    this.headerList[height] = header
+    this.saveToDisk('headerList')
+    return header
   }
   /* --------------------------------------------------------------------- */
   /* -----------------------  Disk Util Functions  ----------------------- */
