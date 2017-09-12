@@ -216,7 +216,31 @@ export class BitcoinEngine {
   }
 
   addGapLimitAddresses (addresses) {
-    addresses.forEach(address => this.checkGapLimit(address))
+    addresses.forEach(async address => {
+      const path = await this.wallet.getPath(address)
+      const account = await this.wallet.getAccount(0)
+      switch (path.branch) {
+        case 0:
+          if (path.index + this.gapLimit > this.account.receiveDepth) {
+            account.syncDepth(path.index + this.gapLimit)
+            await this.checkGapLimitForBranch(account, 'receive', 0)
+          }
+          break
+        case 1:
+          if (this.walletType.includes('44') && path.index + this.gapLimit > this.account.changeDepth) {
+            account.syncDepth(0, path.index + this.gapLimit)
+            await this.checkGapLimitForBranch(account, 'change', 0)
+          }
+          break
+        case 2:
+          // Not supported yet
+          // if (path.index + this.gapLimit > this.account.nestedDepth) {
+          //   account.syncDepth(0, 0, path.index + this.gapLimit)
+          //   await this.checkGapLimitForBranch(account, 'nested', 0)
+          // }
+          break
+      }
+    })
   }
 
   isAddressUsed (address, options = {}) {
@@ -505,26 +529,35 @@ export class BitcoinEngine {
   async checkGapLimit (address) {
     const account = await this.wallet.getAccount(0)
     const path = await this.wallet.getPath(address)
-    let addresses = null
     switch (path.branch) {
       case 0:
-        addresses = this.walletLocalData.addresses.receive
+        this.checkGapLimitForBranch(account, 'receive', 0)
         break
       case 1:
-        addresses = this.walletLocalData.addresses.change
+        if (this.walletType.includes('44')) {
+          this.checkGapLimitForBranch(account, 'receive', 1)
+        }
         break
       case 2:
-        addresses = this.walletLocalData.addresses.receive
+        // Not supported yet
+        // this.checkGapLimitForBranch(account, this.walletLocalData.addresses.nested)
         break
     }
-    const addLen = addresses.length
-    const extra = path.index + this.gapLimit - addLen
-    if (extra > 0) {
-      for (let i = addLen; i < addLen + extra; i++) {
-        const address = account.deriveKey(path.branch, i).getAddress('base58check').toString()
+  }
+
+  async checkGapLimitForBranch (account, type, typeNum) {
+    const addresses = this.walletLocalData.addresses[type]
+    const addressDepth = account[`${type}Depth`] - 1 + this.gapLimit
+    const addressesLen = addresses.length
+    if (addressDepth > addressesLen) {
+      const paths = await this.wallet.getPaths(0)
+      paths
+      .filter(path => path.branch === typeNum && path.index > addressesLen)
+      .forEach(path => {
+        const address = path.toAddress(this.network).toString()
         addresses.push(address)
         this.processAddress(address)
-      }
+      })
     }
   }
   /* --------------------------------------------------------------------- */
