@@ -1,5 +1,5 @@
 /* global describe it */
-let BitcoinCurrencyPluginFactory = require('../lib/index.test.js').BitcoinCurrencyPluginFactory
+let BitcoinCurrencyPluginFactory = require('../../lib/index.test.js').BitcoinCurrencyPluginFactory
 let assert = require('assert')
 
 let opts = {

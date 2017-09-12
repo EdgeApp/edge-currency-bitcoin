@@ -1,5 +1,5 @@
 /* global describe it */
-const BitcoinCurrencyPluginFactory = require('../lib/index.test.js').BitcoinCurrencyPluginFactory
+const BitcoinCurrencyPluginFactory = require('../../lib/index.test.js').BitcoinCurrencyPluginFactory
 const assert = require('assert')
 const disklet = require('disklet')
 const Emitter = require('events').EventEmitter
@@ -20,7 +20,7 @@ const dummyTransactionsIds = path.join(__dirname, './dummyTransactionsIds.json')
 let plugin, keys, engine
 var emitter = new Emitter()
 let walletLocalFolder = disklet.makeMemoryFolder()
-const WALLET_TYPE = 'wallet:testnet44'
+const WALLET_TYPE = 'wallet:testnet'
 
 let opts = {
   io: {
@@ -49,40 +49,7 @@ let callbacks = {
   }
 }
 
-describe('Engine Creation Errors', function () {
-  let keys, plugin
-  before('Plugin', function () {
-    return BitcoinCurrencyPluginFactory.makePlugin(opts).then((bitcoinPlugin) => {
-      assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
-      plugin = bitcoinPlugin
-      keys = plugin.createPrivateKey(WALLET_TYPE)
-      keys = plugin.derivePublicKey({type: WALLET_TYPE, keys: {bitcoinKey: keys.bitcoinKey}})
-    })
-  })
-
-  it('Error when Making Engine without local folder', function () {
-    return plugin.makeEngine({type: WALLET_TYPE, keys}, { callbacks })
-    .catch(e => {
-      assert.equal(e.message, 'Cannot create and engine without a local folder')
-    })
-  })
-
-  it('Error when Making Engine without keys', function () {
-    return plugin.makeEngine({type: WALLET_TYPE}, { callbacks, walletLocalFolder })
-    .catch(e => {
-      assert.equal(e.message, 'Missing Master Key')
-    })
-  })
-
-  it('Error when Making Engine without bitcoin key', function () {
-    return plugin.makeEngine({type: WALLET_TYPE, keys: { bitcoinXpub: keys.pub }}, { callbacks, walletLocalFolder })
-    .catch(e => {
-      assert.equal(e.message, 'Missing Master Key')
-    })
-  })
-})
-
-describe('Start Engine', function () {
+describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
   before('Create local cache file', function (done) {
     let walletData = jsonfile.readFileSync(dummyWalletData)
     let transactions = jsonfile.readFileSync(dummyTransactions)
@@ -144,7 +111,7 @@ describe('Start Engine', function () {
     .catch(e => console.log(e))
   })
 
-  it('Get BlockHeight', function (done) {
+  it(`Get BlockHeight for Wallet type ${WALLET_TYPE}`, function (done) {
     this.timeout(10000)
     let end = _.after(2, done)
     request.get('https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY', (err, res, body) => {
@@ -164,46 +131,32 @@ describe('Start Engine', function () {
   })
 })
 
-describe('Is Address Used', function () {
-  it('Checking a wrong formated address', function (done) {
-    try {
-      engine.isAddressUsed('TestErrorWithWrongAddress')
-    } catch (e) {
-      assert(e, 'Should throw')
-      assert.equal(e.message, 'Wrong formatted address')
-      done()
-    }
-  })
-
-  it('Checking an address we don\'t own', function () {
-    try {
-      assert.equal(engine.isAddressUsed('mnSmvy2q4dFNKQF18EBsrZrS7WEy6CieEE'), false)
-    } catch (e) {
-      assert(e, 'Should throw')
-      assert.equal(e.message, 'Address not found in wallet')
-    }
-  })
-
+describe(`Is Address Used for Wallet type ${WALLET_TYPE}`, function () {
   it('Checking an empty address', function (done) {
-    assert.equal(engine.isAddressUsed('mkZ4CyfFNR1PSaNy84ZHzV3dwTJVuSECfV'), false)
+    assert.equal(engine.isAddressUsed('mhFxbbUCHi2pZQqmpRju6tgTm2KXoRX8F6'), false)
     done()
   })
 
-  it('Checking a non empty address from cache', function (done) {
-    assert.equal(engine.isAddressUsed('mnAoeMHqeu8rKwQmuBykxYLnJysNjGjD2F'), true)
+  it('Checking a non empty address from cache 1', function (done) {
+    assert.equal(engine.isAddressUsed('mfXZU3rapa1VWoNj5j2ekvt1gpNLFyT2Ub'), true)
+    done()
+  })
+
+  it('Checking a non empty address from cache 2', function (done) {
+    assert.equal(engine.isAddressUsed('mh6kCD1mFjrFP7Di2sgmh7V8WXRy21Cje7'), true)
     done()
   })
 
   it('Checking a non empty address from network', function (done) {
     this.timeout(20000)
     setTimeout(() => {
-      assert.equal(engine.isAddressUsed('mnXSnPVpkfzjHFd7JQFKaSC5bZYsGz2PxX'), true)
+      assert.equal(engine.isAddressUsed('mh8MyFhj9ERZ6DczpLJNb3ZQLDn9tqhrU1'), true)
       done()
     }, 5000)
   })
 })
 
-describe('Get Fresh Address', function () {
+describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
   this.timeout(20000)
   it('Should provide a non used BTC address when no options are provided', function (done) {
     setTimeout(() => {
@@ -263,7 +216,7 @@ let templateSpend = {
   ]
 }
 
-describe('Make Spend and Sign', function () {
+describe(`Make Spend and Sign for Wallet type ${WALLET_TYPE}`, function () {
   it('Should fail since no spend target is given', function () {
     let abcSpendInfo = {
       networkFeeOption: 'high',
