@@ -332,7 +332,7 @@ export class BitcoinEngine {
 
   async saveTx (abcTransaction) {
     const tx = bcoin.primitives.TX.fromRaw(abcTransaction.signedTx)
-    await this.wallet.db.addTX(tx)
+    await this.wallet.add(tx)
   }
   /* --------------------------------------------------------------------- */
   /* --------------------  Experimantal Public API  ---------------------- */
