@@ -92,6 +92,7 @@ export class BitcoinEngine {
       masterPath,
       masterIndex
     })
+    await this.wallet.setLookahead(0, this.gapLimit)
     await this.loadWalletLocalDataFromDisk()
     await this.loadTransactionsIdsFromDisk()
     await this.loadTransactionsFromDisk()
@@ -114,7 +115,7 @@ export class BitcoinEngine {
     const account = await this.wallet.getAccount(0)
     this.deriveAddresses(account, 'receive', 0)
 
-    // Support bip 44 wallets
+    // Support for bip 44 wallets
     if (this.walletType.includes('44')) {
       this.deriveAddresses(account, 'change', 1)
     }
@@ -131,7 +132,7 @@ export class BitcoinEngine {
       const maxToDerive = depth + this.gapLimit
       let newAddresses = []
       for (let i = 0; i < maxToDerive; i++) {
-        const address = account.deriveKey(typeNum, i).toJSON().address
+        const address = account.deriveKey(typeNum, i).getAddress('base58check').toString()
         newAddresses.push(address)
       }
       this.walletLocalData.addresses[type] = newAddresses
@@ -516,7 +517,7 @@ export class BitcoinEngine {
     const extra = path.index + this.gapLimit - addLen
     if (extra > 0) {
       for (let i = addLen; i < addLen + extra; i++) {
-        const address = account.deriveKey(path.branch, i).toJSON().address
+        const address = account.deriveKey(path.branch, i).getAddress('base58check').toString()
         addresses.push(address)
         this.processAddress(address)
       }
