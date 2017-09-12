@@ -93,6 +93,10 @@ export class BitcoinEngine {
       masterIndex
     })
     await this.wallet.setLookahead(0, this.gapLimit)
+    await this.syncDiskData()
+  }
+
+  async syncDiskData () {
     await this.loadWalletLocalDataFromDisk()
     await this.loadTransactionsIdsFromDisk()
     await this.loadTransactionsFromDisk()
