@@ -1,7 +1,7 @@
 import { parse, serialize } from 'uri-js'
 import { bns } from 'biggystring'
 import cs from 'coinstring'
-import { BitcoinEngine } from './currencyEngineBTC'
+import CurrencyEngine from './currencyEngineBTC'
 import { txLibInfo } from './currencyInfoBTC'
 import bcoin from 'bcoin'
 
@@ -64,25 +64,12 @@ export const BitcoinCurrencyPluginFactory = {
         return publicKeyInitializers[walletInfo.type](walletInfo)
       },
 
-      // XXX Deprecated. To be removed once Core supports createPrivateKey and derivePublicKey -paulvp
-      createMasterKeys: function (walletType) {
-        if (walletType.replace('wallet:', '').toLowerCase() === txLibInfo.getInfo.currencyName.toLowerCase()) {
-          let master = new bcoin.masterkey() // eslint-disable-line new-cap
-          let mnemonic = new bcoin.mnemonic(null) // eslint-disable-line new-cap
-          let key = bcoin.hd.fromMnemonic(mnemonic, null)
-          master.fromKey(key, mnemonic)
-          let hex = master.key.privateKey.toString('base64')
-          mnemonic = master.mnemonic.phrase
-          return {
-            bitcoinKey: hex,
-            mnemonic: mnemonic
-          }
-        } else {
-          return null
+      makeEngine: (keyInfo, opts = {}) => {
+        if (keyInfo.keys) {
+          keyInfo.keys.currencyKey = keyInfo.keys.bitcoinKey
         }
+        return CurrencyEngine(bcoin, txLibInfo).makeEngine(io, keyInfo, opts)
       },
-
-      makeEngine: (keyInfo, opts = {}) => BitcoinEngine.makeEngine(io, keyInfo, opts),
 
       parseUri: (uri) => {
         let parsedUri = parse(uri)
