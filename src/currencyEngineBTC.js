@@ -81,7 +81,7 @@ export class BitcoinEngine {
 
     const bitcoinKeyBuffer = BufferJS.from(this.masterKeys.bitcoinKey, 'base64')
     const key = bcoin.hd.PrivateKey.fromSeed(bitcoinKeyBuffer, this.network)
-    const masterPath = this.walletType.includes('44') ? null : 'm/0'
+    const masterPath = this.walletType.includes('44') ? null : 'm/0/0'
     const masterIndex = !masterPath ? null : 32
 
     this.wallet = await walletdb.create({
