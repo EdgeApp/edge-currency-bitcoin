@@ -65,6 +65,10 @@ export const BitcoinCurrencyPluginFactory = {
       },
 
       makeEngine: (keyInfo, opts = {}) => {
+        const network = keyInfo.type.includes('testnet') ? 'testnet' : 'main'
+        const magicByte = network === 'testnet' ? 0x6F : 0x00
+        keyInfo.network = network
+        keyInfo.magicByte = magicByte
         if (keyInfo.keys) {
           keyInfo.keys.currencyKey = keyInfo.keys.bitcoinKey
         }

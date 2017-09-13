@@ -11,14 +11,11 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     this.io = io
     this.walletType = keyInfo.type
     this.masterKeys = keyInfo.keys
+    this.network = keyInfo.network
+    this.magicByte = keyInfo.magicByte
     this.wallet = null
     this.initialSync = false
     this.primaryCurrency = txLibInfo.getInfo.currencyCode
-    // Only lines to change on engine to add network type based wallet //
-    this.network = this.walletType.includes('testnet') ? 'testnet' : 'main'
-    this.magicByte = this.network === 'testnet' ? 0x6F : 0x00
-    // /////////////////////////////////////////////////////////////// //
-
     this.abcTxLibCallbacks = opts.callbacks
     this.walletLocalFolder = opts.walletLocalFolder
     if (!this.walletLocalFolder) throw new Error('Cannot create and engine without a local folder')
