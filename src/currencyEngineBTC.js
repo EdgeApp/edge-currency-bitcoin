@@ -1,22 +1,19 @@
 // Replacing native crypto modules for ReactNative
 import { Electrum } from './electrum'
 import { ABCTransaction } from './abcTransaction'
-import { txLibInfo } from './currencyInfoBTC'
 import cs from 'coinstring'
 import { bns } from 'biggystring'
-import bcoin from 'bcoin'
 
 const BufferJS = require('bufferPlaceHolder').Buffer
-const PRIMARY_CURRENCY = txLibInfo.getInfo.currencyCode
 
-export class BitcoinEngine {
+export default (bcoin, txLibInfo) => class CurrencyEngine {
   constructor (io, keyInfo, opts = {}) {
     this.io = io
     this.walletType = keyInfo.type
     this.masterKeys = keyInfo.keys
     this.wallet = null
     this.initialSync = false
-
+    this.primaryCurrency = txLibInfo.getInfo.currencyCode
     // Only lines to change on engine to add network type based wallet //
     this.network = this.walletType.includes('testnet') ? 'testnet' : 'main'
     this.magicByte = this.network === 'testnet' ? 0x6F : 0x00
@@ -67,20 +64,22 @@ export class BitcoinEngine {
   }
 
   static async makeEngine (io, keyInfo, opts = {}) {
-    const engine = new BitcoinEngine(io, keyInfo, opts)
+    const engine = new CurrencyEngine(io, keyInfo, opts)
     await engine.startWallet()
     return engine
   }
 
   async startWallet () {
     if (!this.masterKeys) throw new Error('Missing Master Key')
-    if (!this.masterKeys.bitcoinKey) throw new Error('Missing Master Key')
+    if (!this.masterKeys.currencyKey) throw new Error('Missing Master Key')
 
-    const walletdb = new bcoin.wallet.WalletDB({ network: this.network })
+    const walletdb = new bcoin.wallet.WalletDB({
+      network: this.network
+    })
     await walletdb.open()
 
-    const bitcoinKeyBuffer = BufferJS.from(this.masterKeys.bitcoinKey, 'base64')
-    const key = bcoin.hd.PrivateKey.fromSeed(bitcoinKeyBuffer, this.network)
+    const keyBuffer = BufferJS.from(this.masterKeys.currencyKey, 'base64')
+    const key = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
     const masterPath = this.walletType.includes('44') ? null : 'm/0/0'
     const masterIndex = !masterPath ? null : 32
 
@@ -104,7 +103,7 @@ export class BitcoinEngine {
       const confirmedBalance = balance.confirmed.toString()
       const unconfirmedBalance = balance.unconfirmed.toString()
       this.walletLocalData.masterBalance = bns.add(confirmedBalance, unconfirmedBalance)
-      this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
+      this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
       this.saveToDisk('walletLocalData')
     })
 
@@ -210,7 +209,7 @@ export class BitcoinEngine {
     return this.walletLocalData.masterBalance
   }
 
-  getNumTransactions ({currencyCode = PRIMARY_CURRENCY} = {currencyCode: PRIMARY_CURRENCY}) {
+  getNumTransactions ({currencyCode = this.primaryCurrency} = {currencyCode: this.primaryCurrency}) {
     return this.objectToArray(this.transactions).reduce((s, addressTxs) => {
       return s + Object.keys(addressTxs).length
     }, 0)
@@ -326,7 +325,7 @@ export class BitcoinEngine {
         rawTx: resultedTransaction.toRaw().toString('hex'),
         bcoinTx: resultedTransaction
       },
-      currencyCode: PRIMARY_CURRENCY,
+      currencyCode: this.primaryCurrency,
       txid: null,
       date: null,
       blockHeight: -1,
@@ -539,7 +538,7 @@ export class BitcoinEngine {
       otherParams: {
         rawTx: rawTransaction
       },
-      currencyCode: PRIMARY_CURRENCY,
+      currencyCode: this.primaryCurrency,
       txid: txHash,
       date: blockHeader.timestamp,
       blockHeight: transactionObj.height,
@@ -628,7 +627,7 @@ export class BitcoinEngine {
   async loadWalletLocalDataFromDisk () {
     const localWalletData = await this.loadFromDisk('walletLocalData')
     if (localWalletData) {
-      this.abcTxLibCallbacks.onBalanceChanged(PRIMARY_CURRENCY, this.walletLocalData.masterBalance)
+      this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
     } else await this.saveToDisk('walletLocalData')
   }
 
