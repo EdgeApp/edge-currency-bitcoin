@@ -14,10 +14,10 @@ const getParameterByName = (param, url) => {
   return decodeURIComponent(results[2].replace(/\+/g, ' '))
 }
 
-export default ({ magicBytes, txLibInfo, bcoin }) => {
+export default ([magicByteTestnet, magicByteMain, txLibInfo, bcoin]) => {
   const currencyName = txLibInfo.getInfo.currencyName.toLowerCase()
 
-  const valid = address => cs.createValidator(magicBytes.main)(address)
+  const valid = address => cs.createValidator(magicByteMain)(address)
 
   const createRandomPrivateKey = io => ({
     [`${currencyName}Key`]: BufferJS.from(io.random(32)).toString('base64')
@@ -69,7 +69,7 @@ export default ({ magicBytes, txLibInfo, bcoin }) => {
 
         makeEngine: (keyInfo, opts = {}) => {
           const network = keyInfo.type.includes('testnet') ? 'testnet' : 'main'
-          const magicByte = network === 'testnet' ? magicBytes.testnet : magicBytes.main
+          const magicByte = network === 'testnet' ? magicByteTestnet : magicByteMain
 
           keyInfo.network = network
           keyInfo.magicByte = magicByte
