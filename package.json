@@ -37,6 +37,7 @@
   "license": "ISC",
   "dependencies": {
     "bcoin": "git+https://github.com/Airbitz/bcoin.git",
+    "lcoin": "git+https://github.com/thehobbit85/lcoin.git#litecoin",
     "biggystring": "^1.0.5",
     "buffer": "^5.0.7",
     "coinstring": "^2.3.0",
