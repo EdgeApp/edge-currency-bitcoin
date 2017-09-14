@@ -1,5 +1,5 @@
 // Replacing native crypto modules for ReactNative
-import { Electrum } from './electrum'
+import { Electrum } from './electrum/index'
 import { ABCTransaction } from './abcTransaction'
 import cs from 'coinstring'
 import { bns } from 'biggystring'
@@ -165,6 +165,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       //   }
       // }
     }
+    console.log(this.walletLocalData.addresses)
   }
   /* --------------------------------------------------------------------- */
   /* ---------------------------  Public API  ---------------------------- */
