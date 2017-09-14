@@ -1,6 +1,6 @@
 /* global */
 
-export default {
+export const bitcoin = {
   supportedTokens: [],
 
   getInfo: {

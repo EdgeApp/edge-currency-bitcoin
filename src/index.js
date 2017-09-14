@@ -1,10 +1,11 @@
 import CurrencyPlugin from './currencyPlugin/index'
-import bitcoinSettings from './bitcoinPlugin/index.js'
-import litecoinSettings from './litecoinPlugin/index.js'
-import dogecoinSettings from './dogecoinPlugin/index.js'
+import * as plugins from './currencyInfo/index.js'
 
-export default {
-  BitcoinCurrencyPluginFactory: CurrencyPlugin(bitcoinSettings),
-  LitecoinCurrencyPluginFactory: CurrencyPlugin(litecoinSettings),
-  DogecoinCurrencyPluginFactory: CurrencyPlugin(dogecoinSettings)
+const pluginFactories = {}
+
+for (const plugin in plugins) {
+  const factoryName = `${plugin.charAt(0).toUpperCase() + plugin.slice(1)}CurrencyPluginFactory`
+  pluginFactories[factoryName] = CurrencyPlugin(plugins[plugin])
 }
+
+export { pluginFactories as default }

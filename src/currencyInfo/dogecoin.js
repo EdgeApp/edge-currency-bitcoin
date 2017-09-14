@@ -1,6 +1,6 @@
 /* global */
 
-export default {
+export const dogecoin = {
   supportedTokens: [],
 
   getInfo: {
