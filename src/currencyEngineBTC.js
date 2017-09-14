@@ -83,6 +83,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     this.wallet = await walletdb.create({
       'master': key.xprivkey(),
       'id': 'ID1',
+      witness: false,
       masterPath,
       masterIndex
     })
