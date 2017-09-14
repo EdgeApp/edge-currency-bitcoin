@@ -6,10 +6,10 @@ export const bitcoin = {
   getInfo: {
     // Details of supported currency
     walletTypes: [
-      'wallet:bitcoin',
       'wallet:bitcoin44',
-      'wallet:testnet',
-      'wallet:testnet44'
+      'wallet:bitcoin',
+      'wallet:testnet44',
+      'wallet:testnet'
     ],
     defaultsSettings: {
       gapLimit: 25,
