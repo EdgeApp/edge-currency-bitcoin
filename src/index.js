@@ -1,4 +1,8 @@
-import { BitcoinCurrencyPluginFactory } from './bitcoinPlugin/index.js'
-import { LitecoinCurrencyPluginFactory } from './litecoinPlugin/index.js'
+import CurrencyPlugin from './currencyPlugin/index'
+import bitcoinSettings from './bitcoinPlugin/index.js'
+import litecoinSettings from './litecoinPlugin/index.js'
 
-export { BitcoinCurrencyPluginFactory, LitecoinCurrencyPluginFactory }
+export default {
+  BitcoinCurrencyPluginFactory: CurrencyPlugin(bitcoinSettings),
+  LitecoinCurrencyPluginFactory: CurrencyPlugin(litecoinSettings)
+}
