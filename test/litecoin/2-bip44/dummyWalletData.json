@@ -1,9 +1,9 @@
 {
-	"masterBalance": "162500000",
+	"masterBalance": "2031250",
 	"blockHeight": 1180814,
 	"addresses": {
-		"receive": ["mfXZU3rapa1VWoNj5j2ekvt1gpNLFyT2Ub", "mh6kCD1mFjrFP7Di2sgmh7V8WXRy21Cje7"],
-        "change": [],
+		"receive": [],
+        "change": ["mnAoeMHqeu8rKwQmuBykxYLnJysNjGjD2F", "mpWoyhXKB9s1E7EyKdoGMR5cxvQNym6PiN"],
         "nested": []
 	},
 	"detailedFeeTable": {

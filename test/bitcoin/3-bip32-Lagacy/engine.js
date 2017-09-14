@@ -1,5 +1,5 @@
 /* global describe it */
-const BitcoinCurrencyPluginFactory = require('../../lib/index.test.js').BitcoinCurrencyPluginFactory
+const BitcoinCurrencyPluginFactory = require('../../../lib/index.test.js').BitcoinCurrencyPluginFactory
 const assert = require('assert')
 const disklet = require('disklet')
 const Emitter = require('events').EventEmitter
