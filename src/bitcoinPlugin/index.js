@@ -1,5 +1,5 @@
 import txLibInfo from './currencyInfo'
-import bcoin from 'lcoin'
+import bcoin from 'bcoin'
 import CurrencyPlugin from './../currencyPlugin/index'
 
 export const BitcoinCurrencyPluginFactory = CurrencyPlugin({
