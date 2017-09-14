@@ -14,7 +14,7 @@ const getParameterByName = (param, url) => {
   return decodeURIComponent(results[2].replace(/\+/g, ' '))
 }
 
-export default ([magicByteTestnet, magicByteMain, txLibInfo, bcoin]) => {
+export default ([txLibInfo, bcoin]) => {
   const currencyName = txLibInfo.getInfo.currencyName.toLowerCase()
 
   if (txLibInfo &&
@@ -48,6 +48,8 @@ export default ([magicByteTestnet, magicByteMain, txLibInfo, bcoin]) => {
     }
   }
 
+  const magicByteMain = bcoin.protocol.networks.main.addressPrefix.pubkeyhash
+  const magicByteTestnet = bcoin.protocol.networks.testnet.addressPrefix.pubkeyhash
 
   const valid = address => cs.createValidator(magicByteMain)(address)
 

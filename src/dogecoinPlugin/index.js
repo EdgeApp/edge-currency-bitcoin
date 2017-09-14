@@ -1,3 +1,2 @@
 import txLibInfo from './currencyInfo'
-
-export default [0xB0, 0x30, txLibInfo, lcoin]
+export default [txLibInfo, require('lcoin')]
