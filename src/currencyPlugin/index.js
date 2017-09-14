@@ -14,9 +14,14 @@ const getParameterByName = (param, url) => {
   return decodeURIComponent(results[2].replace(/\+/g, ' '))
 }
 
-export default ([txLibInfo, bcoin]) => {
+export default (txLibInfo) => {
   const currencyName = txLibInfo.getInfo.currencyName.toLowerCase()
-
+  let bcoin
+  if (currencyName === 'bitcoin') {
+    bcoin = require('bcoin')
+  } else {
+    bcoin = require('lcoin')
+  }
   if (txLibInfo &&
     txLibInfo.getInfo &&
     txLibInfo.getInfo.defaultsSettings &&
