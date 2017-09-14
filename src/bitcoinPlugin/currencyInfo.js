@@ -1,12 +1,15 @@
 /* global */
 
-export const txLibInfo = {
+export default {
   supportedTokens: [],
 
   getInfo: {
     // Details of supported currency
     walletTypes: [
-      'wallet:bitcoin'
+      'wallet:bitcoin',
+      'wallet:bitcoin44',
+      'wallet:testnet',
+      'wallet:testnet44'
     ],
     defaultsSettings: {
       gapLimit: 25,
