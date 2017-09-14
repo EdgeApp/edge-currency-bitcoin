@@ -10,6 +10,44 @@ export default {
       'wallet:litecoin'
     ],
     defaultsSettings: {
+      // networkSettings: {
+      //   main: {
+      //     magic: 0x00000000,
+      //     keyPrefix: {
+      //       privkey: 0xb0,
+      //       xpubkey: 0x00000000,
+      //       xprivkey: 0x00000000,
+      //       xprivkey58: 'xprv',
+      //       xpubkey58: 'xpub',
+      //       coinType: 0
+      //     },
+      //     addressPrefix: {
+      //       pubkeyhash: 0x30,
+      //       scripthash: 0x32,
+      //       witnesspubkeyhash: 0x06,
+      //       witnessscripthash: 0x0a,
+      //       bech32: 'lc'
+      //     }
+      //   },
+      //   testnet: {
+      //     magic: 0x00000000,
+      //     keyPrefix: {
+      //       privkey: 0xef,
+      //       xpubkey: 0x00000000,
+      //       xprivkey: 0x00000000,
+      //       xpubkey58: 'tpub',
+      //       xprivkey58: 'tprv',
+      //       coinType: 1
+      //     },
+      //     addressPrefix: {
+      //       pubkeyhash: 0x6f,
+      //       scripthash: 0xc4,
+      //       witnesspubkeyhash: 0x03,
+      //       witnessscripthash: 0x28,
+      //       bech32: 'tb'
+      //     }
+      //   }
+      // },
       gapLimit: 25,
       maxFee: 1000000,
       feeUpdateInterval: 10000,
