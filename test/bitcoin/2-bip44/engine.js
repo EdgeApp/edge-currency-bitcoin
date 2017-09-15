@@ -13,9 +13,11 @@ const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const DATA_STORE_FILE = 'walletLocalDataV4.json'
 const TRANSACTION_STORE_FILE = 'transactionsV1.json'
 const TRANSACTION_ID_STORE_FILE = 'transactionsIdsV1.json'
+const MEMORY_DUMP_STORE_FILE = 'dummyMemoryDumpV1.json'
 const dummyWalletData = path.join(__dirname, './dummyWalletData.json')
 const dummyTransactions = path.join(__dirname, './dummyTransactions.json')
 const dummyTransactionsIds = path.join(__dirname, './dummyTransactionsIds.json')
+const dummyMemoryDump = path.join(__dirname, './dummyMemoryDump.json')
 
 let plugin, keys, engine
 var emitter = new Emitter()
@@ -87,6 +89,7 @@ describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
     let walletData = jsonfile.readFileSync(dummyWalletData)
     let transactions = jsonfile.readFileSync(dummyTransactions)
     let transactionsIds = jsonfile.readFileSync(dummyTransactionsIds)
+    let memoryDump = jsonfile.readFileSync(dummyMemoryDump)
     walletLocalFolder
     .folder(DATA_STORE_FOLDER)
     .file(DATA_STORE_FILE)
@@ -101,6 +104,11 @@ describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
       .file(TRANSACTION_ID_STORE_FILE)
       .setText(JSON.stringify(transactionsIds))
     )
+    .then(() => walletLocalFolder
+      .folder(DATA_STORE_FOLDER)
+      .file(MEMORY_DUMP_STORE_FILE)
+      .setText(JSON.stringify(memoryDump))
+    )
     .then(() => BitcoinCurrencyPluginFactory.makePlugin(opts))
     .then((bitcoinPlugin) => {
       assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
@@ -112,7 +120,6 @@ describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
   })
 
   it('Make Engine', function () {
-    // console.log(walletLocalFolder)
     return plugin.makeEngine({type: WALLET_TYPE, keys}, {
       callbacks,
       walletLocalFolder,
