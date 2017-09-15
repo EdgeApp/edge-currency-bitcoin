@@ -36,7 +36,8 @@ export const bitcoin = {
           transactions: 'transactionsV1.json',
           headerList: 'headersV1.json',
           transactionsIds: 'transactionsIdsV1.json',
-          wallet: 'walletDBv1.json'
+          wallet: 'walletDBv1.json',
+          memoryDump: 'dummyMemoryDumpV1.json'
         }
       }
     },

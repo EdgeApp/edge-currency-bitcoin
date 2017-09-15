@@ -8,6 +8,8 @@ const BufferJS = require('bufferPlaceHolder').Buffer
 
 export default (bcoin, txLibInfo) => class CurrencyEngine {
   constructor (io, keyInfo, opts = {}) {
+    if (!opts.walletLocalFolder) throw new Error('Cannot create and engine without a local folder')
+    this.walletLocalFolder = opts.walletLocalFolder
     this.io = io
     this.walletType = keyInfo.type
     this.masterKeys = keyInfo.keys
@@ -17,8 +19,6 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     this.initialSync = false
     this.primaryCurrency = txLibInfo.getInfo.currencyCode
     this.abcTxLibCallbacks = opts.callbacks
-    this.walletLocalFolder = opts.walletLocalFolder
-    if (!this.walletLocalFolder) throw new Error('Cannot create and engine without a local folder')
 
     // Loads All of this properties into "this":
     // electrumServers: List of electrum servers to connect to
@@ -52,6 +52,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     }
     this.transactions = {}
     this.transactionsIds = []
+    this.memoryDump = {}
     // // // // // // // // // // // // //
 
     this.electrumCallbacks = {
@@ -70,23 +71,35 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     if (!this.masterKeys) throw new Error('Missing Master Key')
     if (!this.masterKeys.currencyKey) throw new Error('Missing Master Key')
 
-    const walletdb = new bcoin.wallet.WalletDB({
-      network: this.network
-    })
+    const walletDbOptions = { network: this.network }
+    await this.loadMemoryDumpFromDisk()
+
+    if (this.memoryDump.rawMemory) {
+      walletDbOptions.memDbRaw = Buffer.from(this.memoryDump.rawMemory, 'hex')
+    }
+
+    const walletdb = new bcoin.wallet.WalletDB(walletDbOptions)
     await walletdb.open()
 
     const keyBuffer = BufferJS.from(this.masterKeys.currencyKey, 'base64')
     const key = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
-    const masterPath = this.walletType.includes('44') ? null : 'm/0/0'
-    const masterIndex = !masterPath ? null : 32
 
-    this.wallet = await walletdb.create({
-      'master': key.xprivkey(),
-      'id': 'ID1',
-      witness: false,
-      masterPath,
-      masterIndex
-    })
+    if (this.memoryDump.rawMemory) {
+      this.wallet = await walletdb.get('ID1')
+      this.wallet.importMasterKey({master: key.xprivkey()})
+    } else {
+      const masterPath = this.walletType.includes('44') ? null : 'm/0/0'
+      const masterIndex = !masterPath ? null : 32
+      this.wallet = await walletdb.create({
+        'master': key.xprivkey(),
+        'id': 'ID1',
+        secureMode: true,
+        witness: false,
+        masterPath,
+        masterIndex
+      })
+    }
+
     await this.wallet.setLookahead(0, this.gapLimit)
     await this.syncDiskData()
   }
@@ -105,12 +118,17 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       this.saveToDisk('walletLocalData')
     })
 
-    const transactions = await this.getTransactions()
-    const addTXPromises = transactions.map(transaction => {
-      const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(transaction.otherParams.rawTx, 'hex'))
-      return this.wallet.add(bcoinTX)
-    })
-    await Promise.all(addTXPromises)
+    if (!this.memoryDump) {
+      const transactions = await this.getTransactions()
+      const addTXPromises = transactions.map(transaction => {
+        const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(transaction.otherParams.rawTx, 'hex'))
+        return this.wallet.add(bcoinTX)
+      })
+      await Promise.all(addTXPromises)
+    } else {
+      this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
+    }
+
     await this.syncAddresses()
   }
 
@@ -192,6 +210,10 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
   async killEngine () {
     this.electrum = null
     clearInterval(this.feeUpdater)
+    if (this.wallet) {
+      this.memoryDump.rawMemory = this.wallet.db.db.db.toRaw().toString('hex')
+    }
+    await this.saveToDisk('memoryDump')
     await this.saveToDisk('headerList')
     await this.saveToDisk('walletLocalData')
     await this.saveToDisk('transactions')
@@ -467,6 +489,8 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       updatedTransactionIds.push(txid)
       if (this.transactionsIds.indexOf(txid) === -1) this.transactionsIds.push(txid)
     })
+    this.memoryDump = { rawMemory: this.wallet.db.db.db.toRaw().toString('hex') }
+    this.saveToDisk('memoryDump')
     this.saveToDisk('transactions')
     this.saveToDisk('transactionsIds')
     if (this.abcTxLibCallbacks.onTxidsChanged) {
@@ -649,5 +673,10 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
   async loadHeadersFromDisk () {
     const headers = await this.loadFromDisk('headerList')
     if (!headers) await this.saveToDisk('headerList')
+  }
+
+  async loadMemoryDumpFromDisk () {
+    const memoryDump = await this.loadFromDisk('memoryDump')
+    if (!memoryDump) await this.saveToDisk('memoryDump')
   }
 }
