@@ -75,7 +75,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     await this.loadMemoryDumpFromDisk()
 
     if (this.memoryDump.rawMemory) {
-      walletDbOptions.memDbRaw = Buffer.from(this.memoryDump.rawMemory, 'hex')
+      walletDbOptions.memDbRaw = BufferJS.from(this.memoryDump.rawMemory, 'hex')
     }
 
     const walletdb = new bcoin.wallet.WalletDB(walletDbOptions)
