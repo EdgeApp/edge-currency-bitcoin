@@ -4,6 +4,7 @@ import { ABCTransaction } from './abcTransaction'
 import cs from 'coinstring'
 import { bns } from 'biggystring'
 
+const ENABLED = false
 const BufferJS = require('bufferPlaceHolder').Buffer
 
 export default (bcoin, txLibInfo) => class CurrencyEngine {
@@ -74,7 +75,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     const walletDbOptions = { network: this.network }
     await this.loadMemoryDumpFromDisk()
 
-    if (this.memoryDump.rawMemory) {
+    if (this.memoryDump.rawMemory && ENABLED) {
       walletDbOptions.memDbRaw = BufferJS.from(this.memoryDump.rawMemory, 'hex')
     }
 
@@ -84,7 +85,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     const keyBuffer = BufferJS.from(this.masterKeys.currencyKey, 'base64')
     const key = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
 
-    if (this.memoryDump.rawMemory) {
+    if (this.memoryDump.rawMemory && ENABLED) {
       this.wallet = await walletdb.get('ID1')
       this.wallet.importMasterKey({master: key.xprivkey()})
     } else {
