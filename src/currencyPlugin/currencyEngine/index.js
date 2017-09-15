@@ -183,6 +183,10 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       //   }
       // }
     }
+    if (!this.memoryDump.rawMemory) {
+      this.memoryDump.rawMemory = this.wallet.db.db.db.toRaw().toString('hex')
+      await this.saveToDisk('memoryDump')
+    }
   }
   /* --------------------------------------------------------------------- */
   /* ---------------------------  Public API  ---------------------------- */
