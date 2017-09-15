@@ -49,6 +49,10 @@ let callbacks = {
   }
 }
 
+const MEMORY_DUMP_STORE_FILE = 'dummyMemoryDumpV1.json'
+const dummyMemoryDump = path.join(__dirname, './dummyMemoryDump.json')
+let memoryDump = jsonfile.readFileSync(dummyMemoryDump)
+
 describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
   before('Create local cache file', function (done) {
     let walletData = jsonfile.readFileSync(dummyWalletData)
@@ -67,6 +71,11 @@ describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
       .folder(DATA_STORE_FOLDER)
       .file(TRANSACTION_ID_STORE_FILE)
       .setText(JSON.stringify(transactionsIds))
+    )
+    .then(() => walletLocalFolder
+      .folder(DATA_STORE_FOLDER)
+      .file(MEMORY_DUMP_STORE_FILE)
+      .setText(JSON.stringify(memoryDump))
     )
     .then(() => BitcoinCurrencyPluginFactory.makePlugin(opts))
     .then((bitcoinPlugin) => {
