@@ -184,8 +184,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       // }
     }
     if (!this.memoryDump.rawMemory) {
-      this.memoryDump.rawMemory = this.wallet.db.db.db.toRaw().toString('hex')
-      await this.saveToDisk('memoryDump')
+      await this.saveMemDumpToDisk()
     }
   }
   /* --------------------------------------------------------------------- */
@@ -214,10 +213,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
   async killEngine () {
     this.electrum = null
     clearInterval(this.feeUpdater)
-    if (this.wallet) {
-      this.memoryDump.rawMemory = this.wallet.db.db.db.toRaw().toString('hex')
-    }
-    await this.saveToDisk('memoryDump')
+    await this.saveMemDumpToDisk()
     await this.saveToDisk('headerList')
     await this.saveToDisk('walletLocalData')
     await this.saveToDisk('transactions')
@@ -493,8 +489,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       updatedTransactionIds.push(txid)
       if (this.transactionsIds.indexOf(txid) === -1) this.transactionsIds.push(txid)
     })
-    this.memoryDump = { rawMemory: this.wallet.db.db.db.toRaw().toString('hex') }
-    this.saveToDisk('memoryDump')
+    this.saveMemDumpToDisk()
     this.saveToDisk('transactions')
     this.saveToDisk('transactionsIds')
     if (this.abcTxLibCallbacks.onTxidsChanged) {
@@ -636,6 +631,17 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     }
   }
 
+  async saveMemDumpToDisk () {
+    if (this.wallet &&
+      this.wallet.db &&
+      this.wallet.db.db &&
+      this.wallet.db.db.db &&
+      this.wallet.db.db.db.toRaw) {
+      this.memoryDump.rawMemory = this.wallet.db.db.db.toRaw().toString('hex')
+      await this.saveToDisk('memoryDump')
+    }
+  }
+
   async loadFromDisk (fileName, optionalFileName = '') {
     try {
       const data = await this.walletLocalFolder
@@ -681,6 +687,6 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
 
   async loadMemoryDumpFromDisk () {
     const memoryDump = await this.loadFromDisk('memoryDump')
-    if (!memoryDump) await this.saveToDisk('memoryDump')
+    if (!memoryDump) await this.saveMemDumpToDisk()
   }
 }
