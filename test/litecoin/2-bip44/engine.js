@@ -114,14 +114,7 @@ describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
     // console.log(walletLocalFolder)
     return plugin.makeEngine({type: WALLET_TYPE, keys}, {
       callbacks,
-      walletLocalFolder,
-      optionalSettings: {
-        enableOverrideServers: true,
-        electrumServers: [
-          ['testnetnode.arihanc.com', '51001'],
-          ['testnet.hsmiths.com', '53012']
-        ]
-      }
+      walletLocalFolder
     }).then(e => {
       engine = e
       assert.equal(typeof engine.startEngine, 'function', 'startEngine')
