@@ -1,6 +1,5 @@
 import { parse, serialize } from 'uri-js'
 import { bns } from 'biggystring'
-import cs from 'coinstring'
 import CurrencyEngine from './currencyEngine/index'
 
 const BufferJS = require('bufferPlaceHolder').Buffer
@@ -53,10 +52,14 @@ export default (txLibInfo) => {
     }
   }
 
-  const magicByteMain = bcoin.protocol.networks.main.addressPrefix.pubkeyhash
-  const magicByteTestnet = bcoin.protocol.networks.testnet.addressPrefix.pubkeyhash
-
-  const valid = address => cs.createValidator(magicByteMain)(address)
+  const valid = address => {
+    try {
+      bcoin.primitives.Address.fromBase58(address)
+      return true
+    } catch (e) {
+      return false
+    }
+  }
 
   const createRandomPrivateKey = io => ({
     [`${currencyName}Key`]: BufferJS.from(io.random(32)).toString('base64')
@@ -108,10 +111,7 @@ export default (txLibInfo) => {
 
         makeEngine: (keyInfo, opts = {}) => {
           const network = keyInfo.type.includes('testnet') ? 'testnet' : 'main'
-          const magicByte = network === 'testnet' ? magicByteTestnet : magicByteMain
-
           keyInfo.network = network
-          keyInfo.magicByte = magicByte
           if (keyInfo.keys) {
             keyInfo.keys.currencyKey = keyInfo.keys[`${currencyName}Key`]
           }

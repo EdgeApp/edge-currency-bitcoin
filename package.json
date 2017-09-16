@@ -40,7 +40,6 @@
     "lcoin": "git+https://github.com/Airbitz/lcoin.git#litecoin",
     "biggystring": "^1.0.5",
     "buffer": "^5.0.7",
-    "coinstring": "^2.3.0",
     "uri-js": "^3.0.2"
   },
   "devDependencies": {

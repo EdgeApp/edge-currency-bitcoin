@@ -1,7 +1,6 @@
 // Replacing native crypto modules for ReactNative
 import { Electrum } from './electrum/index'
 import { ABCTransaction } from './abcTransaction'
-import cs from 'coinstring'
 import { bns } from 'biggystring'
 
 const ENABLED = false
@@ -15,7 +14,6 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     this.walletType = keyInfo.type
     this.masterKeys = keyInfo.keys
     this.network = keyInfo.network
-    this.magicByte = keyInfo.magicByte
     this.wallet = null
     this.initialSync = false
     this.primaryCurrency = txLibInfo.getInfo.currencyCode
@@ -291,8 +289,11 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
   }
 
   isAddressUsed (address, options = {}) {
-    const validator = cs.createValidator(this.magicByte)
-    if (!validator(address)) throw new Error('Wrong formatted address')
+    try {
+      bcoin.primitives.Address.fromBase58(address)
+    } catch (e) {
+      throw new Error('Wrong formatted address')
+    }
     if (this.getAllOurAddresses().indexOf(address) === -1) {
       throw new Error('Address not found in wallet')
     }
