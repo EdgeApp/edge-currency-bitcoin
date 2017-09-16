@@ -1,0 +1,25 @@
+{
+	"125NGZ4Hdn4mkuns6gtx1yZwcgnWsr4Lio": {
+		"txs": {
+			"e9b8d657275f295c196f79713d6fcc029e9c177129f053dff1e1e20a7568228d": {
+				"abcTransaction": {
+					"currencyCode": "BTC",
+					"txid": "e9b8d657275f295c196f79713d6fcc029e9c177129f053dff1e1e20a7568228d",
+					"date": 1504306291.608,
+					"blockHeight": 1180316,
+					"nativeAmount": "2031250",
+					"networkFee": "100000",
+					"runningBalance": null,
+					"signedTx": null,
+					"ourReceiveAddresses": ["125NGZ4Hdn4mkuns6gtx1yZwcgnWsr4Lio"],
+					"otherParams": {
+						"rawTx": "01000000017c947d5f4e8400e71f900c40dc4412f420736db6fc8985ab55789a286cf530db010000006a47304402204f05648eb69a5c81638a5a64ba21c8be40238cfb6d965db26197a4a77ad8b9db02205158a9df02e713e9737b7807117f4b09407a2b5c94e06618ca547a435f2a106301210244f369f829c028e8ec1a8e1142f8f51d106be526448ee632a43e004028856b53ffffffff0292fe1e00000000001976a91448f9572e01e9f715a01c64513a799a844ae4683a88ac8e87569c0b0000001976a9142813ad46581bf88612f75274aa5c0499aa34cf3b88ac00000000"
+					}
+				},
+				"executed": 1
+			}
+		},
+		"executed": 1,
+		"addressStatusHash": "ca1faa5beb7e94e01d966c2eeb6aba628422ccbd0eeee1b2128db9cb2a07e8f9"
+	}
+}
