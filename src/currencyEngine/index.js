@@ -134,8 +134,8 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
   async syncAddresses () {
     const account = await this.wallet.getAccount(0)
     const receiveDepth = account.receiveDepth - 1 + this.gapLimit
-    const changeDepth = account.receiveDepth - 1 + this.gapLimit
     // Not supported yet
+    const changeDepth = account.changeDepth - 1 + this.gapLimit
     // const nestedDepth = account.receiveDepth - 1 + this.gapLimit
     const addresses = this.walletLocalData.addresses
     if (receiveDepth > addresses.receive.length ||
