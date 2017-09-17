@@ -43,7 +43,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       addresses: {
         receive: [],
         change: []
-        // Not supported yet
+        // Segwit Not supported yet
         // nested: []
       },
       detailedFeeTable: {},
@@ -134,8 +134,8 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
   async syncAddresses () {
     const account = await this.wallet.getAccount(0)
     const receiveDepth = account.receiveDepth - 1 + this.gapLimit
-    // Not supported yet
     const changeDepth = account.changeDepth - 1 + this.gapLimit
+    // Segwit Not supported yet
     // const nestedDepth = account.receiveDepth - 1 + this.gapLimit
     const addresses = this.walletLocalData.addresses
     if (receiveDepth > addresses.receive.length ||
@@ -144,7 +144,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       const newAddresses = {
         receive: [],
         change: []
-        // Not supported yet
+        // Segwit Not supported yet
         // nested: []
       }
       for (let i in accountPaths) {
@@ -160,7 +160,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
             }
             break
           case 2:
-            // Not supported yet
+            // Segwit Not supported yet
             // if (whatever) {
             //   newAddresses.nested.push(accountPaths[i].toAddress(this.network).toString())
             // }
@@ -175,7 +175,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
           addresses.change = newAddresses.change
         }
       }
-      // Not supported yet
+      // Segwit Not supported yet
       // if (whatever) {
       //   if (newAddresses.nested.length > addresses.nested.length) {
       //     addresses.nested = newAddresses.nested
@@ -278,7 +278,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
           }
           break
         case 2:
-          // Not supported yet
+          // Segwit Not supported yet
           // if (path.index + this.gapLimit > this.account.nestedDepth) {
           //   account.syncDepth(0, 0, path.index + this.gapLimit)
           //   await this.checkGapLimitForBranch(account, 'nested', 0)
@@ -588,7 +588,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
         }
         break
       case 2:
-        // Not supported yet
+        // Segwit Not supported yet
         // this.checkGapLimitForBranch(account, this.walletLocalData.addresses.nested)
         break
     }
