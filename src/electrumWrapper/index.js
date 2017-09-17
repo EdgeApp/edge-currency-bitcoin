@@ -1,3 +1,5 @@
+// import { serverCache, requests } from './serverCache.js'
+// export { requests }
 const MAX_CONNECTIONS = 4
 const MAX_REQUEST_TIME = 1000
 const MAX_CONNECTION_HANG_TIME = 2500
@@ -24,9 +26,12 @@ export class Electrum {
     this.connections = []
     this.requests = {}
     this.serverList = serverIndex
-    this.onAddressStatusChanged = callbacks.onAddressStatusChanged
-    this.onBlockHeightChanged = callbacks.onBlockHeightChanged
+    this.subscribers = {
+      address: callbacks.onAddressStatusChanged,
+      numblocks: callbacks.onBlockHeightChanged
+    }
   }
+
   compileDataCallback (index) {
     var this$1 = this
 
@@ -106,6 +111,7 @@ export class Electrum {
       connection._state = 2
       resolveProxy(1)
     })
+    // serverCache(connection)
     connection._state = 1
     let now = Date.now()
 
@@ -178,13 +184,9 @@ export class Electrum {
   }
 
   handleData (data) {
-    // console.log(data)
-    if (data.method === 'blockchain.address.subscribe' && data.params.length === 2) {
-      this.onAddressStatusChanged(data.params[0], data.params[1])
-      return
-    }
-    if (data.method === 'blockchain.numblocks.subscribe' && data.params.length === 1) {
-      this.onBlockHeightChanged(data.params[0])
+    const method = data.method.split('.')
+    if (method.length === 3 && method[2] === 'subscribe') {
+      this.subscribers[method[1]](...data.params)
       return
     }
     if (typeof this.requests[data.id] !== 'object') return
@@ -195,12 +197,15 @@ export class Electrum {
     this.requests[data.id].onDataReceived(data.result)
   }
 
-  write (data) {
+  write (method, params) {
     let rejectProxy, resolveProxy
     const hash = randomHash()
     const randomIndex = getRandomInt(0, Math.min(MAX_CONNECTIONS, this.connections.length) - 1)
-    data = data.replace('[ID]', hash)
-
+    let data = JSON.stringify({
+      id: hash,
+      method: method,
+      params: params
+    })
     const out = new Promise((resolve, reject) => {
       resolveProxy = resolve
       rejectProxy = resolve
@@ -223,30 +228,30 @@ export class Electrum {
   }
 
   subscribeToAddress (address) {
-    return this.write(`{ "id": "[ID]", "method":"blockchain.address.subscribe", "params": ["${address}"] }`)
+    return this.write('blockchain.address.subscribe', [address])
   }
 
   subscribeToBlockHeight () {
-    return this.write(`{ "id": "[ID]", "method": "blockchain.numblocks.subscribe", "params": [] }`)
+    return this.write('blockchain.numblocks.subscribe', [])
   }
 
   getEstimateFee (blocksToBeIncludedIn) {
-    return this.write(`{ "id": "[ID]", "method": "blockchain.estimatefee", "params": [${blocksToBeIncludedIn}] }`)
+    return this.write('blockchain.estimatefee', [blocksToBeIncludedIn])
   }
 
   getAddresHistory (address) {
-    return this.write(`{ "id": "[ID]", "method":"blockchain.address.get_history", "params":["${address}"] }`)
+    return this.write('blockchain.address.get_history', [address])
   }
 
   broadcastTransaction (tx) {
-    return this.write(`{ "id": "[ID]", "method":"blockchain.transaction.broadcast", "params":["${tx}"] }`)
+    return this.write('blockchain.transaction.broadcast', [tx])
   }
 
   getBlockHeader (height) {
-    return this.write(`{ "id": "[ID]", "method":"blockchain.block.get_header", "params": ["${height}"] }`)
+    return this.write('blockchain.block.get_header', [height])
   }
 
   getTransaction (transactionID) {
-    return this.write(`{ "id": "[ID]", "method":"blockchain.transaction.get", "params":["${transactionID}"] }`)
+    return this.write('blockchain.transaction.get', [transactionID])
   }
 }

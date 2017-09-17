@@ -1,5 +1,5 @@
 // Replacing native crypto modules for ReactNative
-import { Electrum } from './electrum/index'
+import { Electrum } from '../electrumWrapper/index'
 import { ABCTransaction } from './abcTransaction'
 import { bns } from 'biggystring'
 

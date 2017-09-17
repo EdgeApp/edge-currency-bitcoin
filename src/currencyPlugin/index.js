@@ -1,6 +1,6 @@
 import { parse, serialize } from 'uri-js'
 import { bns } from 'biggystring'
-import CurrencyEngine from './currencyEngine/index'
+import CurrencyEngine from '../currencyEngine/index'
 import Bcoin from './bcoin'
 
 const BufferJS = require('bufferPlaceHolder').Buffer
