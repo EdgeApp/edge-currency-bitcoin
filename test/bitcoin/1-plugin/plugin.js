@@ -117,15 +117,15 @@ describe('parseUri', function () {
     assert.equal(parsedUri.publicAddress, '1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX')
     assert.equal(parsedUri.nativeAmount, '123456789000')
     assert.equal(parsedUri.currencyCode, 'BTC')
-    assert.equal(parsedUri.label, 'Johnny Bitcoin')
+    assert.equal(parsedUri.metadata.label, 'Johnny Bitcoin')
   })
   it('uri address with amount, label & message', function () {
     let parsedUri = plugin.parseUri('bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.56789&label=Johnny%20Bitcoin&message=Hello%20World,%20I%20miss%20you%20!')
     assert.equal(parsedUri.publicAddress, '1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX')
     assert.equal(parsedUri.nativeAmount, '123456789000')
     assert.equal(parsedUri.currencyCode, 'BTC')
-    assert.equal(parsedUri.label, 'Johnny Bitcoin')
-    assert.equal(parsedUri.message, 'Hello World, I miss you !')
+    assert.equal(parsedUri.metadata.label, 'Johnny Bitcoin')
+    assert.equal(parsedUri.metadata.message, 'Hello World, I miss you !')
   })
   it('uri address with unsupported param', function () {
     let parsedUri = plugin.parseUri('bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?unsupported=helloworld&amount=12345.6789')
@@ -162,7 +162,9 @@ describe('encodeUri', function () {
         publicAddress: '1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX',
         nativeAmount: '123456780000',
         currencyCode: 'BTC',
-        label: 'Johnny Bitcoin'
+        metadata: {
+          label: 'Johnny Bitcoin'
+        }
       }
     )
     assert.equal(encodedUri, 'bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.5678&label=Johnny%20Bitcoin')
@@ -173,8 +175,10 @@ describe('encodeUri', function () {
         publicAddress: '1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX',
         nativeAmount: '123456780000',
         currencyCode: 'BTC',
-        label: 'Johnny Bitcoin',
-        message: 'Hello World, I miss you !'
+        metadata: {
+          label: 'Johnny Bitcoin',
+          message: 'Hello World, I miss you !'
+        }
       }
     )
     assert.equal(encodedUri, 'bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.5678&label=Johnny%20Bitcoin&message=Hello%20World,%20I%20miss%20you%20!')
@@ -186,8 +190,10 @@ describe('encodeUri', function () {
           publicAddress: '1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX',
           nativeAmount: '123456780000',
           currencyCode: 'INVALID',
-          label: 'Johnny Bitcoin',
-          message: 'Hello World, I miss you !'
+          metadata: {
+            label: 'Johnny Bitcoin',
+            message: 'Hello World, I miss you !'
+          }
         }
       )
     })

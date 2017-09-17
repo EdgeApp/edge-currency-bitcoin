@@ -117,15 +117,15 @@ describe('parseUri', function () {
     assert.equal(parsedUri.publicAddress, 'LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T')
     assert.equal(parsedUri.nativeAmount, '123456789000')
     assert.equal(parsedUri.currencyCode, 'LTC')
-    assert.equal(parsedUri.label, 'Johnny Litecoin')
+    assert.equal(parsedUri.metadata.label, 'Johnny Litecoin')
   })
   it('uri address with amount, label & message', function () {
     let parsedUri = plugin.parseUri('litecoin:LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T?amount=1234.56789&label=Johnny%20Litecoin&message=Hello%20World,%20I%20miss%20you%20!')
     assert.equal(parsedUri.publicAddress, 'LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T')
     assert.equal(parsedUri.nativeAmount, '123456789000')
     assert.equal(parsedUri.currencyCode, 'LTC')
-    assert.equal(parsedUri.label, 'Johnny Litecoin')
-    assert.equal(parsedUri.message, 'Hello World, I miss you !')
+    assert.equal(parsedUri.metadata.label, 'Johnny Litecoin')
+    assert.equal(parsedUri.metadata.message, 'Hello World, I miss you !')
   })
   it('uri address with unsupported param', function () {
     let parsedUri = plugin.parseUri('litecoin:LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T?unsupported=helloworld&amount=12345.6789')
@@ -162,7 +162,9 @@ describe('encodeUri', function () {
         publicAddress: 'LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T',
         nativeAmount: '123456780000',
         currencyCode: 'LTC',
-        label: 'Johnny Litecoin'
+        metadata: {
+          label: 'Johnny Litecoin'
+        }
       }
     )
     assert.equal(encodedUri, 'litecoin:LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T?amount=1234.5678&label=Johnny%20Litecoin')
@@ -173,8 +175,10 @@ describe('encodeUri', function () {
         publicAddress: 'LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T',
         nativeAmount: '123456780000',
         currencyCode: 'LTC',
-        label: 'Johnny Litecoin',
-        message: 'Hello World, I miss you !'
+        metadata: {
+          label: 'Johnny Litecoin',
+          message: 'Hello World, I miss you !'
+        }
       }
     )
     assert.equal(encodedUri, 'litecoin:LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T?amount=1234.5678&label=Johnny%20Litecoin&message=Hello%20World,%20I%20miss%20you%20!')
@@ -186,8 +190,10 @@ describe('encodeUri', function () {
           publicAddress: 'LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T',
           nativeAmount: '123456780000',
           currencyCode: 'INVALID',
-          label: 'Johnny Litecoin',
-          message: 'Hello World, I miss you !'
+          metadata: {
+            label: 'Johnny Litecoin',
+            message: 'Hello World, I miss you !'
+          }
         }
       )
     })

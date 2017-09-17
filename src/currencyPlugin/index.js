@@ -111,14 +111,16 @@ export default (txLibInfo) => {
             publicAddress: address,
             nativeAmount,
             currencyCode,
-            label: getParameterByName('label', uri),
-            message: getParameterByName('message', uri)
+            metadata: {
+              label: getParameterByName('label', uri),
+              message: getParameterByName('message', uri)
+            }
           }
         },
 
         encodeUri: (obj) => {
           if (!obj.publicAddress || !valid(obj.publicAddress)) throw new Error('InvalidPublicAddressError')
-          if (!obj.nativeAmount && !obj.label && !obj.message) return obj.publicAddress
+          if (!obj.nativeAmount && !obj.metadata) return obj.publicAddress
           let queryString = ''
           let info = txLibInfo.getInfo
           if (obj.nativeAmount) {
@@ -127,8 +129,10 @@ export default (txLibInfo) => {
             let amount = bns.divf(obj.nativeAmount, multiplier)
             queryString += 'amount=' + amount.toString() + '&'
           }
-          if (obj.label) queryString += 'label=' + obj.label + '&'
-          if (obj.message) queryString += 'message=' + obj.message + '&'
+          if (obj.metadata) {
+            if (obj.metadata.label) queryString += 'label=' + obj.metadata.label + '&'
+            if (obj.metadata.message) queryString += 'message=' + obj.metadata.message + '&'
+          }
           queryString = queryString.substr(0, queryString.length - 1)
 
           return serialize({
