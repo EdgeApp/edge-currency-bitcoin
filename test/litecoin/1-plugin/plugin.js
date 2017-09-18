@@ -1,6 +1,7 @@
 /* global describe it */
 let LitecoinCurrencyPluginFactory = require('../../../lib/index.test.js').LitecoinCurrencyPluginFactory
 let assert = require('assert')
+const WALLET_TYPE = 'wallet:litecoin'
 
 let opts = {
   io: {
@@ -10,7 +11,7 @@ let opts = {
   }
 }
 
-describe('Info', function () {
+describe(`Info for Wallet type ${WALLET_TYPE}`, function () {
   let plugin
 
   before('Plugin', function (done) {
@@ -25,7 +26,7 @@ describe('Info', function () {
   })
 })
 
-describe('createPrivateKey', function () {
+describe(`createPrivateKey for Wallet type ${WALLET_TYPE}`, function () {
   let plugin
 
   before('Plugin', function (done) {
@@ -49,7 +50,7 @@ describe('createPrivateKey', function () {
   })
 })
 
-describe('derivePublicKey', function () {
+describe(`derivePublicKey for Wallet type ${WALLET_TYPE}`, function () {
   let plugin
   let keys
 
@@ -85,7 +86,7 @@ describe('derivePublicKey', function () {
   })
 })
 
-describe('parseUri', function () {
+describe(`parseUri for Wallet type ${WALLET_TYPE}`, function () {
   let plugin
 
   before('Plugin', function () {
@@ -135,7 +136,7 @@ describe('parseUri', function () {
   })
 })
 
-describe('encodeUri', function () {
+describe(`encodeUri for Wallet type ${WALLET_TYPE}`, function () {
   let plugin
 
   before('Plugin', function () {
