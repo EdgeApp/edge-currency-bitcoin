@@ -126,8 +126,7 @@ describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
       optionalSettings: {
         enableOverrideServers: true,
         electrumServers: [
-          ['testnetnode.arihanc.com', '51001'],
-          ['testnet.hsmiths.com', '53012']
+          ['testnetnode.arihanc.com', '51001']
         ]
       }
     }).then(e => {
@@ -192,7 +191,7 @@ describe(`Is Address Used for Wallet type ${WALLET_TYPE}`, function () {
   })
 
   it('Checking an empty address', function (done) {
-    assert.equal(engine.isAddressUsed('mkZ4CyfFNR1PSaNy84ZHzV3dwTJVuSECfV'), false)
+    assert.equal(engine.isAddressUsed('mr7tuzfNUpjdmwuKWJFC3PJ581YmHcbmS3'), false)
     done()
   })
 
@@ -202,16 +201,14 @@ describe(`Is Address Used for Wallet type ${WALLET_TYPE}`, function () {
   })
 
   it('Checking a non empty address from network', function (done) {
-    this.timeout(20000)
     setTimeout(() => {
       assert.equal(engine.isAddressUsed('mnXSnPVpkfzjHFd7JQFKaSC5bZYsGz2PxX'), true)
       done()
-    }, 5000)
+    }, 1000)
   })
 })
 
 describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
-  this.timeout(20000)
   it('Should provide a non used BTC address when no options are provided', function (done) {
     setTimeout(() => {
       let address = engine.getFreshAddress()
@@ -222,7 +219,7 @@ describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
         assert(thirdPartyBalance === 0, 'Should have never received coins')
         done()
       })
-    }, 5000)
+    }, 1000)
   })
 })
 
