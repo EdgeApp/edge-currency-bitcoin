@@ -33,43 +33,34 @@ export class Electrum {
   }
 
   compileDataCallback (index) {
-    var this$1 = this
+    let this$1 = this
 
     return function (data) {
-      var string = ''
-      for (var ui = 0; ui <= data.length - 1; ui++) {
-        string += String.fromCharCode(data[ui])
-      }
+      let string = data.toString('utf8')
       this$1.globalRecievedData[index] += string
-      var result = []
-      if (this$1.globalRecievedData[index].indexOf('\n') > -1) {
-        // // console.log("stringbeforesplit ",this$1.globalRecievedData[index])
-        var mdata = this$1.globalRecievedData[index].split('\n')
+      let result = []
+      if (this$1.globalRecievedData[index].includes('\n')) {
+        let mdata = this$1.globalRecievedData[index].split('\n')
         for (var k = 0; k <= mdata.length - 1; k++) {
-          if (mdata[k].length < 3) {
-            continue
+          if (mdata[k].length) {
+            try {
+              const res = JSON.parse(mdata[k])
+              result.push(res)
+            } catch (e) {
+              break
+            }
           }
-          // // console.log("ssbefore parsing, mk ",mdata[k])
-          var res = false
-          try {
-            res = JSON.parse(mdata[k])
-            result.push(res)
-          } catch (e) {}
         }
+        this$1.globalRecievedData[index] = mdata.slice(k, mdata.length).join('')
       } else {
-        // // console.log("ssbefore parsing, s ",this$1.globalRecievedData[index])
         try {
-          data = JSON.parse(this$1.globalRecievedData[index])
-          result.push(data)
-        } catch (e) {
-          // console.log("parse error", e)
-        }
+          const res = JSON.parse(this$1.globalRecievedData[index])
+          result.push(res)
+          this$1.globalRecievedData[index] = ''
+        } catch (e) {}
       }
-      if (result.length > 0) {
-        this$1.globalRecievedData[index] = ''
-      }
-      for (var o = 0; o <= result.length - 1; o++) {
-        this$1.handleData(result[o])
+      for (let i in result) {
+        this$1.handleData(result[i])
       }
     }
   }
