@@ -184,10 +184,12 @@ export class Electrum {
   }
 
   handleData (data) {
-    const method = data.method.split('.')
-    if (method.length === 3 && method[2] === 'subscribe') {
-      this.subscribers[method[1]](...data.params)
-      return
+    if (data.method) {
+      const method = data.method.split('.')
+      if (method.length === 3 && method[2] === 'subscribe') {
+        this.subscribers[method[1]](...data.params)
+        return
+      }
     }
     if (typeof this.requests[data.id] !== 'object') return
     if (this.requests[data.id].executed) return
