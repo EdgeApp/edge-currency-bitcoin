@@ -5,4 +5,5 @@ node_js:
 install:
   - npm i -d
 script:
-  - npm test
+  - npm run security
+  - npm run test

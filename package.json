@@ -44,6 +44,7 @@
     "uri-js": "^3.0.2"
   },
   "devDependencies": {
+    "coinstring": "^2.3.0",
     "disklet": "^0.2.4",
     "jsonfile": "^3.0.1",
     "lodash": "^4.17.4",
