@@ -41,9 +41,8 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       blockHeight: 0,
       addresses: {
         receive: [],
-        change: []
-        // Segwit Not supported yet
-        // nested: []
+        change: [],
+        nested: []
       },
       detailedFeeTable: {},
       simpleFeeTable: {}
@@ -92,7 +91,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
         'master': key.xprivkey(),
         'id': 'ID1',
         secureMode: true,
-        witness: false,
+        witness: this.walletType.includes('segwit'),
         masterPath,
         masterIndex
       })
@@ -134,17 +133,15 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     const account = await this.wallet.getAccount(0)
     const receiveDepth = account.receiveDepth - 1 + this.gapLimit
     const changeDepth = account.changeDepth - 1 + this.gapLimit
-    // Segwit Not supported yet
-    // const nestedDepth = account.receiveDepth - 1 + this.gapLimit
+    const nestedDepth = account.nestedDepth - 1 + this.gapLimit
     const addresses = this.walletLocalData.addresses
     if (receiveDepth > addresses.receive.length ||
       (this.walletType.includes('44') && changeDepth > addresses.receive.length)) {
       const accountPaths = await this.wallet.getPaths(0)
       const newAddresses = {
         receive: [],
-        change: []
-        // Segwit Not supported yet
-        // nested: []
+        change: [],
+        nested: []
       }
       for (let i in accountPaths) {
         switch (accountPaths[i].branch) {
@@ -159,10 +156,9 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
             }
             break
           case 2:
-            // Segwit Not supported yet
-            // if (whatever) {
-            //   newAddresses.nested.push(accountPaths[i].toAddress(this.network).toString())
-            // }
+            if (this.walletType.includes('segwit') && nestedDepth > addresses.nested.length) {
+              newAddresses.nested.push(accountPaths[i].toAddress(this.network).toString())
+            }
             break
         }
       }
@@ -174,12 +170,11 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
           addresses.change = newAddresses.change
         }
       }
-      // Segwit Not supported yet
-      // if (whatever) {
-      //   if (newAddresses.nested.length > addresses.nested.length) {
-      //     addresses.nested = newAddresses.nested
-      //   }
-      // }
+      if (this.walletType.includes('segwit')) {
+        if (newAddresses.nested.length > addresses.nested.length) {
+          addresses.nested = newAddresses.nested
+        }
+      }
     }
     if (!this.memoryDump.rawMemory) {
       await this.saveMemDumpToDisk()
@@ -273,15 +268,14 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
         case 1:
           if (this.walletType.includes('44') && path.index + this.gapLimit > this.account.changeDepth) {
             account.syncDepth(0, path.index + this.gapLimit)
-            await this.checkGapLimitForBranch(account, 'change', 0)
+            await this.checkGapLimitForBranch(account, 'change', 1)
           }
           break
         case 2:
-          // Segwit Not supported yet
-          // if (path.index + this.gapLimit > this.account.nestedDepth) {
-          //   account.syncDepth(0, 0, path.index + this.gapLimit)
-          //   await this.checkGapLimitForBranch(account, 'nested', 0)
-          // }
+          if (this.walletType.includes('segwit') && path.index + this.gapLimit > this.account.nestedDepth) {
+            account.syncDepth(0, 0, path.index + this.gapLimit)
+            await this.checkGapLimitForBranch(account, 'nested', 2)
+          }
           break
       }
     })
@@ -587,8 +581,9 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
         }
         break
       case 2:
-        // Segwit Not supported yet
-        // this.checkGapLimitForBranch(account, this.walletLocalData.addresses.nested)
+        if (this.walletType.includes('segwit')) {
+          this.checkGapLimitForBranch(account, 'nested', 2)
+        }
         break
     }
   }

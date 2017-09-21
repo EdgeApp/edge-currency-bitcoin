@@ -43,15 +43,19 @@ export default (txLibInfo) => {
   const privKeyInit = {
     [`${currencyName}`]: io => createRandomPrivateKey(io),
     [`${currencyName}44`]: io => createRandomPrivateKey(io),
+    [`${currencyName}44Segwit`]: io => createRandomPrivateKey(io),
     'testnet': io => createRandomPrivateKey(io),
-    'testnet44': io => createRandomPrivateKey(io)
+    'testnet44': io => createRandomPrivateKey(io),
+    'testnet44segwit': io => createRandomPrivateKey(io)
   }
 
   const pubKeyInit = {
     [`${currencyName}`]: walletInfo => createPublicKey(walletInfo, 'main'),
     [`${currencyName}44`]: walletInfo => createPublicKey(walletInfo, 'main'),
+    [`${currencyName}44Segwit`]: walletInfo => createPublicKey(walletInfo, 'main'),
     'testnet': walletInfo => createPublicKey(walletInfo, 'testnet'),
-    'testnet44': walletInfo => createPublicKey(walletInfo, 'testnet')
+    'testnet44': walletInfo => createPublicKey(walletInfo, 'testnet'),
+    'testnet44segwit': walletInfo => createPublicKey(walletInfo, 'testnet')
   }
 
   return {

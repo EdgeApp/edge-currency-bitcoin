@@ -6,8 +6,10 @@ export const bitcoin = {
   getInfo: {
     // Details of supported currency
     walletTypes: [
+      'wallet:bitcoin44segwit',
       'wallet:bitcoin44',
       'wallet:bitcoin',
+      'wallet:testnet44segwit',
       'wallet:testnet44',
       'wallet:testnet'
     ],
