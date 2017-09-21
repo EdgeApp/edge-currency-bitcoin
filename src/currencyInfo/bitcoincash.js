@@ -6,7 +6,7 @@ export const bitcoincash = {
   getInfo: {
     // Details of supported currency
     walletTypes: [
-      'wallet:bitcoincash-bip44',
+      'wallet:bitcoincash44',
       'wallet:bitcoincash'
     ],
     defaultsSettings: {
