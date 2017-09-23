@@ -11,7 +11,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
     "type": "git",
-    "url": "git@github.com:Airbitz/edge-currency-ethereum.git"
+    "url": "git@github.com:Airbitz/edge-currency-bitcoin.git"
   },
   "url": "https://airbitz.co",
   "main": "./lib/index.js",
