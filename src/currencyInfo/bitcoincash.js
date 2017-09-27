@@ -47,7 +47,7 @@ export const bitcoincash = {
     blockExplorer: 'https://blockchair.com/bitcoin-cash/block/%s',
     addressExplorer: 'https://blockchair.com/bitcoin-cash/address/%s',
     transactionExplorer: 'https://blockchair.com/bitcoin-cash/transaction/%s',
-    currencyName: 'Bitcoin Cash',
+    currencyName: 'BitcoinCash',
     currencyCode: 'BCH', // The 3 character code for the currency
     denominations: [
       // An array of Objects of the possible denominations for this currency
