@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "bcoin": "git+https://github.com/Airbitz/bcoin.git",
+    "bccoin": "git+https://github.com/thehobbit85/bcoin.git",
     "lcoin": "git+https://github.com/Airbitz/lcoin.git#litecoin",
     "biggystring": "^1.0.5",
     "buffer": "^5.0.7",
