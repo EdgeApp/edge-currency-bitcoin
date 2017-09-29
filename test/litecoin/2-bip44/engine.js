@@ -239,7 +239,6 @@ describe(`Make Spend and Sign for Wallet type ${WALLET_TYPE}`, function () {
     }
     return engine.makeSpend(abcSpendInfo).catch(e => {
       assert(e, 'Should throw')
-      assert(e.message === 'Need to provide Spend Targets')
     })
   })
 

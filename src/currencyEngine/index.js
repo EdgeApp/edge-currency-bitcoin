@@ -415,8 +415,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     }
 
     // Ethereum can only have one output
-    if (abcSpendInfo.spendTargets.length !== 1) {
-      throw (new Error('Error: only one output allowed'))
+    if (abcSpendInfo.spendTargets.length < 1) {
+      throw (new Error('Need to provide Spend Targets'))
     }
 
     const feeOption = abcSpendInfo.networkFeeOption || 'standard'
