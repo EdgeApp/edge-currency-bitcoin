@@ -79,14 +79,7 @@ export default (txLibInfo) => {
           return pubKeyInit[walletInfo.type](walletInfo)
         },
 
-        makeEngine: (keyInfo, opts = {}) => {
-          const network = keyInfo.type.includes('testnet') ? 'testnet' : 'main'
-          keyInfo.network = network
-          if (keyInfo.keys) {
-            keyInfo.keys.currencyKey = keyInfo.keys[`${currencyName}Key`]
-          }
-          return CurrencyEngine(bcoin, txLibInfo).makeEngine(io, keyInfo, opts)
-        },
+        makeEngine: (keyInfo, opts = {}) => CurrencyEngine(bcoin, txLibInfo).makeEngine(io, keyInfo, opts),
 
         parseUri: (uri) => {
           let parsedUri = parse(uri)

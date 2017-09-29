@@ -12,7 +12,11 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     this.io = io
     this.walletType = keyInfo.type
     this.masterKeys = keyInfo.keys
-    this.network = keyInfo.network
+    this.currencyName = txLibInfo.getInfo.currencyName.toLowerCase()
+    if (this.masterKeys) {
+      this.masterKeys.currencyKey = keyInfo.keys[`${this.currencyName}Key`]
+    }
+    this.network = keyInfo.type.includes('testnet') ? 'testnet' : 'main'
     this.wallet = null
     this.initialSync = false
     this.primaryCurrency = txLibInfo.getInfo.currencyCode
