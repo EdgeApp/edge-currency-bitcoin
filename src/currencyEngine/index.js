@@ -12,6 +12,7 @@ import type {
   AbcMakeEngineOptions,
   AbcTransaction,
   AbcSpendTarget,
+  AbcFreshAddress,
   AbcSpendInfo
 } from 'airbitz-core-types'
 
@@ -337,10 +338,12 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     return abcTransactions.slice(startIndex, endIndex)
   }
 
-  getFreshAddress (options: any): string {
+  getFreshAddress (options: any): AbcFreshAddress {
     for (let i = 0; i < this.walletLocalData.addresses.receive.length; i++) {
       const address = this.walletLocalData.addresses.receive[i]
-      if (!Object.keys(this.transactions[address].txs).length) return address
+      if (!Object.keys(this.transactions[address].txs).length) {
+        return { publicAddress: address }
+      }
     }
     throw Error('ErrorNoFreshAddresses')
   }
