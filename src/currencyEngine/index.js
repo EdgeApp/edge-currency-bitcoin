@@ -251,11 +251,28 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
   }
 
   getFreshAddress (options = {}) {
+    let freshAddress = { publicAddress : null }
     for (let i = 0; i < this.walletLocalData.addresses.receive.length; i++) {
       const address = this.walletLocalData.addresses.receive[i]
-      if (!Object.keys(this.transactions[address].txs).length) return address
+      if (!Object.keys(this.transactions[address].txs).length) {
+        freshAddress.publicAddress = address
+        break
+      }
     }
-    return false
+    if (!freshAddress.publicAddress) throw Error('ErrorNoFreshAddresses')
+    if (this.walletType.includes('segwit')) {
+      freshAddress.segwitAddress = freshAddress.publicAddress
+      freshAddress.publicAddress = null
+      for (let i = 0; i < this.walletLocalData.addresses.nested.length; i++) {
+        const address = this.walletLocalData.addresses.nested[i]
+        if (!Object.keys(this.transactions[address].txs).length) {
+          freshAddress.publicAddress = address
+          break
+        }
+      }
+      if (!freshAddress.publicAddress) throw Error('ErrorNoFreshAddresses')
+    }
+    return freshAddress
   }
 
   addGapLimitAddresses (addresses) {
