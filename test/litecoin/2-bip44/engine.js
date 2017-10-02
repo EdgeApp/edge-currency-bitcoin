@@ -186,9 +186,9 @@ describe(`Is Address Used for Wallet type ${WALLET_TYPE}`, function () {
 describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
   it('Should provide a non used LTC address when no options are provided', function (done) {
     setTimeout(() => {
-      let address = engine.getFreshAddress()
-      assert(cs.createValidator(0x30)(address), 'Should be a valid address')
-      request.get(`https://api.blockcypher.com/v1/ltc/main/addrs/${address}`, (err, res, body) => {
+      let { publicAddress } = engine.getFreshAddress()
+      assert(cs.createValidator(0x30)(publicAddress), 'Should be a valid address')
+      request.get(`https://api.blockcypher.com/v1/ltc/main/addrs/${publicAddress}`, (err, res, body) => {
         const thirdPartyBalance = parseInt(JSON.parse(body).balance)
         assert(!err, 'getting address incoming txs from a second source')
         assert(thirdPartyBalance === 0, 'Should have never received coins')
@@ -239,7 +239,6 @@ describe(`Make Spend and Sign for Wallet type ${WALLET_TYPE}`, function () {
     }
     return engine.makeSpend(abcSpendInfo).catch(e => {
       assert(e, 'Should throw')
-      assert(e.message === 'Need to provide Spend Targets')
     })
   })
 

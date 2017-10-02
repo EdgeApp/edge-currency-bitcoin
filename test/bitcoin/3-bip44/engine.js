@@ -211,9 +211,9 @@ describe(`Is Address Used for Wallet type ${WALLET_TYPE}`, function () {
 describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
   it('Should provide a non used BTC address when no options are provided', function (done) {
     setTimeout(() => {
-      let address = engine.getFreshAddress()
-      assert(cs.createValidator(0x6F)(address), 'Should be a valid address')
-      request.get(`https://api.blocktrail.com/v1/tBTC/address/${address}?api_key=MY_APIKEY`, (err, res, body) => {
+      let { publicAddress } = engine.getFreshAddress()
+      assert(cs.createValidator(0x6F)(publicAddress), 'Should be a valid address')
+      request.get(`https://api.blocktrail.com/v1/tBTC/address/${publicAddress}?api_key=MY_APIKEY`, (err, res, body) => {
         const thirdPartyBalance = parseInt(JSON.parse(body).received)
         assert(!err, 'getting address incoming txs from a second source')
         assert(thirdPartyBalance === 0, 'Should have never received coins')
@@ -278,7 +278,6 @@ describe(`Make Spend and Sign for Wallet type ${WALLET_TYPE}`, function () {
     }
     return engine.makeSpend(abcSpendInfo).catch(e => {
       assert(e, 'Should throw')
-      assert(e.message === 'Need to provide Spend Targets')
     })
   })
 

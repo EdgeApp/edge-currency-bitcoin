@@ -1,12 +1,83 @@
 // Replacing native crypto modules for ReactNative
-import { Electrum } from '../electrumWrapper/index'
-import { ABCTransaction } from './abcTransaction'
-import { bns } from 'biggystring'
+// @flow
 
+import { Electrum } from '../electrumWrapper/index'
+import { bns } from 'biggystring'
+import { validate } from 'jsonschema'
+
+import type {
+  AbcCurrencyPluginCallbacks,
+  AbcCurrencyEngine,
+  AbcWalletInfo,
+  AbcMakeEngineOptions,
+  AbcTransaction,
+  AbcSpendTarget,
+  AbcFreshAddress,
+  AbcSpendInfo
+} from 'airbitz-core-types'
+
+// $FlowFixMe
 const BufferJS = require('bufferPlaceHolder').Buffer
 
-export default (bcoin, txLibInfo) => class CurrencyEngine {
-  constructor (io, keyInfo, opts = {}) {
+function validateObject (object, schema) {
+  const result = validate(object, schema)
+
+  if (result.errors.length === 0) {
+    return true
+  } else {
+    for (const n in result.errors) {
+      const errMsg = result.errors[n].message
+      console.log('ERROR: validateObject:' + errMsg)
+    }
+    return false
+  }
+}
+
+type WalletLocalData = {
+  masterBalance: string,
+  blockHeight: number,
+  addresses: {
+    receive: Array<any>,
+    change: Array<any>,
+    nested: Array<any>
+  },
+  detailedFeeTable: any,
+  simpleFeeTable: any
+}
+
+export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements AbcCurrencyEngine {
+  walletLocalFolder: any
+  io: any
+  walletType: string
+  masterKeys: any
+  network: string
+  wallet: any
+  headerList: any
+  initialSync: boolean
+  primaryCurrency: string
+  abcTxLibCallbacks: AbcCurrencyPluginCallbacks
+  walletLocalData: WalletLocalData
+  transactions: any
+  transactionsIds: Array<any>
+  memoryDump: any
+  gapLimit: number
+  electrumServers: Array<Array<string>>
+  electrum: Electrum | null
+  feeUpdater:any
+  feeUpdateInterval: number
+  maxFee: number
+  simpleFeeSettings: any
+  feeInfoServer: string
+  currencyName: string
+  diskPath: {
+    folder: any,
+    files: any
+  }
+  electrumCallbacks: {
+    onAddressStatusChanged (address: string, hash: string):Promise<void>,
+    onBlockHeightChanged (height: number):void
+  }
+  constructor (io:any, keyInfo:AbcWalletInfo, opts: AbcMakeEngineOptions) {
     if (!opts.walletLocalFolder) throw new Error('Cannot create and engine without a local folder')
     this.walletLocalFolder = opts.walletLocalFolder
     this.io = io
@@ -62,7 +133,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     }
   }
 
-  static async makeEngine (io, keyInfo, opts = {}) {
+  static async makeEngine (io:any, keyInfo: AbcWalletInfo, opts: AbcMakeEngineOptions): Promise<AbcCurrencyEngine> {
     const engine = new CurrencyEngine(io, keyInfo, opts)
     await engine.startWallet()
     return engine
@@ -72,7 +143,10 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     if (!this.masterKeys) throw new Error('Missing Master Key')
     if (!this.masterKeys.currencyKey) throw new Error('Missing Master Key')
 
-    const walletDbOptions = { network: this.network }
+    const walletDbOptions = {
+      network: this.network,
+      memDbRaw: null
+    }
     await this.loadMemoryDumpFromDisk()
 
     if (this.memoryDump.rawMemory) {
@@ -116,7 +190,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       const unconfirmedBalance = balance.unconfirmed.toString()
       this.walletLocalData.masterBalance = bns.add(confirmedBalance, unconfirmedBalance)
       this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
-      this.saveToDisk('walletLocalData')
+      this.saveToDisk(this.walletLocalData, 'walletLocalData')
     })
 
     if (!this.memoryDump) {
@@ -187,7 +261,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
   /* --------------------------------------------------------------------- */
   /* ---------------------------  Public API  ---------------------------- */
   /* --------------------------------------------------------------------- */
-  updateSettings (opts) {
+  updateSettings (opts:any) {
     if (opts.electrumServers) {
       this.electrumServers = opts.electrumServers
       this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
@@ -199,11 +273,16 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
     this.electrum.connect()
     this.getAllOurAddresses().forEach(address => this.processAddress(address))
-    this.electrum.subscribeToBlockHeight().then(blockHeight => {
-      this.onBlockHeightChanged(blockHeight)
-    })
-    if (!Object.keys(this.walletLocalData.detailedFeeTable).length) await this.updateFeeTable()
-    else this.updateFeeTable()
+    if (this.electrum) {
+      this.electrum.subscribeToBlockHeight().then(blockHeight => {
+        this.onBlockHeightChanged(blockHeight)
+      })
+    }
+    if (!Object.keys(this.walletLocalData.detailedFeeTable).length) {
+      await this.updateFeeTable()
+    } else {
+      this.updateFeeTable()
+    }
     this.feeUpdater = setInterval(() => this.updateFeeTable(), this.feeUpdateInterval)
   }
 
@@ -211,28 +290,37 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     this.electrum = null
     clearInterval(this.feeUpdater)
     await this.saveMemDumpToDisk()
-    await this.saveToDisk('headerList')
-    await this.saveToDisk('walletLocalData')
-    await this.saveToDisk('transactions')
-    await this.saveToDisk('transactionsIds')
-    return true
+    await this.saveToDisk(this.headerList, 'headerList')
+    await this.saveToDisk(this.walletLocalData, 'walletLocalData')
+    await this.saveToDisk(this.transactions, 'transactions')
+    await this.saveToDisk(this.transactionsIds, 'transactionsIds')
   }
 
-  getBlockHeight () {
+  getBlockHeight ():number {
     return this.walletLocalData.blockHeight
   }
 
-  getBalance (options) {
+  getBalance (options:any):string {
     return this.walletLocalData.masterBalance
   }
 
-  getNumTransactions ({currencyCode = this.primaryCurrency} = {currencyCode: this.primaryCurrency}) {
+  getNumTransactions (options:any):number {
     return this.objectToArray(this.transactions).reduce((s, addressTxs) => {
       return s + Object.keys(addressTxs).length
     }, 0)
   }
 
-  async getTransactions (options) {
+  async enableTokens (tokens: Array<string>) {
+    if (tokens.length > 0) {
+      throw new Error('TokenUnsupported')
+    }
+  }
+
+  getTokenStatus (token:string): boolean {
+    return false
+  }
+
+  async getTransactions (options:any): Promise<Array<AbcTransaction>> {
     const txIndexArray = this.objectToArray(this.transactions)
     const transactions = txIndexArray.reduce((s, addressTxs) => {
       if (Object.keys(addressTxs.txs).length) {
@@ -250,33 +338,35 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     return abcTransactions.slice(startIndex, endIndex)
   }
 
-  getFreshAddress (options = {}) {
+  getFreshAddress (options: any): AbcFreshAddress {
     for (let i = 0; i < this.walletLocalData.addresses.receive.length; i++) {
       const address = this.walletLocalData.addresses.receive[i]
-      if (!Object.keys(this.transactions[address].txs).length) return address
+      if (!Object.keys(this.transactions[address].txs).length) {
+        return { publicAddress: address }
+      }
     }
-    return false
+    throw Error('ErrorNoFreshAddresses')
   }
 
-  addGapLimitAddresses (addresses) {
+  addGapLimitAddresses (addresses:Array<string>) {
     addresses.forEach(async address => {
       const path = await this.wallet.getPath(address)
       const account = await this.wallet.getAccount(0)
       switch (path.branch) {
         case 0:
-          if (path.index + this.gapLimit > this.account.receiveDepth) {
+          if (path.index + this.gapLimit > account.receiveDepth) {
             account.syncDepth(path.index + this.gapLimit)
             await this.checkGapLimitForBranch(account, 'receive', 0)
           }
           break
         case 1:
-          if (this.walletType.includes('44') && path.index + this.gapLimit > this.account.changeDepth) {
+          if (this.walletType.includes('44') && path.index + this.gapLimit > account.changeDepth) {
             account.syncDepth(0, path.index + this.gapLimit)
             await this.checkGapLimitForBranch(account, 'change', 1)
           }
           break
         case 2:
-          if (this.walletType.includes('segwit') && path.index + this.gapLimit > this.account.nestedDepth) {
+          if (this.walletType.includes('segwit') && path.index + this.gapLimit > account.nestedDepth) {
             account.syncDepth(0, 0, path.index + this.gapLimit)
             await this.checkGapLimitForBranch(account, 'nested', 2)
           }
@@ -285,7 +375,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     })
   }
 
-  isAddressUsed (address, options = {}) {
+  isAddressUsed (address: string, options: any) {
     try {
       bcoin.primitives.Address.fromBase58(address)
     } catch (e) {
@@ -297,8 +387,40 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     return Object.keys(this.transactions[address].txs).length !== 0
   }
 
-  async makeSpend (abcSpendInfo) {
-    if (!abcSpendInfo.spendTargets) throw new Error('Need to provide Spend Targets')
+  async makeSpend (abcSpendInfo: AbcSpendInfo) {
+    const valid = validateObject(abcSpendInfo, {
+      'type': 'object',
+      'properties': {
+        'currencyCode': { 'type': 'string' },
+        'networkFeeOption': { 'type': 'string' },
+        'spendTargets': {
+          'type': 'array',
+          'items': {
+            'type': 'object',
+            'properties': {
+              'currencyCode': { 'type': 'string' },
+              'publicAddress': { 'type': 'string' },
+              'nativeAmount': { 'type': 'string' },
+              'destMetadata': { 'type': 'object' },
+              'destWallet': { 'type': 'object' }
+            },
+            'required': [
+              'publicAddress'
+            ]
+          }
+        }
+      },
+      'required': [ 'spendTargets' ]
+    })
+
+    if (!valid) {
+      throw (new Error('Error: invalid AbcSpendInfo'))
+    }
+
+    // Ethereum can only have one output
+    if (abcSpendInfo.spendTargets.length < 1) {
+      throw (new Error('Need to provide Spend Targets'))
+    }
 
     const feeOption = abcSpendInfo.networkFeeOption || 'standard'
     let rate, resultedTransaction
@@ -324,8 +446,9 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       throw e
     }
     const allOurAddresses = this.getAllOurAddresses()
-    const sumOfTx = abcSpendInfo.spendTargets.reduce((s, spendTarget) => {
-      if (allOurAddresses.indexOf(spendTarget.publicAddress) !== -1) {
+    const sumOfTx = abcSpendInfo.spendTargets.reduce((s, spendTarget: AbcSpendTarget) => {
+      if (spendTarget.publicAddress &&
+        allOurAddresses.indexOf(spendTarget.publicAddress) !== -1) {
         return s
       } else return s - parseInt(spendTarget.nativeAmount)
     }, 0)
@@ -338,59 +461,59 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       }
     }
 
-    const abcTransaction = new ABCTransaction({
+    const abcTransaction: AbcTransaction = {
       ourReceiveAddresses,
       otherParams: {
         rawTx: resultedTransaction.toRaw().toString('hex'),
         bcoinTx: resultedTransaction
       },
       currencyCode: this.primaryCurrency,
-      txid: null,
-      date: null,
+      txid: '',
+      date: 0,
       blockHeight: -1,
       nativeAmount: (sumOfTx - parseInt(resultedTransaction.getFee())).toString(),
       networkFee: resultedTransaction.getFee().toString(),
-      runningBalance: null,
-      signedTx: null
-    })
+      signedTx: ''
+    }
     return abcTransaction
   }
 
-  async signTx (abcTransaction) {
+  async signTx (abcTransaction:AbcTransaction):Promise<AbcTransaction> {
     await this.wallet.sign(abcTransaction.otherParams.bcoinTx)
     abcTransaction.date = Date.now() / 1000
     abcTransaction.signedTx = abcTransaction.otherParams.bcoinTx.toRaw()
     return abcTransaction
   }
 
-  async broadcastTx (abcTransaction) {
+  async broadcastTx (abcTransaction:AbcTransaction):Promise<AbcTransaction> {
     if (!abcTransaction.signedTx) throw new Error('Tx is not signed')
-    const signedTxRawString = abcTransaction.signedTx.toString('hex')
-    const serverResponse = await this.electrum.broadcastTransaction(signedTxRawString)
+    if (!this.electrum) throw new Error('Uninitialized electrum servers')
+
+    const serverResponse = await this.electrum.broadcastTransaction(abcTransaction.signedTx)
     if (!serverResponse) throw new Error('Electrum server internal error processing request')
     if (serverResponse === 'TX decode failed') throw new Error('Tx is not valid')
-    return serverResponse
+    return abcTransaction
   }
 
-  async saveTx (abcTransaction) {
+  async saveTx (abcTransaction:AbcTransaction):Promise<void> {
     const tx = bcoin.primitives.TX.fromRaw(abcTransaction.signedTx)
     await this.wallet.add(tx)
   }
   /* --------------------------------------------------------------------- */
   /* --------------------  Experimantal Public API  ---------------------- */
   /* --------------------------------------------------------------------- */
-  async getTransactionsByIds (transactionsIds) {
+  async getTransactionsByIds (transactionsIds:Array<string>): Promise<Array<AbcTransaction>> {
     const allTransactions = await this.getTransactions()
     return allTransactions.filter(({ txid }) => transactionsIds.indexOf(txid) !== -1)
   }
 
-  async getTransactionsIds () {
+  async getTransactionsIds (): Promise<Array<string>> {
     return this.transactionsIds
   }
   /* --------------------------------------------------------------------- */
   /* ---------------------------  Private API  --------------------------- */
   /* --------------------------------------------------------------------- */
-  getAllOurAddresses () {
+  getAllOurAddresses (): Array<string> {
     let allOurAddresses = []
     for (const typed in this.walletLocalData.addresses) {
       allOurAddresses = allOurAddresses.concat(this.walletLocalData.addresses[typed])
@@ -398,7 +521,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     return allOurAddresses
   }
 
-  objectToArray (obj) {
+  objectToArray (obj:any): Array<any> {
     return Object.keys(obj).map(key => obj[key])
   }
 
@@ -435,19 +558,20 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     }
   }
 
-  onBlockHeightChanged (blockHeight) {
+  onBlockHeightChanged (blockHeight: number) {
     if (this.walletLocalData.blockHeight < blockHeight) {
       this.walletLocalData.blockHeight = blockHeight
       this.abcTxLibCallbacks.onBlockHeightChanged(blockHeight)
-      this.saveToDisk('walletLocalData')
+      this.saveToDisk(this.walletLocalData, 'walletLocalData')
     }
   }
 
-  async processAddress (address) {
+  async processAddress (address: string) {
     if (!this.transactions[address]) {
       this.transactions[address] = { txs: {}, addressStatusHash: null }
     }
     this.transactions[address].executed = 0
+    if (!this.electrum) throw new Error('Uninitialized electrum servers')
     const hash = await this.electrum.subscribeToAddress(address)
     if (hash && hash !== this.transactions[address].addressStatusHash) {
       await this.handleTransactionStatusHash(address, hash)
@@ -474,30 +598,31 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     }
   }
 
-  async handleTransactionStatusHash (address, hash) {
+  async handleTransactionStatusHash (address: string, hash: string) {
     const localTxObject = this.transactions[address]
     localTxObject.addressStatusHash = hash
+    if (!this.electrum) throw new Error('Error: electrum uninitialized')
     const transactionHashes = await this.electrum.getAddresHistory(address)
     const transactionPromiseArray = transactionHashes.map(transactionObject => {
       return this.handleTransaction(address, transactionObject)
     })
     const ABCtransaction = await Promise.all(transactionPromiseArray)
     const filtteredABCtransaction = ABCtransaction.filter(tx => tx)
-    const updatedTransactionIds = []
+    const updatedTransactionIds:Array<string> = []
     filtteredABCtransaction.forEach(({ txid }) => {
       updatedTransactionIds.push(txid)
       if (this.transactionsIds.indexOf(txid) === -1) this.transactionsIds.push(txid)
     })
     this.saveMemDumpToDisk()
-    this.saveToDisk('transactions')
-    this.saveToDisk('transactionsIds')
-    if (this.abcTxLibCallbacks.onTxidsChanged) {
+    this.saveToDisk(this.transactions, 'transactions')
+    this.saveToDisk(this.transactionsIds, 'transactionsIds')
+    if (typeof this.abcTxLibCallbacks.onTxidsChanged === 'function') {
       this.abcTxLibCallbacks.onTxidsChanged(updatedTransactionIds)
     }
     this.abcTxLibCallbacks.onTransactionsChanged(filtteredABCtransaction)
   }
 
-  async handleTransaction (address, transactionObj) {
+  async handleTransaction (address: string, transactionObj: any) {
     const localTxObject = this.transactions[address]
     const txHash = transactionObj.tx_hash
     let transactionData = localTxObject.txs[txHash]
@@ -520,7 +645,10 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
         rawTransaction = abcTransactionsArray[0].otherParams.rawTx
       }
     }
-    rawTransaction = rawTransaction || await this.electrum.getTransaction(txHash)
+    if (!rawTransaction) {
+      if (!this.electrum) throw new Error('Error: electrum uninitialized')
+      rawTransaction = await this.electrum.getTransaction(txHash)
+    }
     const blockHeader = await this.getBlockHeader(transactionObj.height)
     const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(rawTransaction, 'hex'))
     const txJson = bcoinTX.getJSON(this.network)
@@ -541,6 +669,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     })
     // Process tx inputs
     const getPrevout = async ({ hash, index }) => {
+      if (!this.electrum) throw new Error('Error: electrum uninitialized')
       const prevRawTransaction = await this.electrum.getTransaction(hash)
       const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(prevRawTransaction, 'hex'))
       const { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
@@ -552,7 +681,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     await Promise.all(txJson.inputs.map(({ prevout }) => getPrevout(prevout)))
     await this.wallet.add(bcoinTX)
 
-    const abcTransaction = new ABCTransaction({
+    const abcTransaction: AbcTransaction = {
       ourReceiveAddresses,
       networkFee: (totalInputAmount - totalOutputAmount).toString(),
       otherParams: {
@@ -563,16 +692,15 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       date: blockHeader.timestamp,
       blockHeight: transactionObj.height,
       nativeAmount: nativeAmount.toString(),
-      runningBalance: null,
-      signedTx: null
-    })
+      signedTx: ''
+    }
     localTxObject.txs[txHash].abcTransaction = abcTransaction
     localTxObject.txs[txHash].executed = 1
     await this.checkGapLimit(address)
     return abcTransaction
   }
 
-  async checkGapLimit (address) {
+  async checkGapLimit (address: string) {
     const account = await this.wallet.getAccount(0)
     const path = await this.wallet.getPath(address)
     switch (path.branch) {
@@ -592,7 +720,7 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     }
   }
 
-  async checkGapLimitForBranch (account, type, typeNum) {
+  async checkGapLimitForBranch (account:any, type: string, typeNum: number) {
     const addresses = this.walletLocalData.addresses[type]
     const addressDepth = account[`${type}Depth`] - 1 + this.gapLimit
     const addressesLen = addresses.length
@@ -608,24 +736,25 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
     }
   }
 
-  async getBlockHeader (height) {
+  async getBlockHeader (height: number) {
     if (this.headerList[height]) {
       return this.headerList[height]
     }
+    if (!this.electrum) throw new Error('Error: electrum uninitialized')
     const header = await this.electrum.getBlockHeader(height)
     this.headerList[height] = header
-    this.saveToDisk('headerList')
+    this.saveToDisk(this.headerList, 'headerList')
     return header
   }
   /* --------------------------------------------------------------------- */
   /* -----------------------  Disk Util Functions  ----------------------- */
   /* --------------------------------------------------------------------- */
-  async saveToDisk (fileName, optionalFileName = '') {
+  async saveToDisk (obj: any, fileName: string, optionalFileName: string = '') {
     try {
       await this.walletLocalFolder
       .folder(this.diskPath.folder)
       .file(this.diskPath.files[fileName] + optionalFileName)
-      .setText(JSON.stringify(this[fileName]))
+      .setText(JSON.stringify(obj))
     } catch (e) {
       return e
     }
@@ -638,18 +767,18 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
       this.wallet.db.db.db &&
       this.wallet.db.db.db.toRaw) {
       this.memoryDump.rawMemory = this.wallet.db.db.db.toRaw().toString('hex')
-      await this.saveToDisk('memoryDump')
+      await this.saveToDisk(this.memoryDump, 'memoryDump')
     }
   }
 
-  async loadFromDisk (fileName, optionalFileName = '') {
+  async loadFromDisk (obj:any, fileName: string, optionalFileName: string = '') {
     try {
       const data = await this.walletLocalFolder
       .folder(this.diskPath.folder)
       .file(this.diskPath.files[fileName] + optionalFileName)
       .getText()
       let dataJson = JSON.parse(data)
-      Object.assign(this[fileName], dataJson)
+      Object.assign(obj, dataJson)
       return dataJson
     } catch (e) {
       return null
@@ -657,36 +786,36 @@ export default (bcoin, txLibInfo) => class CurrencyEngine {
   }
 
   async loadWalletLocalDataFromDisk () {
-    const localWalletData = await this.loadFromDisk('walletLocalData')
+    const localWalletData = await this.loadFromDisk(this.walletLocalData, 'walletLocalData')
     if (localWalletData) {
       this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
-    } else await this.saveToDisk('walletLocalData')
+    } else await this.saveToDisk(this.walletLocalData, 'walletLocalData')
   }
 
   async loadTransactionsFromDisk () {
-    const transactions = await this.loadFromDisk('transactions')
+    const transactions = await this.loadFromDisk(this.transactions, 'transactions')
     if (transactions) {
       const transactionsFromFile = await this.getTransactions()
       this.abcTxLibCallbacks.onTransactionsChanged(transactionsFromFile)
-    } else await this.saveToDisk('transactions')
+    } else await this.saveToDisk(this.transactions, 'transactions')
   }
 
   async loadTransactionsIdsFromDisk () {
-    const transactionsIds = await this.loadFromDisk('transactionsIds')
+    const transactionsIds = await this.loadFromDisk(this.transactionsIds, 'transactionsIds')
     if (transactionsIds) {
-      if (this.abcTxLibCallbacks.onTxidsChanged) {
+      if (typeof this.abcTxLibCallbacks.onTxidsChanged === 'function') {
         this.abcTxLibCallbacks.onTxidsChanged(transactionsIds)
       }
-    } else await this.saveToDisk('transactionsIds')
+    } else await this.saveToDisk(this.transactionsIds, 'transactionsIds')
   }
 
   async loadHeadersFromDisk () {
-    const headers = await this.loadFromDisk('headerList')
-    if (!headers) await this.saveToDisk('headerList')
+    const headers = await this.loadFromDisk(this.headerList, 'headerList')
+    if (!headers) await this.saveToDisk(this.headerList, 'headerList')
   }
 
   async loadMemoryDumpFromDisk () {
-    const memoryDump = await this.loadFromDisk('memoryDump')
+    const memoryDump = await this.loadFromDisk(this.memoryDump, 'memoryDump')
     if (!memoryDump) await this.saveMemDumpToDisk()
   }
 }
