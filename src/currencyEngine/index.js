@@ -339,13 +339,28 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   getFreshAddress (options: any): AbcFreshAddress {
+    let freshAddress = { publicAddress : null }
     for (let i = 0; i < this.walletLocalData.addresses.receive.length; i++) {
       const address = this.walletLocalData.addresses.receive[i]
       if (!Object.keys(this.transactions[address].txs).length) {
-        return { publicAddress: address }
+        freshAddress.publicAddress = address
+        break
       }
     }
-    throw Error('ErrorNoFreshAddresses')
+    if (!freshAddress.publicAddress) throw Error('ErrorNoFreshAddresses')
+    if (this.walletType.includes('segwit')) {
+      freshAddress.segwitAddress = freshAddress.publicAddress
+      freshAddress.publicAddress = null
+      for (let i = 0; i < this.walletLocalData.addresses.nested.length; i++) {
+        const address = this.walletLocalData.addresses.nested[i]
+        if (!Object.keys(this.transactions[address].txs).length) {
+          freshAddress.publicAddress = address
+          break
+        }
+      }
+      if (!freshAddress.publicAddress) throw Error('ErrorNoFreshAddresses')
+    }
+    return freshAddress
   }
 
   addGapLimitAddresses (addresses:Array<string>) {
