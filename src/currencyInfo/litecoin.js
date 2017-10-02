@@ -16,11 +16,7 @@ export const litecoin = {
       feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
       simpleFeeSettings: {low: 6, standard: 2, high: 0},
       electrumServers: [
-        ['electrum-ltc.bysh.me', '50002'],
-        ['elec.luggs.co', '444'],
-        ['ltc01.knas.systems', '50004'],
-        ['electrum-ltc0.snel.it', '50004'],
-        ['electrum-ltc.petrkr.net', '60002']
+        ['electrum-ltc.festivaldelhumor.org', '60001']
       ],
       diskPath: {
         folder: 'txEngineFolderLTC',
