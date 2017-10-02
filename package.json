@@ -31,8 +31,7 @@
   },
   "files": [
     "changelog.md",
-    "lib/*",
-    "vendor/*"
+    "lib/*"
   ],
   "standard": {
     "parser": "babel-eslint",
