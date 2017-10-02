@@ -339,7 +339,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   getFreshAddress (options: any): AbcFreshAddress {
-    let freshAddress = { publicAddress : null }
+    let freshAddress = { publicAddress: null }
     for (let i = 0; i < this.walletLocalData.addresses.receive.length; i++) {
       const address = this.walletLocalData.addresses.receive[i]
       if (!Object.keys(this.transactions[address].txs).length) {
