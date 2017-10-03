@@ -25,11 +25,9 @@ export const bitcoin = {
         ['electrum-bc-az-eusa.airbitz.co', '50001'],
         ['electrum-bu-az-ausw.airbitz.co', '50001'],
         ['electrum.hsmiths.com', '8080'],
-        ['e.anonyhost.org', '50001'],
         ['electrum.no-ip.org', '50001'],
         ['electrum-bu-az-wusa2.airbitz.co', '50001'],
-        ['electrum-bu-az-wjapan.airbitz.co', '50001'],
-        ['kerzane.ddns.net', '50001']
+        ['electrum-bu-az-wjapan.airbitz.co', '50001']
       ],
       diskPath: {
         folder: 'txEngineFolderBTC',
