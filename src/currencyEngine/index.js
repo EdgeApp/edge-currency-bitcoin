@@ -1,4 +1,3 @@
-// Replacing native crypto modules for ReactNative
 // @flow
 
 import { Electrum } from '../electrumWrapper/index'
