@@ -1,5 +1,5 @@
-// import { serverCache, requests } from './serverCache.js'
-// export { requests }
+// @flow
+
 const MAX_CONNECTIONS = 4
 const MAX_REQUEST_TIME = 1000
 const MAX_CONNECTION_HANG_TIME = 2500
@@ -9,7 +9,17 @@ let getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + m
 let randomHash = () => 'a' + Math.random().toString(36).substring(7)
 
 export class Electrum {
-  constructor (serverList, callbacks, io) {
+  globalRecievedData: Array<any>
+  connected: boolean
+  io: any
+  connections: Array<any>
+  requests: any
+  serverList: Array<Array<string>>
+  subscribers: {
+    address: any,
+    numblocks: any
+  }
+  constructor (serverList: Array<Array<string>>, callbacks: any, io: any) {
     let serverIndex = []
     this.globalRecievedData = []
 
@@ -32,10 +42,10 @@ export class Electrum {
     }
   }
 
-  compileDataCallback (index) {
+  compileDataCallback (index: number) {
     let this$1 = this
 
-    return function (data) {
+    return function (data: any) {
       let string = data.toString('utf8')
       this$1.globalRecievedData[index] += string
       let result = []
@@ -59,30 +69,22 @@ export class Electrum {
           this$1.globalRecievedData[index] = ''
         } catch (e) {}
       }
-      for (let i in result) {
-        this$1.handleData(result[i])
-      }
+      result.forEach(r => this$1.handleData(r))
     }
   }
 
   collectGarbage () {
-    // console.log("collectGarbage > ")
-    for (let j in this.connections) {
-      // // console.log("RECONNECT CHECK", j, this.connections[j].lastResponse, this.connections[j].lastRequest)
-      if (this.connections[j].lastRequest - this.connections[j].lastResponse > MAX_CONNECTION_HANG_TIME) {
-        let callback = this.compileDataCallback(j)
-          // console.log("RECONNECTING TO SERVER", this.serverList[j][1], this.serverList[j][0], j)
-        return this.netConnect(this.serverList[j][1], this.serverList[j][0], callback, j)
+    this.connections.forEach((connection, index) => {
+      if (connection.lastRequest - connection.lastResponse > MAX_CONNECTION_HANG_TIME) {
+        let callback = this.compileDataCallback(index)
+        return this.netConnect(this.serverList[index][1], this.serverList[index][0], callback, index)
       }
-    }
+    })
     let now = Date.now()
     for (let i in this.requests) {
-      // console.log(now, this.requests[i], MAX_REQUEST_TIME)
       if (now - this.requests[i].requestTime > MAX_REQUEST_TIME && !this.requests[i].executed) {
         this.requests[i].requestTime = now
         let randomIndex = getRandomInt(0, Math.min(MAX_CONNECTIONS, this.connections.length) - 1)
-          // console.log("RE-REQUESTING", this.connections[randomIndex], this.requests[i].data)
-
         if (this.socketWriteAbstract(randomIndex, this.requests[i].data) === 2) {
           this.connections[randomIndex].lastRequest = now
         }
@@ -90,7 +92,7 @@ export class Electrum {
     }
   }
 
-  netConnect (port, host, callback, i) {
+  netConnect (port: string, host: string, callback: any, i: number) {
     let resolveProxy
 
     const out = new Promise((resolve, reject) => {
@@ -145,18 +147,16 @@ export class Electrum {
   }
 
   connect () {
-    for (var i in this.serverList) {
-      // compilig callback with right index
-      let callback = this.compileDataCallback(i)
-      this.netConnect(this.serverList[i][1], this.serverList[i][0], callback, -1)
-    }
-
+    this.serverList.forEach((server, index) => {
+      let callback = this.compileDataCallback(index)
+      this.netConnect(server[1], server[0], callback, -1)
+    })
     setInterval(() => {
       this.collectGarbage()
     }, 40000)
   }
 
-  socketWriteAbstract (index, data) {
+  socketWriteAbstract (index: number, data: any) {
     if (this.connections[index].conn._state === 0) {
       var callback = this.compileDataCallback(index)
       this.netConnect(this.serverList[index][1], this.serverList[index][0], callback, index)
@@ -174,7 +174,7 @@ export class Electrum {
     }
   }
 
-  handleData (data) {
+  handleData (data: any) {
     if (data.method) {
       const method = data.method.split('.')
       if (method.length === 3 && method[2] === 'subscribe') {
@@ -190,7 +190,7 @@ export class Electrum {
     this.requests[data.id].onDataReceived(data.result)
   }
 
-  write (method, params) {
+  write (method: string, params: Array<any>) {
     let rejectProxy, resolveProxy
     const hash = randomHash()
     const randomIndex = getRandomInt(0, Math.min(MAX_CONNECTIONS, this.connections.length) - 1)
@@ -220,7 +220,7 @@ export class Electrum {
     return out
   }
 
-  subscribeToAddress (address) {
+  subscribeToAddress (address: string) {
     return this.write('blockchain.address.subscribe', [address])
   }
 
@@ -228,23 +228,23 @@ export class Electrum {
     return this.write('blockchain.numblocks.subscribe', [])
   }
 
-  getEstimateFee (blocksToBeIncludedIn) {
+  getEstimateFee (blocksToBeIncludedIn: string) {
     return this.write('blockchain.estimatefee', [blocksToBeIncludedIn])
   }
 
-  getAddresHistory (address) {
+  getAddresHistory (address: string) {
     return this.write('blockchain.address.get_history', [address])
   }
 
-  broadcastTransaction (tx) {
+  broadcastTransaction (tx: string) {
     return this.write('blockchain.transaction.broadcast', [tx])
   }
 
-  getBlockHeader (height) {
+  getBlockHeader (height: number) {
     return this.write('blockchain.block.get_header', [height])
   }
 
-  getTransaction (transactionID) {
+  getTransaction (transactionID: string) {
     return this.write('blockchain.transaction.get', [transactionID])
   }
 }
