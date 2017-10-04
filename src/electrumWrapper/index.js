@@ -16,7 +16,7 @@ export class Electrum {
     // Compiling serverList
     while (serverIndex.length < MAX_CONNECTIONS && serverIndex.length < serverList.length) {
       let j = getRandomInt(0, serverList.length - 1)
-      if (serverIndex.indexOf(j) === -1) {
+      if (serverIndex.indexOf(serverList[j]) === -1) {
         serverIndex.push(serverList[j])
         this.globalRecievedData.push('')
       }
