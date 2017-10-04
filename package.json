@@ -24,6 +24,7 @@
     "build:flow": "flow-copy-source -v -i '**/test/**' src lib",
     "prepare": "ROLLUPCONFIG=rollup.config.js npm run build",
     "test": "npm run lint && mocha",
+    "mocha": "npm run pretest && mocha",
     "pretest": "ROLLUPCONFIG=rollup.config.test.js npm run build",
     "precommit": "npm run build && npm run lint && npm run test",
     "updot": "updot",
