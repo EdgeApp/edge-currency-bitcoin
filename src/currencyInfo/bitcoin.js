@@ -21,7 +21,6 @@ export const bitcoin = {
       simpleFeeSettings: {low: 6, standard: 2, high: 0},
       electrumServers: [
         ['electrum-bu-az-weuro.airbitz.co', '50001'],
-        // ['electrum-bc-az-eusa.airbitz.co', '50001'],
         ['electrum-bu-az-ausw.airbitz.co', '50001'],
         ['electrum.hsmiths.com', '8080'],
         ['electrum-bu-az-wusa2.airbitz.co', '50001'],
