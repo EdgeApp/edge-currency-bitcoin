@@ -55,7 +55,7 @@ describe(`Engine Creation Errors for Wallet type ${WALLET_TYPE}`, function () {
       assert.equal(litecoinPlugin.currencyInfo.currencyCode, 'LTC')
       plugin = litecoinPlugin
       keys = plugin.createPrivateKey(WALLET_TYPE)
-      keys = plugin.derivePublicKey({type: WALLET_TYPE, keys: {litecoinKey: keys.litecoinKey}})
+      keys = plugin.derivePublicKey({type: WALLET_TYPE, keys})
     })
   })
 
@@ -105,7 +105,7 @@ describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
       assert.equal(litecoinPlugin.currencyInfo.currencyCode, 'LTC')
       plugin = litecoinPlugin
       keys = plugin.createPrivateKey(WALLET_TYPE)
-      keys = plugin.derivePublicKey({type: WALLET_TYPE, keys: {litecoinKey: keys.litecoinKey}})
+      keys = plugin.derivePublicKey({type: WALLET_TYPE, keys})
     })
     .then(done)
   })
@@ -137,8 +137,8 @@ describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
   })
 
   it('Get BlockHeight', function (done) {
-    engine.startEngine().then(a => {
-      assert.equal(engine.getBlockHeight(), 1180814, 'Should init as 1180814')
+    engine.startEngine().then(blockHeight => {
+      assert(engine.getBlockHeight() >= 1289522, 'Block Height Should be bigger then 1289522')
       done()
     })
   })
