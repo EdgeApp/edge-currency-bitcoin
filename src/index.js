@@ -1,3 +1,5 @@
+// @flow
+
 import CurrencyPlugin from './currencyPlugin/index'
 import * as plugins from './currencyInfo/index'
 

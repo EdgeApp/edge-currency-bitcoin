@@ -6,12 +6,7 @@ export class Electrum {
   io: any
   currentConn: number
   connections: Array<any>
-  requests: {
-    data: string,
-    connectionIndex: number,
-    onDataReceived: any,
-    onFailure: any
-  }
+  requests: any
   id: number
   serverList: Array<Array<string>>
   subscribers: {
