@@ -16,21 +16,7 @@ export const bitcoincash = {
       feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
       simpleFeeSettings: {low: 6, standard: 2, high: 0},
       electrumServers: [
-        ['ogog.1209k.com', '50002'],
-        ['h.1209k.com', '50002'],
-        ['bch.kokx.org', '50002'],
-        ['electron.coinucopia.io', '50002'],
-        ['electrum-abc.criptolayer.net', '50012'],
-        ['abc1.hsmiths.com', '60002'],
-        ['electron.ueo.ch', '50002'],
-        ['bch.curalle.ovh', '50002'],
-        ['elecash.bcc.nummi.it', '50012'],
-        ['electrumx-bch.adminsehow.com', '50012'],
-        ['abc.vom-stausee.de', '52002'],
-        ['bcc.arihanc.com', '52002'],
-        ['mash.1209k.com', '50002'],
-        ['crypto.mldlabs.com', '50002'],
-        ['electrum-abc.petrkr.net', '50012']
+        ['h.1209k.com', '50001']
       ],
       diskPath: {
         folder: 'txEngineFolderBCH',
