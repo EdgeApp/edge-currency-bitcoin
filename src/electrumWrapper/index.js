@@ -71,7 +71,7 @@ export class Electrum {
 
   netConnect (port: string, host: string, callback: any, i: number) {
     let resolveProxy
-
+    let myIndex = i === -1 ? this.connections.length : i
     const out = new Promise((resolve, reject) => {
       resolveProxy = resolve
     })
@@ -93,7 +93,7 @@ export class Electrum {
 
       // Getting the requests for the closed connection
       for (let id in this.requests) {
-        if (this.requests[id].connectionIndex === i) {
+        if (this.requests[id].connectionIndex === myIndex) {
           newRequests.push(this.requests[id])
         }
       }
@@ -110,9 +110,11 @@ export class Electrum {
             this.socketWriteAbstract(workingConnIndex, request.data)
           })
         } else {
-          setTimeout(() => {
-            switchToWorkingConnection()
-          }, RETRY_CONNECTION)
+          newRequests.forEach(request => {
+            setTimeout(() => {
+              this.socketWriteAbstract(myIndex, request.data)
+            }, RETRY_CONNECTION)
+          })
         }
       }
 
