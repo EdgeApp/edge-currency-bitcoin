@@ -1,5 +1,7 @@
 // @flow
 
+const RETRY_CONNECTION = 500
+
 export class Electrum {
   globalRecievedData: Array<string>
   connected: boolean
@@ -85,15 +87,36 @@ export class Electrum {
     let now = Date.now()
 
     const gracefullyCloseConn = () => {
+      // Changing our connection state to closed
       connection._state = 0
+      let newRequests = []
+
+      // Getting the requests for the closed connection
       for (let id in this.requests) {
-        const request = this.requests[id]
-        if (request.connectionIndex === i) {
-          const { method, params } = JSON.parse(request.data)
-          this.write(method, params)
-          delete this.requests[id]
+        if (this.requests[id].connectionIndex === i) {
+          newRequests.push(this.requests[id])
         }
       }
+
+      const switchToWorkingConnection = () => {
+        let workingConnIndex = 0
+        // Getting A working connection index
+        for (; workingConnIndex < this.connections.length; workingConnIndex++) {
+          if (this.connections[workingConnIndex].conn.connection._state === 2) break
+        }
+        if (workingConnIndex < this.connections.length) {
+          newRequests.forEach(request => {
+            request.connectionIndex = workingConnIndex
+            this.socketWriteAbstract(workingConnIndex, request.data)
+          })
+        } else {
+          setTimeout(() => {
+            switchToWorkingConnection()
+          }, RETRY_CONNECTION)
+        }
+      }
+
+      switchToWorkingConnection()
     }
 
     connection.on('data', callback)
