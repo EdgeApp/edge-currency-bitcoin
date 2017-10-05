@@ -10,7 +10,7 @@ import type {
 
 import { parse, serialize } from 'uri-js'
 import { bns } from 'biggystring'
-import CurrencyEngine from '../currencyEngine/index'
+import CurrencyEngine from '../currencyEngine/indexEngine'
 import Bcoin from './bcoin'
 
 // $FlowFixMe

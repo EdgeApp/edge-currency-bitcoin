@@ -1,6 +1,6 @@
 // @flow
 
-import { Electrum } from '../electrumWrapper/index'
+import { Electrum } from '../electrumWrapper/indexElectrum'
 import { bns } from 'biggystring'
 import { validate } from 'jsonschema'
 
