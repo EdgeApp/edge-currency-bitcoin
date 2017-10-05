@@ -2,6 +2,7 @@
 
 import type {
   AbcCurrencyPlugin,
+  AbcParsedUri,
   AbcEncodeUri,
   AbcCurrencyEngine,
   AbcWalletInfo,
@@ -92,7 +93,7 @@ export default (txLibInfo: any) => {
 
         makeEngine: (keyInfo: any, opts: AbcMakeEngineOptions): Promise<AbcCurrencyEngine> => CurrencyEngine(bcoin, txLibInfo).makeEngine(io, keyInfo, opts),
 
-        parseUri: (uri: string): any => {
+        parseUri: (uri: string): AbcParsedUri => {
           let parsedUri = parse(uri)
           let info = txLibInfo.getInfo
           if (parsedUri.scheme &&
@@ -105,10 +106,8 @@ export default (txLibInfo: any) => {
 
           const amountStr = getParameterByName('amount', uri)
 
-          const abcParsedUri = {
+          const abcParsedUri: AbcParsedUri = {
             publicAddress: address,
-            nativeAmount: null,
-            currencyCode: null,
             metadata: {
               label: getParameterByName('label', uri),
               message: getParameterByName('message', uri)
