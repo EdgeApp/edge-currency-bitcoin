@@ -158,8 +158,11 @@ export class Electrum {
   socketWriteAbstract (index: number, data: any) {
     switch (this.connections[index].conn._state) {
       case 0:
-        var callback = this.compileDataCallback(index)
+        let callback = this.compileDataCallback(index)
         this.netConnect(this.serverList[index][1], this.serverList[index][0], callback, index)
+        this.connections[index].prom.then(() => {
+          this.connections[index].conn.write(data + '\n')
+        })
         break
       case 1:
         this.connections[index].prom.then(() => {
