@@ -18,8 +18,7 @@
   "module": "./lib/index.es.js",
   "test": "./lib/index.test.js",
   "scripts": {
-    "flow": "npm run build:flow && flow",
-    "lint": "standard '**/*.js' && npm run flow",
+    "lint": "standard '**/*.js' && flow",
     "build": "rollup --config $ROLLUPCONFIG && npm run build:flow",
     "build:flow": "flow-copy-source -v -i '**/test/**' src lib",
     "prepare": "ROLLUPCONFIG=rollup.config.js npm run build",
