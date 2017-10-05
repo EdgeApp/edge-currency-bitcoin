@@ -89,7 +89,7 @@ export class Electrum {
 
     let now = Date.now()
 
-    const gracefullyCloseConn = (e: any) => {
+    const gracefullyCloseConn = () => {
       connection._state = 0
       for (let id in this.requests) {
         const request = this.requests[id]
@@ -102,9 +102,18 @@ export class Electrum {
     }
 
     connection.on('data', callback)
-    connection.on('close', gracefullyCloseConn)
-    connection.on('error', gracefullyCloseConn)
-    connection.on('end', gracefullyCloseConn)
+    connection.on('close', e => {
+      console.log(`gracefullyCloseConn for reason: !!!close!!!`)
+      gracefullyCloseConn()
+    })
+    connection.on('error', e => {
+      console.log(`gracefullyCloseConn for reason: !!!error!!!`)
+      gracefullyCloseConn()
+    })
+    connection.on('end', e => {
+      console.log(`gracefullyCloseConn for reason: !!!end!!!`)
+      gracefullyCloseConn()
+    })
 
     let conn = {
       conn: connection,
