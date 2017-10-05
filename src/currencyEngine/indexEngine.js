@@ -499,11 +499,14 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   async broadcastTx (abcTransaction:AbcTransaction):Promise<AbcTransaction> {
     if (!abcTransaction.signedTx) throw new Error('Tx is not signed')
     if (!this.electrum) throw new Error('Uninitialized electrum servers')
-
-    const serverResponse = await this.electrum.broadcastTransaction(abcTransaction.signedTx)
-    if (!serverResponse) throw new Error('Electrum server internal error processing request')
-    if (serverResponse === 'TX decode failed') throw new Error('Tx is not valid')
-    return abcTransaction
+    try {
+      const serverResponse = await this.electrum.broadcastTransaction(abcTransaction.signedTx)
+      if (serverResponse === 'TX decode failed') throw new Error('Tx is not valid')
+      return abcTransaction
+    } catch (e) {
+      console.log(e)
+      throw new Error('Electrum server internal error processing request')
+    }
   }
 
   async saveTx (abcTransaction:AbcTransaction):Promise<void> {
@@ -583,7 +586,10 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     }
     this.transactions[address].executed = 0
     if (!this.electrum) throw new Error('Uninitialized electrum servers')
-    const hash = await this.electrum.subscribeToAddress(address)
+    let hash = null
+    try {
+      hash = await this.electrum.subscribeToAddress(address)
+    } catch (e) {}
     if (hash && hash !== this.transactions[address].addressStatusHash) {
       await this.handleTransactionStatusHash(address, hash)
     }
@@ -613,24 +619,28 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     const localTxObject = this.transactions[address]
     localTxObject.addressStatusHash = hash
     if (!this.electrum) throw new Error('Error: electrum uninitialized')
-    const transactionHashes = await this.electrum.getAddresHistory(address)
-    const transactionPromiseArray = transactionHashes.map(transactionObject => {
-      return this.handleTransaction(address, transactionObject)
-    })
-    const ABCtransaction = await Promise.all(transactionPromiseArray)
-    const filtteredABCtransaction = ABCtransaction.filter(tx => tx)
-    const updatedTransactionIds:Array<string> = []
-    filtteredABCtransaction.forEach(({ txid }) => {
-      updatedTransactionIds.push(txid)
-      if (this.transactionsIds.indexOf(txid) === -1) this.transactionsIds.push(txid)
-    })
-    this.saveMemDumpToDisk()
-    this.saveToDisk(this.transactions, 'transactions')
-    this.saveToDisk(this.transactionsIds, 'transactionsIds')
-    if (typeof this.abcTxLibCallbacks.onTxidsChanged === 'function') {
-      this.abcTxLibCallbacks.onTxidsChanged(updatedTransactionIds)
+    try {
+      const transactionHashes = await this.electrum.getAddresHistory(address)
+      const transactionPromiseArray = transactionHashes.map(transactionObject => {
+        return this.handleTransaction(address, transactionObject)
+      })
+      const ABCtransaction = await Promise.all(transactionPromiseArray)
+      const filtteredABCtransaction = ABCtransaction.filter(tx => tx)
+      const updatedTransactionIds = []
+      filtteredABCtransaction.forEach(({ txid }) => {
+        updatedTransactionIds.push(txid)
+        if (this.transactionsIds.indexOf(txid) === -1) this.transactionsIds.push(txid)
+      })
+      this.saveMemDumpToDisk()
+      this.saveToDisk(this.transactions, 'transactions')
+      this.saveToDisk(this.transactionsIds, 'transactionsIds')
+      if (typeof this.abcTxLibCallbacks.onTxidsChanged === 'function') {
+        this.abcTxLibCallbacks.onTxidsChanged(updatedTransactionIds)
+      }
+      this.abcTxLibCallbacks.onTransactionsChanged(filtteredABCtransaction)
+    } catch (e) {
+      console.log(e)
     }
-    this.abcTxLibCallbacks.onTransactionsChanged(filtteredABCtransaction)
   }
 
   async handleTransaction (address: string, transactionObj: any) {
@@ -658,57 +668,60 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     }
     if (!rawTransaction) {
       if (!this.electrum) throw new Error('Error: electrum uninitialized')
-      rawTransaction = await this.electrum.getTransaction(txHash)
-    }
-    const blockHeader = await this.getBlockHeader(transactionObj.height)
-    const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(rawTransaction, 'hex'))
-    const txJson = bcoinTX.getJSON(this.network)
-    const ourReceiveAddresses = []
-    let nativeAmount = 0
-    let totalOutputAmount = 0
-    let totalInputAmount = 0
+      try {
+        rawTransaction = await this.electrum.getTransaction(txHash)
+        const blockHeader = await this.getBlockHeader(transactionObj.height)
+        const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(rawTransaction, 'hex'))
+        const txJson = bcoinTX.getJSON(this.network)
+        const ourReceiveAddresses = []
+        let nativeAmount = 0
+        let totalOutputAmount = 0
+        let totalInputAmount = 0
+        const allOurAddresses = this.getAllOurAddresses()
+        // Process tx outputs
+        txJson.outputs.forEach(({ address, value }) => {
+          totalOutputAmount += value
+          if (allOurAddresses.indexOf(address) !== -1) {
+            nativeAmount += value
+            ourReceiveAddresses.push(address)
+          }
+        })
+        // Process tx inputs
+        const getPrevout = async ({ hash, index }) => {
+          if (!this.electrum) throw new Error('Error: electrum uninitialized')
+          const prevRawTransaction = await this.electrum.getTransaction(hash)
+          const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(prevRawTransaction, 'hex'))
+          const { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
+          totalInputAmount += value
+          if (allOurAddresses.indexOf(address) !== -1) {
+            nativeAmount -= value
+          }
+        }
+        await Promise.all(txJson.inputs.map(({ prevout }) => getPrevout(prevout)))
+        await this.wallet.add(bcoinTX)
 
-    const allOurAddresses = this.getAllOurAddresses()
-
-    // Process tx outputs
-    txJson.outputs.forEach(({ address, value }) => {
-      totalOutputAmount += value
-      if (allOurAddresses.indexOf(address) !== -1) {
-        nativeAmount += value
-        ourReceiveAddresses.push(address)
+        const abcTransaction: AbcTransaction = {
+          ourReceiveAddresses,
+          networkFee: (totalInputAmount - totalOutputAmount).toString(),
+          otherParams: {
+            rawTx: rawTransaction
+          },
+          currencyCode: this.primaryCurrency,
+          txid: txHash,
+          date: blockHeader.timestamp,
+          blockHeight: transactionObj.height,
+          nativeAmount: nativeAmount.toString(),
+          signedTx: ''
+        }
+        localTxObject.txs[txHash].abcTransaction = abcTransaction
+        localTxObject.txs[txHash].executed = 1
+        await this.checkGapLimit(address)
+        return abcTransaction
+      } catch (e) {
+        console.log(e)
+        return null
       }
-    })
-    // Process tx inputs
-    const getPrevout = async ({ hash, index }) => {
-      if (!this.electrum) throw new Error('Error: electrum uninitialized')
-      const prevRawTransaction = await this.electrum.getTransaction(hash)
-      const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(prevRawTransaction, 'hex'))
-      const { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
-      totalInputAmount += value
-      if (allOurAddresses.indexOf(address) !== -1) {
-        nativeAmount -= value
-      }
     }
-    await Promise.all(txJson.inputs.map(({ prevout }) => getPrevout(prevout)))
-    await this.wallet.add(bcoinTX)
-
-    const abcTransaction: AbcTransaction = {
-      ourReceiveAddresses,
-      networkFee: (totalInputAmount - totalOutputAmount).toString(),
-      otherParams: {
-        rawTx: rawTransaction
-      },
-      currencyCode: this.primaryCurrency,
-      txid: txHash,
-      date: blockHeader.timestamp,
-      blockHeight: transactionObj.height,
-      nativeAmount: nativeAmount.toString(),
-      signedTx: ''
-    }
-    localTxObject.txs[txHash].abcTransaction = abcTransaction
-    localTxObject.txs[txHash].executed = 1
-    await this.checkGapLimit(address)
-    return abcTransaction
   }
 
   async checkGapLimit (address: string) {
@@ -747,15 +760,20 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     }
   }
 
-  async getBlockHeader (height: number) {
+  async getBlockHeader (height: number): any {
     if (this.headerList[height]) {
       return this.headerList[height]
     }
     if (!this.electrum) throw new Error('Error: electrum uninitialized')
-    const header = await this.electrum.getBlockHeader(height)
-    this.headerList[height] = header
-    this.saveToDisk(this.headerList, 'headerList')
-    return header
+    let header
+    try {
+      header = await this.electrum.getBlockHeader(height)
+      this.headerList[height] = header
+      this.saveToDisk(this.headerList, 'headerList')
+      return header
+    } catch (e) {
+      return null
+    }
   }
   /* --------------------------------------------------------------------- */
   /* -----------------------  Disk Util Functions  ----------------------- */
