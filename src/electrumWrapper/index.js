@@ -102,7 +102,7 @@ export class Electrum {
         let workingConnIndex = 0
         // Getting A working connection index
         for (; workingConnIndex < this.connections.length; workingConnIndex++) {
-          if (this.connections[workingConnIndex].conn.connection._state === 2) break
+          if (this.connections[workingConnIndex].conn._state === 2) break
         }
         if (workingConnIndex < this.connections.length) {
           newRequests.forEach(request => {
