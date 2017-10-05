@@ -131,6 +131,7 @@ export default (txLibInfo: any) => {
           if (obj.nativeAmount) {
             let currencyCode = obj.currencyCode || info.currencyCode
             let multiplier = txLibInfo.getInfo.denominations.find(e => e.name === currencyCode).multiplier.toString()
+            // $FlowFixMe
             let amount = bns.divf(obj.nativeAmount, multiplier)
             queryString += 'amount=' + amount.toString() + '&'
           }
