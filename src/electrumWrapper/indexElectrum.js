@@ -191,8 +191,20 @@ export class Electrum {
         this.subscribers[method[1]](...data.params)
       }
     } else if (typeof this.requests[data.id] === 'object') {
-      this.requests[data.id].onDataReceived(data.result)
-      delete this.requests[data.id]
+      const request = this.requests[data.id]
+      if (!data.error) {
+        request.onDataReceived(data.result)
+        delete this.requests[data.id]
+        return
+      }
+      const currentID = request.connectionID
+      const workingConnID = this.getNextConn()
+      if (currentID !== workingConnID) {
+        request.connectionID = workingConnID
+        this.socketWriteAbstract(workingConnID, request.data)
+      } else {
+        request.onFailure(data.error)
+      }
     }
   }
 
