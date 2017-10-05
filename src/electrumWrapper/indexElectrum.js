@@ -88,15 +88,9 @@ export class Electrum {
   }
 
   async netConnect (host: string, port: string, callback: any): any {
-    let resolveProxy
-    const out = new Promise((resolve, reject) => {
-      resolveProxy = resolve
-    })
-
-    let connection = this.io.net.connect(port, host, () => {
-      connection._state = 1
-      resolveProxy(1)
-    })
+    let connection = new this.io.net.Socket()
+    // We can have more then 10 reads/writes waiting and we don't want to throttle
+    connection.setMaxListeners(0)
 
     const gracefullyCloseConn = () => {
       const myConnectionID = `${host}:${port}`
@@ -130,11 +124,19 @@ export class Electrum {
         })
       }
     }
-
+    let resolveProxy
+    const out = new Promise((resolve, reject) => {
+      resolveProxy = resolve
+    })
+    connection.on('connect', () => {
+      connection._state = 1
+      resolveProxy(1)
+    })
     connection.on('data', callback)
     connection.on('close', gracefullyCloseConn)
     connection.on('error', gracefullyCloseConn)
     connection.on('end', gracefullyCloseConn)
+    connection.connect(port, host)
 
     await out
     return connection
