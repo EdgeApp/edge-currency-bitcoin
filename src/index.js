@@ -1,5 +1,7 @@
-import CurrencyPlugin from './currencyPlugin/index'
-import * as plugins from './currencyInfo/index'
+// @flow
+
+import CurrencyPlugin from './currencyPlugin/indexPlugin'
+import * as plugins from './currencyInfo/indexInfo'
 
 const pluginFactories = {}
 

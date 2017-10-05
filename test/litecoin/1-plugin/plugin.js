@@ -98,14 +98,14 @@ describe(`parseUri for Wallet type ${WALLET_TYPE}`, function () {
   it('address only', function () {
     let parsedUri = plugin.parseUri('LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T')
     assert.equal(parsedUri.publicAddress, 'LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T')
-    assert.equal(parsedUri.nativeAmount, null)
-    assert.equal(parsedUri.currencyCode, null)
+    assert.equal(parsedUri.nativeAmount, undefined)
+    assert.equal(parsedUri.currencyCode, undefined)
   })
   it('uri address', function () {
     let parsedUri = plugin.parseUri('litecoin:LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T')
     assert.equal(parsedUri.publicAddress, 'LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T')
-    assert.equal(parsedUri.nativeAmount, null)
-    assert.equal(parsedUri.currencyCode, null)
+    assert.equal(parsedUri.nativeAmount, undefined)
+    assert.equal(parsedUri.currencyCode, undefined)
   })
   it('uri address with amount', function () {
     let parsedUri = plugin.parseUri('litecoin:LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T?amount=12345.6789')

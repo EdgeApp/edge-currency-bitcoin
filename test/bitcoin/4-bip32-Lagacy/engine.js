@@ -4,7 +4,6 @@ const assert = require('assert')
 const disklet = require('disklet')
 const Emitter = require('events').EventEmitter
 const request = require('request')
-const _ = require('lodash')
 const cs = require('coinstring')
 const jsonfile = require('jsonfile')
 const path = require('path')
@@ -73,7 +72,7 @@ describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
       assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
       plugin = bitcoinPlugin
       keys = plugin.createPrivateKey(WALLET_TYPE)
-      keys = plugin.derivePublicKey({type: WALLET_TYPE, keys: {bitcoinKey: keys.bitcoinKey}})
+      keys = plugin.derivePublicKey({type: WALLET_TYPE, keys})
     })
     .then(done)
   })
@@ -112,20 +111,15 @@ describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
 
   it(`Get BlockHeight for Wallet type ${WALLET_TYPE}`, function (done) {
     this.timeout(10000)
-    let end = _.after(2, done)
     request.get('https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY', (err, res, body) => {
       assert(!err, 'getting block height from a second source')
       emitter.once('onBlockHeightChange', height => {
         const thirdPartyHeight = parseInt(JSON.parse(body).height)
         assert(height >= thirdPartyHeight, 'Block height')
         assert(engine.getBlockHeight() >= thirdPartyHeight, 'Block height')
-        end() // Can be "done" since the promise resolves before the event fires but just be on the safe side
+        done() // Can be "done" since the promise resolves before the event fires but just be on the safe side
       })
-      engine.startEngine().then(a => {
-        assert.equal(engine.getBlockHeight(), 1180814, 'Should init as 1180814')
-        end()
-      })
-      .catch(e => console.log(e))
+      engine.startEngine()
     })
   })
 })

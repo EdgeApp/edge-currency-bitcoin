@@ -1,4 +1,6 @@
-export default (txLibInfo) => {
+// @flow
+
+export default (txLibInfo: any) => {
   const currencyName = txLibInfo.getInfo.currencyName.toLowerCase()
   let bcoin
   if (currencyName === 'bitcoin') {
