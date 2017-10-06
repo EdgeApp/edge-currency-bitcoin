@@ -149,7 +149,10 @@ export class Electrum {
             delete this.connections[connectionID]
           }
         }
-        if (this.connections[`${host}:${port}`]) connection.emit('finishedConnecting')
+        if (this.connections[`${host}:${port}`]) {
+          this.subscribers.numblocks(height)
+          connection.emit('finishedConnecting')
+        }
       })
     })
     connection.on('data', callback)

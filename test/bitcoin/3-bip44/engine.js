@@ -155,7 +155,6 @@ describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
   })
 
   it('Get BlockHeight', function (done) {
-    this.timeout(10000)
     request.get('https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY', (err, res, body) => {
       assert(!err, 'getting block height from a second source')
       emitter.once('onBlockHeightChange', height => {

@@ -131,11 +131,11 @@ describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
   })
 
   it('Get BlockHeight', function (done) {
-    engine.startEngine().then(a => {
+    emitter.once('onBlockHeightChange', () => {
       assert(engine.getBlockHeight() > 493028, 'Block height should be bigger then 493028')
       done()
     })
-    .catch(e => console.log(e))
+    engine.startEngine()
   })
 })
 

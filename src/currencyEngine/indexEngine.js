@@ -274,8 +274,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   async startEngine () {
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io, this.walletLocalData.blockHeight)
     this.electrum.connect()
-    const blockHeight = await this.electrum.subscribeToBlockHeight()
-    this.onBlockHeightChanged(blockHeight)
     this.getAllOurAddresses().forEach(address => this.processAddress(address))
 
     if (!Object.keys(this.walletLocalData.detailedFeeTable).length) {
