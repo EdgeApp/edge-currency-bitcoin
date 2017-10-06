@@ -57,7 +57,9 @@ export class Electrum {
         return this.currentConnID
       }
     }
-    return this.currentConnID
+    if (this.connections[this.currentConnID]) {
+      return this.currentConnID
+    } else return ''
   }
 
   compileDataCallback (connectionID: string) {
@@ -109,24 +111,19 @@ export class Electrum {
           newRequests.push(this.requests[id])
         }
       }
-      let workingConnID = ''
       // Getting A working connection index
-      for (const connectionID in this.connections) {
-        if (this.connections[connectionID]._state === 2) {
-          workingConnID = connectionID
-          break
-        }
-      }
+      let workingConnID = this.getNextConn()
+
       // If we have a working connection we will transfer all work to him
       if (workingConnID !== '') {
         newRequests.forEach(request => {
           request.connectionID = workingConnID
-          this.socketWriteAbstract(workingConnID, request.data)
+          this.socketWriteAbstract(workingConnID, request)
         })
       } else { // If we don't have a working connection we will try again on this connection
         newRequests.forEach(request => {
           setTimeout(() => {
-            this.socketWriteAbstract(myConnectionID, request.data)
+            this.socketWriteAbstract(myConnectionID, request)
           }, RETRY_CONNECTION)
         })
       }
@@ -182,22 +179,27 @@ export class Electrum {
     for (let i = 0; i < this.connections.length; i++) this.connections.destroy()
   }
 
-  socketWriteAbstract (connectionID: string, data: any) {
+  socketWriteAbstract (connectionID: string, request: any) {
+    if (!this.connections[connectionID]) {
+      connectionID = this.getNextConn()
+      if (connectionID === '') throw Error('no live connections')
+      request.connectionID = connectionID
+    }
     switch (this.connections[connectionID]._state) {
       case 0:
         let callback = this.compileDataCallback(connectionID)
         const [host, port] = connectionID.split(':')
         this.netConnect(host, port, callback).then(() => {
-          this.connections[connectionID].write(data + '\n')
+          this.connections[connectionID].write(request.data + '\n')
         })
         break
       case 1:
         this.connections[connectionID].once('finishedConnecting', () => {
-          this.connections[connectionID].write(data + '\n')
+          this.connections[connectionID].write(request.data + '\n')
         })
         break
       case 2:
-        this.connections[connectionID].write(data + '\n')
+        this.connections[connectionID].write(request.data + '\n')
         break
     }
   }
@@ -217,7 +219,7 @@ export class Electrum {
       }
       const currentID = request.connectionID
       const workingConnID = this.getNextConn()
-      if (currentID !== workingConnID) {
+      if (workingConnID !== '' && currentID !== workingConnID) {
         request.connectionID = workingConnID
         this.socketWriteAbstract(workingConnID, request.data)
       } else {
@@ -230,6 +232,7 @@ export class Electrum {
     let rejectProxy, resolveProxy
     const id = this.getID().toString()
     const nextConnectionID = connectionID || this.getNextConn()
+    if (nextConnectionID === '') throw Error('no live connections')
     const data = JSON.stringify({ id, method, params })
 
     const out = new Promise((resolve, reject) => {
@@ -243,7 +246,7 @@ export class Electrum {
       onDataReceived: resolveProxy,
       onFailure: rejectProxy
     }
-    this.socketWriteAbstract(nextConnectionID, data)
+    this.socketWriteAbstract(nextConnectionID, this.requests[id])
     return out
   }
 
