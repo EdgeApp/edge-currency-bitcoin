@@ -2,6 +2,7 @@
 
 const RETRY_CONNECTION = 500
 const MAX_HEIGHT_BOUNDRY = 50
+const KEEP_ALIVE_INTERVAL = 10000
 
 export class Electrum {
   globalRecievedData: any
@@ -99,6 +100,7 @@ export class Electrum {
     const gracefullyCloseConn = () => {
       const myConnectionID = `${host}:${port}`
       // Changing our connection state to closed
+      clearInterval(connection.keepAliveTimer)
       connection._state = 0
       let newRequests = []
       // Getting the requests for the closed connection
@@ -134,7 +136,6 @@ export class Electrum {
       connection._state = 2
       this.write('blockchain.numblocks.subscribe', [], `${host}:${port}`).then(height => {
         if (this.lastKnownBlockHeight && height < this.lastKnownBlockHeight) {
-          connection._state = 0
           connection.destroy()
           delete this.connections[`${host}:${port}`]
         } else {
@@ -144,12 +145,14 @@ export class Electrum {
         for (const connectionID in this.connections) {
           const height = this.connections[connectionID].blockchainHeight
           if (height < (this.maxHeight - MAX_HEIGHT_BOUNDRY)) {
-            this.connections[connectionID]._state = 0
             this.connections[connectionID].destroy()
             delete this.connections[connectionID]
           }
         }
         if (this.connections[`${host}:${port}`]) {
+          connection.keepAliveTimer = setInterval(() => {
+            this.write('server.version', [], `${host}:${port}`)
+          }, KEEP_ALIVE_INTERVAL)
           this.subscribers.numblocks(height)
           connection.emit('finishedConnecting')
         }
@@ -270,5 +273,9 @@ export class Electrum {
 
   getTransaction (transactionID: string): Promise<any> {
     return this.write('blockchain.transaction.get', [transactionID])
+  }
+
+  getServerVersion (transactionID: string): Promise<any> {
+    return this.write('server.version', [])
   }
 }
