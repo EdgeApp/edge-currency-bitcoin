@@ -148,7 +148,7 @@ export class Electrum {
         }
         if (this.connections[`${host}:${port}`]) {
           connection.keepAliveTimer = setInterval(() => {
-            this.write('server.version', [], `${host}:${port}`)
+            this.write('blockchain.estimatefee', [0], `${host}:${port}`)
           }, KEEP_ALIVE_INTERVAL)
           this.subscribers.numblocks(height)
           connection.emit('finishedConnecting')
