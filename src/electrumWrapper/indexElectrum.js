@@ -14,6 +14,7 @@ export class Electrum {
   requests: any
   maxHeight: number
   id: number
+  connectionQueue: any
   serverList: Array<Array<string>>
   subscribers: {
     address: any,
@@ -33,6 +34,7 @@ export class Electrum {
       numblocks: callbacks.onBlockHeightChanged
     }
     this.currentConnID = ''
+    this.connectionQueue = {}
     this.id = 0
   }
 
@@ -96,6 +98,7 @@ export class Electrum {
 
   netConnect (host: string, port: string, callback: any): any {
     let connection = new this.io.net.Socket()
+    connection._state = 1
     // We can have more then 10 reads/writes waiting and we don't want to throttle
     connection.setMaxListeners(0)
 
@@ -160,7 +163,10 @@ export class Electrum {
     connection.on('error', gracefullyCloseConn)
     connection.on('end', gracefullyCloseConn)
     connection.connect(port, host)
-    return connection
+
+    this.connections[`${host}:${port}`] = connection
+    this.connectionQueue[`${host}:${port}`] = 0
+    if (!this.currentConnID) this.currentConnID = `${host}:${port}`
   }
 
   connect () {
@@ -168,10 +174,7 @@ export class Electrum {
       const server = this.serverList[i]
       const [host, port] = server
       const callback = this.compileDataCallback(`${host}:${port}`)
-      const connection = this.netConnect(host, port, callback)
-      if (!this.currentConnID) this.currentConnID = `${host}:${port}`
-      connection._state = 1
-      this.connections[`${host}:${port}`] = connection
+      this.netConnect(host, port, callback)
     }
   }
 
@@ -187,11 +190,18 @@ export class Electrum {
     }
     switch (this.connections[connectionID]._state) {
       case 0:
-        let callback = this.compileDataCallback(connectionID)
-        const [host, port] = connectionID.split(':')
-        this.netConnect(host, port, callback).then(() => {
-          this.connections[connectionID].write(request.data + '\n')
-        })
+        this.connectionQueue[connectionID]++
+        setTimeout(() => {
+          const [host, port] = connectionID.split(':')
+          this.connections[connectionID].once('finishedConnecting', () => {
+            this.connectionQueue[connectionID]--
+            if (this.connectionQueue[connectionID] < 0) {
+              this.connectionQueue[connectionID] = 0
+            }
+            this.connections[connectionID].write(request.data + '\n')
+          })
+          this.connections[connectionID].connect(port, host)
+        }, RETRY_CONNECTION * this.connectionQueue[connectionID])
         break
       case 1:
         this.connections[connectionID].once('finishedConnecting', () => {
@@ -276,9 +286,5 @@ export class Electrum {
 
   getTransaction (transactionID: string): Promise<any> {
     return this.write('blockchain.transaction.get', [transactionID])
-  }
-
-  getServerVersion (transactionID: string): Promise<any> {
-    return this.write('server.version', [])
   }
 }
