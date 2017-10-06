@@ -8,8 +8,10 @@ export class Electrum {
   connected: boolean
   io: any
   currentConnID: string
+  lastKnownBlockHeight: number
   connections: any
   requests: any
+  maxHeight: number
   id: number
   serverList: Array<Array<string>>
   subscribers: {
@@ -17,12 +19,14 @@ export class Electrum {
     numblocks: any
   }
 
-  constructor (serverList: Array<Array<string>>, callbacks: any, io: any) {
+  constructor (serverList: Array<Array<string>>, callbacks: any, io: any, lastKnownBlockHeight: number = 0) {
     this.io = io
     this.connections = {}
     this.requests = {}
     this.serverList = serverList
     this.globalRecievedData = {}
+    this.lastKnownBlockHeight = lastKnownBlockHeight
+    this.maxHeight = lastKnownBlockHeight
     this.subscribers = {
       address: callbacks.onAddressStatusChanged,
       numblocks: callbacks.onBlockHeightChanged
@@ -40,14 +44,14 @@ export class Electrum {
     const currentIDIndex = connectionIDs.indexOf(this.currentConnID)
     for (let i = currentIDIndex + 1; i < connectionIDs.length; i++) {
       const connectionID = connectionIDs[i]
-      if (this.connections[connectionID]._state === 1) {
+      if (this.connections[connectionID]._state === 2) {
         this.currentConnID = connectionID
         return this.currentConnID
       }
     }
     for (let i = 0; i < currentIDIndex; i++) {
       const connectionID = connectionIDs[i]
-      if (this.connections[connectionID]._state === 1) {
+      if (this.connections[connectionID]._state === 2) {
         this.currentConnID = connectionID
         return this.currentConnID
       }
@@ -87,7 +91,7 @@ export class Electrum {
     }
   }
 
-  async netConnect (host: string, port: string, callback: any): any {
+  netConnect (host: string, port: string, callback: any): any {
     let connection = new this.io.net.Socket()
     // We can have more then 10 reads/writes waiting and we don't want to throttle
     connection.setMaxListeners(0)
@@ -106,17 +110,18 @@ export class Electrum {
       let workingConnID = ''
       // Getting A working connection index
       for (const connectionID in this.connections) {
-        if (this.connections[connectionID]._state === 1) {
+        if (this.connections[connectionID]._state === 2) {
           workingConnID = connectionID
           break
         }
       }
+      // If we have a working connection we will transfer all work to him
       if (workingConnID !== '') {
         newRequests.forEach(request => {
           request.connectionID = workingConnID
           this.socketWriteAbstract(workingConnID, request.data)
         })
-      } else {
+      } else { // If we don't have a working connection we will try again on this connection
         newRequests.forEach(request => {
           setTimeout(() => {
             this.socketWriteAbstract(myConnectionID, request.data)
@@ -124,63 +129,70 @@ export class Electrum {
         })
       }
     }
-    let resolveProxy
-    const out = new Promise((resolve, reject) => {
-      resolveProxy = resolve
-    })
+
     connection.on('connect', () => {
-      connection._state = 1
-      resolveProxy(1)
+      connection._state = 2
+      this.write('blockchain.numblocks.subscribe', [], `${host}:${port}`).then(height => {
+        if (this.lastKnownBlockHeight && height < this.lastKnownBlockHeight) {
+          connection._state = 0
+          connection.destroy()
+          delete this.connections[`${host}:${port}`]
+        } else {
+          connection.blockchainHeight = height
+          this.maxHeight = Math.max(this.maxHeight, height)
+        }
+        for (const connectionID in this.connections) {
+          const height = this.connections[connectionID].blockchainHeight
+          if (height < (this.maxHeight - MAX_HEIGHT_BOUNDRY)) {
+            this.connections[connectionID]._state = 0
+            this.connections[connectionID].destroy()
+            delete this.connections[connectionID]
+          }
+        }
+        if (this.connections[`${host}:${port}`]) connection.emit('finishedConnecting')
+      })
     })
     connection.on('data', callback)
     connection.on('close', gracefullyCloseConn)
     connection.on('error', gracefullyCloseConn)
     connection.on('end', gracefullyCloseConn)
     connection.connect(port, host)
-
-    await out
     return connection
   }
 
-  async connect (lastbBlockHeight: number): Promise<number> {
-    let maxHeight = lastbBlockHeight || 0
-    const heights = {}
+  connect () {
     for (let i = 0; i < this.serverList.length; i++) {
       const server = this.serverList[i]
       const [host, port] = server
       const callback = this.compileDataCallback(`${host}:${port}`)
-      const connection = await this.netConnect(host, port, callback)
+      const connection = this.netConnect(host, port, callback)
+      if (!this.currentConnID) this.currentConnID = `${host}:${port}`
+      connection._state = 1
       this.connections[`${host}:${port}`] = connection
-      const height = await this.write('blockchain.numblocks.subscribe', [], `${host}:${port}`)
-      if (lastbBlockHeight && height < lastbBlockHeight) {
-        this.connections[`${host}:${port}`]._state = 0
-        this.connections[`${host}:${port}`].destroy()
-        delete this.connections[`${host}:${port}`]
-      } else {
-        maxHeight = Math.max(maxHeight, height)
-        heights[`${host}:${port}`] = height
-      }
     }
-    for (const connectionID in heights) {
-      const height = heights[connectionID]
-      if (height < (maxHeight - MAX_HEIGHT_BOUNDRY)) {
-        this.connections[connectionID]._state = 0
-        this.connections[connectionID].destroy()
-        delete this.connections[connectionID]
-      }
-    }
-    return maxHeight
+  }
+
+  stop () {
+    for (let i = 0; i < this.connections.length; i++) this.connections.destroy()
   }
 
   socketWriteAbstract (connectionID: string, data: any) {
-    if (this.connections[connectionID]._state) {
-      this.connections[connectionID].write(data + '\n')
-    } else {
-      let callback = this.compileDataCallback(connectionID)
-      const [host, port] = connectionID.split(':')
-      this.netConnect(host, port, callback).then(() => {
+    switch (this.connections[connectionID]._state) {
+      case 0:
+        let callback = this.compileDataCallback(connectionID)
+        const [host, port] = connectionID.split(':')
+        this.netConnect(host, port, callback).then(() => {
+          this.connections[connectionID].write(data + '\n')
+        })
+        break
+      case 1:
+        this.connections[connectionID].once('finishedConnecting', () => {
+          this.connections[connectionID].write(data + '\n')
+        })
+        break
+      case 2:
         this.connections[connectionID].write(data + '\n')
-      })
+        break
     }
   }
 

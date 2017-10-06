@@ -61,7 +61,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   memoryDump: any
   gapLimit: number
   electrumServers: Array<Array<string>>
-  electrum: Electrum | null
+  electrum: Electrum
   feeUpdater:any
   feeUpdateInterval: number
   maxFee: number
@@ -159,9 +159,12 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     const key = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
 
     if (this.memoryDump.rawMemory) {
-      this.wallet = await walletdb.get('ID1')
-      this.wallet.importMasterKey({master: key.xprivkey()})
-    } else {
+      try {
+        this.wallet = await walletdb.get('ID1')
+        this.wallet.importMasterKey({master: key.xprivkey()})
+      } catch (e) {}
+    }
+    if (!this.wallet) {
       const masterPath = this.walletType.includes('44') ? null : 'm/0/0'
       const masterIndex = !masterPath ? null : 32
       this.wallet = await walletdb.create({
@@ -263,14 +266,15 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   updateSettings (opts:any) {
     if (opts.electrumServers) {
       this.electrumServers = opts.electrumServers
-      this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
-      this.electrum.connect(this.walletLocalData.blockHeight)
+      this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io, this.walletLocalData.blockHeight)
+      this.electrum.connect()
     }
   }
 
   async startEngine () {
-    this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io)
-    const blockHeight = await this.electrum.connect(this.walletLocalData.blockHeight)
+    this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io, this.walletLocalData.blockHeight)
+    this.electrum.connect()
+    const blockHeight = await this.electrum.subscribeToBlockHeight()
     this.onBlockHeightChanged(blockHeight)
     this.getAllOurAddresses().forEach(address => this.processAddress(address))
 
@@ -283,7 +287,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   async killEngine () {
-    this.electrum = null
+    this.electrum.stop()
     clearInterval(this.feeUpdater)
     await this.saveMemDumpToDisk()
     await this.saveToDisk(this.headerList, 'headerList')
@@ -394,6 +398,9 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     }
     if (this.getAllOurAddresses().indexOf(address) === -1) {
       throw new Error('Address not found in wallet')
+    }
+    if (!this.transactions[address]) {
+      return false
     }
     return Object.keys(this.transactions[address].txs).length !== 0
   }
