@@ -223,35 +223,20 @@ describe(`Make Spend and Sign for Wallet type ${WALLET_TYPE}`, function () {
 
   it('Should build transaction with low fee', function () {
     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'low' })).then(a => {
-      // console.log('makeSpend', a)
       return engine.signTx(a)
-    })
-    .then(a => {
-      // console.log('sign', a)
-    })
-    .catch(a => console.log('error', a))
+    }).catch(e => assert(e.message === 'InsufficientFundsError'))
   })
 
   it('Should build transaction with standard fee', function () {
     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'standard' })).then(a => {
-      // console.log('makeSpend', a)
       return engine.signTx(a)
-    })
-    .then(a => {
-      // console.log('sign', a)
-    })
-    .catch(a => console.log('error', a))
+    }).catch(e => assert(e.message === 'InsufficientFundsError'))
   })
 
   it('Should build transaction with high fee', function () {
     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' })).then(a => {
-      // console.log('makeSpend', a)
       return engine.signTx(a)
-    })
-    .then(a => {
-      // console.log('sign', a)
-    })
-    .catch(a => console.log('error', a))
+    }).catch(e => assert(e.message === 'InsufficientFundsError'))
   })
 
   it('Should build transaction with custom fee', function () {
@@ -259,12 +244,7 @@ describe(`Make Spend and Sign for Wallet type ${WALLET_TYPE}`, function () {
       networkFeeOption: 'custom',
       customNetworkFee: '1000'
     })).then(a => {
-      // console.log('makeSpend', a)
       return engine.signTx(a)
-    })
-    .then(a => {
-      // console.log('sign', a)
-    })
-    .catch(a => console.log('error', a))
+    }).catch(e => assert(e.message === 'InsufficientFundsError'))
   })
 })
