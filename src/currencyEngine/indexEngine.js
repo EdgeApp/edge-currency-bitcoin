@@ -187,14 +187,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     await this.loadTransactionsFromDisk()
     await this.loadHeadersFromDisk()
 
-    this.wallet.on('balance', balance => {
-      const confirmedBalance = balance.confirmed.toString()
-      const unconfirmedBalance = balance.unconfirmed.toString()
-      this.walletLocalData.masterBalance = bns.add(confirmedBalance, unconfirmedBalance)
-      this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
-      this.saveToDisk(this.walletLocalData, 'walletLocalData')
-    })
-
     if (!this.memoryDump) {
       const transactions = await this.getTransactions()
       const addTXPromises = transactions.map(transaction => {
@@ -202,8 +194,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         return this.wallet.add(bcoinTX)
       })
       await Promise.all(addTXPromises)
-    } else {
-      this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
     }
 
     await this.syncAddresses()
@@ -272,6 +262,13 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   async startEngine () {
+    this.wallet.on('balance', balance => {
+      const confirmedBalance = balance.confirmed.toString()
+      const unconfirmedBalance = balance.unconfirmed.toString()
+      this.walletLocalData.masterBalance = bns.add(confirmedBalance, unconfirmedBalance)
+      this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
+      this.saveToDisk(this.walletLocalData, 'walletLocalData')
+    })
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io, this.walletLocalData.blockHeight)
     this.electrum.connect()
     this.getAllOurAddresses().forEach(address => this.processAddress(address))
