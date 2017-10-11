@@ -146,7 +146,9 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       network: this.network,
       memDbRaw: null
     }
-    await this.loadMemoryDumpFromDisk()
+
+    const memoryDump = await this.loadFromDisk(this.memoryDump, 'memoryDump')
+    if (!memoryDump) await this.saveMemDumpToDisk()
 
     if (this.memoryDump.rawMemory) {
       walletDbOptions.memDbRaw = BufferJS.from(this.memoryDump.rawMemory, 'hex')
@@ -182,11 +184,12 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   async syncDiskData () {
-    await this.loadWalletLocalDataFromDisk()
-    await this.loadTransactionsIdsFromDisk()
-    await this.loadTransactionsFromDisk()
-    await this.loadHeadersFromDisk()
-
+    const props = ['walletLocalData', 'transactions', 'transactionsIds', 'headerList']
+    const loadFromDiskPromise = props.map(key =>
+      // $FlowFixMe
+      this.loadFromDisk(this[key], key).then(result => !result ? this.saveToDisk(this[key], key) : true)
+    )
+    await Promise.all(loadFromDiskPromise)
     if (!this.memoryDump) {
       const transactions = await this.getTransactions()
       const addTXPromises = transactions.map(transaction => {
@@ -269,6 +272,12 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
       this.saveToDisk(this.walletLocalData, 'walletLocalData')
     })
+    const transactions = await this.getTransactions()
+    if (transactions && transactions.length) this.abcTxLibCallbacks.onTransactionsChanged(transactions)
+    if (this.walletLocalData.masterBalance !== '0') {
+      this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
+    }
+
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io, this.walletLocalData.blockHeight)
     this.electrum.connect()
     this.getAllOurAddresses().forEach(address => this.processAddress(address))
@@ -814,35 +823,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     } catch (e) {
       return null
     }
-  }
-
-  async loadWalletLocalDataFromDisk () {
-    const localWalletData = await this.loadFromDisk(this.walletLocalData, 'walletLocalData')
-    if (localWalletData) {
-      this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
-    } else await this.saveToDisk(this.walletLocalData, 'walletLocalData')
-  }
-
-  async loadTransactionsFromDisk () {
-    const transactions = await this.loadFromDisk(this.transactions, 'transactions')
-    if (transactions) {
-      const transactionsFromFile = await this.getTransactions()
-      this.abcTxLibCallbacks.onTransactionsChanged(transactionsFromFile)
-    } else await this.saveToDisk(this.transactions, 'transactions')
-  }
-
-  async loadTransactionsIdsFromDisk () {
-    const transactionsIds = await this.loadFromDisk(this.transactionsIds, 'transactionsIds')
-    if (transactionsIds) {
-      if (typeof this.abcTxLibCallbacks.onTxidsChanged === 'function') {
-        this.abcTxLibCallbacks.onTxidsChanged(transactionsIds)
-      }
-    } else await this.saveToDisk(this.transactionsIds, 'transactionsIds')
-  }
-
-  async loadHeadersFromDisk () {
-    const headers = await this.loadFromDisk(this.headerList, 'headerList')
-    if (!headers) await this.saveToDisk(this.headerList, 'headerList')
   }
 
   async loadMemoryDumpFromDisk () {
