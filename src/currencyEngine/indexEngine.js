@@ -209,7 +209,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     const nestedDepth = account.nestedDepth - 1 + this.gapLimit
     const addresses = this.walletLocalData.addresses
     if (receiveDepth > addresses.receive.length ||
-      (this.walletType.includes('44') && changeDepth > addresses.receive.length)) {
+      (this.walletType.includes('44') && changeDepth > addresses.change.length)) {
       const accountPaths = await this.wallet.getPaths(0)
       const newAddresses = {
         receive: [],
