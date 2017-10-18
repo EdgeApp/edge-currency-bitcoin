@@ -525,7 +525,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   async signTx (abcTransaction:AbcTransaction):Promise<AbcTransaction> {
     await this.wallet.sign(abcTransaction.otherParams.bcoinTx)
     abcTransaction.date = Date.now() / 1000
-    abcTransaction.signedTx = abcTransaction.otherParams.bcoinTx.toRaw()
+    abcTransaction.signedTx = abcTransaction.otherParams.bcoinTx.toRaw().toString('hex')
     return abcTransaction
   }
 
