@@ -398,7 +398,11 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     try {
       bcoin.primitives.Address.fromBase58(address)
     } catch (e) {
-      throw new Error('Wrong formatted address')
+      try {
+        bcoin.primitives.Address.fromBech32(address)
+      } catch (e) {
+        throw new Error('Wrong formatted address')
+      }
     }
     if (this.getAllOurAddresses().indexOf(address) === -1) {
       throw new Error('Address not found in wallet')

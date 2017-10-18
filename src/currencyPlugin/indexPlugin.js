@@ -35,7 +35,12 @@ export default (txLibInfo: any) => {
       bcoin.primitives.Address.fromBase58(address)
       return true
     } catch (e) {
-      return false
+      try {
+        bcoin.primitives.Address.fromBech32(address)
+        return true
+      } catch (e) {
+        return false
+      }
     }
   }
 
