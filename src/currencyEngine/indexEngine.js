@@ -244,6 +244,11 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         }
       }
       if (this.walletType.includes('segwit')) {
+        // Segwit HACK for now until electrumX supports bech32 addresses
+        addresses.change = []
+        addresses.receive = []
+        // Segwit HACK for now until electrumX supports bech32 addresses
+
         if (newAddresses.nested.length > addresses.nested.length) {
           addresses.nested = newAddresses.nested
         }
@@ -344,6 +349,19 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
 
   getFreshAddress (options: any): AbcFreshAddress {
     let freshAddress = { publicAddress: null }
+    // Segwit HACK for now until electrumX supports bech32 addresses
+    if (this.walletType.includes('segwit')) {
+      for (let i = 0; i < this.walletLocalData.addresses.nested.length; i++) {
+        const address = this.walletLocalData.addresses.nested[i]
+        if (!Object.keys(this.transactions[address].txs).length) {
+          freshAddress.publicAddress = address
+          break
+        }
+      }
+      if (!freshAddress.publicAddress) throw Error('ErrorNoFreshAddresses')
+      else { return freshAddress }
+    }
+    // Segwit HACK for now until electrumX supports bech32 addresses
     for (let i = 0; i < this.walletLocalData.addresses.receive.length; i++) {
       const address = this.walletLocalData.addresses.receive[i]
       if (!Object.keys(this.transactions[address].txs).length) {

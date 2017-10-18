@@ -53,7 +53,7 @@
   "dependencies": {
     "airbitz-core-types": "git+https://github.com/Airbitz/airbitz-core-types.git",
     "bccoin": "git+https://github.com/thehobbit85/bcoin.git",
-    "bcoin": "git+https://github.com/Airbitz/bcoin.git",
+    "bcoin": "git+https://github.com/Airbitz/bcoin.git#hack-for-witness",
     "biggystring": "^1.0.7",
     "buffer": "^5.0.8",
     "jsonschema": "^1.2.0",
