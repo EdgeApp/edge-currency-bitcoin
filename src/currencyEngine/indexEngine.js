@@ -600,7 +600,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     let hash = null
     try {
       hash = await this.electrum.subscribeToAddress(address)
-    } catch (e) {}
+    } catch (e) { console.log(e) }
     if (hash && hash !== this.transactions[address].addressStatusHash) {
       await this.handleTransactionStatusHash(address, hash)
     }

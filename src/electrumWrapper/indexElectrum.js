@@ -224,17 +224,14 @@ export class Electrum {
       const request = this.requests[data.id]
       if (!data.error) {
         request.onDataReceived(data.result)
-        delete this.requests[data.id]
-        return
-      }
-      const currentID = request.connectionID
-      const workingConnID = this.getNextConn()
-      if (workingConnID !== '' && currentID !== workingConnID) {
-        request.connectionID = workingConnID
-        this.socketWriteAbstract(workingConnID, request.data)
       } else {
-        request.onFailure(data.error)
+        let message = data.error
+        try {
+          message = JSON.parse(message).message
+        } catch (e) {}
+        request.onFailure(message)
       }
+      delete this.requests[data.id]
     }
   }
 
@@ -247,7 +244,7 @@ export class Electrum {
 
     const out = new Promise((resolve, reject) => {
       resolveProxy = resolve
-      rejectProxy = resolve
+      rejectProxy = reject
     })
 
     this.requests[id] = {
