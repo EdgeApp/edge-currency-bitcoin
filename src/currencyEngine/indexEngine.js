@@ -826,9 +826,9 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     if (this.wallet &&
       this.wallet.db &&
       this.wallet.db.db &&
-      this.wallet.db.db.db &&
-      this.wallet.db.db.db.toRaw) {
-      this.memoryDump.rawMemory = this.wallet.db.db.db.toRaw().toString('hex')
+      this.wallet.db.db.binding &&
+      this.wallet.db.db.binding.toRaw) {
+      this.memoryDump.rawMemory = this.wallet.db.db.binding.toRaw().toString('hex')
       await this.saveToDisk(this.memoryDump, 'memoryDump')
     }
   }
