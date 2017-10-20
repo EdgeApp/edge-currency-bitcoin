@@ -147,8 +147,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       memDbRaw: null
     }
 
-    const memoryDump = await this.loadFromDisk(this.memoryDump, 'memoryDump')
-    if (!memoryDump) await this.saveMemDumpToDisk()
+    await this.loadFromDisk(this.memoryDump, 'memoryDump')
 
     if (this.memoryDump.rawMemory) {
       walletDbOptions.memDbRaw = BufferJS.from(this.memoryDump.rawMemory, 'hex')
@@ -177,6 +176,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         masterPath,
         masterIndex
       })
+      await this.saveMemDumpToDisk()
     }
 
     await this.wallet.setLookahead(0, this.gapLimit)
