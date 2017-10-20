@@ -176,10 +176,9 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         masterPath,
         masterIndex
       })
+      await this.wallet.setLookahead(0, this.gapLimit)
       await this.saveMemDumpToDisk()
     }
-
-    await this.wallet.setLookahead(0, this.gapLimit)
     await this.syncDiskData()
   }
 
