@@ -601,9 +601,16 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     this.transactions[address].executed = 0
     if (!this.electrum) throw new Error('Uninitialized electrum servers')
     let hash = null
+    let scriptHash = null
     try {
-      const scriptHash = bcoin.primitives.Address.fromBase58(address).getHash().toString('hex')
-      hash = await this.electrum.subscribeToScriptHash(scriptHash)
+      scriptHash = bcoin.primitives.Address.fromBase58(address).getHash().toString('hex')
+    } catch (e) {
+      try {
+        scriptHash = bcoin.primitives.Address.fromBech32(address).getHash().toString('hex')
+      } catch (e) {}
+    }
+    try {
+      hash = scriptHash && await this.electrum.subscribeToScriptHash(scriptHash)
     } catch (e) { console.log(e) }
     if (hash && hash !== this.transactions[address].addressStatusHash) {
       await this.handleTransactionStatusHash(address, hash)
