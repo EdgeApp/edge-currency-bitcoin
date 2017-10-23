@@ -261,8 +261,20 @@ export class Electrum {
     return this.write('blockchain.address.subscribe', [address])
   }
 
+  subscribeToScriptHash (scriptHash: string): Promise<any> {
+    return this.write('blockchain.scripthash.subscribe', [scriptHash])
+  }
+
   subscribeToBlockHeight (): Promise<any> {
     return this.write('blockchain.numblocks.subscribe', [])
+  }
+
+  getServerVersion (): Promise<any> {
+    return this.write('server.version', ['1.1'])
+  }
+
+  getServerBanner (): Promise<any> {
+    return this.write('server.banner', [])
   }
 
   getEstimateFee (blocksToBeIncludedIn: string): Promise<any> {
