@@ -6,6 +6,7 @@ export const litecoin = {
   getInfo: {
     // Details of supported currency
     walletTypes: [
+      'wallet:litecoin44segwit',
       'wallet:litecoin44',
       'wallet:litecoin'
     ],
