@@ -17,7 +17,7 @@ export class Electrum {
   connectionQueue: any
   serverList: Array<Array<string>>
   subscribers: {
-    address: any,
+    scripthash: any,
     headers: any
   }
 
@@ -30,7 +30,7 @@ export class Electrum {
     this.lastKnownBlockHeight = lastKnownBlockHeight
     this.maxHeight = lastKnownBlockHeight
     this.subscribers = {
-      address: callbacks.onAddressStatusChanged,
+      scripthash: callbacks.onAddressStatusChanged,
       headers: callbacks.onBlockHeightChanged
     }
     this.currentConnID = ''
