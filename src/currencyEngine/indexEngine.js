@@ -608,19 +608,28 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     return reversedScriptHash
   }
 
+  scriptHashToAddress (scriptHash: string) {
+    for (const address in this.transactions) {
+      if (this.transactions[address].scriptHash === scriptHash) {
+        return address
+      }
+    }
+    return ''
+  }
+
   async processAddress (address: string) {
+    const scriptHash = this.addressToScriptHash(address)
     if (!this.transactions[address]) {
-      this.transactions[address] = { txs: {}, addressStatusHash: null }
+      this.transactions[address] = { txs: {}, addressStatusHash: null, scriptHash }
     }
     this.transactions[address].executed = 0
     if (!this.electrum) throw new Error('Uninitialized electrum servers')
     let hash = null
     try {
-      const scriptHash = this.addressToScriptHash(address)
-      hash = scriptHash && await this.electrum.subscribeToScriptHash(scriptHash)
+      hash = await this.electrum.subscribeToScriptHash(scriptHash)
     } catch (e) { console.log(e) }
     if (hash && hash !== this.transactions[address].addressStatusHash) {
-      await this.handleTransactionStatusHash(address, hash)
+      await this.handleTransactionStatusHash(scriptHash, hash)
     }
     this.transactions[address].executed = 1
     this.initialSyncCheck()
@@ -644,12 +653,13 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     }
   }
 
-  async handleTransactionStatusHash (address: string, hash: string) {
+  async handleTransactionStatusHash (scriptHash: string, hash: string) {
+    const address = this.scriptHashToAddress(scriptHash)
     const localTxObject = this.transactions[address]
     localTxObject.addressStatusHash = hash
     if (!this.electrum) throw new Error('Error: electrum uninitialized')
     try {
-      const transactionHashes = await this.electrum.getAddresHistory(address)
+      const transactionHashes = await this.electrum.getScriptHashHistory(scriptHash)
       const transactionPromiseArray = transactionHashes.map(transactionObject => {
         return this.handleTransaction(address, transactionObject)
       })
