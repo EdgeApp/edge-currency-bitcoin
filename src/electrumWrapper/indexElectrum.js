@@ -261,36 +261,16 @@ export class Electrum {
     return out
   }
 
-  subscribeToAddress (address: string): Promise<any> {
-    return this.write('blockchain.address.subscribe', [address])
-  }
-
   subscribeToScriptHash (scriptHash: string): Promise<any> {
     return this.write('blockchain.scripthash.subscribe', [scriptHash])
-  }
-
-  subscribeToBlockHeight (): Promise<any> {
-    return this.write('blockchain.numblocks.subscribe', [])
-  }
-
-  subscribeToBlockHeaders (): Promise<any> {
-    return this.write('blockchain.headers.subscribe', [])
-  }
-
-  getServerVersion (): Promise<any> {
-    return this.write('server.version', ['1.1'])
-  }
-
-  getServerBanner (): Promise<any> {
-    return this.write('server.banner', [])
   }
 
   getEstimateFee (blocksToBeIncludedIn: string): Promise<any> {
     return this.write('blockchain.estimatefee', [blocksToBeIncludedIn])
   }
 
-  getAddresHistory (address: string): Promise<any> {
-    return this.write('blockchain.address.get_history', [address])
+  getScriptHashHistory (address: string): Promise<any> {
+    return this.write('blockchain.scripthash.get_history', [address])
   }
 
   broadcastTransaction (tx: string): Promise<any> {
