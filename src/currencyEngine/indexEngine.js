@@ -17,6 +17,7 @@ import type {
 
 // $FlowFixMe
 const BufferJS = require('bufferPlaceHolder').Buffer
+const crypto = require('crypto')
 
 function validateObject (object, schema) {
   const result = validate(object, schema)
@@ -243,11 +244,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         }
       }
       if (this.walletType.includes('segwit')) {
-        // Segwit HACK for now until electrumX supports bech32 addresses
-        addresses.change = []
-        addresses.receive = []
-        // Segwit HACK for now until electrumX supports bech32 addresses
-
         if (newAddresses.nested.length > addresses.nested.length) {
           addresses.nested = newAddresses.nested
         }
@@ -348,19 +344,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
 
   getFreshAddress (options: any): AbcFreshAddress {
     let freshAddress = { publicAddress: null }
-    // Segwit HACK for now until electrumX supports bech32 addresses
-    if (this.walletType.includes('segwit')) {
-      for (let i = 0; i < this.walletLocalData.addresses.nested.length; i++) {
-        const address = this.walletLocalData.addresses.nested[i]
-        if (!Object.keys(this.transactions[address].txs).length) {
-          freshAddress.publicAddress = address
-          break
-        }
-      }
-      if (!freshAddress.publicAddress) throw Error('ErrorNoFreshAddresses')
-      else { return freshAddress }
-    }
-    // Segwit HACK for now until electrumX supports bech32 addresses
     for (let i = 0; i < this.walletLocalData.addresses.receive.length; i++) {
       const address = this.walletLocalData.addresses.receive[i]
       if (!Object.keys(this.transactions[address].txs).length) {
@@ -612,18 +595,41 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     }
   }
 
+  addressToScriptHash (address: string) {
+    const script = bcoin.script.fromAddress(address)
+    const scriptRaw = script.toRaw()
+    const scriptHash = crypto.createHash('sha256').update(scriptRaw).digest().toString('hex')
+    let temp = []
+    let chunk = 2
+    for (let i = 0, j = scriptHash.length; i < j; i += chunk) {
+      temp.push(scriptHash.slice(i, i + chunk))
+    }
+    const reversedScriptHash = temp.map((_, i) => temp[temp.length - 1 - i]).join('')
+    return reversedScriptHash
+  }
+
+  scriptHashToAddress (scriptHash: string) {
+    for (const address in this.transactions) {
+      if (this.transactions[address].scriptHash === scriptHash) {
+        return address
+      }
+    }
+    return ''
+  }
+
   async processAddress (address: string) {
+    const scriptHash = this.addressToScriptHash(address)
     if (!this.transactions[address]) {
-      this.transactions[address] = { txs: {}, addressStatusHash: null }
+      this.transactions[address] = { txs: {}, addressStatusHash: null, scriptHash }
     }
     this.transactions[address].executed = 0
     if (!this.electrum) throw new Error('Uninitialized electrum servers')
     let hash = null
     try {
-      hash = await this.electrum.subscribeToAddress(address)
+      hash = await this.electrum.subscribeToScriptHash(scriptHash)
     } catch (e) { console.log(e) }
     if (hash && hash !== this.transactions[address].addressStatusHash) {
-      await this.handleTransactionStatusHash(address, hash)
+      await this.handleTransactionStatusHash(scriptHash, hash)
     }
     this.transactions[address].executed = 1
     this.initialSyncCheck()
@@ -647,12 +653,13 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     }
   }
 
-  async handleTransactionStatusHash (address: string, hash: string) {
+  async handleTransactionStatusHash (scriptHash: string, hash: string) {
+    const address = this.scriptHashToAddress(scriptHash)
     const localTxObject = this.transactions[address]
     localTxObject.addressStatusHash = hash
     if (!this.electrum) throw new Error('Error: electrum uninitialized')
     try {
-      const transactionHashes = await this.electrum.getAddresHistory(address)
+      const transactionHashes = await this.electrum.getScriptHashHistory(scriptHash)
       const transactionPromiseArray = transactionHashes.map(transactionObject => {
         return this.handleTransaction(address, transactionObject)
       })

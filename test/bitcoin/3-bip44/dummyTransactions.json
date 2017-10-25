@@ -19,12 +19,14 @@
 				"executed": 1
 			}
 		},
+		"scriptHash": "24a605034c6ca0577b95629c3becf7368f08d86eab54d09f7f5c617c2932b1a1",
 		"executed": 1,
 		"addressStatusHash": "ca1faa5beb7e94e01d966c2eeb6aba628422ccbd0eeee1b2128db9cb2a07e8f9"
 	},
 	"mpWoyhXKB9s1E7EyKdoGMR5cxvQNym6PiN": {
 		"txs": {},
 		"executed": 1,
-		"addressStatusHash": null
+		"addressStatusHash": null,
+		"scriptHash": "0fad5b6c302b324b1af0e5aece6e585985cb7988c758711592663a9c6bce8891"
 	}
 }

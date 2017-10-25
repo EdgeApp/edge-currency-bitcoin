@@ -125,11 +125,6 @@ describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
       optionalSettings: {
         enableOverrideServers: true,
         electrumServers: [
-          ['electrum-bu-az-weuro.airbitz.co', '50001'],
-          ['electrum-bu-az-ausw.airbitz.co', '50001'],
-          ['electrum.hsmiths.com', '8080'],
-          ['electrum-bu-az-wusa2.airbitz.co', '50001'],
-          ['electrum-bu-az-wjapan.airbitz.co', '50001'],
           ['testnetnode.arihanc.com', '51001']
         ]
       }
