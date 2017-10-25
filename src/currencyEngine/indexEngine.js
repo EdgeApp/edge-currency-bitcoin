@@ -17,6 +17,7 @@ import type {
 
 // $FlowFixMe
 const BufferJS = require('bufferPlaceHolder').Buffer
+const crypto = require('crypto')
 
 function validateObject (object, schema) {
   const result = validate(object, schema)
@@ -594,6 +595,19 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     }
   }
 
+  addressToScriptHash (address: string) {
+    const script = bcoin.script.fromAddress(address)
+    const scriptRaw = script.toRaw()
+    const scriptHash = crypto.createHash('sha256').update(scriptRaw).digest().toString('hex')
+    let temp = []
+    let chunk = 2
+    for (let i = 0, j = scriptHash.length; i < j; i += chunk) {
+      temp.push(scriptHash.slice(i, i + chunk))
+    }
+    const reversedScriptHash = temp.map((_, i) => temp[temp.length - 1 - i]).join('')
+    return reversedScriptHash
+  }
+
   async processAddress (address: string) {
     if (!this.transactions[address]) {
       this.transactions[address] = { txs: {}, addressStatusHash: null }
@@ -601,15 +615,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     this.transactions[address].executed = 0
     if (!this.electrum) throw new Error('Uninitialized electrum servers')
     let hash = null
-    let scriptHash = null
     try {
-      scriptHash = bcoin.primitives.Address.fromBase58(address).getHash().toString('hex')
-    } catch (e) {
-      try {
-        scriptHash = bcoin.primitives.Address.fromBech32(address).getHash().toString('hex')
-      } catch (e) {}
-    }
-    try {
+      const scriptHash = this.addressToScriptHash(address)
       hash = scriptHash && await this.electrum.subscribeToScriptHash(scriptHash)
     } catch (e) { console.log(e) }
     if (hash && hash !== this.transactions[address].addressStatusHash) {
