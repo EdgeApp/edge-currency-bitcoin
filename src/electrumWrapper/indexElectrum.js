@@ -18,7 +18,7 @@ export class Electrum {
   serverList: Array<Array<string>>
   subscribers: {
     address: any,
-    numblocks: any
+    headers: any
   }
 
   constructor (serverList: Array<Array<string>>, callbacks: any, io: any, lastKnownBlockHeight: number = 0) {
@@ -31,7 +31,7 @@ export class Electrum {
     this.maxHeight = lastKnownBlockHeight
     this.subscribers = {
       address: callbacks.onAddressStatusChanged,
-      numblocks: callbacks.onBlockHeightChanged
+      headers: callbacks.onBlockHeightChanged
     }
     this.currentConnID = ''
     this.connectionQueue = {}
@@ -134,7 +134,11 @@ export class Electrum {
 
     connection.on('connect', () => {
       connection._state = 2
-      this.write('blockchain.numblocks.subscribe', [], `${host}:${port}`).then(height => {
+      this.write('server.version', ['1.1', '1.1'], `${host}:${port}`).then(result => {
+        return this.write('blockchain.headers.subscribe', [], `${host}:${port}`)
+      })
+      .then(header => {
+        const height = header.block_height
         if (this.lastKnownBlockHeight && height < this.lastKnownBlockHeight) {
           connection.destroy()
           delete this.connections[`${host}:${port}`]
@@ -153,7 +157,7 @@ export class Electrum {
           connection.keepAliveTimer = setInterval(() => {
             this.write('blockchain.estimatefee', [0], `${host}:${port}`)
           }, KEEP_ALIVE_INTERVAL)
-          this.subscribers.numblocks(height)
+          this.subscribers.headers(height)
           connection.emit('finishedConnecting')
         }
       })
@@ -267,6 +271,10 @@ export class Electrum {
 
   subscribeToBlockHeight (): Promise<any> {
     return this.write('blockchain.numblocks.subscribe', [])
+  }
+
+  subscribeToBlockHeaders (): Promise<any> {
+    return this.write('blockchain.headers.subscribe', [])
   }
 
   getServerVersion (): Promise<any> {
