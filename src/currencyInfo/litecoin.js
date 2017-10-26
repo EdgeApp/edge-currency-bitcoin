@@ -11,7 +11,7 @@ export const litecoin = {
       'wallet:litecoin'
     ],
     defaultsSettings: {
-      gapLimit: 25,
+      gapLimit: 10,
       maxFee: 1000000,
       feeUpdateInterval: 10000,
       feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
