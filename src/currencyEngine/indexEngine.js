@@ -190,6 +190,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       this.loadFromDisk(this[key], key).then(result => !result ? this.saveToDisk(this[key], key) : true)
     )
     await Promise.all(loadFromDiskPromise)
+    this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io, this.walletLocalData.blockHeight)
     if (!this.memoryDump) {
       const transactions = await this.getTransactions()
       const addTXPromises = transactions.map(transaction => {
@@ -277,8 +278,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     if (this.walletLocalData.masterBalance !== '0') {
       this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
     }
-
-    this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io, this.walletLocalData.blockHeight)
     this.electrum.connect()
     this.getAllOurAddresses().forEach(address => this.processAddress(address))
 
@@ -561,35 +560,35 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   updateFeeTable () {
-    this.io.fetch(this.feeInfoServer)
-    .then(res => res.json())
-    .then(({ fees }) => {
-      let high = fees[fees.length - 1].minFee
-      for (let i = fees.length - 1; i >= 0; i--) {
-        if (fees[i].maxDelay !== 0) break
-        high = fees[i].minFee
-      }
-      let low = fees[0].minFee
-      const highestMaxDelay = fees[0].maxDelay
-      for (let i = 1; i < fees.length; i++) {
-        low = fees[i].minFee
-        if (fees[i].maxDelay < highestMaxDelay) break
-      }
-      const standard = (low + high) / 2
-      this.walletLocalData.detailedFeeTable = { updated: Date.now(), low, standard, high }
-    })
-    .catch(err => console.log(err))
+    if (this.feeInfoServer !== '') {
+      this.io.fetch(this.feeInfoServer)
+      .then(res => res.json())
+      .then(({ fees }) => {
+        let high = fees[fees.length - 1].minFee
+        for (let i = fees.length - 1; i >= 0; i--) {
+          if (fees[i].maxDelay !== 0) break
+          high = fees[i].minFee
+        }
+        let low = fees[0].minFee
+        const highestMaxDelay = fees[0].maxDelay
+        for (let i = 1; i < fees.length; i++) {
+          low = fees[i].minFee
+          if (fees[i].maxDelay < highestMaxDelay) break
+        }
+        const standard = (low + high) / 2
+        this.walletLocalData.detailedFeeTable = { updated: Date.now(), low, standard, high }
+      })
+      .catch(err => console.log(err))
+    }
 
-    if (this.electrum && this.electrum.connected) {
-      for (const setting in this.simpleFeeSettings) {
-        this.electrum.getEstimateFee(this.simpleFeeSettings[setting])
-        .then(fee => {
-          if (fee !== -1) {
-            this.walletLocalData.simpleFeeTable[setting] = { updated: Date.now(), fee }
-          }
-        })
-        .catch(err => console.log(err))
-      }
+    for (const setting in this.simpleFeeSettings) {
+      this.electrum.getEstimateFee(this.simpleFeeSettings[setting])
+      .then(fee => {
+        if (fee !== -1) {
+          this.walletLocalData.simpleFeeTable[setting] = { updated: Date.now(), fee }
+        }
+      })
+      .catch(err => console.log(err))
     }
   }
 

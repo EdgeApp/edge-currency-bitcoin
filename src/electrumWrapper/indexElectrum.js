@@ -6,7 +6,6 @@ const KEEP_ALIVE_INTERVAL = 10000
 
 export class Electrum {
   globalRecievedData: any
-  connected: boolean
   io: any
   currentConnID: string
   lastKnownBlockHeight: number
