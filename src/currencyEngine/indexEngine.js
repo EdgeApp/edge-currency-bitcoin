@@ -66,6 +66,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   feeUpdater:any
   feeUpdateInterval: number
   maxFee: number
+  defaultFee: number
+  defaultDenomMultiplier: number
   simpleFeeSettings: any
   feeInfoServer: string
   currencyName: string
@@ -91,6 +93,9 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     this.wallet = null
     this.initialSync = false
     this.primaryCurrency = txLibInfo.getInfo.currencyCode
+    this.defaultDenomMultiplier = txLibInfo.getInfo.denominations.reduce((result, denom) =>
+      denom.name === this.primaryCurrency ? parseInt(denom.multiplier) : result
+    , 1)
     this.abcTxLibCallbacks = opts.callbacks
 
     // Loads All of this properties into "this":
@@ -453,7 +458,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     if (feeOption === 'custom') {
       rate = parseInt(abcSpendInfo.customNetworkFee)
     } else {
-      rate = this.walletLocalData.detailedFeeTable[feeOption]
+      rate = this.getRate(feeOption)
     }
 
     const outputs = abcSpendInfo.spendTargets.map(spendTarget => {
@@ -560,7 +565,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   updateFeeTable () {
-    if (this.feeInfoServer !== '') {
+    if (this.feeInfoServer !== '' &&
+      this.walletLocalData.detailedFeeTable.updated < Date.now() - this.feeUpdateInterval) {
       this.io.fetch(this.feeInfoServer)
       .then(res => res.json())
       .then(({ fees }) => {
@@ -582,14 +588,23 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     }
 
     for (const setting in this.simpleFeeSettings) {
-      this.electrum.getEstimateFee(this.simpleFeeSettings[setting])
-      .then(fee => {
-        if (fee !== -1) {
-          this.walletLocalData.simpleFeeTable[setting] = { updated: Date.now(), fee }
-        }
-      })
-      .catch(err => console.log(err))
+      if (this.walletLocalData.simpleFeeTable[setting].updated < Date.now() - this.feeUpdateInterval) {
+        this.electrum.getEstimateFee(this.simpleFeeSettings[setting])
+        .then(fee => {
+          if (fee !== -1) {
+            fee *= this.defaultDenomMultiplier
+            this.walletLocalData.simpleFeeTable[setting] = { updated: Date.now(), fee }
+          }
+        })
+        .catch(err => console.log(err))
+      }
     }
+  }
+
+  getRate (feeOption: string) {
+    if (this.walletLocalData.detailedFeeTable[feeOption]) return this.walletLocalData.detailedFeeTable[feeOption]
+    if (this.walletLocalData.simpleFeeTable[feeOption]) return this.walletLocalData.simpleFeeTable[feeOption].fee
+    return this.defaultFee
   }
 
   onBlockHeightChanged (blockHeight: number) {
