@@ -184,10 +184,10 @@ describe(`Is Address Used for Wallet type ${WALLET_TYPE}`, function () {
     }
   })
 
-  // it('Checking an empty P2WSH address', function (done) {
-  //   assert.equal(engine.isAddressUsed('tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q'), false)
-  //   done()
-  // })
+  it('Checking an empty P2WSH address', function (done) {
+    assert.equal(engine.isAddressUsed('tb1qng4wvp6chgm6erdc8hcgn7ewpkv8gqlm6m6ja6'), false)
+    done()
+  })
 
   // it('Checking a non empty P2WSH address from cache', function (done) {
   //   assert.equal(engine.isAddressUsed('tb1qprslq433fsq8pjdw3tu3x3ynk5f486ngp8lrxu'), true)
@@ -202,7 +202,7 @@ describe(`Is Address Used for Wallet type ${WALLET_TYPE}`, function () {
   // })
 
   it('Checking an empty P2SH address', function (done) {
-    assert.equal(engine.isAddressUsed('2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74'), false)
+    assert.equal(engine.isAddressUsed('2N4frroJPKpiYJPYYtspKYLseUKCFuJpFkL'), false)
     done()
   })
 
