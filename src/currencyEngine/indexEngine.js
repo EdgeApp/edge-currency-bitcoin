@@ -481,7 +481,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
 
     let ourReceiveAddresses = []
     for (const i in resultedTransaction.outputs) {
-      const address = resultedTransaction.outputs[i].getAddress()
+      const address = resultedTransaction.outputs[i].getAddress().toString(this.network)
       if (address && allOurAddresses.indexOf(address) !== -1) {
         ourReceiveAddresses.push(address)
       }
@@ -517,16 +517,16 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     try {
       const serverResponse = await this.electrum.broadcastTransaction(abcTransaction.signedTx)
       if (serverResponse === 'TX decode failed') throw new Error('Tx is not valid')
+      abcTransaction.txid = serverResponse
       return abcTransaction
     } catch (e) {
       console.log(e)
-      throw new Error('Electrum server internal error processing request')
+      throw new Error('Electrum server internal error processing request:' + e.message)
     }
   }
 
   async saveTx (abcTransaction:AbcTransaction):Promise<void> {
-    const tx = bcoin.primitives.TX.fromRaw(abcTransaction.signedTx)
-    await this.wallet.add(tx)
+    await this.wallet.add(abcTransaction.otherParams.bcoinTx.toTX())
   }
   /* --------------------------------------------------------------------- */
   /* --------------------  Experimantal Public API  ---------------------- */
