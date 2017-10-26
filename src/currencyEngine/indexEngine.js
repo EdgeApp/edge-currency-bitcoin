@@ -458,8 +458,10 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     let rate, resultedTransaction
 
     if (feeOption === 'custom') {
+      // customNetworkFee is in sat/Bytes in need to be converted to sat/KB
       rate = parseInt(abcSpendInfo.customNetworkFee) * 1000
     } else {
+      // defualt fees are in sat/KB
       rate = this.getRate(feeOption)
     }
 
@@ -470,6 +472,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       })
     })
 
+    // Rate is in sat/KB
     const txOptions = { outputs, rate, maxFee: this.maxFee }
     try {
       resultedTransaction = await this.wallet.createTX(txOptions)
@@ -497,7 +500,9 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       ourReceiveAddresses,
       otherParams: {
         rawTx: resultedTransaction.toRaw().toString('hex'),
-        bcoinTx: resultedTransaction
+        bcoinTx: resultedTransaction,
+        abcSpendInfo,
+        rate
       },
       currencyCode: this.primaryCurrency,
       txid: '',
@@ -533,6 +538,15 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       return abcTransaction
     } catch (e) {
       console.log(e)
+      if (e.message.includes('66: insufficient priority')) {
+        const feeInSatBytes = parseInt(abcTransaction.otherParams.rate) / 1000
+        abcTransaction.otherParams.abcSpendInfo.customNetworkFee = feeInSatBytes * 1.5
+        abcTransaction.otherParams.abcSpendInfo.networkFeeOption = 'custom'
+        const newAbcTransaction = await this.makeSpend(abcTransaction.otherParams.abcSpendInfo)
+        const newSignedAbcTransaction = await this.signTx(newAbcTransaction)
+        const broadcastTx = await this.broadcastTx(newSignedAbcTransaction)
+        return broadcastTx
+      }
       throw new Error('Electrum server internal error processing request:' + e.message)
     }
   }
@@ -577,6 +591,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
           if (fees[i].maxDelay !== 0) break
           high = fees[i].minFee
         }
+        // Results are in sat/bytes and should be converted to sat/KB
         high *= 1000
         let low = fees[0].minFee
         const highestMaxDelay = fees[0].maxDelay
@@ -584,6 +599,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
           low = fees[i].minFee
           if (fees[i].maxDelay < highestMaxDelay) break
         }
+        // Results are in sat/bytes and should be converted to sat/KB
         low *= 1000
         const standard = (low + high) / 2
         this.walletLocalData.detailedFeeTable = { updated: Date.now(), low, standard, high }
@@ -600,6 +616,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         .then(fee => {
           if (fee !== -1) {
             this.walletLocalData.simpleFeeTable[setting].updated = Date.now()
+            // Results are in sat/KB
             this.walletLocalData.simpleFeeTable[setting].fee = Math.floor(fee * this.defaultDenomMultiplier)
           }
         })
