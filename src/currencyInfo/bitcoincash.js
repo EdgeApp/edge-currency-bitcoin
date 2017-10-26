@@ -12,7 +12,7 @@ export const bitcoincash = {
     defaultsSettings: {
       gapLimit: 10,
       maxFee: 1000000,
-      defaultFee: 1000,
+      defaultFee: 10000,
       feeUpdateInterval: 10000,
       feeInfoServer: '',
       simpleFeeSettings: {low: 6, standard: 2, high: 0},
