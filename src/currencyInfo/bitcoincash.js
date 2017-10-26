@@ -13,7 +13,7 @@ export const bitcoincash = {
       gapLimit: 10,
       maxFee: 1000000,
       feeUpdateInterval: 10000,
-      feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
+      feeInfoServer: '',
       simpleFeeSettings: {low: 6, standard: 2, high: 0},
       electrumServers: [
         ['h.1209k.com', '50001']
