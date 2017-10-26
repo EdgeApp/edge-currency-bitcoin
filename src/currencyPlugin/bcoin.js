@@ -15,28 +15,26 @@ export default (txLibInfo: any) => {
     txLibInfo.getInfo.defaultsSettings &&
     txLibInfo.getInfo.defaultsSettings.networkSettings) {
     const networkSettings = txLibInfo.getInfo.defaultsSettings.networkSettings
-    const mainBcoinSettings = bcoin.protocol.networks.main
-    const testBcoinSettings = bcoin.protocol.networks.testnet
     if (networkSettings.main) {
       if (typeof networkSettings.main.magic === 'number') {
-        mainBcoinSettings.magic = networkSettings.main.magic
+        bcoin.protocol.networks.main.magic = networkSettings.main.magic
       }
       if (networkSettings.main.keyPrefix) {
-        mainBcoinSettings.keyPrefix = networkSettings.main.keyPrefix
+        bcoin.protocol.networks.main.keyPrefix = networkSettings.main.keyPrefix
       }
       if (networkSettings.main.addressPrefix) {
-        mainBcoinSettings.addressPrefix = networkSettings.main.addressPrefix
+        bcoin.protocol.networks.main.addressPrefix = networkSettings.main.addressPrefix
       }
     }
     if (networkSettings.testnet) {
       if (typeof networkSettings.testnet.magic === 'number') {
-        testBcoinSettings.magic = networkSettings.testnet.magic
+        bcoin.protocol.networks.testnet.magic = networkSettings.testnet.magic
       }
       if (networkSettings.testnet.keyPrefix) {
-        testBcoinSettings.keyPrefix = networkSettings.testnet.keyPrefix
+        bcoin.protocol.networks.testnet.keyPrefix = networkSettings.testnet.keyPrefix
       }
       if (networkSettings.testnet.addressPrefix) {
-        testBcoinSettings.addressPrefix = networkSettings.testnet.addressPrefix
+        bcoin.protocol.networks.testnet.addressPrefix = networkSettings.testnet.addressPrefix
       }
     }
   }
