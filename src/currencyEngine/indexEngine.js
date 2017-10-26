@@ -458,7 +458,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     let rate, resultedTransaction
 
     if (feeOption === 'custom') {
-      rate = parseInt(abcSpendInfo.customNetworkFee)
+      rate = parseInt(abcSpendInfo.customNetworkFee) * 1000
     } else {
       rate = this.getRate(feeOption)
     }
@@ -470,7 +470,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       })
     })
 
-    const txOptions = { outputs, rate: rate * 1000, maxFee: this.maxFee }
+    const txOptions = { outputs, rate, maxFee: this.maxFee }
     try {
       resultedTransaction = await this.wallet.createTX(txOptions)
     } catch (e) {
@@ -577,12 +577,14 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
           if (fees[i].maxDelay !== 0) break
           high = fees[i].minFee
         }
+        high *= 1000
         let low = fees[0].minFee
         const highestMaxDelay = fees[0].maxDelay
         for (let i = 1; i < fees.length; i++) {
           low = fees[i].minFee
           if (fees[i].maxDelay < highestMaxDelay) break
         }
+        low *= 1000
         const standard = (low + high) / 2
         this.walletLocalData.detailedFeeTable = { updated: Date.now(), low, standard, high }
       })
