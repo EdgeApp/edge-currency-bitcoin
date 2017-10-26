@@ -124,7 +124,9 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         change: [],
         nested: []
       },
-      detailedFeeTable: {},
+      detailedFeeTable: {
+        updated: 0
+      },
       simpleFeeTable: {}
     }
     this.transactions = {}
@@ -588,12 +590,15 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     }
 
     for (const setting in this.simpleFeeSettings) {
+      if (!this.walletLocalData.simpleFeeTable[setting]) {
+        this.walletLocalData.simpleFeeTable[setting] = { updated: 0, fee: this.defaultFee }
+      }
       if (this.walletLocalData.simpleFeeTable[setting].updated < Date.now() - this.feeUpdateInterval) {
         this.electrum.getEstimateFee(this.simpleFeeSettings[setting])
         .then(fee => {
           if (fee !== -1) {
-            fee *= this.defaultDenomMultiplier
-            this.walletLocalData.simpleFeeTable[setting] = { updated: Date.now(), fee }
+            this.walletLocalData.simpleFeeTable[setting].updated = Date.now()
+            this.walletLocalData.simpleFeeTable[setting].fee = Math.floor(fee * this.defaultDenomMultiplier)
           }
         })
         .catch(err => console.log(err))
@@ -604,7 +609,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   getRate (feeOption: string) {
     if (this.walletLocalData.detailedFeeTable[feeOption]) return this.walletLocalData.detailedFeeTable[feeOption]
     if (this.walletLocalData.simpleFeeTable[feeOption]) return this.walletLocalData.simpleFeeTable[feeOption].fee
-    return this.defaultFee
   }
 
   onBlockHeightChanged (blockHeight: number) {
