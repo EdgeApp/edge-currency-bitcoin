@@ -625,12 +625,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     const script = bcoin.script.fromAddress(address)
     const scriptRaw = script.toRaw()
     const scriptHash = crypto.createHash('sha256').update(scriptRaw).digest().toString('hex')
-    let temp = []
-    let chunk = 2
-    for (let i = 0, j = scriptHash.length; i < j; i += chunk) {
-      temp.push(scriptHash.slice(i, i + chunk))
-    }
-    const reversedScriptHash = temp.map((_, i) => temp[temp.length - 1 - i]).join('')
+    // $FlowFixMe
+    const reversedScriptHash = scriptHash.match(/../g).reverse().join('')
     return reversedScriptHash
   }
 
