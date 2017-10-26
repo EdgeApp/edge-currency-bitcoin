@@ -689,6 +689,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     if (transactionData && transactionData.executed && transactionData.abcTransaction) {
       if (transactionData.abcTransaction.blockHeight !== transactionObj.height) {
         transactionData.abcTransaction.blockHeight = transactionObj.height
+        const blockHeader = await this.getBlockHeader(transactionObj.height)
+        transactionData.abcTransaction.date = blockHeader.timestamp
         return transactionData.abcTransaction
       }
       return null
@@ -709,7 +711,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       if (!this.electrum) throw new Error('Error: electrum uninitialized')
       try {
         rawTransaction = await this.electrum.getTransaction(txHash)
-        const blockHeader = await this.getBlockHeader(transactionObj.height)
+        const blockHeader = transactionObj.height !== -1 ? await this.getBlockHeader(transactionObj.height) : null
         const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(rawTransaction, 'hex'))
         const txJson = bcoinTX.getJSON(this.network)
         const ourReceiveAddresses = []
@@ -738,7 +740,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         }
         await Promise.all(txJson.inputs.map(({ prevout }) => getPrevout(prevout)))
         await this.wallet.add(bcoinTX)
-
+        const date = blockHeader ? blockHeader.timestamp : Date.now() / 1000
         const abcTransaction: AbcTransaction = {
           ourReceiveAddresses,
           networkFee: (totalInputAmount - totalOutputAmount).toString(),
@@ -747,7 +749,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
           },
           currencyCode: this.primaryCurrency,
           txid: txHash,
-          date: blockHeader.timestamp,
+          date,
           blockHeight: transactionObj.height,
           nativeAmount: nativeAmount.toString(),
           signedTx: ''
