@@ -134,9 +134,8 @@ export class Electrum {
 
     connection.on('connect', () => {
       connection._state = 2
-      this.write('server.version', ['1.1', '1.1'], `${host}:${port}`).then(result => {
-        return this.write('blockchain.headers.subscribe', [], `${host}:${port}`)
-      })
+      this.write('server.version', ['1.1', '1.1'], `${host}:${port}`)
+      .then(result => this.write('blockchain.headers.subscribe', [], `${host}:${port}`))
       .then(header => {
         const height = header.block_height
         if (this.lastKnownBlockHeight && height < this.lastKnownBlockHeight) {
