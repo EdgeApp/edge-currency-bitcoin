@@ -49,14 +49,14 @@ export class Electrum {
     const currentIDIndex = connectionIDs.indexOf(this.currentConnID)
     for (let i = currentIDIndex + 1; i < connectionIDs.length; i++) {
       const connectionID = connectionIDs[i]
-      if (this.connections[connectionID]._state === 2) {
+      if (this.connections[connectionID]._state !== 0) {
         this.currentConnID = connectionID
         return this.currentConnID
       }
     }
     for (let i = 0; i < currentIDIndex; i++) {
       const connectionID = connectionIDs[i]
-      if (this.connections[connectionID]._state === 2) {
+      if (this.connections[connectionID]._state !== 0) {
         this.currentConnID = connectionID
         return this.currentConnID
       }
