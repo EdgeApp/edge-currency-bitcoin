@@ -76,7 +76,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
   electrumCallbacks: {
     onAddressStatusChanged (address: string, hash: string):Promise<void>,
-    onBlockHeightChanged (height: number):void
+    onBlockHeightChanged (height: number):void,
+    onDisconnect ():void
   }
   constructor (io:any, keyInfo:AbcWalletInfo, opts: AbcMakeEngineOptions) {
     if (!opts.walletLocalFolder) throw new Error('Cannot create and engine without a local folder')
@@ -133,8 +134,9 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     // // // // // // // // // // // // //
 
     this.electrumCallbacks = {
-      onBlockHeightChanged: this.onBlockHeightChanged.bind(this)
       onAddressStatusChanged: this.onTransactionStatusHash.bind(this),
+      onBlockHeightChanged: this.onBlockHeightChanged.bind(this),
+      onDisconnect: this.onDisconnect.bind(this)
     }
   }
 
@@ -638,6 +640,13 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       this.abcTxLibCallbacks.onBlockHeightChanged(blockHeight)
       this.saveToDisk(this.walletLocalData, 'walletLocalData')
     }
+  }
+
+  onDisconnect () {
+    setTimeout(() => {
+      this.electrum.connect()
+      this.getAllOurAddresses().forEach(address => this.subscribeToAddress(address))
+    }, 5000)
   }
 
   addressToScriptHash (address: string) {
