@@ -214,7 +214,7 @@ export class Electrum {
   socketWriteAbstract (connectionID: string, request: any) {
     if (!this.connections[connectionID]) {
       connectionID = this.getNextConn()
-      if (connectionID === '') throw Error('no live connections')
+      if (connectionID === '') request.onFailure(new Error('no live connections'))
       request.connectionID = connectionID
     }
     switch (this.connections[connectionID]._state) {
@@ -268,7 +268,7 @@ export class Electrum {
     let rejectProxy, resolveProxy
     const id = this.getID().toString()
     const nextConnectionID = connectionID || this.getNextConn()
-    if (nextConnectionID === '') throw Error('no live connections')
+    if (nextConnectionID === '') return Promise.reject(new Error('no live connections'))
     const data = JSON.stringify({ id, method, params })
 
     const out = new Promise((resolve, reject) => {
