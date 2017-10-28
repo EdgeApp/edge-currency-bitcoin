@@ -61,7 +61,7 @@ export class Electrum {
         return this.currentConnID
       }
     }
-    if (this.connections[this.currentConnID]) {
+    if (this.connections[this.currentConnID]._state !== 0) {
       return this.currentConnID
     } else return ''
   }
