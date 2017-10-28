@@ -694,7 +694,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     const address = this.scriptHashToAddress(scriptHash)
     const localTxObject = this.transactions[address]
     localTxObject.addressStatusHash = hash
-    if (!this.electrum) throw new Error('Error: electrum uninitialized')
     try {
       const transactionHashes = await this.electrum.getScriptHashHistory(scriptHash)
       const transactionPromiseArray = transactionHashes.map(transactionObject => {
@@ -745,7 +744,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       }
     }
     if (!rawTransaction) {
-      if (!this.electrum) throw new Error('Error: electrum uninitialized')
       try {
         rawTransaction = await this.electrum.getTransaction(txHash)
         const blockHeader = transactionObj.height ? await this.getBlockHeader(transactionObj.height) : null
@@ -767,7 +765,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         })
         // Process tx inputs
         const getPrevout = async ({ hash, index }) => {
-          if (!this.electrum) throw new Error('Error: electrum uninitialized')
           const prevRawTransaction = await this.electrum.getTransaction(hash)
           const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(prevRawTransaction, 'hex'))
           const { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
@@ -842,7 +839,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     if (this.headerList[height]) {
       return this.headerList[height]
     }
-    if (!this.electrum) throw new Error('Error: electrum uninitialized')
     let header
     try {
       header = await this.electrum.getBlockHeader(height)
