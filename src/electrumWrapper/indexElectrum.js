@@ -300,6 +300,10 @@ export class Electrum {
     return this.write('blockchain.scripthash.subscribe', [scriptHash])
   }
 
+  subscribeToAddress (scriptHash: string): Promise<any> {
+    return this.write('blockchain.address.subscribe', [scriptHash])
+  }
+
   getEstimateFee (blocksToBeIncludedIn: string): Promise<any> {
     return this.write('blockchain.estimatefee', [blocksToBeIncludedIn])
   }

@@ -680,7 +680,11 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     const scriptHash = this.transactions[address].scriptHash
     let hash = null
     try {
-      hash = await this.electrum.subscribeToScriptHash(scriptHash)
+      if (this.walletType.includes('segwit')) {
+        hash = await this.electrum.subscribeToScriptHash(scriptHash)
+      } else {
+        hash = await this.electrum.subscribeToAddress(address)
+      }
     } catch (e) { console.log(e) }
     if (hash && hash !== this.transactions[address].addressStatusHash) {
       try {
