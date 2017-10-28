@@ -163,10 +163,11 @@ export class Electrum {
         }
         if (this.connections[`${host}:${port}`]) {
           connection.keepAliveTimer = setInterval(() => {
-            this.write('blockchain.estimatefee', [0], `${host}:${port}`)
+            this.write('server.version', ['1.1', '1.1'], `${host}:${port}`)
             .catch(e => {
               console.log(e)
               this.clearConnection(`${host}:${port}`)
+              this.netConnect(host, port, callback)
             })
           }, KEEP_ALIVE_INTERVAL)
           this.subscribers.headers(header)
