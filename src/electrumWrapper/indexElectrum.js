@@ -193,7 +193,10 @@ export class Electrum {
   }
 
   stop () {
-    for (let i = 0; i < this.connections.length; i++) this.connections.destroy()
+    for (let i = 0; i < this.connections.length; i++) {
+      clearInterval(this.connections[i].connection.keepAliveTimer)
+      this.connections[i].destroy()
+    }
   }
 
   socketWriteAbstract (connectionID: string, request: any) {
