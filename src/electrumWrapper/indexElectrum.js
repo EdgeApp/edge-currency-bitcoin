@@ -14,7 +14,6 @@ export class Electrum {
   requests: any
   maxHeight: number
   id: number
-  connectionQueue: any
   serverList: Array<Array<string>>
   subscribers: {
     scripthash: any,
@@ -33,11 +32,11 @@ export class Electrum {
     this.maxHeight = lastKnownBlockHeight
     this.subscribers = {
       scripthash: callbacks.onAddressStatusChanged,
+      address: callbacks.onAddressStatusChanged,
       headers: callbacks.onBlockHeightChanged,
       disconnect: callbacks.onDisconnect
     }
     this.currentConnID = ''
-    this.connectionQueue = {}
     this.id = 0
   }
 
@@ -50,19 +49,20 @@ export class Electrum {
     const currentIDIndex = connectionIDs.indexOf(this.currentConnID)
     for (let i = currentIDIndex + 1; i < connectionIDs.length; i++) {
       const connectionID = connectionIDs[i]
-      if (this.connections[connectionID]._state !== 0) {
+      if (this.connections[connectionID].connection._state !== 0) {
         this.currentConnID = connectionID
         return this.currentConnID
       }
     }
     for (let i = 0; i < currentIDIndex; i++) {
       const connectionID = connectionIDs[i]
-      if (this.connections[connectionID]._state !== 0) {
+      if (this.connections[connectionID].connection._state !== 0) {
         this.currentConnID = connectionID
         return this.currentConnID
       }
     }
-    if (this.connections[this.currentConnID]._state !== 0) {
+    if (this.connections[this.currentConnID] &&
+    this.connections[this.currentConnID].connection._state !== 0) {
       return this.currentConnID
     } else return ''
   }
@@ -117,6 +117,18 @@ export class Electrum {
           newRequests.push(this.requests[id])
         }
       }
+      // Lower connection Score
+      if (this.connections[`${host}:${port}`]) {
+        let responseCount = this.connections[`${host}:${port}`].responses
+        if (responseCount === 0) {
+          this.clearConnection(`${host}:${port}`)
+        } else {
+          responseCount -= newRequests.length
+          if (responseCount < 0) responseCount = 0
+          this.connections[`${host}:${port}`].responses = responseCount
+        }
+      }
+
       // Getting A working connection index
       let workingConnID = this.getNextConn()
 
@@ -150,7 +162,7 @@ export class Electrum {
         if (this.lastKnownBlockHeight && height < this.lastKnownBlockHeight) {
           this.clearConnection(`${host}:${port}`)
         } else {
-          connection.blockchainHeight = height
+          this.connections[`${host}:${port}`].blockchainHeight = height
           this.maxHeight = Math.max(this.maxHeight, height)
         }
         for (const connectionID in this.connections) {
@@ -183,8 +195,12 @@ export class Electrum {
     connection.on('end', gracefullyCloseConn)
     connection.connect(port, host)
 
-    this.connections[`${host}:${port}`] = connection
-    this.connectionQueue[`${host}:${port}`] = 0
+    this.connections[`${host}:${port}`] = {
+      connection,
+      queueSize: 0,
+      blockchainHeight: 0,
+      responses: 0
+    }
     if (!this.currentConnID) this.currentConnID = `${host}:${port}`
   }
 
@@ -198,10 +214,12 @@ export class Electrum {
   }
 
   clearConnection (connectionId: any) {
-    const connection = this.connections[connectionId]
-    connection.keepAliveTimer && clearInterval(connection.keepAliveTimer)
-    connection.destroy()
-    delete this.connections[connectionId]
+    if (this.connections[connectionId]) {
+      const connection = this.connections[connectionId].connection
+      connection.keepAliveTimer && clearInterval(connection.keepAliveTimer)
+      connection.destroy()
+      delete this.connections[connectionId]
+    }
   }
 
   stop () {
@@ -216,28 +234,29 @@ export class Electrum {
       if (connectionID === '') request.onFailure(new Error('no live connections'))
       request.connectionID = connectionID
     }
-    switch (this.connections[connectionID]._state) {
+    const chosenConnection = this.connections[connectionID].connection
+    switch (chosenConnection._state) {
       case 0:
-        this.connectionQueue[connectionID]++
+        this.connections[connectionID].queueSize += 1
         setTimeout(() => {
           const [host, port] = connectionID.split(':')
-          this.connections[connectionID].once('finishedConnecting', () => {
-            this.connectionQueue[connectionID]--
-            if (this.connectionQueue[connectionID] < 0) {
-              this.connectionQueue[connectionID] = 0
+          chosenConnection.once('finishedConnecting', () => {
+            this.connections[connectionID].queueSize -= 1
+            if (this.connections[connectionID].queueSize < 0) {
+              this.connections[connectionID].queueSize = 0
             }
-            this.connections[connectionID].write(request.data + '\n')
+            chosenConnection.write(request.data + '\n')
           })
-          this.connections[connectionID].connect(port, host)
-        }, RETRY_CONNECTION * this.connectionQueue[connectionID])
+          chosenConnection.connect(port, host)
+        }, RETRY_CONNECTION * this.connections[connectionID].queueSize)
         break
       case 1:
-        this.connections[connectionID].once('finishedConnecting', () => {
-          this.connections[connectionID].write(request.data + '\n')
+        chosenConnection.once('finishedConnecting', () => {
+          chosenConnection.write(request.data + '\n')
         })
         break
       case 2:
-        this.connections[connectionID].write(request.data + '\n')
+        chosenConnection.write(request.data + '\n')
         break
     }
   }
@@ -250,6 +269,7 @@ export class Electrum {
       }
     } else if (typeof this.requests[data.id] === 'object') {
       const request = this.requests[data.id]
+      this.connections[request.connectionID].responses += 1
       if (!data.error) {
         request.onDataReceived(data.result)
       } else {
