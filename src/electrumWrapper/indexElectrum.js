@@ -192,6 +192,12 @@ export class Electrum {
     }
   }
 
+  clearConnection (connectionId: any) {
+    const connection = this.connections[connectionId]
+    connection.keepAliveTimer && clearInterval(connection.keepAliveTimer)
+    connection.destroy()
+    delete this.connections[connectionId]
+  }
   stop () {
     for (let i = 0; i < this.connections.length; i++) {
       clearInterval(this.connections[i].connection.keepAliveTimer)
