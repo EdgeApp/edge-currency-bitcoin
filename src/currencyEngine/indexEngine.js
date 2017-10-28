@@ -53,7 +53,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   network: string
   wallet: any
   headerList: any
-  initialSync: boolean
   primaryCurrency: string
   abcTxLibCallbacks: AbcCurrencyPluginCallbacks
   walletLocalData: WalletLocalData
@@ -91,7 +90,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     }
     this.network = keyInfo.type.includes('testnet') ? 'testnet' : 'main'
     this.wallet = null
-    this.initialSync = false
     this.primaryCurrency = txLibInfo.getInfo.currencyCode
     this.defaultDenomMultiplier = txLibInfo.getInfo.denominations.reduce((result, denom) =>
       denom.name === this.primaryCurrency ? parseInt(denom.multiplier) : result
@@ -286,7 +284,11 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
     }
     this.electrum.connect()
-    this.getAllOurAddresses().forEach(address => this.processAddress(address))
+    this.getAllOurAddresses().forEach(address => {
+      this.subscribeToAddress(address).then(() => {
+        this.initialSyncCheck()
+      })
+    })
 
     if (!Object.keys(this.walletLocalData.detailedFeeTable).length) {
       await this.updateFeeTable()
@@ -656,39 +658,35 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     return ''
   }
 
-  async processAddress (address: string) {
-    const scriptHash = this.addressToScriptHash(address)
+  async subscribeToAddress (address: string) {
     if (!this.transactions[address]) {
+      const scriptHash = this.addressToScriptHash(address)
       this.transactions[address] = { txs: {}, addressStatusHash: null, scriptHash }
     }
     this.transactions[address].executed = 0
-    if (!this.electrum) throw new Error('Uninitialized electrum servers')
+    const scriptHash = this.transactions[address].scriptHash
     let hash = null
     try {
       hash = await this.electrum.subscribeToScriptHash(scriptHash)
     } catch (e) { console.log(e) }
     if (hash && hash !== this.transactions[address].addressStatusHash) {
-      await this.handleTransactionStatusHash(scriptHash, hash)
+      try {
+        await this.onTransactionStatusHash(scriptHash, hash)
+      } catch (e) { console.log(e) }
     }
     this.transactions[address].executed = 1
-    this.initialSyncCheck()
   }
 
   initialSyncCheck () {
-    if (!this.initialSync) {
-      if (this.getAllOurAddresses().length === Object.keys(this.transactions).length) {
-        let finishedLoading = true
-        for (const address in this.transactions) {
-          if (!this.transactions[address].executed) {
-            finishedLoading = false
-            break
-          }
-        }
-        if (finishedLoading) {
-          this.abcTxLibCallbacks.onAddressesChecked(1)
-          this.initialSync = true
+    if (this.getAllOurAddresses().length === Object.keys(this.transactions).length) {
+      let finishedLoading = true
+      for (const address in this.transactions) {
+        if (!this.transactions[address].executed) {
+          finishedLoading = false
+          break
         }
       }
+      finishedLoading && this.abcTxLibCallbacks.onAddressesChecked(1)
     }
   }
 
@@ -835,7 +833,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       .forEach(path => {
         const address = path.toAddress(this.network).toString()
         addresses.push(address)
-        this.processAddress(address)
+        this.subscribeToAddress(address)
       })
     }
   }
