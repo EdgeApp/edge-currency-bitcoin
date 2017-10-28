@@ -269,7 +269,9 @@ export class Electrum {
       }
     } else if (typeof this.requests[data.id] === 'object') {
       const request = this.requests[data.id]
-      this.connections[request.connectionID].responses += 1
+      if (this.connections[request.connectionID]) {
+        this.connections[request.connectionID].responses += 1
+      }
       if (!data.error) {
         request.onDataReceived(data.result)
       } else {
