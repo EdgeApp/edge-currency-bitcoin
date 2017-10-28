@@ -634,7 +634,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     if (this.walletLocalData.simpleFeeTable[feeOption]) return this.walletLocalData.simpleFeeTable[feeOption].fee
   }
 
-  onBlockHeightChanged (blockHeight: number) {
+  onBlockHeightChanged (header: any) {
+    const blockHeight = header.block_height
     if (this.walletLocalData.blockHeight < blockHeight) {
       this.walletLocalData.blockHeight = blockHeight
       this.abcTxLibCallbacks.onBlockHeightChanged(blockHeight)

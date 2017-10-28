@@ -169,7 +169,7 @@ export class Electrum {
               this.clearConnection(`${host}:${port}`)
             })
           }, KEEP_ALIVE_INTERVAL)
-          this.subscribers.headers(height)
+          this.subscribers.headers(header)
           connection.emit('finishedConnecting')
         }
       })
