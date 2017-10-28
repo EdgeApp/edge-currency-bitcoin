@@ -545,7 +545,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       return abcTransaction
     } catch (e) {
       console.log(e)
-      if (e.message && e.message.includes('66: insufficient priority')) {
+      if (e.message && e.message.includes('66: ')) {
         const feeInSatBytes = parseInt(abcTransaction.otherParams.rate) / BYTES_TO_KB
         abcTransaction.otherParams.abcSpendInfo.customNetworkFee = feeInSatBytes * 1.5
         abcTransaction.otherParams.abcSpendInfo.networkFeeOption = 'custom'
