@@ -3,7 +3,7 @@
 const RETRY_CONNECTION = 500
 const MAX_HEIGHT_BOUNDRY = 50
 const KEEP_ALIVE_INTERVAL = 10000
-const SUBSCRIBE_RATIO = 0.8
+const SUBSCRIBE_RATIO = 0.3
 
 export class Electrum {
   globalRecievedData: any
