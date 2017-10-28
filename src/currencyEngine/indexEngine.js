@@ -133,8 +133,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     // // // // // // // // // // // // //
 
     this.electrumCallbacks = {
-      onAddressStatusChanged: this.handleTransactionStatusHash.bind(this),
       onBlockHeightChanged: this.onBlockHeightChanged.bind(this)
+      onAddressStatusChanged: this.onTransactionStatusHash.bind(this),
     }
   }
 
@@ -690,7 +690,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     }
   }
 
-  async handleTransactionStatusHash (scriptHash: string, hash: string) {
+  async onTransactionStatusHash (scriptHash: string, hash: string) {
     const address = this.scriptHashToAddress(scriptHash)
     const localTxObject = this.transactions[address]
     localTxObject.addressStatusHash = hash
