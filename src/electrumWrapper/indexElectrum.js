@@ -18,7 +18,8 @@ export class Electrum {
   serverList: Array<Array<string>>
   subscribers: {
     scripthash: any,
-    headers: any
+    headers: any,
+    disconnect: any
   }
 
   constructor (serverList: Array<Array<string>>, callbacks: any, io: any, lastKnownBlockHeight: number = 0) {
@@ -31,7 +32,8 @@ export class Electrum {
     this.maxHeight = lastKnownBlockHeight
     this.subscribers = {
       scripthash: callbacks.onAddressStatusChanged,
-      headers: callbacks.onBlockHeightChanged
+      headers: callbacks.onBlockHeightChanged,
+      disconnect: callbacks.onDisconnect
     }
     this.currentConnID = ''
     this.connectionQueue = {}
@@ -123,12 +125,13 @@ export class Electrum {
           request.connectionID = workingConnID
           this.socketWriteAbstract(workingConnID, request)
         })
-      } else { // If we don't have a working connection we will try again on this connection
-        newRequests.forEach(request => {
-          setTimeout(() => {
-            this.socketWriteAbstract(myConnectionID, request)
-          }, RETRY_CONNECTION)
-        })
+      } else { // If we don't have a working connection we will clear the request and throw an error
+        const error = new Error('No connected servers')
+        for (let id in this.requests) {
+          this.requests[id].onFailure(error)
+        }
+        this.requests = {}
+        this.subscribers.disconnect()
       }
     }
 
