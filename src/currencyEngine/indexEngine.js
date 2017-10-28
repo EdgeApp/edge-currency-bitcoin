@@ -18,6 +18,9 @@ import type {
 // $FlowFixMe
 const BufferJS = require('bufferPlaceHolder').Buffer
 const crypto = require('crypto')
+const RECONNECTION_INTERVAL = 10000
+const MILI_TO_SEC = 1000
+const BYTES_TO_KB = 1000
 
 function validateObject (object, schema) {
   const result = validate(object, schema)
@@ -463,7 +466,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
 
     if (feeOption === 'custom') {
       // customNetworkFee is in sat/Bytes in need to be converted to sat/KB
-      rate = parseInt(abcSpendInfo.customNetworkFee) * 1000
+      rate = parseInt(abcSpendInfo.customNetworkFee) * BYTES_TO_KB
     } else {
       // defualt fees are in sat/KB
       rate = this.getRate(feeOption)
@@ -521,7 +524,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
 
   async signTx (abcTransaction:AbcTransaction):Promise<AbcTransaction> {
     await this.wallet.sign(abcTransaction.otherParams.bcoinTx)
-    abcTransaction.date = Date.now() / 1000
+    abcTransaction.date = Date.now() / MILI_TO_SEC
     abcTransaction.signedTx = abcTransaction.otherParams.bcoinTx.toRaw().toString('hex')
     return abcTransaction
   }
@@ -543,7 +546,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     } catch (e) {
       console.log(e)
       if (e.message && e.message.includes('66: insufficient priority')) {
-        const feeInSatBytes = parseInt(abcTransaction.otherParams.rate) / 1000
+        const feeInSatBytes = parseInt(abcTransaction.otherParams.rate) / BYTES_TO_KB
         abcTransaction.otherParams.abcSpendInfo.customNetworkFee = feeInSatBytes * 1.5
         abcTransaction.otherParams.abcSpendInfo.networkFeeOption = 'custom'
         const newAbcTransaction = await this.makeSpend(abcTransaction.otherParams.abcSpendInfo)
@@ -596,7 +599,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
           high = fees[i].minFee
         }
         // Results are in sat/bytes and should be converted to sat/KB
-        high *= 1000
+        high *= BYTES_TO_KB
         let low = fees[0].minFee
         const highestMaxDelay = fees[0].maxDelay
         for (let i = 1; i < fees.length; i++) {
@@ -604,7 +607,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
           if (fees[i].maxDelay < highestMaxDelay) break
         }
         // Results are in sat/bytes and should be converted to sat/KB
-        low *= 1000
+        low *= BYTES_TO_KB
         const standard = (low + high) / 2
         this.walletLocalData.detailedFeeTable = { updated: Date.now(), low, standard, high }
       })
@@ -647,7 +650,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     setTimeout(() => {
       this.electrum.connect()
       this.getAllOurAddresses().forEach(address => this.subscribeToAddress(address))
-    }, 5000)
+    }, RECONNECTION_INTERVAL)
   }
 
   addressToScriptHash (address: string) {
@@ -757,7 +760,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       try {
         rawTransaction = await this.electrum.getTransaction(txHash)
         const blockHeader = transactionObj.height ? await this.getBlockHeader(transactionObj.height) : null
-        const date = blockHeader ? blockHeader.timestamp : Date.now() / 1000
+        const date = blockHeader ? blockHeader.timestamp : Date.now() / MILI_TO_SEC
         const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(rawTransaction, 'hex'))
         const txJson = bcoinTX.getJSON(this.network)
         const ourReceiveAddresses = []
