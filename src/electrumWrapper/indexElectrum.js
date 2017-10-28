@@ -140,11 +140,8 @@ export class Electrum {
       connection._state = 2
       this.write('server.version', ['1.1', '1.1'], `${host}:${port}`)
       .then(result => {
-        try {
-          if (result[1] !== '1.1') throw new Error('Wrong Protocol Version')
-        } catch (e) {
-          console.log(e)
-          this.clearConnection(`${host}:${port}`)
+        if (!Array.isArray(result) || result[1] !== '1.1') {
+          throw new Error('Wrong Protocol Version')
         }
         return this.write('blockchain.headers.subscribe', [], `${host}:${port}`)
       })
