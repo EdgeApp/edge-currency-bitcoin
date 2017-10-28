@@ -18,6 +18,7 @@ export class Electrum {
   serverList: Array<Array<string>>
   subscribers: {
     scripthash: any,
+    address: any,
     headers: any,
     disconnect: any
   }
