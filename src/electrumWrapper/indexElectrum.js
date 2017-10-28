@@ -138,12 +138,19 @@ export class Electrum {
     connection.on('connect', () => {
       connection._state = 2
       this.write('server.version', ['1.1', '1.1'], `${host}:${port}`)
-      .then(result => this.write('blockchain.headers.subscribe', [], `${host}:${port}`))
+      .then(result => {
+        try {
+          if (result[1] !== '1.1') throw new Error('Wrong Protocol Version')
+        } catch (e) {
+          console.log(e)
+          this.clearConnection(`${host}:${port}`)
+        }
+        return this.write('blockchain.headers.subscribe', [], `${host}:${port}`)
+      })
       .then(header => {
         const height = header.block_height
         if (this.lastKnownBlockHeight && height < this.lastKnownBlockHeight) {
-          connection.destroy()
-          delete this.connections[`${host}:${port}`]
+          this.clearConnection(`${host}:${port}`)
         } else {
           connection.blockchainHeight = height
           this.maxHeight = Math.max(this.maxHeight, height)
@@ -151,8 +158,7 @@ export class Electrum {
         for (const connectionID in this.connections) {
           const height = this.connections[connectionID].blockchainHeight
           if (height < (this.maxHeight - MAX_HEIGHT_BOUNDRY)) {
-            this.connections[connectionID].destroy()
-            delete this.connections[connectionID]
+            this.clearConnection(`${host}:${port}`)
           }
         }
         if (this.connections[`${host}:${port}`]) {
@@ -160,7 +166,7 @@ export class Electrum {
             this.write('blockchain.estimatefee', [0], `${host}:${port}`)
             .catch(e => {
               console.log(e)
-              connection.destroy()
+              this.clearConnection(`${host}:${port}`)
             })
           }, KEEP_ALIVE_INTERVAL)
           this.subscribers.headers(height)
@@ -169,7 +175,7 @@ export class Electrum {
       })
       .catch(e => {
         console.log(e)
-        connection.destroy()
+        this.clearConnection(`${host}:${port}`)
       })
     })
     connection.on('data', callback)
@@ -198,10 +204,10 @@ export class Electrum {
     connection.destroy()
     delete this.connections[connectionId]
   }
+
   stop () {
     for (let i = 0; i < this.connections.length; i++) {
-      clearInterval(this.connections[i].connection.keepAliveTimer)
-      this.connections[i].destroy()
+      this.clearConnection(this.connections[i])
     }
   }
 
