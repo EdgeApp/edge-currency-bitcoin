@@ -3,6 +3,7 @@
 const RETRY_CONNECTION = 500
 const MAX_HEIGHT_BOUNDRY = 50
 const KEEP_ALIVE_INTERVAL = 10000
+const SUBSCRIBE_RATIO = 0.8
 
 export class Electrum {
   globalRecievedData: any
@@ -257,6 +258,15 @@ export class Electrum {
       onFailure: rejectProxy
     }
     this.socketWriteAbstract(nextConnectionID, this.requests[id])
+    // For subscribe methods send subscription request to more then one server
+    if (method.length === 3 && method[2] === 'subscribe') {
+      const extraServers = Math.ceil(this.connections.length * SUBSCRIBE_RATIO) - 1
+      for (let i = 0; i < extraServers; i++) {
+        const nextConnectionID = this.getNextConn()
+        if (nextConnectionID === '') break
+        this.socketWriteAbstract(nextConnectionID, this.requests[id])
+      }
+    }
     return out
   }
 
