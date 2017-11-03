@@ -6,7 +6,7 @@ const WALLET_TYPE = 'wallet:bitcoin'
 let opts = {
   io: {
     fetch: () => true,
-    random: (size) => Array(size).fill(0).map((x, i) => i),
+    random: (size) => [39, 190, 34, 129, 208, 32, 145, 88, 191, 217, 226, 98, 183, 16, 52, 150, 52, 53, 31, 137, 164, 40, 236, 146, 128, 107, 129, 59, 192, 240, 40, 238],
     net: require('net')
   }
 }
@@ -44,9 +44,8 @@ describe(`createPrivateKey for Wallet type ${WALLET_TYPE}`, function () {
     let keys = plugin.createPrivateKey('wallet:bitcoin')
     assert.equal(!keys, false)
     assert.equal(typeof keys.bitcoinKey, 'string')
-    var a = Buffer.from(keys.bitcoinKey, 'base64')
-    var b = a.toString('hex')
-    assert.equal(b, '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f')
+    const length = keys.bitcoinKey.split(' ').length
+    assert.equal(length, 24)
   })
 })
 
@@ -64,7 +63,7 @@ describe(`derivePublicKey for Wallet type ${WALLET_TYPE}`, function () {
   })
   it('Valid private key', function () {
     keys = plugin.derivePublicKey({type: 'wallet:bitcoin', keys: {bitcoinKey: keys.bitcoinKey}})
-    assert.equal(keys.bitcoinXpub, 'xpub661MyMwAqRbcFiyme9xRZe855HWfYxvTcYoWpX1E8ZW8DGu35DbthdTxz222XRihFsxrdH4BCEe32DBRyKEerW8CUMAB8FDziiNyDG4ecgT')
+    assert.equal(keys.bitcoinXpub, 'xpub661MyMwAqRbcF6JxG5NqmWiCbURzYtg95A5T7m6bdJ27FHDuLcVHmAg4unEMvdNi5VniUWgxxDJM5odBjUUzuSNCciED3sbfdX37NsdKTiQ')
   })
 
   it('Invalid key name', function () {
