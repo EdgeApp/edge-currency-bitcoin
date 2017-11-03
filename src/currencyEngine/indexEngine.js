@@ -167,8 +167,16 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     const walletdb = new bcoin.wallet.WalletDB(walletDbOptions)
     await walletdb.open()
 
-    const mnemonic = bcoin.hd.Mnemonic.fromPhrase(this.masterKeys.currencyKey)
-    const key = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
+    let key = null
+
+    try {
+      const mnemonic = bcoin.hd.Mnemonic.fromPhrase(this.masterKeys.currencyKey)
+      key = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
+    } catch (e) {
+      const keyBuffer = BufferJS.from(this.masterKeys.currencyKey, 'base64')
+      key = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
+    }
+
     if (this.memoryDump.rawMemory) {
       try {
         this.wallet = await walletdb.get('ID1')
