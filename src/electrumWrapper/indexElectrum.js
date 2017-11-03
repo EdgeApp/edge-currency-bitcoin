@@ -67,7 +67,8 @@ export class Electrum {
     } else return ''
   }
 
-  compileDataCallback (connectionID: string) {
+  compileDataCallback (host: string, port: string) {
+    const connectionID = `${host}:${port}`
     return (data: any) => {
       let string = data.toString('utf8')
       if (!this.globalRecievedData[connectionID]) {
@@ -101,12 +102,12 @@ export class Electrum {
 
   netConnect (host: string, port: string, callback: any): any {
     let connection = new this.io.net.Socket()
+    const myConnectionID = `${host}:${port}`
     connection._state = 1
     // We can have more then 10 reads/writes waiting and we don't want to throttle
     connection.setMaxListeners(0)
 
     const gracefullyCloseConn = () => {
-      const myConnectionID = `${host}:${port}`
       // Changing our connection state to closed
       clearInterval(connection.keepAliveTimer)
       connection._state = 0
@@ -118,14 +119,14 @@ export class Electrum {
         }
       }
       // Lower connection Score
-      if (this.connections[`${host}:${port}`]) {
-        let responseCount = this.connections[`${host}:${port}`].responses
+      if (this.connections[myConnectionID]) {
+        let responseCount = this.connections[myConnectionID].responses
         if (responseCount === 0) {
-          this.clearConnection(`${host}:${port}`)
+          this.clearConnection(host, port)
         } else {
           responseCount -= newRequests.length
           if (responseCount < 0) responseCount = 0
-          this.connections[`${host}:${port}`].responses = responseCount
+          this.connections[myConnectionID].responses = responseCount
         }
       }
 
@@ -150,33 +151,33 @@ export class Electrum {
 
     connection.on('connect', () => {
       connection._state = 2
-      this.write('server.version', ['1.1', '1.1'], `${host}:${port}`)
+      this.getServerVersion('1.1', '1.1', host, port)
       .then(result => {
         if (!Array.isArray(result) || result[1] !== '1.1') {
           throw new Error('Wrong Protocol Version')
         }
-        return this.write('blockchain.headers.subscribe', [], `${host}:${port}`)
+        return this.subscribeToBlockHeaders(host, port)
       })
       .then(header => {
         const height = header.block_height
         if (this.lastKnownBlockHeight && height < this.lastKnownBlockHeight) {
-          this.clearConnection(`${host}:${port}`)
+          this.clearConnection(host, port)
         } else {
-          this.connections[`${host}:${port}`].blockchainHeight = height
+          this.connections[myConnectionID].blockchainHeight = height
           this.maxHeight = Math.max(this.maxHeight, height)
         }
         for (const connectionID in this.connections) {
           const height = this.connections[connectionID].blockchainHeight
           if (height < (this.maxHeight - MAX_HEIGHT_BOUNDRY)) {
-            this.clearConnection(`${host}:${port}`)
+            this.clearConnection(host, port)
           }
         }
-        if (this.connections[`${host}:${port}`]) {
+        if (this.connections[myConnectionID]) {
           connection.keepAliveTimer = setInterval(() => {
-            this.write('server.version', ['1.1', '1.1'], `${host}:${port}`)
+            this.getServerVersion('1.1', '1.1', host, port)
             .catch(e => {
               console.log(e)
-              this.clearConnection(`${host}:${port}`)
+              this.clearConnection(host, port)
               this.netConnect(host, port, callback)
             })
           }, KEEP_ALIVE_INTERVAL)
@@ -186,7 +187,7 @@ export class Electrum {
       })
       .catch(e => {
         console.log(e)
-        this.clearConnection(`${host}:${port}`)
+        this.clearConnection(host, port)
       })
     })
     connection.on('data', callback)
@@ -195,36 +196,38 @@ export class Electrum {
     connection.on('end', gracefullyCloseConn)
     connection.connect(port, host)
 
-    this.connections[`${host}:${port}`] = {
+    this.connections[myConnectionID] = {
       connection,
       queueSize: 0,
       blockchainHeight: 0,
       responses: 0
     }
-    if (!this.currentConnID) this.currentConnID = `${host}:${port}`
+    if (!this.currentConnID) this.currentConnID = myConnectionID
   }
 
   connect () {
     for (let i = 0; i < this.serverList.length; i++) {
       const server = this.serverList[i]
       const [host, port] = server
-      const callback = this.compileDataCallback(`${host}:${port}`)
+      const callback = this.compileDataCallback(host, port)
       this.netConnect(host, port, callback)
     }
   }
 
-  clearConnection (connectionId: any) {
-    if (this.connections[connectionId]) {
-      const connection = this.connections[connectionId].connection
+  clearConnection (host: string, port: string) {
+    const connectionIDToClean = `${host}:${port}`
+    if (this.connections[connectionIDToClean]) {
+      const connection = this.connections[connectionIDToClean].connection
       connection.keepAliveTimer && clearInterval(connection.keepAliveTimer)
       connection.destroy()
-      delete this.connections[connectionId]
+      delete this.connections[connectionIDToClean]
     }
   }
 
   stop () {
     for (let i = 0; i < this.connections.length; i++) {
-      this.clearConnection(this.connections[i])
+      const [host, port] = this.connections[i].split(':')
+      this.clearConnection(host, port)
     }
   }
 
@@ -288,7 +291,7 @@ export class Electrum {
   write (method: string, params: Array<any>, connectionID: ?any): Promise<any> {
     let rejectProxy, resolveProxy
     const id = this.getID().toString()
-    const nextConnectionID = connectionID || this.getNextConn()
+    const nextConnectionID = connectionID && connectionID !== ':' ? connectionID : this.getNextConn()
     if (nextConnectionID === '') return Promise.reject(new Error('no live connections'))
     const data = JSON.stringify({ id, method, params })
 
@@ -316,31 +319,39 @@ export class Electrum {
     return out
   }
 
-  subscribeToScriptHash (scriptHash: string): Promise<any> {
-    return this.write('blockchain.scripthash.subscribe', [scriptHash])
+  subscribeToScriptHash (scriptHash: string, host?: string, port?: string): Promise<any> {
+    return this.write('blockchain.scripthash.subscribe', [scriptHash], `${host || ''}:${port || ''}`)
   }
 
-  subscribeToAddress (scriptHash: string): Promise<any> {
-    return this.write('blockchain.address.subscribe', [scriptHash])
+  subscribeToAddress (scriptHash: string, host?: string, port?: string): Promise<any> {
+    return this.write('blockchain.address.subscribe', [scriptHash], `${host || ''}:${port || ''}`)
   }
 
-  getEstimateFee (blocksToBeIncludedIn: string): Promise<any> {
-    return this.write('blockchain.estimatefee', [blocksToBeIncludedIn])
+  subscribeToBlockHeaders (host?: string, port?: string): Promise<any> {
+    return this.write('blockchain.headers.subscribe', [], `${host || ''}:${port || ''}`)
   }
 
-  getScriptHashHistory (address: string): Promise<any> {
-    return this.write('blockchain.scripthash.get_history', [address])
+  getEstimateFee (blocksToBeIncludedIn: string, host?: string, port?: string): Promise<any> {
+    return this.write('blockchain.estimatefee', [blocksToBeIncludedIn], `${host || ''}:${port || ''}`)
   }
 
-  broadcastTransaction (tx: string): Promise<any> {
-    return this.write('blockchain.transaction.broadcast', [tx])
+  getServerVersion (clientVersion: string, protocolVersion?: string, host?: string, port?: string): Promise<any> {
+    return this.write('server.version', [clientVersion, protocolVersion], `${host || ''}:${port || ''}`)
   }
 
-  getBlockHeader (height: number): Promise<any> {
-    return this.write('blockchain.block.get_header', [height])
+  getScriptHashHistory (address: string, host?: string, port?: string): Promise<any> {
+    return this.write('blockchain.scripthash.get_history', [address], `${host || ''}:${port || ''}`)
   }
 
-  getTransaction (transactionID: string): Promise<any> {
-    return this.write('blockchain.transaction.get', [transactionID])
+  broadcastTransaction (tx: string, host?: string, port?: string): Promise<any> {
+    return this.write('blockchain.transaction.broadcast', [tx], `${host || ''}:${port || ''}`)
+  }
+
+  getBlockHeader (height: number, host?: string, port?: string): Promise<any> {
+    return this.write('blockchain.block.get_header', [height], `${host || ''}:${port || ''}`)
+  }
+
+  getTransaction (transactionID: string, host?: string, port?: string): Promise<any> {
+    return this.write('blockchain.transaction.get', [transactionID], `${host || ''}:${port || ''}`)
   }
 }
