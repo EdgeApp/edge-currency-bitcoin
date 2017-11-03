@@ -44,16 +44,21 @@ export default (txLibInfo: any) => {
     }
   }
 
-  const createRandomPrivateKey = (io: any) => ({
-    [`${currencyName}Key`]: BufferJS.from(io.random(32)).toString('base64')
-  })
+  const createRandomPrivateKey = (io: any) => {
+    const randomBuffer = BufferJS.from(io.random(32))
+    const mnemonic = bcoin.hd.Mnemonic.fromEntropy(randomBuffer)
+    return {
+      [`${currencyName}Key`]: mnemonic.getPhrase()
+    }
+  }
 
   const createPublicKey = (walletInfo: AbcWalletInfo, network: string) => {
     if (!walletInfo.keys[`${currencyName}Key`]) throw new Error('InvalidKeyName')
-    const keyBuffer = BufferJS.from(walletInfo.keys[`${currencyName}Key`], 'base64')
+    const mnemonic = bcoin.hd.Mnemonic.fromPhrase(walletInfo.keys[`${currencyName}Key`])
+    const privKey = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, network)
     return {
       [`${currencyName}Key`]: walletInfo.keys[`${currencyName}Key`],
-      [`${currencyName}Xpub`]: bcoin.hd.PrivateKey.fromSeed(keyBuffer, network).xpubkey()
+      [`${currencyName}Xpub`]: privKey.xpubkey()
     }
   }
 
