@@ -97,13 +97,26 @@ export class Electrum {
 
   onOpenConnection (myConnectionID: string) {
     const {connection} = this.connections[myConnectionID]
-    connection._state = 2
-    this.getServerVersion('1.1', '1.1', myConnectionID)
+
+    const createInitialRequest = (method: string, params: Array<any>, connectionID: string) => {
+      let onFailure, onDataReceived
+      const out = new Promise((resolve, reject) => {
+        onDataReceived = resolve
+        onFailure = reject
+      })
+      const id = this.getID().toString()
+      const requestString = JSON.stringify({ id, method, params })
+      this.requests[id] = { id, requestString, connectionID, onDataReceived, onFailure }
+      this.connections[connectionID].connection.write(requestString + '\n')
+      return out
+    }
+
+    createInitialRequest('server.version', ['1.1', '1.1'], myConnectionID)
     .then(versionResponse => {
       if (!Array.isArray(versionResponse.result) || versionResponse.result[1] !== '1.1') {
         throw new Error('Wrong Protocol Version')
       }
-      return this.subscribeToBlockHeaders(myConnectionID)
+      return createInitialRequest('blockchain.headers.subscribe', [], myConnectionID)
     })
     .then(headerResponse => {
       const header = headerResponse.result
@@ -120,14 +133,16 @@ export class Electrum {
         }
       }
       if (this.connections[myConnectionID]) {
+        connection._state = 2
+        connection.emit('finishedConnecting')
+        headerResponse.params = [headerResponse.result]
+        this.subscribers.headers(headerResponse)
         this.connections[myConnectionID].keepAliveTimer = setInterval(() => {
           this.getServerVersion('1.1', '1.1', myConnectionID)
           .catch(e => {
             throw new Error('Can\'t get server version')
           })
         }, KEEP_ALIVE_INTERVAL)
-        this.subscribers.headers(headerResponse)
-        connection.emit('finishedConnecting')
       } else {
         throw new Error('Block height too high')
       }
