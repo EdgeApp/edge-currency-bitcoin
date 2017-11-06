@@ -152,8 +152,12 @@ export class Electrum {
   gracefullyCloseConn (myConnectionID: string) {
     if (this.connections[myConnectionID]) {
       const {connection} = this.connections[myConnectionID]
-      connection._state = 0
+      let reconnect = false
+      if (connection._state === 2) {
+        reconnect = true
+      }
       // Changing our connection state to closed
+      connection._state = 0
       const closingConnectionRequests = []
       // Getting the requests for the closed connection
       for (const id in this.requests) {
@@ -179,6 +183,8 @@ export class Electrum {
         }
         this.requests = {}
       }
+      const [host, port] = myConnectionID.split(':')
+      if (reconnect) connection.connect(port, host)
     }
   }
 
