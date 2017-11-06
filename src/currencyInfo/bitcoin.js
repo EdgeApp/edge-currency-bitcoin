@@ -17,7 +17,7 @@ export const bitcoin = {
       gapLimit: 10,
       maxFee: 1000000,
       defaultFee: 1000,
-      feeUpdateInterval: 10000,
+      feeUpdateInterval: 60000,
       feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
       simpleFeeSettings: {low: 6, standard: 2, high: 0},
       electrumServers: [

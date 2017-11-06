@@ -14,7 +14,7 @@ export const litecoin = {
       gapLimit: 10,
       maxFee: 1000000,
       defaultFee: 50000,
-      feeUpdateInterval: 10000,
+      feeUpdateInterval: 60000,
       feeInfoServer: '',
       simpleFeeSettings: {low: 6, standard: 2, high: 0},
       electrumServers: [
