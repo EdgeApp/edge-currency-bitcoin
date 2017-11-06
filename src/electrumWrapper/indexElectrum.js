@@ -73,6 +73,12 @@ export class Electrum {
         const myConnectionID = `${host}:${port}`
         if (!this.connections[myConnectionID]) {
           let connection = new this.io.net.Socket()
+          this.connections[myConnectionID] = {
+            connection,
+            queueSize: 0,
+            blockchainHeight: 0,
+            responses: 0
+          }
           connection._state = 1
           connection.setMaxListeners(0)
           connection.on('connect', () => this.onOpenConnection(myConnectionID))
@@ -81,12 +87,6 @@ export class Electrum {
           connection.on('error', () => this.gracefullyCloseConn(myConnectionID))
           connection.on('end', () => this.gracefullyCloseConn(myConnectionID))
           connection.connect(port, host)
-          this.connections[myConnectionID] = {
-            connection,
-            queueSize: 0,
-            blockchainHeight: 0,
-            responses: 0
-          }
           if (!this.currentConnID) this.currentConnID = myConnectionID
         } else {
           maxNumOfServers += 1
