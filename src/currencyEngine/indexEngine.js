@@ -781,12 +781,11 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       // Process tx inputs
       const getPrevout = async (input) => {
         const { hash, index } = input.prevout
-        const prevRawTransaction = input.prevRawTransaction
-        if (!prevRawTransaction) {
+        if (!input.prevRawTransaction) {
           const prevRawResponse = await this.electrum.getTransaction(hash, connectionID)
-          Object.assign(input, { prevRawTransaction: prevRawResponse.result })
+          input.prevRawTransaction = prevRawResponse.result
         }
-        const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(prevRawTransaction, 'hex'))
+        const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(input.prevRawTransaction, 'hex'))
         const { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
         totalInputAmount += value
         if (allOurAddresses.indexOf(address) !== -1) {
