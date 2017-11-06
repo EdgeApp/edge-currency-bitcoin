@@ -638,7 +638,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   onBlockHeightChanged (data: any) {
-    const blockHeight = data.result.block_height
+    const blockHeight = data.params[0].block_height
     if (this.walletLocalData.blockHeight < blockHeight) {
       this.walletLocalData.blockHeight = blockHeight
       this.abcTxLibCallbacks.onBlockHeightChanged(blockHeight)
@@ -688,10 +688,10 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     if (addressSubscriptionResponse && addressSubscriptionResponse.result !== this.transactions[address].addressStatusHash) {
       try {
         if (this.walletType.includes('segwit')) {
-          addressSubscriptionResponse.result = [scriptHash, addressSubscriptionResponse.result]
+          addressSubscriptionResponse.params = [scriptHash, addressSubscriptionResponse.result]
           await this.onTransactionStatusHash(addressSubscriptionResponse)
         } else {
-          addressSubscriptionResponse.result = [address, addressSubscriptionResponse.result]
+          addressSubscriptionResponse.params = [address, addressSubscriptionResponse.result]
           await this.onTransactionStatusHash(addressSubscriptionResponse)
         }
       } catch (e) {
@@ -702,7 +702,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   async onTransactionStatusHash (data: any) {
-    const [scriptHash, hash] = data.result
+    const [scriptHash, hash] = data.params
     try {
       const address = this.walletType.includes('segwit') ? this.scriptHashToAddress(scriptHash) : scriptHash
       const localTxObject = this.transactions[address]
