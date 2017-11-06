@@ -116,15 +116,14 @@ export class Electrum {
       for (const connectionID in this.connections) {
         const height = this.connections[connectionID].blockchainHeight
         if (height < (this.maxHeight - MAX_HEIGHT_BOUNDRY)) {
-          this.clearConnection(myConnectionID)
+          throw new Error('Block height too low')
         }
       }
       if (this.connections[myConnectionID]) {
         this.connections[myConnectionID].keepAliveTimer = setInterval(() => {
           this.getServerVersion('1.1', '1.1', myConnectionID)
           .catch(e => {
-            console.log(e)
-            this.clearConnection(myConnectionID)
+            throw new Error('Can\'t get server version')
           })
         }, KEEP_ALIVE_INTERVAL)
         this.subscribers.headers(headerResponse)
