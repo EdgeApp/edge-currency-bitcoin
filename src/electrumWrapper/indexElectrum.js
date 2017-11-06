@@ -4,7 +4,6 @@ const MAX_HEIGHT_BOUNDRY = 50
 const MAX_QUEUE_SIZE = 10
 const MAX_NUM_OF_SERVERS = 4
 const REQUEST_TIMEOUT = 5000
-const KEEP_ALIVE_INTERVAL = 30000
 
 export class Electrum {
   globalRecievedData: any
@@ -137,12 +136,6 @@ export class Electrum {
         connection.emit('finishedConnecting')
         headerResponse.params = [headerResponse.result]
         this.subscribers.headers(headerResponse)
-        this.connections[myConnectionID].keepAliveTimer = setInterval(() => {
-          this.getServerVersion('1.1', '1.1', myConnectionID)
-          .catch(e => {
-            throw new Error('Can\'t get server version')
-          })
-        }, KEEP_ALIVE_INTERVAL)
       } else {
         throw new Error('Block height too high')
       }
@@ -161,7 +154,6 @@ export class Electrum {
       const {connection} = this.connections[myConnectionID]
       connection._state = 0
       // Changing our connection state to closed
-      clearInterval(connection.keepAliveTimer)
       const closingConnectionRequests = []
       // Getting the requests for the closed connection
       for (const id in this.requests) {
@@ -193,7 +185,6 @@ export class Electrum {
   clearConnection (connectionIDToClean: string) {
     if (this.connections[connectionIDToClean]) {
       const connection = this.connections[connectionIDToClean].connection
-      connection.keepAliveTimer && clearInterval(connection.keepAliveTimer)
       connection.destroy()
       delete this.connections[connectionIDToClean]
     }
