@@ -127,7 +127,6 @@ export class Electrum {
             this.clearConnection(myConnectionID)
           })
         }, KEEP_ALIVE_INTERVAL)
-        console.log('headerResponse', headerResponse)
         this.subscribers.headers(headerResponse)
         connection.emit('finishedConnecting')
       } else {

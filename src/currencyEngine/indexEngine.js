@@ -287,11 +287,11 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
     }
     this.electrum.connect()
-    this.getAllOurAddresses().forEach(address => {
-      this.subscribeToAddress(address).then(() => {
-        this.initialSyncCheck()
-      })
-    })
+    // this.getAllOurAddresses().forEach(address => {
+    //   this.subscribeToAddress(address).then(() => {
+    //     this.initialSyncCheck()
+    //   })
+    // })
 
     if (!Object.keys(this.walletLocalData.detailedFeeTable).length) {
       await this.updateFeeTable()
@@ -738,86 +738,100 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   async handleTransaction (address: string, transactionObj: any, connectionID?: string) {
-    const localTxObject = this.transactions[address]
-    const txHash = transactionObj.tx_hash
-    let transactionData = localTxObject.txs[txHash]
-    if (transactionData && transactionData.executed && transactionData.abcTransaction) {
-      if (transactionData.abcTransaction.blockHeight !== transactionObj.height) {
-        transactionData.abcTransaction.blockHeight = transactionObj.height
-        const blockHeader = await this.getBlockHeader(transactionObj.height)
-        transactionData.abcTransaction.date = blockHeader.timestamp
+    try {
+      const localTxObject = this.transactions[address]
+      const txHash = transactionObj.tx_hash
+      let transactionData = localTxObject.txs[txHash]
+      if (transactionData && transactionData.abcTransaction) {
+        if (transactionData.abcTransaction.blockHeight !== transactionObj.height) {
+          transactionData.abcTransaction.blockHeight = transactionObj.height
+          const blockHeader = await this.getBlockHeader(transactionObj.height, connectionID)
+          transactionData.abcTransaction.date = blockHeader.timestamp
+          return transactionData.abcTransaction
+        }
         return transactionData.abcTransaction
       }
-      return null
-    }
-    localTxObject.txs[txHash] = {
-      abcTransaction: {},
-      executed: 0
-    }
-    transactionData = localTxObject.txs[txHash]
-    let rawTransaction
-    if (this.transactionsIds.indexOf(txHash) !== -1) {
-      const abcTransactionsArray = await this.getTransactionsByIds([txHash])
-      if (abcTransactionsArray.length === 1) {
-        rawTransaction = abcTransactionsArray[0].otherParams.rawTx
-      }
-    }
-    if (!rawTransaction) {
-      try {
-        const rawTXresponse = await this.electrum.getTransaction(txHash)
-        rawTransaction = rawTXresponse.result
-        const blockHeader = transactionObj.height ? await this.getBlockHeader(transactionObj.height) : null
-        const date = blockHeader ? blockHeader.timestamp : Date.now() / MILI_TO_SEC
-        const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(rawTransaction, 'hex'))
-        const txJson = bcoinTX.getJSON(this.network)
-        const ourReceiveAddresses = []
-        let nativeAmount = 0
-        let totalOutputAmount = 0
-        let totalInputAmount = 0
-        const allOurAddresses = this.getAllOurAddresses()
-        // Process tx outputs
-        txJson.outputs.forEach(({ address, value }) => {
-          totalOutputAmount += value
-          if (allOurAddresses.indexOf(address) !== -1) {
-            nativeAmount += value
-            ourReceiveAddresses.push(address)
-          }
-        })
-        // Process tx inputs
-        const getPrevout = async ({ hash, index }) => {
-          const prevRawResponse = await this.electrum.getTransaction(hash)
-          const prevRawTransaction = prevRawResponse.result
-          const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(prevRawTransaction, 'hex'))
-          const { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
-          totalInputAmount += value
-          if (allOurAddresses.indexOf(address) !== -1) {
-            nativeAmount -= value
-          }
+      if (!transactionData) {
+        localTxObject.txs[txHash] = {
+          abcTransaction: {},
+          txJson: {},
+          rawTransaction: null
         }
-        await Promise.all(txJson.inputs.map(({ prevout }) => getPrevout(prevout)))
-        await this.wallet.add(bcoinTX)
-        const abcTransaction: AbcTransaction = {
-          ourReceiveAddresses,
-          networkFee: (totalInputAmount - totalOutputAmount).toString(),
-          otherParams: {
-            rawTx: rawTransaction
-          },
-          currencyCode: this.primaryCurrency,
-          txid: txHash,
-          date,
-          blockHeight: transactionObj.height,
-          nativeAmount: nativeAmount.toString(),
-          signedTx: ''
-        }
-        localTxObject.txs[txHash].abcTransaction = abcTransaction
-        localTxObject.txs[txHash].executed = 1
-        await this.checkGapLimit(address)
-        return abcTransaction
-      } catch (e) {
-        console.log(e)
-        return null
+        transactionData = localTxObject.txs[txHash]
       }
+      if (!transactionData.rawTransaction) {
+        const rawTXresponse = await this.electrum.getTransaction(txHash, connectionID)
+        transactionData.rawTransaction = rawTXresponse.result
+        const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(transactionData.rawTransaction, 'hex'))
+        transactionData.txJson = bcoinTX.getJSON(this.network)
+      }
+      const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(transactionData.rawTransaction, 'hex'))
+      const ourReceiveAddresses = []
+      let nativeAmount = 0
+      let totalOutputAmount = 0
+      let totalInputAmount = 0
+      const allOurAddresses = this.getAllOurAddresses()
+      // Process tx outputs
+      transactionData.txJson.outputs.forEach(({ address, value }) => {
+        totalOutputAmount += value
+        if (allOurAddresses.indexOf(address) !== -1) {
+          nativeAmount += value
+          ourReceiveAddresses.push(address)
+        }
+      })
+      // Process tx inputs
+      const getPrevout = async (input) => {
+        const { hash, index } = input.prevout
+        const prevRawTransaction = input.prevRawTransaction
+        if (!prevRawTransaction) {
+          const prevRawResponse = await this.electrum.getTransaction(hash, connectionID)
+          Object.assign(input, { prevRawTransaction: prevRawResponse.result })
+        }
+        const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(prevRawTransaction, 'hex'))
+        const { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
+        totalInputAmount += value
+        if (allOurAddresses.indexOf(address) !== -1) {
+          nativeAmount -= value
+        }
+      }
+      await Promise.all(transactionData.txJson.inputs.map(input => getPrevout(input)))
+      const abcTransaction: AbcTransaction = {
+        ourReceiveAddresses,
+        networkFee: (totalInputAmount - totalOutputAmount).toString(),
+        otherParams: {
+          rawTx: transactionData.rawTransaction
+        },
+        currencyCode: this.primaryCurrency,
+        txid: txHash,
+        date: Date.now() / 1000,
+        blockHeight: transactionObj.height,
+        nativeAmount: nativeAmount.toString(),
+        signedTx: ''
+      }
+      await this.wallet.add(bcoinTX)
+      transactionData.abcTransaction = abcTransaction
+      const blockHeader = transactionObj.height ? await this.getBlockHeader(transactionObj.height, connectionID) : null
+      const date = blockHeader ? blockHeader.timestamp : Date.now() / MILI_TO_SEC
+      abcTransaction.date = date
+      await this.checkGapLimit(address)
+      return abcTransaction
+    } catch (e) {
+      setTimeout(() => {
+        this.handleTransaction(address, transactionObj)
+      }, SERVER_RETRY_INTERVAL)
     }
+  }
+
+  async getBlockHeader (height: number, connectionID?: string): any {
+    if (this.headerList[height]) {
+      return this.headerList[height]
+    }
+    let header
+    const serverHeaserResponse = await this.electrum.getBlockHeader(height, connectionID)
+    header = serverHeaserResponse.result
+    this.headerList[height] = header
+    this.saveToDisk(this.headerList, 'headerList')
+    return header
   }
 
   async checkGapLimit (address: string) {
@@ -853,22 +867,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         addresses.push(address)
         this.subscribeToAddress(address)
       })
-    }
-  }
-
-  async getBlockHeader (height: number): any {
-    if (this.headerList[height]) {
-      return this.headerList[height]
-    }
-    let header
-    try {
-      const serverHeaserResponse = await this.electrum.getBlockHeader(height)
-      header = serverHeaserResponse.result
-      this.headerList[height] = header
-      this.saveToDisk(this.headerList, 'headerList')
-      return header
-    } catch (e) {
-      return null
     }
   }
 
