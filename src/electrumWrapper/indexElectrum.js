@@ -128,8 +128,8 @@ export class Electrum {
       this.maxHeight = Math.max(this.maxHeight, height)
       for (const connectionID in this.connections) {
         const height = this.connections[connectionID].blockchainHeight
-        if (height < (this.maxHeight - MAX_HEIGHT_BOUNDRY)) {
-          throw new Error('Block height too low')
+        if (height > (this.maxHeight + MAX_HEIGHT_BOUNDRY)) {
+          this.clearConnection(connectionID)
         }
       }
       if (this.connections[myConnectionID]) {
