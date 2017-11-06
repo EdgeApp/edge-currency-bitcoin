@@ -287,11 +287,11 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
     }
     this.electrum.connect()
-    // this.getAllOurAddresses().forEach(address => {
-    //   this.subscribeToAddress(address).then(() => {
-    //     this.initialSyncCheck()
-    //   })
-    // })
+    this.getAllOurAddresses().forEach(address => {
+      this.subscribeToAddress(address).then(() => {
+        this.initialSyncCheck()
+      })
+    })
 
     if (!Object.keys(this.walletLocalData.detailedFeeTable).length) {
       await this.updateFeeTable()
