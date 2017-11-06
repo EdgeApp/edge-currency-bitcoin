@@ -306,6 +306,7 @@ export class Electrum {
         this.subscribers[method[1]](data)
       }
     } else if (typeof this.requests[data.id] === 'object') {
+      clearTimeout(this.requests[data.id].timer)
       const request = this.requests[data.id]
       if (this.connections[request.connectionID]) {
         this.connections[request.connectionID].responses += 1
@@ -319,7 +320,6 @@ export class Electrum {
         } catch (e) {}
         request.onFailure(message)
       }
-      clearTimeout(this.requests[data.id].timer)
       delete this.requests[data.id]
     }
   }
