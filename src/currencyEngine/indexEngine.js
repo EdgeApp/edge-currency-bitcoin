@@ -683,6 +683,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   async subscribeToAddress (address: string) {
+    const addressFromScriptHash = this.scriptHashToAddress(address)
+    address = addressFromScriptHash !== '' ? addressFromScriptHash : address
     let scriptHash
     if (!this.transactions[address]) {
       scriptHash = this.addressToScriptHash(address)
