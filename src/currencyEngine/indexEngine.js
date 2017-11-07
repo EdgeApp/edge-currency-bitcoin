@@ -665,9 +665,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   async subscribeToAddress (address: string) {
-    const retry = () => setTimeout(() => {
-      this.subscribeToAddress(address)
-    }, SERVER_RETRY_INTERVAL)
     let scriptHash
     if (!this.transactions[address]) {
       scriptHash = this.addressToScriptHash(address)
@@ -683,13 +680,9 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       } else {
         addressSubscriptionResponse = await this.electrum.subscribeToAddress(address)
       }
-    } catch (e) {
-      return retry()
-    }
-    if (addressSubscriptionResponse &&
-      addressSubscriptionResponse.result &&
-      addressSubscriptionResponse.result !== this.transactions[address].addressStatusHash) {
-      try {
+      if (addressSubscriptionResponse &&
+        addressSubscriptionResponse.result &&
+        addressSubscriptionResponse.result !== this.transactions[address].addressStatusHash) {
         if (this.walletType.includes('segwit')) {
           addressSubscriptionResponse.params = [scriptHash, addressSubscriptionResponse.result]
           await this.onTransactionStatusHash(addressSubscriptionResponse)
@@ -697,11 +690,13 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
           addressSubscriptionResponse.params = [address, addressSubscriptionResponse.result]
           await this.onTransactionStatusHash(addressSubscriptionResponse)
         }
-      } catch (e) {
-        return retry()
       }
+      this.transactions[address].executed = 1
+    } catch (e) {
+      setTimeout(() => {
+        this.subscribeToAddress(address)
+      }, SERVER_RETRY_INTERVAL)
     }
-    this.transactions[address].executed = 1
   }
 
   async onTransactionStatusHash (data: any) {
@@ -712,25 +707,9 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       localTxObject.addressStatusHash = hash
       const transactionsServerResponse = await this.electrum.getScriptHashHistory(scriptHash, data.connectionID)
       const transactionHashes = transactionsServerResponse.result
-      const transactionPromiseArray = transactionHashes.map(transactionObject => {
-        return this.handleTransaction(address, transactionObject, data.connectionID)
+      transactionHashes.forEach(transactionObject => {
+        this.handleTransaction(address, transactionObject, data.connectionID)
       })
-      const ABCtransaction = await Promise.all(transactionPromiseArray)
-      const filtteredABCtransaction = ABCtransaction.filter(tx => tx)
-      const updatedTransactionIds = []
-      filtteredABCtransaction.forEach(({ txid }) => {
-        updatedTransactionIds.push(txid)
-        if (this.transactionsIds.indexOf(txid) === -1) this.transactionsIds.push(txid)
-      })
-      if (filtteredABCtransaction.length) {
-        this.saveMemDumpToDisk()
-        this.saveToDisk(this.transactions, 'transactions')
-        this.saveToDisk(this.transactionsIds, 'transactionsIds')
-        if (typeof this.abcTxLibCallbacks.onTxidsChanged === 'function') {
-          this.abcTxLibCallbacks.onTxidsChanged(updatedTransactionIds)
-        }
-        this.abcTxLibCallbacks.onTransactionsChanged(filtteredABCtransaction)
-      }
     } catch (e) {
       setTimeout(() => {
         data.connectionID = null
@@ -743,15 +722,16 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     try {
       const localTxObject = this.transactions[address]
       const txHash = transactionObj.tx_hash
+      if (this.transactionsIds.indexOf(txHash) === -1) this.transactionsIds.push(txHash)
       let transactionData = localTxObject.txs[txHash]
       if (transactionData && transactionData.abcTransaction) {
         if (transactionData.abcTransaction.blockHeight !== transactionObj.height) {
           transactionData.abcTransaction.blockHeight = transactionObj.height
           const blockHeader = await this.getBlockHeader(transactionObj.height, connectionID)
+          await this.saveToDisk(this.transactions, 'transactions')
           transactionData.abcTransaction.date = blockHeader.timestamp
-          return transactionData.abcTransaction
+          this.abcTxLibCallbacks.onTransactionsChanged([transactionData.abcTransaction])
         }
-        return transactionData.abcTransaction
       }
       if (!transactionData) {
         localTxObject.txs[txHash] = {
@@ -767,6 +747,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(transactionData.rawTransaction, 'hex'))
         transactionData.txJson = bcoinTX.getJSON(this.network)
       }
+      await this.saveToDisk(this.transactions, 'transactions')
       const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(transactionData.rawTransaction, 'hex'))
       const ourReceiveAddresses = []
       let nativeAmount = 0
@@ -810,12 +791,14 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         signedTx: ''
       }
       await this.wallet.add(bcoinTX)
+      await this.saveMemDumpToDisk()
       transactionData.abcTransaction = abcTransaction
       const blockHeader = transactionObj.height ? await this.getBlockHeader(transactionObj.height, connectionID) : null
       const date = blockHeader ? blockHeader.timestamp : Date.now() / MILI_TO_SEC
       abcTransaction.date = date
+      await this.saveToDisk(this.transactions, 'transactions')
+      this.abcTxLibCallbacks.onTransactionsChanged([abcTransaction])
       await this.checkGapLimit(address)
-      return abcTransaction
     } catch (e) {
       setTimeout(() => {
         this.handleTransaction(address, transactionObj)
