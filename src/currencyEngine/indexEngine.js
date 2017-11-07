@@ -336,15 +336,13 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   async getTransactions (options:any): Promise<Array<AbcTransaction>> {
-    const txIndexArray = this.objectToArray(this.transactions)
-    const transactions = txIndexArray.reduce((s, addressTxs) => {
-      if (Object.keys(addressTxs.txs).length) {
-        return s.concat(this.objectToArray(addressTxs.txs))
-      } else return s
-    }, [])
-    const abcTransactions = transactions
-      .filter(({ executed }) => executed)
-      .map(({ abcTransaction }) => abcTransaction)
+    let abcTransactions = []
+    for (const address in this.transactions) {
+      for (const tx in this.transactions[address].txs) {
+        const abcTransaction = this.transactions[address].txs[tx].abcTransaction
+        abcTransaction && abcTransactions.push(abcTransaction)
+      }
+    }
     const startIndex = (options && options.startIndex) || 0
     let endIndex = (options && options.numEntries) || abcTransactions.length
     if (startIndex + endIndex > abcTransactions.length) {
