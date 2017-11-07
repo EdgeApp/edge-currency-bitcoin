@@ -309,7 +309,7 @@ export class Electrum {
       clearTimeout(this.requests[data.id].timer)
       const request = this.requests[data.id]
       if (this.connections[request.connectionID]) {
-        this.connections[request.connectionID].responses += 1
+        this.connections[request.connectionID].queueSize -= 1
       }
       if (!data.error) {
         request.onDataReceived(data)
