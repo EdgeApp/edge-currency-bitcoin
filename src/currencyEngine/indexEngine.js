@@ -570,7 +570,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   async saveTx (abcTransaction:AbcTransaction):Promise<void> {
-    await this.wallet.add(abcTransaction.otherParams.bcoinTx.toTX())
+    const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(abcTransaction.signedTx, 'hex'))
+    await this.wallet.add(bcoinTX)
   }
   /* --------------------------------------------------------------------- */
   /* --------------------  Experimantal Public API  ---------------------- */
