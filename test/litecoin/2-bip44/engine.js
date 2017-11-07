@@ -19,12 +19,12 @@ const dummyTransactionsIds = path.join(__dirname, './dummyTransactionsIds.json')
 let plugin, keys, engine
 var emitter = new Emitter()
 let walletLocalFolder = disklet.makeMemoryFolder()
-const WALLET_TYPE = 'wallet:litecoin44'
+const WALLET_TYPE = 'wallet:litecoin44segwit'
 
 let opts = {
   io: {
     fetch: require('node-fetch'),
-    random: (size) => [39, 190, 34, 129, 208, 32, 145, 88, 191, 217, 226, 98, 183, 16, 52, 150, 52, 53, 31, 137, 164, 40, 236, 146, 128, 107, 129, 59, 192, 240, 40, 238],    
+    random: (size) => [39, 190, 34, 129, 208, 32, 145, 88, 191, 217, 226, 98, 183, 16, 52, 150, 52, 53, 31, 137, 164, 40, 236, 146, 128, 107, 129, 59, 192, 240, 40, 238],
     net: require('net')
   }
 }

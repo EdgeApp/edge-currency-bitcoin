@@ -7,17 +7,15 @@ export const bitcoin = {
     // Details of supported currency
     walletTypes: [
       'wallet:bitcoin44segwit',
-      'wallet:bitcoin44',
       'wallet:bitcoin',
       'wallet:testnet44segwit',
-      'wallet:testnet44',
       'wallet:testnet'
     ],
     defaultsSettings: {
       gapLimit: 10,
       maxFee: 1000000,
       defaultFee: 1000,
-      feeUpdateInterval: 10000,
+      feeUpdateInterval: 60000,
       feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
       simpleFeeSettings: {low: 6, standard: 2, high: 0},
       electrumServers: [
