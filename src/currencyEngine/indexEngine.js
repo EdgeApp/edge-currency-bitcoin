@@ -668,13 +668,14 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     const retry = () => setTimeout(() => {
       this.subscribeToAddress(address)
     }, SERVER_RETRY_INTERVAL)
-
+    let scriptHash
     if (!this.transactions[address]) {
-      const scriptHash = this.addressToScriptHash(address)
+      scriptHash = this.addressToScriptHash(address)
       this.transactions[address] = { txs: {}, addressStatusHash: null, scriptHash }
+    } else {
+      scriptHash = this.transactions[address].scriptHash
     }
     this.transactions[address].executed = 0
-    const scriptHash = this.transactions[address].scriptHash
     let addressSubscriptionResponse = null
     try {
       if (this.walletType.includes('segwit')) {
