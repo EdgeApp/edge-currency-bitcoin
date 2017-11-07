@@ -18,10 +18,12 @@ export class Electrum {
     server: Array<string>,
     valid: boolean
   }>
+  subscribedAddresses: any
   subscribers: {
     scripthash: any,
     address: any,
-    headers: any
+    headers: any,
+    onSubscribeEnd: any
   }
 
   constructor (serverList: Array<Array<string>>, callbacks: any, io: any, lastKnownBlockHeight: number = 0) {
@@ -32,10 +34,12 @@ export class Electrum {
     this.globalRecievedData = {}
     this.lastKnownBlockHeight = lastKnownBlockHeight || 0
     this.maxHeight = lastKnownBlockHeight
+    this.subscribedAddresses = {}
     this.subscribers = {
       scripthash: callbacks.onAddressStatusChanged,
       address: callbacks.onAddressStatusChanged,
-      headers: callbacks.onBlockHeightChanged
+      headers: callbacks.onBlockHeightChanged,
+      onSubscribeEnd: callbacks.onSubscribeEnd
     }
     this.currentConnID = ''
     this.id = 0
@@ -150,6 +154,13 @@ export class Electrum {
   }
 
   gracefullyCloseConn (myConnectionID: string) {
+    // Notifing engine about closed address subscription
+    const subscribedAddresses = this.subscribedAddresses[myConnectionID]
+    if (subscribedAddresses && subscribedAddresses.length > 0) {
+      this.subscribedAddresses[myConnectionID] = []
+      subscribedAddresses.forEach(address => this.subscribers.onSubscribeEnd(address))
+    }
+    // Check if the connection was ever alive
     if (this.connections[myConnectionID]) {
       const {connection} = this.connections[myConnectionID]
       let reconnect = false
@@ -167,7 +178,6 @@ export class Electrum {
       }
       // Getting A working connection index
       const workingConnID = this.getNextConn()
-
       // If we have a working connection we will transfer all work to him
       if (workingConnID !== '') {
         closingConnectionRequests.forEach(request => {
@@ -207,6 +217,14 @@ export class Electrum {
     if (connectionID === '') return Promise.reject(new Error('no live connections'))
     const id = this.getID().toString()
     const requestString = JSON.stringify({ id, method, params })
+
+    const methodArray = method.split('.')
+    if (methodArray.length === 3 && methodArray[2] === 'subscribe' && methodArray[1] !== 'headers') {
+      if (!this.subscribedAddresses[connectionID]) {
+        this.subscribedAddresses[connectionID] = []
+      }
+      this.subscribedAddresses[connectionID].push(params[0])
+    }
 
     let onFailure, onDataReceived
     const out = new Promise((resolve, reject) => {
@@ -328,8 +346,8 @@ export class Electrum {
     return this.createRequest('blockchain.scripthash.subscribe', [scriptHash], myConnectionID)
   }
 
-  subscribeToAddress (scriptHash: string, myConnectionID?: string): Promise<any> {
-    return this.createRequest('blockchain.address.subscribe', [scriptHash], myConnectionID)
+  subscribeToAddress (address: string, myConnectionID?: string): Promise<any> {
+    return this.createRequest('blockchain.address.subscribe', [address], myConnectionID)
   }
 
   subscribeToBlockHeaders (myConnectionID?: string): Promise<any> {

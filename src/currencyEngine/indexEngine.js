@@ -137,7 +137,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
 
     this.electrumCallbacks = {
       onAddressStatusChanged: this.onTransactionStatusHash.bind(this),
-      onBlockHeightChanged: this.onBlockHeightChanged.bind(this)
+      onBlockHeightChanged: this.onBlockHeightChanged.bind(this),
+      onSubscribeEnd: this.subscribeToAddress.bind(this)
     }
   }
 
