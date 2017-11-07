@@ -49,6 +49,7 @@ type WalletLocalData = {
 }
 
 export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements AbcCurrencyEngine {
+  connected: boolean
   walletLocalFolder: any
   io: any
   walletType: string
@@ -83,6 +84,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
   constructor (io:any, keyInfo:AbcWalletInfo, opts: AbcMakeEngineOptions) {
     if (!opts.walletLocalFolder) throw new Error('Cannot create and engine without a local folder')
+    this.connected = false
     this.walletLocalFolder = opts.walletLocalFolder
     this.io = io
     this.walletType = keyInfo.type
@@ -301,6 +303,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       this.abcTxLibCallbacks.onBalanceChanged(this.primaryCurrency, this.walletLocalData.masterBalance)
     }
     this.electrum.connect()
+    this.connected = true
     this.getAllOurAddresses().forEach(address => {
       this.subscribeToAddress(address).then(() => {
         this.initialSyncCheck()
@@ -317,6 +320,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
 
   async killEngine () {
     this.electrum.stop()
+    this.connected = false
     clearInterval(this.feeUpdater)
     await this.saveMemDumpToDisk()
     await this.saveToDisk(this.headerList, 'headerList')
@@ -707,7 +711,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       }
       this.transactions[address].executed = 1
     } catch (e) {
-      setTimeout(() => {
+      this.connected && setTimeout(() => {
         this.subscribeToAddress(address)
       }, SERVER_RETRY_INTERVAL)
     }
@@ -725,7 +729,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         this.handleTransaction(address, transactionObject, data.connectionID)
       })
     } catch (e) {
-      setTimeout(() => {
+      this.connected && setTimeout(() => {
         data.connectionID = null
         this.onTransactionStatusHash(data)
       }, SERVER_RETRY_INTERVAL)
@@ -811,7 +815,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       this.abcTxLibCallbacks.onTransactionsChanged([abcTransaction])
       await this.checkGapLimit(address)
     } catch (e) {
-      setTimeout(() => {
+      this.connected && setTimeout(() => {
         this.handleTransaction(address, transactionObj)
       }, SERVER_RETRY_INTERVAL)
     }
