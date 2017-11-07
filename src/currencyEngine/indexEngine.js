@@ -686,7 +686,9 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     } catch (e) {
       return retry()
     }
-    if (addressSubscriptionResponse && addressSubscriptionResponse.result !== this.transactions[address].addressStatusHash) {
+    if (addressSubscriptionResponse &&
+      addressSubscriptionResponse.result &&
+      addressSubscriptionResponse.result !== this.transactions[address].addressStatusHash) {
       try {
         if (this.walletType.includes('segwit')) {
           addressSubscriptionResponse.params = [scriptHash, addressSubscriptionResponse.result]
