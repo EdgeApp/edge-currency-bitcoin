@@ -207,14 +207,20 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     await Promise.all(loadFromDiskPromise)
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io, this.walletLocalData.blockHeight)
     if (!this.memoryDump) {
-      const transactions = await this.getTransactions()
-      const addTXPromises = transactions.map(transaction => {
-        const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(transaction.otherParams.rawTx, 'hex'))
-        return this.wallet.add(bcoinTX)
-      })
+      const addTXPromises = []
+      for (const address in this.transactions) {
+        if (this.transactions[address]) {
+          for (const tx in this.transactions[address].txs) {
+            const { abcTransaction, rawTransaction } = this.transactions[address].txs[tx]
+            if (rawTransaction && abcTransaction) {
+              const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(rawTransaction, 'hex'))
+              addTXPromises.push(this.wallet.add(bcoinTX))
+            }
+          }
+        }
+      }
       await Promise.all(addTXPromises)
     }
-
     await this.syncAddresses()
   }
 
@@ -511,7 +517,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     const abcTransaction: AbcTransaction = {
       ourReceiveAddresses,
       otherParams: {
-        rawTx: resultedTransaction.toRaw().toString('hex'),
         bcoinTx: resultedTransaction,
         abcSpendInfo,
         rate
@@ -541,12 +546,12 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       const broadcastResponse = await this.electrum.broadcastTransaction(abcTransaction.signedTx)
       const resultedTxid = broadcastResponse.result
       if (resultedTxid === 'TX decode failed') throw new Error('Tx is not valid')
+      const txJson = abcTransaction.otherParams.bcoinTx.getJSON(this.network)
+      const rawTransaction = abcTransaction.signedTx
       abcTransaction.txid = resultedTxid
+      abcTransaction.otherParams = {}
       abcTransaction.ourReceiveAddresses.forEach(address => {
-        this.transactions[address].txs[abcTransaction.txid] = {
-          abcTransaction,
-          executed: 1
-        }
+        this.transactions[address].txs[abcTransaction.txid] = { abcTransaction, txJson, rawTransaction }
       })
       return abcTransaction
     } catch (e) {
@@ -786,9 +791,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       const abcTransaction: AbcTransaction = {
         ourReceiveAddresses,
         networkFee: (totalInputAmount - totalOutputAmount).toString(),
-        otherParams: {
-          rawTx: transactionData.rawTransaction
-        },
+        otherParams: {},
         currencyCode: this.primaryCurrency,
         txid: txHash,
         date: Date.now() / 1000,
