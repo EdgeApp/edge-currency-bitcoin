@@ -735,7 +735,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       }
       if (!transactionData) {
         localTxObject.txs[txHash] = {
-          abcTransaction: {},
           txJson: {},
           rawTransaction: null
         }
