@@ -19,7 +19,7 @@ const dummyTransactionsIds = path.join(__dirname, './dummyTransactionsIds.json')
 let plugin, keys, engine
 var emitter = new Emitter()
 let walletLocalFolder = disklet.makeMemoryFolder()
-const WALLET_TYPE = 'wallet:litecoin44'
+const WALLET_TYPE = 'wallet:litecoin44segwit'
 
 let opts = {
   io: {
