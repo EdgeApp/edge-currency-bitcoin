@@ -1,6 +1,6 @@
 {
   "name": "edge-currency-bitcoin",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "Edge Bitcoin currency plugin",
   "author": "Airbitz, Inc.",
   "contributors": [
@@ -54,7 +54,7 @@
     "airbitz-core-types": "git+https://github.com/Airbitz/airbitz-core-types.git",
     "bccoin": "git+https://github.com/Airbitz/bcoin.git#bcash",
     "bcoin": "git+https://github.com/Airbitz/bcoin.git",
-    "biggystring": "^1.0.7",
+    "biggystring": "^3.0.0",
     "buffer": "^5.0.8",
     "jsonschema": "^1.2.0",
     "lcoin": "git+https://github.com/Airbitz/bcoin.git#litecoin",
@@ -76,7 +76,7 @@
     "node-fetch": "^1.7.2",
     "nsp": "^2.8.1",
     "request": "^2.83.0",
-    "rollup": "^0.50.0",
+    "rollup": "0.48.0",
     "rollup-plugin-babel": "^3.0.2",
     "rollup-plugin-replace": "^2.0.0",
     "standard": "^10.0.2",
