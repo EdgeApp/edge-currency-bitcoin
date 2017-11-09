@@ -153,6 +153,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   async startWallet () {
+    global.pnow('START startWallet')
     if (!this.masterKeys) throw new Error('Missing Master Key')
     if (!this.masterKeys.currencyKey) throw new Error('Missing Master Key')
 
@@ -161,10 +162,14 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       memDbRaw: null
     }
 
+    global.pnow('START loadFromDisk')
     await this.loadFromDisk(this.memoryDump, 'memoryDump')
+    global.pnow('END loadFromDisk')
 
     if (this.memoryDump.rawMemory) {
+      global.pnow('START memDBRaw')
       walletDbOptions.memDbRaw = BufferJS.from(this.memoryDump.rawMemory, 'hex')
+      global.pnow('END memDBRaw')
     } else {
       console.log('No memDBRaw')
     }
@@ -175,12 +180,17 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     let key = null
 
     // See if we have an xpriv key stored in local encrypted storage
+    global.pnow('START loadEncryptedFromDisk')
     let keyObj = await this.loadEncryptedFromDisk()
+    global.pnow('END loadEncryptedFromDisk')
     if (keyObj) {
       try {
         // bcoin says fromJSON but it's really from JS object
+        global.pnow('START fromJSON')
         key = bcoin.hd.PrivateKey.fromJSON(keyObj)
+        global.pnow('END fromJSON')
       } catch (e) {
+        global.pnow('CATCH key=NULL')
         key = null
         keyObj = null
       }
@@ -189,30 +199,43 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     // If not stored key, derive it from the mnemonic
     if (!key) {
       try {
+        global.pnow('START Mnemonic.fromPhrase')
         const mnemonic = bcoin.hd.Mnemonic.fromPhrase(this.masterKeys.currencyKey)
+        global.pnow('START fromMnemonic')
         key = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
+        global.pnow('END fromMnemonic')
       } catch (e) {
+        global.pnow('START keyBuffer = BufferJS.from')
         const keyBuffer = BufferJS.from(this.masterKeys.currencyKey, 'base64')
+        global.pnow('START PrivateKey.fromSeed')
         key = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
+        global.pnow('END PrivateKey.fromSeed')
       }
     }
 
     // If we didn't have a stored key, store it now
     if (!keyObj) {
       // bcoin says toJSON but it's really to JS object
+      global.pnow('START key.toJSON')
       keyObj = key.toJSON()
+      global.pnow('START saveEncryptedToDisk')
       await this.saveEncryptedToDisk(keyObj)
+      global.pnow('END saveEncryptedToDisk')
     }
 
     if (this.memoryDump.rawMemory) {
       try {
+        global.pnow('START walletdb.get')
         this.wallet = await walletdb.get('ID1')
+        global.pnow('START importMasterKey')
         this.wallet.importMasterKey({master: key.xprivkey()})
+        global.pnow('END importMasterKey')
       } catch (e) {}
     }
     if (!this.wallet) {
       const masterPath = this.walletType.includes('44') ? null : 'm/0/0'
       const masterIndex = !masterPath ? null : 32
+      global.pnow('START walletdb.create')
       this.wallet = await walletdb.create({
         'master': key.xprivkey(),
         'id': 'ID1',
@@ -221,10 +244,15 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
         masterPath,
         masterIndex
       })
+      global.pnow('START setLookahead')
       await this.wallet.setLookahead(0, this.gapLimit)
+      global.pnow('START saveMemDumpToDisk')
       await this.saveMemDumpToDisk()
+      global.pnow('END saveMemDumpToDisk')
     }
+    global.pnow('START syncDiskData')
     await this.syncDiskData()
+    global.pnow('END syncDiskData')
   }
 
   async syncDiskData () {
@@ -233,9 +261,12 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       // $FlowFixMe
       this.loadFromDisk(this[key], key).then(result => !result ? this.saveToDisk(this[key], key) : true)
     )
+    global.pnow('START syncDiskData:loadFromDiskPromise')
     await Promise.all(loadFromDiskPromise)
+    global.pnow('END syncDiskData:loadFromDiskPromise')
     this.electrum = new Electrum(this.electrumServers, this.electrumCallbacks, this.io, this.walletLocalData.blockHeight)
     if (!this.memoryDump) {
+      global.pnow('START syncDiskData:!memoryDump')
       const addTXPromises = []
       for (const address in this.transactions) {
         if (this.transactions[address]) {
@@ -248,9 +279,13 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
           }
         }
       }
+      global.pnow('END syncDiskData:!memoryDump')
       await Promise.all(addTXPromises)
+      global.pnow('END Promise.all(addTXPromises)')
     }
+    global.pnow('START syncAddresses')
     await this.syncAddresses()
+    global.pnow('END syncAddresses')
   }
 
   async syncAddresses () {
@@ -953,7 +988,9 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
 
   async loadEncryptedFromDisk () {
     try {
+      global.pnow('AWAIT loadEncryptedFromDisk')
       const data: string = await this.walletLocalEncryptedFolder.file('privateKey').getText()
+      global.pnow('RESOLVE loadEncryptedFromDisk')
       const dataObj = JSON.parse(data)
       return dataObj
     } catch (e) {
@@ -963,8 +1000,10 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
 
   async saveEncryptedToDisk (xprivObj: any) {
     try {
+      global.pnow('AWAIT saveEncryptedToDisk')
       const xprivJson = JSON.stringify(xprivObj)
       await this.walletLocalEncryptedFolder.file('privateKey').setText(xprivJson)
+      global.pnow('RESOLVE saveEncryptedToDisk')
     } catch (e) {
 
     }
