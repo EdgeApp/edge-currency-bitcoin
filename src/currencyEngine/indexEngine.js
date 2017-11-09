@@ -51,6 +51,7 @@ type WalletLocalData = {
 export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements AbcCurrencyEngine {
   connected: boolean
   walletLocalFolder: any
+  walletLocalEncryptedFolder: any
   io: any
   walletType: string
   masterKeys: any
@@ -86,6 +87,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     if (!opts.walletLocalFolder) throw new Error('Cannot create and engine without a local folder')
     this.connected = false
     this.walletLocalFolder = opts.walletLocalFolder
+    this.walletLocalEncryptedFolder = opts.walletLocalEncryptedFolder
     this.io = io
     this.walletType = keyInfo.type
     this.masterKeys = keyInfo.keys
@@ -163,6 +165,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
 
     if (this.memoryDump.rawMemory) {
       walletDbOptions.memDbRaw = BufferJS.from(this.memoryDump.rawMemory, 'hex')
+    } else {
+      console.log('No memDBRaw')
     }
 
     const walletdb = new bcoin.wallet.WalletDB(walletDbOptions)
@@ -170,12 +174,34 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
 
     let key = null
 
-    try {
-      const mnemonic = bcoin.hd.Mnemonic.fromPhrase(this.masterKeys.currencyKey)
-      key = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
-    } catch (e) {
-      const keyBuffer = BufferJS.from(this.masterKeys.currencyKey, 'base64')
-      key = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
+    // See if we have an xpriv key stored in local encrypted storage
+    let keyObj = await this.loadEncryptedFromDisk()
+    if (keyObj) {
+      try {
+        // bcoin says fromJSON but it's really from JS object
+        key = bcoin.hd.PrivateKey.fromJSON(keyObj)
+      } catch (e) {
+        key = null
+        keyObj = null
+      }
+    }
+
+    // If not stored key, derive it from the mnemonic
+    if (!key) {
+      try {
+        const mnemonic = bcoin.hd.Mnemonic.fromPhrase(this.masterKeys.currencyKey)
+        key = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
+      } catch (e) {
+        const keyBuffer = BufferJS.from(this.masterKeys.currencyKey, 'base64')
+        key = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
+      }
+    }
+
+    // If we didn't have a stored key, store it now
+    if (!keyObj) {
+      // bcoin says toJSON but it's really to JS object
+      keyObj = key.toJSON()
+      await this.saveEncryptedToDisk(keyObj)
     }
 
     if (this.memoryDump.rawMemory) {
@@ -290,6 +316,8 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   async startEngine () {
+    console.log('Skipping startEngine')
+    return
     this.wallet.on('balance', balance => {
       const confirmedBalance = balance.confirmed.toString()
       const unconfirmedBalance = balance.unconfirmed.toString()
@@ -910,15 +938,37 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
 
   async loadFromDisk (obj:any, fileName: string, optionalFileName: string = '') {
     try {
+      global.pnow('AWAIT getText')
       const data = await this.walletLocalFolder
       .folder(this.diskPath.folder)
       .file(this.diskPath.files[fileName] + optionalFileName)
       .getText()
+      global.pnow('RESOLVE getText')
       let dataJson = JSON.parse(data)
       Object.assign(obj, dataJson)
+      global.pnow('RETURN from loadFromDisk')
       return dataJson
     } catch (e) {
       return null
+    }
+  }
+
+  async loadEncryptedFromDisk () {
+    try {
+      const data: string = await this.walletLocalEncryptedFolder.file('privateKey').getText()
+      const dataObj = JSON.parse(data)
+      return dataObj
+    } catch (e) {
+      return null
+    }
+  }
+
+  async saveEncryptedToDisk (xprivObj: any) {
+    try {
+      const xprivJson = JSON.stringify(xprivObj)
+      await this.walletLocalEncryptedFolder.file('privateKey').setText(xprivJson)
+    } catch (e) {
+
     }
   }
 
