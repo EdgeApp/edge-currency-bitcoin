@@ -127,7 +127,8 @@ export default (txLibInfo: any) => {
           if (amountStr && typeof amountStr === 'string') {
             let amount = parseFloat(amountStr)
             let multiplier = txLibInfo.getInfo.denominations.find(e => e.name === info.currencyCode).multiplier.toString()
-            abcParsedUri.nativeAmount = bns.mulf(amount, multiplier)
+            const t = bns.mul(amount, multiplier)
+            abcParsedUri.nativeAmount = bns.toFixed(t, 0, 0)
             abcParsedUri.currencyCode = info.currencyCode
           }
           return abcParsedUri
@@ -142,7 +143,7 @@ export default (txLibInfo: any) => {
             let currencyCode = obj.currencyCode || info.currencyCode
             let multiplier = txLibInfo.getInfo.denominations.find(e => e.name === currencyCode).multiplier.toString()
             // $FlowFixMe
-            let amount = bns.divf(obj.nativeAmount, multiplier)
+            let amount = bns.div(obj.nativeAmount, multiplier, 8)
             queryString += 'amount=' + amount.toString() + '&'
           }
           if (obj.metadata) {

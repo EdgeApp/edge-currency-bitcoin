@@ -316,7 +316,6 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
   }
 
   async startEngine () {
-    console.log('Skipping startEngine')
     this.wallet.on('balance', balance => {
       const confirmedBalance = balance.confirmed.toString()
       const unconfirmedBalance = balance.unconfirmed.toString()
