@@ -1,6 +1,6 @@
 {
   "name": "edge-currency-bitcoin",
-  "version": "0.10.3",
+  "version": "0.10.4",
   "description": "Edge Bitcoin currency plugin",
   "author": "Airbitz, Inc.",
   "contributors": [
@@ -26,7 +26,6 @@
     "mocha": "npm run pretest && mocha --exit",
     "pretest": "ROLLUPCONFIG=rollup.config.test.js npm run build",
     "precommit": "npm run lint",
-    "prepush": "npm run lint && npm run test",
     "updot": "updot",
     "security": "nsp check"
   },
