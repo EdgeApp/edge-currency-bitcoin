@@ -401,7 +401,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
     let freshAddress = { publicAddress: null }
     for (let i = 0; i < this.walletLocalData.addresses.receive.length; i++) {
       const address = this.walletLocalData.addresses.receive[i]
-      if (!Object.keys(this.transactions[address].txs).length) {
+      if (!Object.keys(this.transactions).length || !Object.keys(this.transactions[address].txs).length) {
         freshAddress.publicAddress = address
         break
       }
@@ -412,7 +412,7 @@ export default (bcoin:any, txLibInfo:any) => class CurrencyEngine implements Abc
       freshAddress.publicAddress = null
       for (let i = 0; i < this.walletLocalData.addresses.nested.length; i++) {
         const address = this.walletLocalData.addresses.nested[i]
-        if (!Object.keys(this.transactions[address].txs).length) {
+        if (!Object.keys(this.transactions).length || !Object.keys(this.transactions[address].txs).length) {
           freshAddress.publicAddress = address
           break
         }
