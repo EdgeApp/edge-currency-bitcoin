@@ -125,9 +125,8 @@ export default (txLibInfo: any) => {
           }
 
           if (amountStr && typeof amountStr === 'string') {
-            let amount = parseFloat(amountStr)
             let multiplier = txLibInfo.getInfo.denominations.find(e => e.name === info.currencyCode).multiplier.toString()
-            const t = bns.mul(amount, multiplier)
+            const t = bns.mul(amountStr, multiplier)
             abcParsedUri.nativeAmount = bns.toFixed(t, 0, 0)
             abcParsedUri.currencyCode = info.currencyCode
           }
