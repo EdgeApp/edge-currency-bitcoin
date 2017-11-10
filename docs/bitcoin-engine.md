@@ -35,7 +35,7 @@ interface AddressCache {
 }
 ```
 
-TODO: Since secp256k1 is pretty expensive, we might want to cache the derivation path, xpub, or other per-address crypto stuff in here as well.
+TODO: Since secp256k1 is pretty expensive, we might want to cache the derivation path, xpub, or other per-address crypto stuff in here as well. Use separate address maps for different types of addresses (bech32, script hash, etc)
 
 ### Tx Cache
 
@@ -166,7 +166,7 @@ I suppose this information could be folded into the connection object, but the o
 
 ### Tx State
 
-This data structure tracks which transactions are being fetched. Once a server starts fetching a transaction, other servers know that they don't have to:
+This data structure tracks which all transactions that are relevant to this wallet. Once a server starts fetching a transaction, it will set `fetching` to true so other servers know not to duplicate work.
 
 ```js
 // Property of the wallet engine:
@@ -176,6 +176,10 @@ const txStates: {
   }
 } = {}
 ```
+
+If a server fails to fetch a txid on this list, its onFail callback will unset `fetching`, allowing other servers to attempt the fetch.
+
+Everytime we fetch an address utxo or txid list, we need to ensure all txids on that list are added to this table.
 
 ## Algorithms
 
@@ -237,7 +241,7 @@ stopEngine () {
 
 This is where most of the work happens. Whenever a Stratum connection has space in its queue, it fires the `onQueueSpace` callback. The goal is to return the next most valuable piece of work we can be doing with that server.
 
-1. If we don't know a server's block height, fetch that. If the height is too low, we might want to disconnect. Likewise for any
+1. If we don't know a server's block height, fetch that. If the height is too low, we might want to disconnect.
 2. If we know about txids that are not in the cache, fetch those. We should only fetch transactions where `txStates[txid].fetching` is false, and where `serverStates[uri].txids[txid]` exists. If no server has the txid in `serverStates[uri].txids`, then the second rule doesn't apply.
 3. If we have not subscribed to some addresses, subscribe.
 4. If an address has a different `utxoStratumHash` from our `serverStates[uri].addresses[address].hash`, *and* our `serverStates[uri].addresses[address].lastUpdate` is the newest of all servers, fetch the utxo set for this address.
