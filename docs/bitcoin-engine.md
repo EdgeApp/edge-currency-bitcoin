@@ -272,6 +272,15 @@ All the txids relevant to this wallet are in the `txStates` structure as keys. U
 
 Now, based on the range given in the query, we can figure out exactly which txids we need to fetch. We set up some promises for the disk accesses, and return a `Promise.all` for those. Need to parse raw tx bytes into AbcTransaction
 
+parseTxData(tx bytes) => (input txids, output addresses + balances)
+
+1. Get txids of 'inputs' of txdata
+2. Correlate txids with relevance list
+3. Given relevant inputs, balances of relevant input outputs, balances of our outputs, calculate sum for wallet balance
+4. Extract addresses from relevant input outputs, put those into ownInputAdresses
+
+getOutputBalance(rawTxbytes, index) => number
+
 ### Get Fresh Address
 
 Get the latest address where the `used` is false and where there are no txids or utxos in the address cache.
