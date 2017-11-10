@@ -371,3 +371,13 @@ function fetchAddressHistory (
 The `onDone` callback should be invoked when the server sends a response. For address or block height subscriptions, it will be called on every subscription update as well.
 
 The `onFail` callback should be called if the request never completes, either because of a server error or explicit disconnection. It is mainly needed to clean up various flags, such as `txStates[txid].fetching`.
+
+* fetchBlockHeader
+* fetchTransaction
+* fetchAddressHistory
+* fetchScriptHashHistory
+* subscribeAddress
+* subscribeScriptHash
+* fetchAddressUtxo
+* fetchScripthashUtxo
+* broadcastTx
