@@ -4,8 +4,8 @@
   "description": "Edge Bitcoin currency plugin",
   "author": "Airbitz, Inc.",
   "contributors": [
-    "Eliran Zach <eliran@airbitz.co>",
-    "Paul Puey <paul@airbitz.co>",
+    "Eliran Zach <eliran@edgesecure.co>",
+    "Paul Puey <paul@edgesecure.co>",
     "Stan Synko <stan@airbitz.co>"
   ],
   "license": "SEE LICENSE IN LICENSE",
@@ -13,18 +13,17 @@
     "type": "git",
     "url": "git@github.com:Airbitz/edge-currency-bitcoin.git"
   },
-  "url": "https://airbitz.co",
-  "main": "./lib/index.js",
-  "module": "./lib/index.es.js",
-  "test": "./lib/index.test.js",
+  "url": "https://edgesecure.co",
+  "main": "./lib/indexBitcoin.js",
+  "module": "./lib/indexBitcoin.es.js",
   "scripts": {
     "lint": "standard '**/*.js' && flow",
-    "build": "rollup --config $ROLLUPCONFIG && npm run build:flow",
+    "build": "rollup -c && npm run build:flow",
     "build:flow": "flow-copy-source -v -i '**/test/**' src lib",
     "prepare": "ROLLUPCONFIG=rollup.config.js npm run build",
     "test": "npm run lint && mocha --exit",
     "mocha": "npm run pretest && mocha --exit",
-    "pretest": "ROLLUPCONFIG=rollup.config.test.js npm run build",
+    "pretest": "npm run build",
     "precommit": "npm run lint",
     "updot": "updot",
     "security": "nsp check"
@@ -51,12 +50,9 @@
   },
   "dependencies": {
     "airbitz-core-types": "git+https://github.com/Airbitz/airbitz-core-types.git",
-    "bccoin": "git+https://github.com/Airbitz/bcoin.git#bcash",
-    "bcoin": "git+https://github.com/Airbitz/bcoin.git",
     "biggystring": "^3.0.0",
     "buffer": "^5.0.8",
     "jsonschema": "^1.2.0",
-    "lcoin": "git+https://github.com/Airbitz/bcoin.git#litecoin",
     "uri-js": "^3.0.2"
   },
   "devDependencies": {

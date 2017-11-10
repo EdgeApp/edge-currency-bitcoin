@@ -8,7 +8,7 @@ const babelConf = {
 }
 
 export default {
-  input: 'src/index.js',
+  input: './src/indexBitcoin.js',
   external: Object.keys(packageJson.dependencies),
   plugins: [
     replace({
