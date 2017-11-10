@@ -181,6 +181,13 @@ If a server fails to fetch a txid on this list, its onFail callback will unset `
 
 Everytime we fetch an address utxo or txid list, we need to ensure all txids on that list are added to this table.
 
+### Missing Txids
+
+```js
+const missingTxs: Set<string>
+```
+List of txids that are in TxState but not in TxCache. These are txids that we know about from stratum address history but we have not yet fetched the tx data. Any routine that modified TxState or TxCache must also keep this list up-to-date.
+
 ## Algorithms
 
 ### Make Engine
@@ -242,8 +249,9 @@ stopEngine () {
 This is where most of the work happens. Whenever a Stratum connection has space in its queue, it fires the `onQueueSpace` callback. The goal is to return the next most valuable piece of work we can be doing with that server.
 
 1. If we don't know a server's block height, fetch that. If the height is too low, we might want to disconnect.
-2. If we know about txids that are not in the cache, fetch those. We should only fetch transactions where `txStates[txid].fetching` is false, and where `serverStates[uri].txids[txid]` exists. If no server has the txid in `serverStates[uri].txids`, then the second rule doesn't apply.
-3. If we have not subscribed to some addresses, subscribe.
+2a. If we know about txids that are not in the cache, fetch those (this is pre-calculated as missingTxs). 
+2b. We should only fetch transactions where `txStates[txid].fetching` is false, and where `serverStates[uri].txids[txid]` exists. If no server has the txid in `serverStates[uri].txids`, then the second rule doesn't apply.
+3. If we have not subscribed to some addresses, subscribe. (Are there addresses in AddressCache that don't exist in our ServerState)
 4. If an address has a different `utxoStratumHash` from our `serverStates[uri].addresses[address].hash`, *and* our `serverStates[uri].addresses[address].lastUpdate` is the newest of all servers, fetch the utxo set for this address.
 5. If an address has a different `txidStratumHash` from our `serverStates[uri].addresses[address].hash`, *and* our `serverStates[uri].addresses[address].lastUpdate` is the newest of all servers, fetch the txid list for this address.
 6. If we have heights in the tx height cache that do not have corresponding headers, go grab those.
@@ -254,13 +262,15 @@ Just return this out of the block header cache.
 
 ### Get Balance
 
-Iterate over the utxo set and add their balances. We ignore transactions that have not been fetched from the network, or whose relevant inputs have not been fetched from the network. We know an input is relevant if its txid is in the `txStates` table.
+Iterate over the utxo set and add their balances. Only include utxos whose txids are present in the TxCache.
+
+// We ignore transactions that have not been fetched from the network, or whose relevant inputs have not been fetched from the network. We // know an input is relevant if its txid is in the `txStates` table.
 
 ### Get Transactions
 
-All the txids relevant to this wallet are in the `txStates` structure as keys. Using this list, plus the tx height cache, we can get a list of txids sorted by date. We ignore transactions using the same rules as the balance calculation.
+All the txids relevant to this wallet are in the `txStates` structure as keys. Using this list, plus the tx height cache, we can get a list of txids sorted by date. Only include transactions that are in the TxCache AND whose "relevant" inputs are in the TxCache. We know an input is "relevant" if its txid is in the `txStates` table.
 
-Now, based on the range given in the query, we can figure out exactly which txids we need to fetch. We set up some promises for the disk accesses, and return a `Promise.all` for those.
+Now, based on the range given in the query, we can figure out exactly which txids we need to fetch. We set up some promises for the disk accesses, and return a `Promise.all` for those. Need to parse raw tx bytes into AbcTransaction
 
 ### Get Fresh Address
 
@@ -276,17 +286,26 @@ Just go to the address cache and return true if `utxos` and `txids` are empty, a
 
 ### Spend
 
-Spin up a fresh bcoin instance. Jam all the utxo transactions into it, along with the addresses that have utxos. Do the spend. If we don't want to use bcoin, replace this with any library of your choice. The sign and broadcast should be pretty straightforward based on the library choice.
+Spin up a fresh bcoin instance. Jam all the utxo transactions into it (using the get balance rules), along with the addresses that have utxos. Do the spend. If we don't want to use bcoin, replace this with any library of your choice. The sign and broadcast should be pretty straightforward based on the library choice.
+
+If we are building the transaction manually using primitives, the algorithm is to pick a set of utxos that add up to the amount being spent, and then calculate the fee. If there is enough change to cover the fee, we are done. Otherwise, add the calculated fee to the amount being spent, and repeat. If you use up all the inputs in the wallet, then there is just no way to do the spend. Return an insufficient funds error.
+
+Broadcast transaction sends the signed transaction to all connections. Broadcast should return a failure if:
+
+1. Any connection reports that the transaction is a double spend. 
+OR
+2. All connections fail to broadcast.
 
 The `save` step needs to identify which address is the change address, and manually insert that into the utxo list. It also needs to update the `txids` lists for all input and change addresses. It also needs to add the transaction itself to the transaction cache. The transaction is clearly unconfirmed to start, so the tx height cache would just receive the current time.
 
 ## `StratumConnection` Object
 
-Here is the `StratumConnection` object:
+Here is the `StratumConnection` object. There is one of these per URI that is currently connected.
 
 ```js
 class StratumConnection {
   constructor (uri: string, options: StratumOptions) {}
+  open () {}
   close () {}
   wakeup () {}
   submitTask (task: StratumTask) {}
@@ -303,7 +322,7 @@ interface StratumOptions {
 
 interface StratumCallbacks {
   +onOpen: (uri: string) => void;
-  +onClose: (uri: string) => void;
+  +onClose: (uri: string, error?: Error) => void;
   +onQueueSpace: (uri: string) => StratumTask | void;
 }
 ```
@@ -344,11 +363,11 @@ function fetchAddressHistory (
       // Validate the reply params...
       onDone(validateAndTranslateResults(params))
     },
-    onError
+    onFail
   }
 }
 ```
 
 The `onDone` callback should be invoked when the server sends a response. For address or block height subscriptions, it will be called on every subscription update as well.
 
-The `onError` callback should be called if the request never completes, either because of a server error or explicit disconnection. It is mainly needed to clean up various flags, such as `txStates[txid].fetching`.
+The `onFail` callback should be called if the request never completes, either because of a server error or explicit disconnection. It is mainly needed to clean up various flags, such as `txStates[txid].fetching`.
