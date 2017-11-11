@@ -14,8 +14,8 @@
     "url": "git@github.com:Airbitz/edge-currency-bitcoin.git"
   },
   "url": "https://edgesecure.co",
-  "main": "./lib/indexBitcoin.js",
-  "module": "./lib/indexBitcoin.es.js",
+  "main": "./lib/indexCrypto.js",
+  "module": "./lib/indexCrypto.es.js",
   "scripts": {
     "lint": "standard '**/*.js' && flow",
     "build": "rollup -c && npm run build:flow",

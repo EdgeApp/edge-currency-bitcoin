@@ -158,7 +158,7 @@ export class ServerCache {
     serverInfos.sort((a: ServerInfo, b: ServerInfo) => {
       return b.serverScore - a.serverScore
     })
-    console.log('1:', serverInfos)
+    // console.log('1:', serverInfos)
 
     //
     // Take the top 50% of servers that have
