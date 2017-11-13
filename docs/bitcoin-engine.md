@@ -15,10 +15,12 @@ This cache stores the following information on a per-address basis:
 * `utxos` - An array of utxos as returned by Stratum `listunspent`. Used for displaying balances & for spending.
 * `utxoStratumHash` - The same as `txidStratumHash`, but for the `utxos` list.
 
+This cache represents addresses using script hashes, like how Stratum does it. The information needed to retrieve the private key (derivation path / xpub) is stored in the `path` member.
+
 ```js
 interface AddressCache {
   addresses: {
-    [address: string]: { // Maybe use script hashes like what Stratum does?
+    [scriptHash: string]: {
       txids: Array<string>,
       txidStratumHash: string,
 
@@ -29,13 +31,13 @@ interface AddressCache {
       }>,
       utxoStratumHash: string,
 
-      used: true // Set by `addGapLimitAddress`
+      used: true, // Set by `addGapLimitAddress`
+      displayAddress: string // base58 or other wallet-ready format
+      path: {} // TODO: Define the contents of this member.
     }
   };
 }
 ```
-
-TODO: Since secp256k1 is pretty expensive, we might want to cache the derivation path, xpub, or other per-address crypto stuff in here as well. Use separate address maps for different types of addresses (bech32, script hash, etc)
 
 ### Tx Cache
 
@@ -139,7 +141,7 @@ const serverStates: {
 
     // Address subscriptions:
     addresses: {
-      [address: string]: {
+      [scriptHash: string]: {
         // We have an `undefined` hash once we request a subscription,
         // but the initial hash hasn't come back yet.
         // Stratum sometimes returns `null` hashes as well:
@@ -249,9 +251,8 @@ stopEngine () {
 This is where most of the work happens. Whenever a Stratum connection has space in its queue, it fires the `onQueueSpace` callback. The goal is to return the next most valuable piece of work we can be doing with that server.
 
 1. If we don't know a server's block height, fetch that. If the height is too low, we might want to disconnect.
-2a. If we know about txids that are not in the cache, fetch those (this is pre-calculated as missingTxs). 
-2b. We should only fetch transactions where `txStates[txid].fetching` is false, and where `serverStates[uri].txids[txid]` exists. If no server has the txid in `serverStates[uri].txids`, then the second rule doesn't apply.
-3. If we have not subscribed to some addresses, subscribe. (Are there addresses in AddressCache that don't exist in our ServerState)
+2. If we know about txids that are not in the cache, fetch those. This is pre-calculated as `missingTxs`. We should only fetch transactions where `txStates[txid].fetching` is false, and where `serverStates[uri].txids[txid]` exists. If no server has the txid in `serverStates[uri].txids`, then the second rule doesn't apply.
+3. If we have not subscribed to some addresses, subscribe. These are the addresses that exist in the address cache but don't exist in `serverStates[uri]`.
 4. If an address has a different `utxoStratumHash` from our `serverStates[uri].addresses[address].hash`, *and* our `serverStates[uri].addresses[address].lastUpdate` is the newest of all servers, fetch the utxo set for this address.
 5. If an address has a different `txidStratumHash` from our `serverStates[uri].addresses[address].hash`, *and* our `serverStates[uri].addresses[address].lastUpdate` is the newest of all servers, fetch the txid list for this address.
 6. If we have heights in the tx height cache that do not have corresponding headers, go grab those.
@@ -264,11 +265,9 @@ Just return this out of the block header cache.
 
 Iterate over the utxo set and add their balances. Only include utxos whose txids are present in the TxCache.
 
-// We ignore transactions that have not been fetched from the network, or whose relevant inputs have not been fetched from the network. We // know an input is relevant if its txid is in the `txStates` table.
-
 ### Get Transactions
 
-All the txids relevant to this wallet are in the `txStates` structure as keys. Using this list, plus the tx height cache, we can get a list of txids sorted by date. Only include transactions that are in the TxCache AND whose "relevant" inputs are in the TxCache. We know an input is "relevant" if its txid is in the `txStates` table.
+All the txids relevant to this wallet are in the `txStates` structure as keys. Using this list, plus the tx height cache, we can get a list of txids sorted by date. Only include transactions that are in the trasaction cache *and* whose relevant inputs are in the transaction cache. We know an input is relevant if its txid is in the `txStates` table.
 
 Now, based on the range given in the query, we can figure out exactly which txids we need to fetch. We set up some promises for the disk accesses, and return a `Promise.all` for those. Need to parse raw tx bytes into AbcTransaction
 
@@ -301,7 +300,7 @@ If we are building the transaction manually using primitives, the algorithm is t
 
 Broadcast transaction sends the signed transaction to all connections. Broadcast should return a failure if:
 
-1. Any connection reports that the transaction is a double spend. 
+1. Any connection reports that the transaction is a double spend.
 OR
 2. All connections fail to broadcast.
 
