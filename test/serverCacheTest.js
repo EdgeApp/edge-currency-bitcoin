@@ -6,7 +6,7 @@
  * @flow
  */
 
-const { ServerCache } = require('../lib/indexBitcoin.js')
+const { ServerCache } = require('../lib/indexCrypto.js')
 const { describe, it } = require('mocha')
 
 let assert = require('assert')

@@ -4,7 +4,7 @@
  * @flow
  */
 
-const { calcFeesFromEarnCom, calcMinerFeePerByte } = require('../lib/indexBitcoin.js')
+const { calcFeesFromEarnCom, calcMinerFeePerByte } = require('../lib/indexCrypto.js')
 const earnComTestFees = require('./earnComTestFees.json')
 const { describe, it } = require('mocha')
 
