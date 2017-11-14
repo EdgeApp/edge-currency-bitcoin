@@ -1,14 +1,16 @@
-/* global describe it */
 /**
  * Created by Paul Puey on 2017/11/09
  * @flow
  */
 
-const { calcFeesFromEarnCom, calcMinerFeePerByte } = require('../lib/indexCrypto.js')
-const earnComTestFees = require('./earnComTestFees.json')
 const { describe, it } = require('mocha')
+const {
+  calcFeesFromEarnCom,
+  calcMinerFeePerByte
+} = require('../lib/indexCrypto.js')
+const earnComTestFees = require('./earnComTestFees.json')
 
-let assert = require('assert')
+const assert = require('assert')
 
 describe(`Mining Fees`, function () {
   it('calcFeesFromEarnCom from earn.com', function () {
@@ -70,7 +72,7 @@ describe(`Mining Fees`, function () {
       standardFeeLowAmount: '1111111',
       standardFeeHighAmount: '22222222'
     }
-    const outBitcoinFees = calcFeesFromEarnCom(inBitcoinFees, {fees: []})
+    const outBitcoinFees = calcFeesFromEarnCom(inBitcoinFees, { fees: [] })
 
     assert.equal(outBitcoinFees.standardFeeLowAmount, '1111111')
     assert.equal(outBitcoinFees.standardFeeHighAmount, '22222222')
@@ -91,7 +93,12 @@ describe(`Mining Fees`, function () {
       standardFeeLowAmount: '100000',
       standardFeeHighAmount: '10000000'
     }
-    const result = calcMinerFeePerByte(nativeAmount, feeOption, customFee, bitcoinFees)
+    const result = calcMinerFeePerByte(
+      nativeAmount,
+      feeOption,
+      customFee,
+      bitcoinFees
+    )
     assert.equal(result, '300')
   })
   it('calcMinerFeePerByte standard low', function () {
@@ -106,7 +113,12 @@ describe(`Mining Fees`, function () {
       standardFeeLowAmount: '100000',
       standardFeeHighAmount: '10000000'
     }
-    const result = calcMinerFeePerByte(nativeAmount, feeOption, customFee, bitcoinFees)
+    const result = calcMinerFeePerByte(
+      nativeAmount,
+      feeOption,
+      customFee,
+      bitcoinFees
+    )
     assert.equal(result, '50')
   })
   it('calcMinerFeePerByte standard mid', function () {
@@ -121,7 +133,12 @@ describe(`Mining Fees`, function () {
       standardFeeLowAmount: '100000',
       standardFeeHighAmount: '200000'
     }
-    const result = calcMinerFeePerByte(nativeAmount, feeOption, customFee, bitcoinFees)
+    const result = calcMinerFeePerByte(
+      nativeAmount,
+      feeOption,
+      customFee,
+      bitcoinFees
+    )
     assert.equal(result, '75')
   })
   it('calcMinerFeePerByte low', function () {
@@ -136,7 +153,12 @@ describe(`Mining Fees`, function () {
       standardFeeLowAmount: '100000',
       standardFeeHighAmount: '200000'
     }
-    const result = calcMinerFeePerByte(nativeAmount, feeOption, customFee, bitcoinFees)
+    const result = calcMinerFeePerByte(
+      nativeAmount,
+      feeOption,
+      customFee,
+      bitcoinFees
+    )
     assert.equal(result, '10')
   })
   it('calcMinerFeePerByte high', function () {
@@ -151,7 +173,12 @@ describe(`Mining Fees`, function () {
       standardFeeLowAmount: '100000',
       standardFeeHighAmount: '200000'
     }
-    const result = calcMinerFeePerByte(nativeAmount, feeOption, customFee, bitcoinFees)
+    const result = calcMinerFeePerByte(
+      nativeAmount,
+      feeOption,
+      customFee,
+      bitcoinFees
+    )
     assert.equal(result, '350')
   })
   it('calcMinerFeePerByte custom', function () {
@@ -166,7 +193,12 @@ describe(`Mining Fees`, function () {
       standardFeeLowAmount: '100000',
       standardFeeHighAmount: '200000'
     }
-    const result = calcMinerFeePerByte(nativeAmount, feeOption, customFee, bitcoinFees)
+    const result = calcMinerFeePerByte(
+      nativeAmount,
+      feeOption,
+      customFee,
+      bitcoinFees
+    )
     assert.equal(result, '15')
   })
 })

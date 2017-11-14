@@ -15,7 +15,7 @@ const MAX_SCORE = 500
 const MIN_SCORE = -100
 
 export class ServerCache {
-  servers_: {[serverUrl: string]: ServerInfo}
+  servers_: { [serverUrl: string]: ServerInfo }
   dirty_: boolean
   cacheLastSave_: number
   lastScoreUpTime_: number
@@ -32,7 +32,10 @@ export class ServerCache {
    * @param oldServers: Map of ServerInfo objects by serverUrl. This should come from disk
    * @param newServers: Array<string> of new servers downloaded from the info server
    */
-  serverCacheLoad (oldServers: {[serverUrl: string]: ServerInfo}, newServers: Array<string> = []) {
+  serverCacheLoad (
+    oldServers: { [serverUrl: string]: ServerInfo },
+    newServers: Array<string> = []
+  ) {
     //
     // Add any new servers coming out of the info server
     //
@@ -70,7 +73,8 @@ export class ServerCache {
       }
 
       if (this.cacheLastSave_ === 0) {
-        serverScore = serverScore > MAX_SCORE - 100 ? MAX_SCORE - 100 : serverScore
+        serverScore =
+          serverScore > MAX_SCORE - 100 ? MAX_SCORE - 100 : serverScore
       }
 
       oldServer.serverScore = serverScore
@@ -78,9 +82,7 @@ export class ServerCache {
     }
   }
 
-  serverCacheSave () {
-
-  }
+  serverCacheSave () {}
 
   serverScoreUp (serverUrl: string, changeScore: number = 1) {
     const serverInfo: ServerInfo = this.servers_[serverUrl]
@@ -91,7 +93,14 @@ export class ServerCache {
       this.dirty_ = true
     }
     this.lastScoreUpTime_ = Date.now()
-    console.log('serverScoreUp:' + serverUrl + ' add:' + changeScore + ' => ' + serverInfo.serverScore.toString())
+    console.log(
+      'serverScoreUp:' +
+        serverUrl +
+        ' add:' +
+        changeScore +
+        ' => ' +
+        serverInfo.serverScore.toString()
+    )
   }
 
   serverScoreDown (serverUrl: string, changeScore: number = 10) {
@@ -107,7 +116,14 @@ export class ServerCache {
       serverInfo.serverScore = MIN_SCORE
       this.dirty_ = true
     }
-    console.log('serverScoreUp:' + serverUrl + ' sub:' + changeScore + ' => ' + serverInfo.serverScore.toString())
+    console.log(
+      'serverScoreUp:' +
+        serverUrl +
+        ' sub:' +
+        changeScore +
+        ' => ' +
+        serverInfo.serverScore.toString()
+    )
   }
 
   setResponseTime (serverUrl: string, responseTimeMilliseconds: number) {
@@ -121,13 +137,20 @@ export class ServerCache {
     } else {
       // Every 10th setting of response time, decrease effect of prior values by 5x
       if (serverInfo.numResponseTimes % 10 === 0) {
-        newTime = (oldtime + (responseTimeMilliseconds * 4)) / 5
+        newTime = (oldtime + responseTimeMilliseconds * 4) / 5
       } else {
         newTime = (oldtime + responseTimeMilliseconds) / 2
       }
     }
     serverInfo.responseTime = newTime
-    console.log('setResponseTime:' + serverUrl + ' oldTime:' + oldtime.toString() + ' newTime:' + newTime.toString())
+    console.log(
+      'setResponseTime:' +
+        serverUrl +
+        ' oldTime:' +
+        oldtime.toString() +
+        ' newTime:' +
+        newTime.toString()
+    )
   }
 
   getServers (numServersWanted: number): Array<string> {
@@ -217,8 +240,8 @@ export class ServerCache {
         break
       }
 
-      if ((numServers >= numServersWanted / 2) && numNewServers === 0) {
-        if (newServerInfos.length >= (numServersWanted - numServers)) {
+      if (numServers >= numServersWanted / 2 && numNewServers === 0) {
+        if (newServerInfos.length >= numServersWanted - numServers) {
           break
         }
       }

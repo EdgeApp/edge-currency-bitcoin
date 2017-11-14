@@ -5,7 +5,6 @@
 
 import type { EarnComFees, BitcoinFees } from './flowTypes.js'
 import { EarnComFeesSchema } from './jsonSchemas.js'
-import { sprintf } from 'sprintf-js'
 import { bns } from 'biggystring'
 import { validateObject } from './utils.js'
 
@@ -24,7 +23,10 @@ const MIN_STANDARD_DELAY = 3
  * @param earnComFees
  * @returns {BitcoinFees}
  */
-export function calcFeesFromEarnCom (bitcoinFees: BitcoinFees, earnComFees: EarnComFees): BitcoinFees {
+export function calcFeesFromEarnCom (
+  bitcoinFees: BitcoinFees,
+  earnComFees: EarnComFees
+): BitcoinFees {
   let highDelay = 999999
   let lowDelay = 0
   let highFee = MAX_FEE
@@ -38,10 +40,11 @@ export function calcFeesFromEarnCom (bitcoinFees: BitcoinFees, earnComFees: Earn
   }
 
   for (const fee of earnComFees.fees) {
-    const p = sprintf(
-      'minFee:%d,maxFee:%d,minDelay:%d,maxDelay:%d,minMinutes:%d,maxMinutes:%d',
-      fee.minFee, fee.maxFee, fee.minDelay, fee.maxDelay, fee.minMinutes, fee.maxMinutes
-    )
+    const p = `minFee:${fee.minFee},maxFee:${fee.maxFee},minDelay:${
+      fee.minDelay
+    },maxDelay:${fee.maxDelay},minMinutes:${fee.minMinutes},maxMinutes:${
+      fee.maxMinutes
+    }`
     console.log(p)
 
     // If this is a zero fee estimate, then skip
@@ -79,8 +82,7 @@ export function calcFeesFromEarnCom (bitcoinFees: BitcoinFees, earnComFees: Earn
       continue
     }
 
-    if (fee.maxDelay < lowDelay &&
-      fee.maxDelay <= MAX_STANDARD_DELAY) {
+    if (fee.maxDelay < lowDelay && fee.maxDelay <= MAX_STANDARD_DELAY) {
       if (standardFeeLow > fee.minFee) {
         standardFeeLow = fee.minFee
       }
@@ -124,10 +126,12 @@ export function calcFeesFromEarnCom (bitcoinFees: BitcoinFees, earnComFees: Earn
   //
   // Check if we have a complete set of fee info.
   //
-  if (highFee < MAX_FEE &&
+  if (
+    highFee < MAX_FEE &&
     lowFee < MAX_FEE &&
     standardFeeHigh > 0 &&
-    standardFeeLow < MAX_FEE) {
+    standardFeeLow < MAX_FEE
+  ) {
     const out: BitcoinFees = bitcoinFees
 
     // Overwrite the fees with those from earn.com
@@ -154,7 +158,8 @@ export function calcMinerFeePerByte (
   nativeAmount: string,
   feeOption: string,
   customFee: string,
-  bitcoinFees: BitcoinFees): string {
+  bitcoinFees: BitcoinFees
+): string {
   let satoshiPerByteFee: string = customFee
   switch (feeOption) {
     case ES_FEE_LOW:
@@ -171,11 +176,20 @@ export function calcMinerFeePerByte (
       }
 
       // Scale the fee by the amount the user is sending scaled between standardFeeLowAmount and standardFeeHighAmount
-      const lowHighAmountDiff = bns.sub(bitcoinFees.standardFeeHighAmount, bitcoinFees.standardFeeLowAmount)
-      const lowHighFeeDiff = bns.sub(bitcoinFees.standardFeeHigh, bitcoinFees.standardFeeLow)
+      const lowHighAmountDiff = bns.sub(
+        bitcoinFees.standardFeeHighAmount,
+        bitcoinFees.standardFeeLowAmount
+      )
+      const lowHighFeeDiff = bns.sub(
+        bitcoinFees.standardFeeHigh,
+        bitcoinFees.standardFeeLow
+      )
 
       // How much above the lowFeeAmount is the user sending
-      const amountDiffFromLow = bns.sub(nativeAmount, bitcoinFees.standardFeeLowAmount)
+      const amountDiffFromLow = bns.sub(
+        nativeAmount,
+        bitcoinFees.standardFeeLowAmount
+      )
 
       // Add this much to the low fee = (amountDiffFromLow * lowHighFeeDiff) / lowHighAmountDiff)
       const temp1 = bns.mul(amountDiffFromLow, lowHighFeeDiff)
