@@ -2,51 +2,35 @@
   "name": "edge-currency-bitcoin",
   "version": "0.10.7",
   "description": "Edge Bitcoin currency plugin",
+  "homepage": "https://edgesecure.co",
+  "license": "SEE LICENSE IN LICENSE",
   "author": "Airbitz, Inc.",
   "contributors": [
     "Eliran Zach <eliran@edgesecure.co>",
     "Paul Puey <paul@edgesecure.co>",
     "Stan Synko <stan@airbitz.co>"
   ],
-  "license": "SEE LICENSE IN LICENSE",
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:Airbitz/edge-currency-bitcoin.git"
-  },
-  "url": "https://edgesecure.co",
-  "main": "./lib/indexCrypto.js",
-  "module": "./lib/indexCrypto.es.js",
-  "scripts": {
-    "lint": "standard '**/*.js' && flow",
-    "build": "rollup -c && npm run build:flow",
-    "build:flow": "flow-copy-source -v -i '**/test/**' src lib",
-    "prepare": "ROLLUPCONFIG=rollup.config.js npm run build",
-    "test": "npm run lint && mocha --exit",
-    "mocha": "npm run pretest && mocha --exit",
-    "pretest": "npm run build",
-    "precommit": "npm run lint",
-    "updot": "updot",
-    "security": "nsp check"
-  },
   "files": [
     "changelog.md",
     "lib/*"
   ],
-  "standard": {
-    "parser": "babel-eslint",
-    "plugins": [
-      "flowtype"
-    ],
-    "globals": [
-      "describe",
-      "context",
-      "before",
-      "beforeEach",
-      "after",
-      "afterEach",
-      "it",
-      "expect"
-    ]
+  "main": "./lib/indexCrypto.js",
+  "module": "./lib/indexCrypto.es.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Airbitz/edge-currency-bitcoin.git"
+  },
+  "scripts": {
+    "build": "rollup -c && npm run build:flow",
+    "build:flow": "flow-copy-source -v -i '**/test/**' src lib",
+    "precommit": "npm run lint",
+    "lint": "standard '**/*.js' && flow",
+    "mocha": "npm run pretest && mocha --exit",
+    "prepare": "ROLLUPCONFIG=rollup.config.js npm run build",
+    "security": "nsp check",
+    "pretest": "npm run build",
+    "test": "npm run lint && mocha --exit",
+    "updot": "updot"
   },
   "dependencies": {
     "airbitz-core-types": "git+https://github.com/Airbitz/airbitz-core-types.git",
@@ -76,5 +60,21 @@
     "rollup-plugin-replace": "^2.0.0",
     "standard": "^10.0.2",
     "updot": "^1.1.4"
+  },
+  "standard": {
+    "parser": "babel-eslint",
+    "plugins": [
+      "flowtype"
+    ],
+    "globals": [
+      "describe",
+      "context",
+      "before",
+      "beforeEach",
+      "after",
+      "afterEach",
+      "it",
+      "expect"
+    ]
   }
 }
