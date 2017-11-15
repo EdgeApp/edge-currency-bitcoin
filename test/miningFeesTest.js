@@ -3,12 +3,13 @@
  * @flow
  */
 
+import type {} from '../src/miningFees.js'
 const { describe, it } = require('mocha')
 const {
   calcFeesFromEarnCom,
   calcMinerFeePerByte
 } = require('../lib/indexCrypto.js')
-const earnComTestFees = require('./earnComTestFees.json')
+const earnComTestFees = require('../test/earnComTestFees.json')
 
 const assert = require('assert')
 
@@ -18,7 +19,10 @@ describe(`Mining Fees`, function () {
       standardFeeLowAmount: '100000',
       standardFeeHighAmount: '10000000'
     }
-    const outBitcoinFees = calcFeesFromEarnCom(inBitcoinFees, earnComTestFees)
+    const outBitcoinFees: BitcoinFees = calcFeesFromEarnCom(
+      inBitcoinFees,
+      earnComTestFees
+    )
 
     assert.equal(outBitcoinFees.standardFeeLowAmount, '100000')
     assert.equal(outBitcoinFees.standardFeeHighAmount, '10000000')
