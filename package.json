@@ -22,7 +22,8 @@
   },
   "scripts": {
     "build": "rollup -c && npm run build:flow",
-    "build:flow": "flow-copy-source -v -i '**/test/**' src lib && flow-remove-types test/ -d libtest/",
+    "build:flow": "flow-copy-source -v -i '**/test/**' src lib && npm run build:flow:test",
+    "build:flow:test": "flow-copy-source -v test libtest && flow-remove-types test/ -d libtest/",
     "precommit": "lint-staged && npm test",
     "flow": "flow status",
     "format": "prettier-eslint --write '*.js' 'src/**/*.js' 'test/**/*.js'",

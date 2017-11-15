@@ -4,7 +4,7 @@
  */
 
 import type { AddressCache, AddressObj, UtxoObj } from './engineState.js'
-import type { HeaderCache } from './pluginState.js'
+// import type { HeaderCache } from './pluginState.js'
 import coinselect from 'coinselect'
 
 interface BjsUtxo {
@@ -15,7 +15,7 @@ interface BjsUtxo {
 
 export function pickUtxos (
   addressCache: AddressCache,
-  headerCache: HeaderCache,
+  // headerCache: HeaderCache,
   amountSatoshi: number,
   useOnlyConfirmed: boolean = true
 ) {

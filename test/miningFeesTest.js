@@ -3,7 +3,7 @@
  * @flow
  */
 
-import type {} from '../src/miningFees.js'
+import type { BitcoinFees } from '../src/flowTypes.js'
 const { describe, it } = require('mocha')
 const {
   calcFeesFromEarnCom,
