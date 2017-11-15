@@ -11,6 +11,28 @@ export interface EngineStateOptions {
   localFolder: any;
 }
 
+export type UtxoObj = {
+  txid: string, // tx_hash from Stratum
+  index: number, // tx_pos from Stratum
+  value: number // Satoshis fit in a number
+}
+
+export type AddressObj = {
+  txids: Array<string>,
+  txidStratumHash: string,
+
+  utxos: Array<UtxoObj>,
+  utxoStratumHash: string,
+
+  used: boolean, // Set by `addGapLimitAddress`
+  displayAddress: string, // base58 or other wallet-ready format
+  path: string // TODO: Define the contents of this member.
+}
+
+export type AddressCache = {
+  [scriptHash: string]: AddressObj
+}
+
 /**
  * This object holds the current state of the wallet engine.
  * It is responsible for staying connected to Stratum servers and keeping
@@ -18,23 +40,7 @@ export interface EngineStateOptions {
  */
 export class EngineState {
   // On-disk address information:
-  addressCache: {
-    [scriptHash: string]: {
-      txids: Array<string>,
-      txidStratumHash: string,
-
-      utxos: Array<{
-        txid: string, // tx_hash from Stratum
-        index: number, // tx_pos from Stratum
-        value: number // Satoshis fit in a number
-      }>,
-      utxoStratumHash: string,
-
-      used: boolean, // Set by `addGapLimitAddress`
-      displayAddress: string, // base58 or other wallet-ready format
-      path: string // TODO: Define the contents of this member.
-    }
-  }
+  addressCache: AddressCache
 
   // On-disk transaction information:
   txCache: {
