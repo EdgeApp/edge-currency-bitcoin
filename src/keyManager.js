@@ -12,14 +12,20 @@ const UNUSED = 0
 const LEASED = 1
 const USED = 2
 
-type Address = {
+type Key = {
   state: number,
   displayAddress: string,
   scriptHash: string,
   index: number
 }
 
-export class AddressMananger {
+type KeyRing = {
+  pubKey: any,
+  pubPriv: any,
+  children: Array<Key>
+}
+
+export class KeyMananger {
   bip: string
   masterPath: string
   currencyName: string
@@ -27,9 +33,9 @@ export class AddressMananger {
   masterKeys: any
   engineState: EngineState
   gapLimit: number
-  addresses: {
-    receive: Array<Address>,
-    change: Array<Address>
+  keys: {
+    receive: KeyRing,
+    change: KeyRing
   }
 
   constructor (keyInfo: AbcWalletInfo, engineState: EngineState, gapLimit: number) {
@@ -68,24 +74,32 @@ export class AddressMananger {
     this.engineState = engineState
 
     this.gapLimit = gapLimit || GAP_LIMIT
-    this.addresses = {
-      receive: [],
-      change: []
+    this.keys = {
+      receive: {
+        pubKey: null,
+        pubPriv: null,
+        children: []
+      },
+      change: {
+        pubKey: null,
+        pubPriv: null,
+        children: []
+      }
     }
 
     for (const scriptHash in this.engineState.addressCache) {
       const { txids, displayAddress, path } = this.engineState.addressCache[scriptHash]
       const [ branch, index ] = path.split(this.masterPath)[1].split('/')
       const state = txids && txids.length > 0 ? USED : UNUSED
-      const address = { state, displayAddress, scriptHash, index: parseInt(index) }
+      const key = { state, displayAddress, scriptHash, index: parseInt(index) }
       if (branch) {
-        this.addresses.receive.push(address)
+        this.keys.receive.children.push(key)
       } else {
-        this.addresses.change.push(address)
+        this.keys.change.children.push(key)
       }
     }
-    this.addresses.receive.sort((a, b) => a.index > b.index ? -1 : (a.index < b.index ? 1 : 0))
-    this.addresses.change.sort((a, b) => a.index > b.index ? -1 : (a.index < b.index ? 1 : 0))
+    this.keys.receive.children.sort((a, b) => a.index > b.index ? -1 : (a.index < b.index ? 1 : 0))
+    this.keys.change.children.sort((a, b) => a.index > b.index ? -1 : (a.index < b.index ? 1 : 0))
     this.setLookAhead()
   }
 
@@ -94,17 +108,17 @@ export class AddressMananger {
   // ////////////////////////////////////////////// //
 
   getReceive () {
-    return this.getNextAvailable(this.addresses.receive)
+    return this.getNextAvailable(this.keys.receive.children)
   }
 
   getChange () {
-    return this.getNextAvailable(this.addresses.change)
+    return this.getNextAvailable(this.keys.change.children)
   }
 
   use (scriptHash: string) {
-    for (const branch in this.addresses) {
+    for (const branch in this.keys) {
       let found = false
-      for (const address of this.addresses[branch]) {
+      for (const address of this.keys[branch]) {
         if (address.scriptHash === scriptHash) {
           address.state = USED
           found = true
@@ -116,7 +130,7 @@ export class AddressMananger {
     this.setLookAhead()
   }
 
-  deriveKey (branch: number, index: number, key: any) {
+  deriveKey (branch: number, index?: number, key?: any) {
     if (typeof index !== 'number' && !key) {
       key = index
       index = 0
@@ -130,30 +144,30 @@ export class AddressMananger {
   // ////////////// Private API /////////////////// //
   // ////////////////////////////////////////////// //
 
-  getNextAvailable (addresses: Array<Address>) {
-    let address = null
-    for (let i = addresses.length - 1; i >= 0; i++) {
-      if (addresses[i].state === UNUSED) {
-        address = addresses[i]
+  getNextAvailable (keys: Array<Key>) {
+    let key = null
+    for (let i = keys.length - 1; i >= 0; i++) {
+      if (keys[i].state === UNUSED) {
+        key = keys[i]
         break
       }
     }
-    if (!address) {
-      for (let i = addresses.length - 1; i >= 0; i++) {
-        if (addresses[i].state === LEASED) {
-          address = addresses[i]
+    if (!key) {
+      for (let i = keys.length - 1; i >= 0; i++) {
+        if (keys[i].state === LEASED) {
+          key = keys[i]
           break
         }
       }
     }
-    if (!address) {
+    if (!key) {
       this.setLookAhead()
-      return this.getNextAvailable(addresses)
+      return this.getNextAvailable(keys)
     }
 
-    address.state = LEASED
+    key.state = LEASED
     this.setLookAhead()
-    return address
+    return key
   }
 
   getPrivateFromSeed (seed: string) {
@@ -170,21 +184,26 @@ export class AddressMananger {
 
   setLookAhead () {
     if (this.bip !== 'bip32') {
-      if (this.deriveNewAddress(this.addresses.change, 0)) this.setLookAhead()
+      if (this.deriveNewKeys(this.keys.change, 0)) this.setLookAhead()
     }
-    if (this.deriveNewAddress(this.addresses.receive, 1)) this.setLookAhead()
+    if (this.deriveNewKeys(this.keys.receive, 1)) this.setLookAhead()
   }
 
-  deriveNewAddress (addresses: Array<Address>, branch: number) {
+  deriveNewKeys (keyRing: KeyRing, branch: number) {
     let newPubKey = null
     let index = 0
-    if (!addresses.length) {
-      newPubKey = this.deriveKey(branch, 0)
+    const { children, pubKey } = keyRing
+    if (!pubKey) {
+      keyRing.pubKey = this.deriveKey(branch)
+    }
+    // deriveNewKeys
+    if (!children.length) {
+      newPubKey = this.deriveKey(0, keyRing.pubKey)
     } else {
-      for (let i = 0; i < addresses.length; i++) {
-        if (addresses[i].state === USED && i < this.gapLimit) {
-          index = addresses.length
-          newPubKey = this.deriveKey(branch, index)
+      for (let i = 0; i < children.length; i++) {
+        if (children[i].state === USED && i < this.gapLimit) {
+          index = children.length
+          newPubKey = this.deriveKey(index, keyRing.pubKey)
           break
         }
       }
@@ -203,7 +222,7 @@ export class AddressMananger {
       const address = bcoin.primities.Address.fromHash(hash, type, version, this.network)
       const scriptHash = this.addressToScriptHash(address)
       this.engineState.addAddress(scriptHash, address, `${this.masterPath}/${branch}/${index}`)
-      addresses.unshift({
+      children.unshift({
         state: UNUSED,
         displayAddress: address,
         scriptHash: scriptHash,
