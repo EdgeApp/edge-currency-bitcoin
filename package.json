@@ -46,6 +46,7 @@
     "babel-eslint": "^7.2.3",
     "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "babel-preset-flow": "^6.23.0",
+    "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
     "coinstring": "^2.3.0",
     "disklet": "^0.2.4",
     "eslint": "^4.5.0",
