@@ -21,18 +21,17 @@
     "url": "git@github.com:Airbitz/edge-currency-bitcoin.git"
   },
   "scripts": {
-    "build": "rollup -c && npm run build:flow",
-    "build:flow": "flow-copy-source -v -i '**/test/**' src lib && npm run build:flow:test",
-    "build:flow:test": "flow-copy-source -v test libtest && flow-remove-types test/ -d libtest/",
-    "precommit": "lint-staged && npm test",
+    "build": "rollup -c && flow-copy-source src lib && npm run build:flow",
+    "build:flow": "flow-copy-source -i '**/*.test.js' src lib",
+    "build:test": "rollup -c rollup.config.test.js",
+    "precommit": "lint-staged && npm test && npm run build",
     "flow": "flow status",
-    "format": "prettier-eslint --write '*.js' 'src/**/*.js' 'test/**/*.js'",
-    "lint": "eslint '*.js' 'src/**/*.js' 'test/**/*.js' && npm run flow",
-    "mocha": "npm run pretest && mocha --exit \"libtest/**/*.js\"",
-    "prepare": "ROLLUPCONFIG=rollup.config.js npm run build",
+    "format": "prettier-eslint --write '*.js' 'src/**/*.js'",
+    "lint": "eslint '*.js' 'src/**/*.js' && npm run flow",
+    "prepare": "npm run build",
     "security": "nsp check",
-    "pretest": "npm run build",
-    "test": "npm run lint && npm run mocha",
+    "pretest": "npm run build:test",
+    "test": "npm run lint && mocha --require source-map-support/register build/tests.cjs.js",
     "updot": "updot"
   },
   "dependencies": {
@@ -49,6 +48,7 @@
     "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "babel-preset-flow": "^6.23.0",
     "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
+    "chai": "^4.1.2",
     "coinstring": "^2.3.0",
     "disklet": "^0.2.4",
     "eslint": "^4.5.0",
@@ -60,7 +60,6 @@
     "eslint-plugin-standard": "^3.0.1",
     "flow-bin": "^0.58.0",
     "flow-copy-source": "^1.2.1",
-    "flow-remove-types": "^1.2.3",
     "husky": "^0.14.3",
     "jsonfile": "^4.0.0",
     "lint-staged": "^5.0.0",
@@ -71,8 +70,16 @@
     "request": "^2.83.0",
     "rollup": "0.48.0",
     "rollup-plugin-babel": "^3.0.2",
+    "rollup-plugin-json": "^2.3.0",
+    "rollup-plugin-multi-entry": "^2.0.2",
     "rollup-plugin-replace": "^2.0.0",
     "updot": "^1.1.4"
+  },
+  "importSort": {
+    ".js, .es": {
+      "parser": "babylon",
+      "style": "module"
+    }
   },
   "lint-staged": {
     "*.js": [

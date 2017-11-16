@@ -3,11 +3,10 @@
  * @flow
  */
 
-const { describe, it } = require('mocha')
-// import type {ServerInfo} from '../src/serverCache'
-const { ServerCache } = require('../lib/indexCrypto.js')
+import { assert } from 'chai'
+import { describe, it } from 'mocha'
 
-const assert = require('assert')
+import { ServerCache } from './serverCache.js'
 
 describe(`ServerCache`, function () {
   it('Score only', function () {

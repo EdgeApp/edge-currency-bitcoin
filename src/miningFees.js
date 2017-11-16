@@ -25,7 +25,7 @@ const MIN_STANDARD_DELAY = 3
  */
 export function calcFeesFromEarnCom (
   bitcoinFees: BitcoinFees,
-  earnComFees: EarnComFees
+  earnComFeesJson: any
 ): BitcoinFees {
   let highDelay = 999999
   let lowDelay = 0
@@ -34,11 +34,12 @@ export function calcFeesFromEarnCom (
   let standardFeeLow = MAX_FEE
   let lowFee = MAX_FEE
 
-  const valid = validateObject(earnComFees, EarnComFeesSchema)
+  const valid = validateObject(earnComFeesJson, EarnComFeesSchema)
   if (!valid) {
     return bitcoinFees
   }
 
+  const earnComFees: EarnComFees = earnComFeesJson
   for (const fee of earnComFees.fees) {
     const p = `minFee:${fee.minFee},maxFee:${fee.maxFee},minDelay:${
       fee.minDelay

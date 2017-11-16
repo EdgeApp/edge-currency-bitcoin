@@ -1,31 +1,28 @@
-import replace from 'rollup-plugin-replace'
 import babel from 'rollup-plugin-babel'
-
-const packageJson = require('./package.json')
+import json from 'rollup-plugin-json'
+import packageJson from './package.json'
+import replace from 'rollup-plugin-replace'
 
 const babelConf = {
   presets: ['flow']
 }
 
 export default {
+  external: [
+    ...Object.keys(packageJson.dependencies),
+    ...Object.keys(packageJson.devDependencies)
+  ],
   input: './src/indexCrypto.js',
-  external: Object.keys(packageJson.dependencies),
+  output: [
+    { file: packageJson.main, format: 'cjs' },
+    { file: packageJson.module, format: 'es' }
+  ],
   plugins: [
+    json(),
     replace({
       bufferPlaceHolder: 'buffer/'
     }),
     babel(babelConf)
   ],
-  output: [
-    {
-      file: packageJson['main'],
-      format: 'cjs',
-      sourcemap: true
-    },
-    {
-      file: packageJson['module'],
-      format: 'es',
-      sourcemap: true
-    }
-  ]
+  sourcemap: true
 }

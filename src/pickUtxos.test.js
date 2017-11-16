@@ -3,13 +3,12 @@
  * @flow
  */
 
+import { assert } from 'chai'
+import { describe, it } from 'mocha'
+
 import type { AddressCache, AddressObj } from '../src/engine/engine-state.js'
 // import type { HeaderCache } from '../src/pluginState'
-
-const { describe, it } = require('mocha')
-const { pickUtxos } = require('../lib/indexCrypto.js')
-
-const assert = require('assert')
+import { pickUtxos } from './pickUtxos.js'
 
 // const headerCache: HeaderCache = {
 //   height: 300000,
@@ -49,7 +48,7 @@ describe(`Pick UTXOs`, function () {
       })
     }
     const control = [{ txid: 'txid3', index: 1, value: 400 }]
-    const pickedUtxos = pickUtxos(addressCache, 400, 0)
+    const pickedUtxos = pickUtxos(addressCache, 400, false)
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
 
@@ -76,7 +75,7 @@ describe(`Pick UTXOs`, function () {
       { txid: 'txid1', index: 2, value: 600 },
       { txid: 'txid1', index: 0, value: 100 }
     ]
-    const pickedUtxos = pickUtxos(addressCache, 700, 0)
+    const pickedUtxos = pickUtxos(addressCache, 700, false)
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
 
@@ -104,7 +103,7 @@ describe(`Pick UTXOs`, function () {
       { txid: 'txid3', index: 1, value: 400 },
       { txid: 'txid2', index: 1, value: 300 }
     ]
-    const pickedUtxos = pickUtxos(addressCache, 1300, 0)
+    const pickedUtxos = pickUtxos(addressCache, 1300, false)
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
   it('Non-exact fit 1 utxo', function () {
@@ -127,7 +126,7 @@ describe(`Pick UTXOs`, function () {
       })
     }
     const control = [{ txid: 'txid1', index: 2, value: 600 }]
-    const pickedUtxos = pickUtxos(addressCache, 190, 0)
+    const pickedUtxos = pickUtxos(addressCache, 190, false)
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
 
@@ -154,7 +153,7 @@ describe(`Pick UTXOs`, function () {
       { txid: 'txid1', index: 2, value: 600 },
       { txid: 'txid3', index: 1, value: 400 }
     ]
-    const pickedUtxos = pickUtxos(addressCache, 950, 0)
+    const pickedUtxos = pickUtxos(addressCache, 950, false)
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
 })

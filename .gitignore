@@ -1,7 +1,6 @@
 .idea/
 .nyc_output
+/build
 /coverage
 /lib
-lib
 /node_modules
-libtest/

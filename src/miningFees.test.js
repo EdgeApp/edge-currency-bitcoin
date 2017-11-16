@@ -3,19 +3,20 @@
  * @flow
  */
 
-import type { BitcoinFees } from '../src/flowTypes.js'
-const { describe, it } = require('mocha')
-const {
-  calcFeesFromEarnCom,
-  calcMinerFeePerByte
-} = require('../lib/indexCrypto.js')
-const earnComTestFees = require('../test/earnComTestFees.json')
+import { assert } from 'chai'
+import { describe, it } from 'mocha'
 
-const assert = require('assert')
+import type { BitcoinFees } from '../src/flowTypes.js'
+import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
+import earnComTestFees from './test/earnComTestFees.json'
 
 describe(`Mining Fees`, function () {
   it('calcFeesFromEarnCom from earn.com', function () {
     const inBitcoinFees = {
+      highFee: '',
+      lowFee: '',
+      standardFeeLow: '',
+      standardFeeHigh: '',
       standardFeeLowAmount: '100000',
       standardFeeHighAmount: '10000000'
     }
