@@ -1,6 +1,6 @@
 // @flow
 import type { AbcWalletInfo } from 'airbitz-core-types'
-import type { EngineState } from './engineState.js'
+import type { EngineState } from './engine-state.js'
 
 // $FlowFixMe
 const BufferJS = require('bufferPlaceHolder').Buffer

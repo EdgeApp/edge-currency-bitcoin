@@ -3,7 +3,11 @@
  * @flow
  */
 
-import type { AddressCache, AddressObj, UtxoObj } from './engineState.js'
+import type {
+  AddressCache,
+  AddressObj,
+  UtxoObj
+} from './engine/engine-state.js'
 // import type { HeaderCache } from './pluginState.js'
 import coinselect from 'coinselect'
 

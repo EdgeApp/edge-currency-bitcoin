@@ -1,6 +1,6 @@
 // @flow
-import type { StratumCallbacks } from './stratumConnection.js'
-import { StratumConnection } from './stratumConnection.js'
+import type { StratumCallbacks } from '../stratum/stratum-connection.js'
+import { StratumConnection } from '../stratum/stratum-connection.js'
 
 export interface EngineStateCallbacks {}
 

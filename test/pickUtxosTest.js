@@ -3,7 +3,7 @@
  * @flow
  */
 
-import type { AddressCache, AddressObj } from '../src/engineState.js'
+import type { AddressCache, AddressObj } from '../src/engine/engine-state.js'
 // import type { HeaderCache } from '../src/pluginState'
 
 const { describe, it } = require('mocha')
