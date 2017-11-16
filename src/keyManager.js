@@ -77,7 +77,7 @@ export class AddressMananger {
       const { txids, displayAddress, path } = this.engineState.addressCache[scriptHash]
       const [ branch, index ] = path.split(this.masterPath)[1].split('/')
       const state = txids && txids.length > 0 ? USED : UNUSED
-      const address = { state, displayAddress, scriptHash, index }
+      const address = { state, displayAddress, scriptHash, index: parseInt(index) }
       if (branch) {
         this.addresses.receive.push(address)
       } else {
@@ -104,7 +104,7 @@ export class AddressMananger {
   use (scriptHash: string) {
     for (const branch in this.addresses) {
       let found = false
-      for (const address of branch) {
+      for (const address of this.addresses[branch]) {
         if (address.scriptHash === scriptHash) {
           address.state = USED
           found = true
@@ -116,10 +116,10 @@ export class AddressMananger {
     this.setLookAhead()
   }
 
-  deriveKey (branch, index, key) {
+  deriveKey (branch: number, index: number, key: any) {
     if (typeof index !== 'number' && !key) {
       key = index
-      index = null
+      index = 0
     }
     key = key || this.masterKeys.masterPublic
     key = key.derive(branch)
@@ -203,7 +203,7 @@ export class AddressMananger {
       const address = bcoin.primities.Address.fromHash(hash, type, version, this.network)
       const scriptHash = this.addressToScriptHash(address)
       this.engineState.addAddress(scriptHash, address, `${this.masterPath}/${branch}/${index}`)
-      addresses.shift({
+      addresses.unshift({
         state: UNUSED,
         displayAddress: address,
         scriptHash: scriptHash,
