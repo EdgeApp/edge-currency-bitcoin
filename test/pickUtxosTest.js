@@ -126,9 +126,7 @@ describe(`Pick UTXOs`, function () {
         utxos: [{ txid: 'txid1', index: 2, value: 600 }]
       })
     }
-    const control = [
-      { txid: 'txid1', index: 2, value: 600 }
-    ]
+    const control = [{ txid: 'txid1', index: 2, value: 600 }]
     const pickedUtxos = pickUtxos(addressCache, 190, 0)
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })

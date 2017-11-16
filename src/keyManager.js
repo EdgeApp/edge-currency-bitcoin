@@ -38,7 +38,11 @@ export class KeyMananger {
     change: KeyRing
   }
 
-  constructor (keyInfo: AbcWalletInfo, engineState: EngineState, gapLimit: number) {
+  constructor (
+    keyInfo: AbcWalletInfo,
+    engineState: EngineState,
+    gapLimit: number
+  ) {
     if (!keyInfo.keys) throw new Error('Missing Master Key')
 
     const walletType = keyInfo.type
@@ -50,25 +54,35 @@ export class KeyMananger {
         this.masterPath = 'm/0'
         break
       case 'bip44':
-        this.masterPath = 'm/44\'/0\'/0\''
+        this.masterPath = "m/44'/0'/0'"
         break
       case 'bip49':
-        this.masterPath = 'm/49\'/0\'/0\''
+        this.masterPath = "m/49'/0'/0'"
         break
     }
-    this.currencyName = walletType.split(':')[1].split('-')[0].toLowerCase()
+    this.currencyName = walletType
+      .split(':')[1]
+      .split('-')[0]
+      .toLowerCase()
     this.network = walletType.includes('testnet') ? 'testnet' : 'main'
 
     this.masterKeys = keyInfo.keys
     this.masterKeys.masterPrivate = keyInfo.keys[`${this.currencyName}Key`]
     this.masterKeys.masterPublic = keyInfo.keys[`${this.currencyName}Xpub`]
 
-    if (!this.masterKeys.masterPublic && !this.masterKeys.masterPrivate) throw new Error('Missing Master Key')
+    if (!this.masterKeys.masterPublic && !this.masterKeys.masterPrivate) {
+      throw new Error('Missing Master Key')
+    }
 
     if (!this.masterKeys.masterPublic) {
-      this.masterKeys.masterPrivate = this.getPrivateFromSeed(this.masterKeys.masterPrivate)
+      this.masterKeys.masterPrivate = this.getPrivateFromSeed(
+        this.masterKeys.masterPrivate
+      )
     } else {
-      this.masterKeys.masterPublic = bcoin.hd.PublicKey.fromBase58(this.masterKeys.masterPublic, this.network)
+      this.masterKeys.masterPublic = bcoin.hd.PublicKey.fromBase58(
+        this.masterKeys.masterPublic,
+        this.network
+      )
     }
 
     this.engineState = engineState
@@ -88,8 +102,9 @@ export class KeyMananger {
     }
 
     for (const scriptHash in this.engineState.addressCache) {
-      const { txids, displayAddress, path } = this.engineState.addressCache[scriptHash]
-      const [ branch, index ] = path.split(this.masterPath)[1].split('/')
+      const address = this.engineState.addressCache[scriptHash]
+      const { txids, displayAddress, path } = address
+      const [branch, index] = path.split(this.masterPath)[1].split('/')
       const state = txids && txids.length > 0 ? USED : UNUSED
       const key = { state, displayAddress, scriptHash, index: parseInt(index) }
       if (branch) {
@@ -98,8 +113,12 @@ export class KeyMananger {
         this.keys.change.children.push(key)
       }
     }
-    this.keys.receive.children.sort((a, b) => a.index > b.index ? -1 : (a.index < b.index ? 1 : 0))
-    this.keys.change.children.sort((a, b) => a.index > b.index ? -1 : (a.index < b.index ? 1 : 0))
+    this.keys.receive.children.sort(
+      (a, b) => (a.index > b.index ? -1 : a.index < b.index ? 1 : 0)
+    )
+    this.keys.change.children.sort(
+      (a, b) => (a.index > b.index ? -1 : a.index < b.index ? 1 : 0)
+    )
     this.setLookAhead()
   }
 
@@ -174,7 +193,10 @@ export class KeyMananger {
     let privateKey
     try {
       const mnemonic = bcoin.hd.Mnemonic.fromPhrase(seed)
-      privateKey = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network).toPublic()
+      privateKey = bcoin.hd.PrivateKey.fromMnemonic(
+        mnemonic,
+        this.network
+      ).toPublic()
     } catch (e) {
       const keyBuffer = BufferJS.from(seed, 'base64')
       privateKey = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
@@ -219,9 +241,18 @@ export class KeyMananger {
       } else {
         hash = '' // TODO
       }
-      const address = bcoin.primities.Address.fromHash(hash, type, version, this.network)
+      const address = bcoin.primities.Address.fromHash(
+        hash,
+        type,
+        version,
+        this.network
+      )
       const scriptHash = this.addressToScriptHash(address)
-      this.engineState.addAddress(scriptHash, address, `${this.masterPath}/${branch}/${index}`)
+      this.engineState.addAddress(
+        scriptHash,
+        address,
+        `${this.masterPath}/${branch}/${index}`
+      )
       children.unshift({
         state: UNUSED,
         displayAddress: address,
@@ -235,9 +266,16 @@ export class KeyMananger {
   addressToScriptHash (address: string) {
     const script = bcoin.script.fromAddress(address)
     const scriptRaw = script.toRaw()
-    const scriptHash = crypto.createHash('sha256').update(scriptRaw).digest().toString('hex')
+    const scriptHash = crypto
+      .createHash('sha256')
+      .update(scriptRaw)
+      .digest()
+      .toString('hex')
     // $FlowFixMe
-    const reversedScriptHash = scriptHash.match(/../g).reverse().join('')
+    const reversedScriptHash = scriptHash
+      .match(/../g)
+      .reverse()
+      .join('')
     return reversedScriptHash
   }
 
