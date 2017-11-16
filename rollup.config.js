@@ -12,7 +12,7 @@ export default {
     ...Object.keys(packageJson.dependencies),
     ...Object.keys(packageJson.devDependencies)
   ],
-  input: './src/indexCrypto.js',
+  input: './src/plugin-index.js',
   output: [
     { file: packageJson.main, format: 'cjs' },
     { file: packageJson.module, format: 'es' }
