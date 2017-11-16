@@ -177,6 +177,7 @@ export class EngineState {
   onHeightUpdated: (height: number) => void
 
   refillServers () {
+    const { io } = this
     let lastUri = 1
     while (Object.keys(this.connections).length < 5) {
       const uri = 'blah' + ++lastUri // pickServerUri(serverCache, connections)
@@ -196,7 +197,7 @@ export class EngineState {
         }
       }
 
-      this.connections[uri] = new StratumConnection(uri, { callbacks })
+      this.connections[uri] = new StratumConnection(uri, { callbacks, io })
     }
   }
 

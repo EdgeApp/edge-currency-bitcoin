@@ -1,15 +1,41 @@
 // @flow
+import { URL } from 'url'
 
-export interface StratumTask {}
+import { fetchVersion } from './stratum-messages.js'
+
+export type OnFailHandler = (error: Error) => void
+export type OnCloseHandler = (
+  uri: string,
+  badMessages: number,
+  goodMessages: number,
+  latency: number,
+  error?: Error
+) => void
+
+// Timing can vary a little in either direction for fewer wakeups:
+const TIMER_SLACK = 500
+const KEEPALIVE_MS = 60000
+
+/**
+ * This is a private type used by the Stratum connection.
+ * Use the static task-creator methods to build these.
+ */
+export interface StratumTask {
+  method: string;
+  params: Array<any>;
+  +onDone: (reply: any) => void;
+  +onFail: OnFailHandler;
+}
 
 export interface StratumCallbacks {
   +onOpen: (uri: string) => void;
-  +onClose: (uri: string, error?: Error) => void;
+  +onClose: OnCloseHandler;
   +onQueueSpace: (uri: string) => StratumTask | void;
 }
 
 export interface StratumOptions {
   callbacks: StratumCallbacks;
+  io: any;
   queueSize?: number; // defaults to 10
   timeout?: number; // seconds, defaults to 30
 }
@@ -23,48 +49,303 @@ function nop () {}
  */
 export class StratumConnection {
   uri: string
+  connected: boolean
 
   constructor (uri: string, options: StratumOptions) {
-    const { callbacks = {}, queueSize = 10, timeout = 30 } = options
+    const { callbacks = {}, io, queueSize = 10, timeout = 30 } = options
     const { onOpen = nop, onClose = nop, onQueueSpace = nop } = callbacks
 
-    this.uri = uri
-    this.onOpen = onOpen
+    this.io = io
     this.onClose = onClose
+    this.onOpen = onOpen
     this.onQueueSpace = onQueueSpace
     this.queueSize = queueSize
-    this.timeout = timeout
+    this.timeout = 1000 * timeout
+    this.uri = uri
+
+    // Message queue:
+    this.nextId = 0
+    this.pendingMessages = {}
   }
 
   /**
    * Activates the underlying TCP connection.
    */
-  open () {}
+  open () {
+    const parsed = new URL(this.uri)
+    if (
+      (parsed.protocol !== 'electrum:' && parsed.protocol !== 'electrums:') ||
+      !parsed.hostname ||
+      !parsed.port
+    ) {
+      throw new TypeError(`Bad stratum URI: ${this.uri}`)
+    }
+    console.log(`Connecting to ${this.uri}`)
+
+    // Connect to the server:
+    const socket =
+      parsed.protocol === 'electrums:'
+        ? new this.io.net.TLSSocket()
+        : new this.io.net.Socket()
+    socket.setEncoding('utf8')
+    socket.on('close', (hadError: boolean) => this.onSocketClose(hadError))
+    socket.on('connect', () => this.onSocketConnect(socket))
+    socket.on('data', (data: string) => this.onSocketData(data))
+    socket.connect({
+      host: parsed.hostname,
+      port: Number(parsed.port)
+    })
+  }
 
   /**
    * Shuts down the underlying TCP connection.
    */
-  close () {}
+  close () {
+    this.connected = false
+    this.callOnClose()
+    if (this.socket) this.socket.end()
+  }
 
   /**
-   * If there is space in the queue, re-triggers the `onQueueSpace` callback.
+   * Re-triggers the `onQueueSpace` callback if there is space in the queue.
    */
-  wakeup () {}
+  wakeup () {
+    while (Object.keys(this.pendingMessages).length < this.queueSize) {
+      const task = this.onQueueSpace(this.uri)
+      if (!task) break
+      this.submitTask(task)
+    }
+  }
 
   /**
    * Forcefully sends a task to the Stratum server,
    * ignoring the queue checks. This should *only* be used for spends.
+   * This will fail if the connection is not connected.
    */
-  submitTask (task: StratumTask) {}
+  submitTask (task: StratumTask) {
+    const { socket } = this
+    if (!socket) return
+
+    // Add the message to the queue:
+    const id = ++this.nextId
+    this.pendingMessages[id.toString()] = {
+      task,
+      startTime: Date.now()
+    }
+
+    // Send the message:
+    this.transmitMessage(id, task)
+  }
 
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------
 
   // Options:
-  queueSize: number
-  timeout: number
+  io: any
+  onClose: OnCloseHandler
   onOpen: (uri: string) => void
-  onClose: (uri: string, error?: Error) => void
   onQueueSpace: (uri: string) => StratumTask | void
+  queueSize: number
+  timeout: number // Converted to ms
+
+  // Message queue:
+  nextId: number
+  pendingMessages: {
+    [id: string]: {
+      startTime: number,
+      task: StratumTask
+    }
+  }
+  totalMessages: number
+  totalLatency: number
+  goodMessages: number
+  badMessages: number
+
+  // Connection state:
+  lastKeepalive: number
+  partialMessage: string
+  socket: net$Socket | void
+  timer: number
+
+  /**
+   * Called when the socket disconnects for any reason.
+   */
+  onSocketClose (hadError: boolean) {
+    console.log(`Disconnected from ${this.uri}`)
+    const connected = this.connected
+    this.connected = false
+    this.socket = void 0
+
+    const e: Error = hadError
+      ? new Error('Stratum TCP socket error')
+      : new Error('Connection closed')
+    if (connected) this.callOnClose(e)
+    clearTimeout(this.timer)
+    this.failPendingMessages(e)
+  }
+
+  /**
+   * Called when the socket completes its connection.
+   */
+  onSocketConnect (socket: net$Socket) {
+    this.connected = true
+    this.lastKeepalive = Date.now()
+    this.partialMessage = ''
+    this.socket = socket
+
+    try {
+      this.onOpen(this.uri)
+    } catch (e) {
+      this.onFail(e)
+    }
+
+    // Launch pending messages:
+    for (const id of Object.keys(this.pendingMessages)) {
+      const message = this.pendingMessages[id]
+      this.transmitMessage(Number(id), message.task)
+    }
+
+    this.setupTimer()
+    this.wakeup()
+  }
+
+  /**
+   * Called when the socket receives data.
+   */
+  onSocketData (data: string) {
+    const buffer = this.partialMessage + data
+    const parts = buffer.split('\n')
+    for (let i = 0; i + 1 < parts.length; ++i) {
+      this.onMessage(parts[i])
+    }
+    this.partialMessage = parts[parts.length - 1]
+  }
+
+  /**
+   * Called in response to protocol errors (JSON parsing, etc.).
+   */
+  onFail (e: Error) {
+    this.connected = false
+    this.callOnClose(e)
+    if (this.socket) this.socket.end()
+  }
+
+  /**
+   * Called when the socket receives a complete message.
+   */
+  onMessage (messageJson: string) {
+    try {
+      const json = JSON.parse(messageJson)
+
+      if (json.id) {
+        // We have an ID, so it's a reply to a single request:
+        const id: string = json.id.toString()
+        const message = this.pendingMessages[id]
+        if (!message) {
+          throw new Error(`Bad Stratum id in ${messageJson}`)
+        }
+        delete this.pendingMessages[id]
+        ++this.totalMessages
+        this.totalLatency = Date.now() - message.startTime
+        try {
+          message.task.onDone(json.result)
+          ++this.goodMessages
+        } catch (e) {
+          message.task.onFail(e)
+          ++this.badMessages
+        }
+      } else if (/subscribe$/.test(json.method)) {
+        // It's a subscription reply:
+      } else {
+        throw new Error(`Bad Stratum reply ${messageJson}`)
+      }
+    } catch (e) {
+      this.onFail(e)
+    }
+    this.wakeup()
+  }
+
+  /**
+   * Called when the timer expires.
+   */
+  onTimer () {
+    const now = Date.now() - TIMER_SLACK
+
+    if (this.lastKeepalive + KEEPALIVE_MS < now) {
+      this.submitTask(
+        fetchVersion((version: string) => {}, (e: Error) => this.onFail(e))
+      )
+    }
+
+    for (const id of Object.keys(this.pendingMessages)) {
+      const message = this.pendingMessages[id]
+      if (message.startTime + this.timeout < now) {
+        try {
+          message.task.onFail(new Error('Timeout'))
+          ++this.badMessages
+        } catch (e) {
+          console.error(e)
+        }
+      }
+    }
+
+    this.setupTimer()
+  }
+
+  callOnClose (e?: Error) {
+    try {
+      this.onClose(
+        this.uri,
+        this.badMessages,
+        this.goodMessages,
+        this.totalLatency / this.totalMessages,
+        e
+      )
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  failPendingMessages (e: Error) {
+    for (const id of Object.keys(this.pendingMessages)) {
+      const message = this.pendingMessages[id]
+      try {
+        message.task.onFail(e)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    this.pendingMessages = {}
+  }
+
+  setupTimer () {
+    // Find the next time something needs to happen:
+    let nextWakeup = this.lastKeepalive + KEEPALIVE_MS
+
+    for (const id of Object.keys(this.pendingMessages)) {
+      const message = this.pendingMessages[id]
+      const timeout = message.startTime + this.timeout
+      if (timeout < nextWakeup) nextWakeup = timeout
+    }
+
+    const now = Date.now() - TIMER_SLACK
+    this.timer = setTimeout(() => this.onTimer, nextWakeup - now)
+  }
+
+  transmitMessage (id: number, task: StratumTask) {
+    if (this.socket) {
+      // If this is a keepalive, record the time:
+      if (task.method === 'server.version') {
+        this.lastKeepalive = Date.now()
+      }
+
+      const message = {
+        id,
+        method: task.method,
+        params: task.params
+      }
+      this.socket.write(JSON.stringify(message) + '\n')
+    }
+  }
 }
