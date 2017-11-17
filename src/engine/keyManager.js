@@ -126,26 +126,30 @@ export class KeyMananger {
   // /////////////// Public API /////////////////// //
   // ////////////////////////////////////////////// //
 
-  getReceive () {
+  getReceiveAddress () {
     return this.getNextAvailable(this.keys.receive.children)
   }
 
-  getChange () {
+  getChangeAddress () {
+    if (this.bip === 'bip32') return this.getReceive()
     return this.getNextAvailable(this.keys.change.children)
   }
 
   use (scriptHash: string) {
-    for (const branch in this.keys) {
-      let found = false
-      for (const address of this.keys[branch]) {
-        if (address.scriptHash === scriptHash) {
-          address.state = USED
-          found = true
-          break
-        }
-      }
-      if (found) break
-    }
+    const address = this.scriptHashToAddress(scriptHash)
+    address.state = USED
+    this.setLookAhead()
+  }
+
+  unuse (scriptHash: string) {
+    const address = this.scriptHashToAddress(scriptHash)
+    address.state = UNUSED
+    this.setLookAhead()
+  }
+
+  lease (scriptHash: string) {
+    const address = this.scriptHashToAddress(scriptHash)
+    address.state = LEASED
     this.setLookAhead()
   }
 
@@ -162,6 +166,17 @@ export class KeyMananger {
   // ////////////////////////////////////////////// //
   // ////////////// Private API /////////////////// //
   // ////////////////////////////////////////////// //
+
+  scriptHashToAddress (scriptHash: string) {
+    for (const branch in this.keys) {
+      for (const address of this.keys[branch]) {
+        if (address.scriptHash === scriptHash) {
+          return address
+        }
+      }
+    }
+    return null
+  }
 
   getNextAvailable (keys: Array<Key>) {
     let key = null
