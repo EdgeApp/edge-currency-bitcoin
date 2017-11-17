@@ -3,4 +3,5 @@
 /build
 /coverage
 /lib
+/libtest
 /node_modules

@@ -380,12 +380,11 @@ The `onDone` callback should be invoked when the server sends a response. For ad
 
 The `onFail` callback should be called if the request never completes, either because of a server error or explicit disconnection. It is mainly needed to clean up various flags, such as `txStates[txid].fetching`.
 
+* fetchServerVersion
+* fetchEstimateFee
 * fetchBlockHeader
 * fetchTransaction
-* fetchAddressHistory
 * fetchScriptHashHistory
-* subscribeAddress
-* subscribeScriptHash
-* fetchAddressUtxo
 * fetchScripthashUtxo
+* subscribeScriptHash
 * broadcastTx
