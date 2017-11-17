@@ -44,7 +44,7 @@ export class EngineState {
 
   // On-disk transaction information:
   txCache: {
-    [txid: string]: string // base64 data
+    [txid: string]: string // hex string data
   }
 
   // True if `startEngine` has been called:

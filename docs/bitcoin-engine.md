@@ -52,7 +52,7 @@ TODO: Find a nice random-access on-disk data structure for storing these. For no
 ```js
 interface TxCache {
   txs: {
-    [txid: string]: string // base64 data
+    [txid: string]: string // hex string data
   }
 }
 ```
