@@ -20,6 +20,8 @@ function makePluginFactory (
 ): AbcCurrencyPluginFactory {
   return {
     pluginType: 'currency',
+    pluginName: currencyInfo.pluginName,
+
     makePlugin (options: AbcCorePluginOptions): Promise<AbcCurrencyPlugin> {
       return Promise.resolve(new CurrencyPlugin(options, currencyInfo))
     }

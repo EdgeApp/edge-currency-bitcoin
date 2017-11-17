@@ -5,6 +5,7 @@ export const bitcoincashInfo: AbcCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BCH',
   currencyName: 'BitcoinCash',
+  pluginName: 'bitcoincash',
   denominations: [
     { name: 'BCH', multiplier: '100000000', symbol: '₿' },
     { name: 'mBCH', multiplier: '100000', symbol: 'm₿' },
