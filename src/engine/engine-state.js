@@ -47,6 +47,14 @@ export class EngineState {
     [txid: string]: string // hex string data
   }
 
+  // Transaction height / timestamps:
+  txHeightCache: {
+    [txid: string]: {
+      height: number,
+      firstSeen: number // Timestamp for unconfirmed stuff
+    }
+  }
+
   // True if `startEngine` has been called:
   engineStarted: boolean
 
