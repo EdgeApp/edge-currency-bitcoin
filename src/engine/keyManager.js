@@ -294,7 +294,41 @@ export class KeyMananger {
     return reversedScriptHash
   }
 
-  // sign (tx) {
+  async estimateSize (prev: any) {
+    const scale = bcoin.consensus.WITNESS_SCALE_FACTOR
+    const address = prev.getAddress()
+    if (!address) return -1
 
-  // }
+    let size = 0
+
+    if (prev.isScripthash()) {
+      if (this.bip === 'bip49') {
+        size += 23 // redeem script
+        size *= 4 // vsize
+        // Varint witness items length.
+        size += 1
+        // Calculate vsize
+        size = (size + scale - 1) / scale | 0
+      }
+    }
+
+    if (this.bip !== 'bip49') {
+      // P2PKH
+      // OP_PUSHDATA0 [signature]
+      size += 1 + 73
+      // OP_PUSHDATA0 [key]
+      size += 1 + 33
+      // size of input script.
+      size += this.sizeVarint(size)
+    }
+
+    return size
+  }
+
+  sizeVarint (num: num) {
+    if (num < 0xfd) return 1
+    if (num <= 0xffff) return 3
+    if (num <= 0xffffffff) return 5
+    return 9
+  }
 }
