@@ -131,24 +131,24 @@ export class KeyMananger {
   }
 
   getChangeAddress () {
-    if (this.bip === 'bip32') return this.getReceive()
+    if (this.bip === 'bip32') return this.getReceiveAddress()
     return this.getNextAvailable(this.keys.change.children)
   }
 
   use (scriptHash: string) {
-    const address = this.scriptHashToAddress(scriptHash)
+    const address: any = this.scriptHashToAddress(scriptHash)
     address.state = USED
     this.setLookAhead()
   }
 
   unuse (scriptHash: string) {
-    const address = this.scriptHashToAddress(scriptHash)
+    const address: any = this.scriptHashToAddress(scriptHash)
     address.state = UNUSED
     this.setLookAhead()
   }
 
   lease (scriptHash: string) {
-    const address = this.scriptHashToAddress(scriptHash)
+    const address: any = this.scriptHashToAddress(scriptHash)
     address.state = LEASED
     this.setLookAhead()
   }
@@ -163,7 +163,12 @@ export class KeyMananger {
     return index ? key.derive(index) : key
   }
 
-  async createTX (spendTargets: Array<any>, blockHeight: number, rate: number, maxFee?: number) {
+  async createTX (
+    spendTargets: Array<any>,
+    blockHeight: number,
+    rate: number,
+    maxFee?: number
+  ) {
     if (spendTargets.length === 0) throw new Error('No outputs available.')
     const mtx = new bcoin.primitives.MTX()
 
@@ -211,9 +216,7 @@ export class KeyMananger {
     return mtx
   }
 
-  sign (tx: any) {
-
-  }
+  sign (tx: any) {}
 
   // ////////////////////////////////////////////// //
   // ////////////// Private API /////////////////// //
@@ -360,7 +363,7 @@ export class KeyMananger {
         // Varint witness items length.
         size += 1
         // Calculate vsize
-        size = (size + scale - 1) / scale | 0
+        size = ((size + scale - 1) / scale) | 0
       }
     }
 
@@ -377,7 +380,7 @@ export class KeyMananger {
     return size
   }
 
-  sizeVarint (num: num) {
+  sizeVarint (num: number) {
     if (num < 0xfd) return 1
     if (num <= 0xffff) return 3
     if (num <= 0xffffffff) return 5
