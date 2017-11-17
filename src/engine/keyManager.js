@@ -21,7 +21,7 @@ type Key = {
 
 type KeyRing = {
   pubKey: any,
-  pubPriv: any,
+  privKey: any,
   children: Array<Key>
 }
 
@@ -153,16 +153,6 @@ export class KeyMananger {
     this.setLookAhead()
   }
 
-  deriveKey (branch: number, index?: number, key?: any) {
-    if (typeof index !== 'number' && !key) {
-      key = index
-      index = 0
-    }
-    key = key || this.masterKeys.masterPublic
-    key = key.derive(branch)
-    return index ? key.derive(index) : key
-  }
-
   async createTX (
     spendTargets: Array<any>,
     utxos: Array<UtxoObj>,
@@ -215,8 +205,8 @@ export class KeyMananger {
     for (const input: any of mtx.inputs) {
       const { script, prevout } = input
       if (prevout) {
-        const [ branch, index ] = this.utxoToPath(prevout.hash)
-        const privKey = this.derive(branch, index, this.masterKeys.masterPrivate)
+        const [ branch: number, index: number ] = this.utxoToPath(prevout.hash)
+        const privKey = this.deriveKey(branch, index, this.masterKeys.masterPrivate)
         const key = bcoin.primitives.KeyRing.fromScript(privKey, script, this.network)
         keys.push(key)
       }
@@ -228,8 +218,10 @@ export class KeyMananger {
   // ////////////// Private API /////////////////// //
   // ////////////////////////////////////////////// //
 
-  utxoToPath (txid) {
+  utxoToPath (txid: string): Array<number> {
     let scriptHashForUtxo = null
+    let branch: number = 0
+    let index: number = 0
     for (const scriptHash: string in this.engineState.addressCache) {
       const addressObj: AddressObj = this.engineState.addressCache[scriptHash]
       if (!addressObj) throw new Error('Address is not part of this wallet')
@@ -242,16 +234,16 @@ export class KeyMananger {
     }
     if (scriptHashForUtxo) {
       const findByScriptHash = (key: Key) => key.scriptHash === scriptHashForUtxo
-      let key = null
-      let branch = 0
+      let key: any = null
       key = this.keys.receive.children.find(findByScriptHash)
       if (!key) {
         key = this.keys.change.children.find(findByScriptHash)
         branch = 1
       }
       if (!key) throw new Error('Address is not part of this wallet')
-      return [ branch, key.index ]
+      index = key.index
     }
+    return [ branch, index ]
   }
 
   scriptHashToKey (scriptHash: string): ?Key {
@@ -324,10 +316,21 @@ export class KeyMananger {
     if (this.deriveNewKeys(this.keys.receive, 1)) this.setLookAhead()
   }
 
+  deriveKey (branch: number, index?: number, key?: any) {
+    if (typeof index !== 'number' && !key) {
+      key = index
+      index = 0
+    }
+    key = key || this.masterKeys.masterPublic
+    key = key.derive(branch)
+    return index ? key.derive(index) : key
+  }
+
   deriveNewKeys (keyRing: KeyRing, branch: number) {
     let newPubKey = null
     let index = 0
-    const { children, pubKey } = keyRing
+    let { pubKey } = keyRing
+    const { children } = keyRing
     if (!pubKey) {
       keyRing.pubKey = this.deriveKey(branch)
       pubKey = keyRing.pubKey
