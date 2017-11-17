@@ -184,10 +184,10 @@ export class KeyMananger {
       const rawTx = this.engineState.txCache[utxo.txid]
       const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(rawTx, 'hex'))
       const bcoinTXJSON = bcoinTX.getJSON(this.network)
-
+      const height = this.engineState.txHeightCache[utxo.txid].height
       return new bcoin.primitives.Coin({
         version: bcoinTXJSON.version,
-        height: bcoinTXJSON.height, // TODO, get real height
+        height: height,
         value: utxo.value,
         script: bcoinTXJSON.inputs[utxo.index].script,
         coinbase: !!bcoinTXJSON.inputs[utxo.index].prevout,
