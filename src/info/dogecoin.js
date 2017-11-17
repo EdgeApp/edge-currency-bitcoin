@@ -5,6 +5,7 @@ export const dogecoinInfo: AbcCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'DOGE',
   currencyName: 'Dogecoin',
+  pluginName: 'dogecoin',
   denominations: [{ name: 'DOGE', multiplier: '100000000', symbol: 'Ð' }],
   walletTypes: ['wallet:litecoin44', 'wallet:litecoin'],
 

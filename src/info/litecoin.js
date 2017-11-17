@@ -5,6 +5,7 @@ export const litecoinInfo: AbcCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'LTC',
   currencyName: 'Litecoin',
+  pluginName: 'litecoin',
   denominations: [{ name: 'LTC', multiplier: '100000000', symbol: 'Ł' }],
   walletTypes: ['wallet:litecoin44segwit'],
 
