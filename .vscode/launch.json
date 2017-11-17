@@ -1,28 +1,30 @@
 {
-        "version": "0.2.0",
-        "configurations": [
-            {
-                "type": "node",
-                "request": "launch",
-                "name": "build",
-                "runtimeExecutable": "npm",
-                "runtimeArgs": [
-                    "run",
-                    "pretest"
-                ],
-                "port": 5858
-            },
-            {
-                "type": "node",
-                "request": "launch",
-                "name": "Mocha Tests",
-                "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
-                "args": [
-                    "-u",
-                    "tdd",
-                    "${workspaceRoot}/test"
-                ],
-                "internalConsoleOptions": "openOnSessionStart"
-            }
-        ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "build",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "pretest"],
+      "port": 5858
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Mocha Tests",
+      "preLaunchTask": "pretest",
+      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--colors",
+        "--require",
+        "source-map-support/register",
+        "--timeout",
+        "999999",
+        "build/tests.cjs.js"
+      ],
+      "cwd": "${workspaceRoot}",
+      "internalConsoleOptions": "openOnSessionStart"
     }
+  ]
+}
