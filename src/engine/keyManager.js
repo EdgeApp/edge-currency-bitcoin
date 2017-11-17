@@ -163,7 +163,7 @@ export class KeyMananger {
     return index ? key.derive(index) : key
   }
 
-  async createTX (spendTargets: Array<any>, blockHeight: number, rate: number, maxFee?: number) {
+  async createTX (spendTargets: Array<any>, utxos: Array<UtxoObj>, blockHeight: number, rate: number, maxFee?: number) {
     if (spendTargets.length === 0) throw new Error('No outputs available.')
     const mtx = new bcoin.primitives.MTX()
 
@@ -172,14 +172,6 @@ export class KeyMananger {
       const value = parseInt(spendTarget.nativeAmount)
       const script = bcoin.script.fromAddress(spendTarget.publicAddress)
       mtx.addOutput(script, value)
-    }
-
-    let utxos = []
-    for (const scriptHash in this.engineState.addressCache) {
-      const addressUtxos = this.engineState.addressCache[scriptHash].utxos
-      if (addressUtxos.length > 0) {
-        utxos = utxos.concat(addressUtxos)
-      }
     }
 
     const coins = utxos.map(utxo => {
