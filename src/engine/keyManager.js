@@ -1,6 +1,6 @@
 // @flow
 import type { AbcWalletInfo } from 'airbitz-core-types'
-import type { EngineState } from './engine-state.js'
+import type { UtxoObj, EngineState } from './engine-state.js'
 
 // $FlowFixMe
 const BufferJS = require('bufferPlaceHolder').Buffer
@@ -136,20 +136,20 @@ export class KeyMananger {
   }
 
   use (scriptHash: string) {
-    const keyToUse: Key = this.scriptHashToKey(scriptHash)
-    keyToUse.state = USED
+    const keyToUse: ?Key = this.scriptHashToKey(scriptHash)
+    if (keyToUse) keyToUse.state = USED
     this.setLookAhead()
   }
 
   unuse (scriptHash: string) {
-    const keyToUnsue: Key = this.scriptHashToKey(scriptHash)
-    keyToUnsue.state = UNUSED
+    const keyToUnsue: ?Key = this.scriptHashToKey(scriptHash)
+    if (keyToUnsue) keyToUnsue.state = UNUSED
     this.setLookAhead()
   }
 
   lease (scriptHash: string) {
-    const keyToLease: Key = this.scriptHashToKey(scriptHash)
-    keyToLease.state = LEASED
+    const keyToLease: ?Key = this.scriptHashToKey(scriptHash)
+    if (keyToLease) keyToLease.state = LEASED
     this.setLookAhead()
   }
 
@@ -199,7 +199,7 @@ export class KeyMananger {
     await mtx.fund(coins, {
       selection: 'age',
       round: true,
-      changeAddress: this.getChangeAddress().displayAddress,
+      changeAddress: this.getChangeAddress(),
       height: blockHeight,
       rate: rate,
       maxFee: maxFee,
@@ -215,9 +215,9 @@ export class KeyMananger {
   // ////////////// Private API /////////////////// //
   // ////////////////////////////////////////////// //
 
-  scriptHashToKey (scriptHash: string) {
-    for (const branch: KeyRing in this.keys) {
-      for (const keyForBranch: key of this.keys[branch].children) {
+  scriptHashToKey (scriptHash: string): ?Key {
+    for (const branch: string in this.keys) {
+      for (const keyForBranch: Key of this.keys[branch].children) {
         if (keyForBranch.scriptHash === scriptHash) {
           return keyForBranch
         }
@@ -226,9 +226,9 @@ export class KeyMananger {
     return null
   }
 
-  addressToKey (address: string) {
-    for (const branch: KeyRing in this.keys) {
-      for (const keyForBranch: key of this.keys[branch].children) {
+  addressToKey (address: string): ?Key {
+    for (const branch: string in this.keys) {
+      for (const keyForBranch: Key of this.keys[branch].children) {
         if (keyForBranch.displayAddress === address) {
           return keyForBranch
         }
@@ -260,7 +260,7 @@ export class KeyMananger {
 
     key.state = LEASED
     this.setLookAhead()
-    return key
+    return key.displayAddress
   }
 
   getPrivateFromSeed (seed: string) {
