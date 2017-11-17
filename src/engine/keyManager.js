@@ -209,11 +209,50 @@ export class KeyMananger {
     return mtx
   }
 
-  sign (tx: any) {}
+  sign (mtx: any) {
+    if (!this.masterKeys.masterPrivate) throw new Error('Can\'t sign without private key')
+    const keys = []
+    for (const input: any of mtx.inputs) {
+      const { script, prevout } = input
+      if (prevout) {
+        const [ branch, index ] = this.utxoToPath(prevout.hash)
+        const privKey = this.derive(branch, index, this.masterKeys.masterPrivate)
+        const key = bcoin.primitives.KeyRing.fromScript(privKey, script, this.network)
+        keys.push(key)
+      }
+    }
+    mtx.sign(keys)
+  }
 
   // ////////////////////////////////////////////// //
   // ////////////// Private API /////////////////// //
   // ////////////////////////////////////////////// //
+
+  utxoToPath (txid) {
+    let scriptHashForUtxo = null
+    for (const scriptHash: string in this.engineState.addressCache) {
+      const addressObj: AddressObj = this.engineState.addressCache[scriptHash]
+      if (!addressObj) throw new Error('Address is not part of this wallet')
+      const utxos: Array<UtxoObj> = addressObj.utxos
+
+      if (utxos.find((utxo: UtxoObj) => utxo.txid === txid)) {
+        scriptHashForUtxo = scriptHash
+        break
+      }
+    }
+    if (scriptHashForUtxo) {
+      const findByScriptHash = (key: Key) => key.scriptHash === scriptHashForUtxo
+      let key = null
+      let branch = 0
+      key = this.keys.receive.children.find(findByScriptHash)
+      if (!key) {
+        key = this.keys.change.children.find(findByScriptHash)
+        branch = 1
+      }
+      if (!key) throw new Error('Address is not part of this wallet')
+      return [ branch, key.index ]
+    }
+  }
 
   scriptHashToKey (scriptHash: string): ?Key {
     for (const branch: string in this.keys) {
