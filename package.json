@@ -43,6 +43,7 @@
     "uri-js": "^3.0.2"
   },
   "devDependencies": {
+    "airbitz-core-js": "git+ssh://git@github.com/Airbitz/airbitz-core-js.git#develop",
     "babel-core": "^6.26.0",
     "babel-eslint": "^7.2.3",
     "babel-plugin-transform-flow-strip-types": "^6.22.0",
