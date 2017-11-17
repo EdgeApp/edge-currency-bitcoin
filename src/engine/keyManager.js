@@ -1,6 +1,6 @@
 // @flow
 import type { AbcWalletInfo } from 'airbitz-core-types'
-import type { UtxoObj, EngineState } from './engine-state.js'
+import type { UtxoObj, EngineState, AddressObj } from './engine-state.js'
 
 // $FlowFixMe
 const BufferJS = require('bufferPlaceHolder').Buffer
@@ -91,18 +91,18 @@ export class KeyMananger {
     this.keys = {
       receive: {
         pubKey: null,
-        pubPriv: null,
+        privKey: null,
         children: []
       },
       change: {
         pubKey: null,
-        pubPriv: null,
+        privKey: null,
         children: []
       }
     }
 
     for (const scriptHash in this.engineState.addressCache) {
-      const address = this.engineState.addressCache[scriptHash]
+      const address: AddressObj = this.engineState.addressCache[scriptHash]
       const { txids, displayAddress, path } = address
       const [branch, index] = path.split(this.masterPath)[1].split('/')
       const state = txids && txids.length > 0 ? USED : UNUSED
@@ -169,7 +169,7 @@ export class KeyMananger {
     blockHeight: number,
     rate: number,
     maxFee?: number
-  ) {
+  ): any {
     if (spendTargets.length === 0) throw new Error('No outputs available.')
     const mtx = new bcoin.primitives.MTX()
 
@@ -330,15 +330,15 @@ export class KeyMananger {
     const { children, pubKey } = keyRing
     if (!pubKey) {
       keyRing.pubKey = this.deriveKey(branch)
+      pubKey = keyRing.pubKey
     }
-    // deriveNewKeys
     if (!children.length) {
-      newPubKey = this.deriveKey(0, keyRing.pubKey)
+      newPubKey = this.deriveKey(0, pubKey)
     } else {
       for (let i = 0; i < children.length; i++) {
         if (children[i].state === USED && i < this.gapLimit) {
           index = children.length
-          newPubKey = this.deriveKey(index, keyRing.pubKey)
+          newPubKey = this.deriveKey(index, pubKey)
           break
         }
       }
