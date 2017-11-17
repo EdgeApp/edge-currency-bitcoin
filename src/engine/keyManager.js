@@ -163,6 +163,58 @@ export class KeyMananger {
     return index ? key.derive(index) : key
   }
 
+  async createTX (spendTargets: Array<any>, blockHeight: number, rate: number, maxFee?: number) {
+    if (spendTargets.length === 0) throw new Error('No outputs available.')
+    const mtx = new bcoin.primitives.MTX()
+
+    // Add the outputs
+    for (const spendTarget of spendTargets) {
+      const value = parseInt(spendTarget.nativeAmount)
+      const script = bcoin.script.fromAddress(spendTarget.publicAddress)
+      mtx.addOutput(script, value)
+    }
+
+    let utxos = []
+    for (const scriptHash in this.engineState.addressCache) {
+      const addressUtxos = this.engineState.addressCache[scriptHash].utxos
+      if (addressUtxos.length > 0) {
+        utxos = utxos.concat(addressUtxos)
+      }
+    }
+
+    const coins = utxos.map(utxo => {
+      const rawTx = this.engineState.txCache[utxo.txid]
+      const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(rawTx, 'hex'))
+      const bcoinTXJSON = bcoinTX.getJSON(this.network)
+
+      return new bcoin.primitives.Coin({
+        version: bcoinTXJSON.version,
+        height: bcoinTXJSON.height, // TODO, get real height
+        value: utxo.value,
+        script: bcoinTXJSON.inputs[utxo.index].script,
+        coinbase: !!bcoinTXJSON.inputs[utxo.index].prevout,
+        hash: utxo.txid,
+        index: utxo.index
+      })
+    })
+
+    await mtx.fund(coins, {
+      selection: 'age',
+      round: true,
+      changeAddress: this.getChangeAddress().displayAddress,
+      height: blockHeight,
+      rate: rate,
+      maxFee: maxFee,
+      estimate: prev => this.estimateSize(prev)
+    })
+
+    return mtx
+  }
+
+  sign (tx: any) {
+
+  }
+
   // ////////////////////////////////////////////// //
   // ////////////// Private API /////////////////// //
   // ////////////////////////////////////////////// //
