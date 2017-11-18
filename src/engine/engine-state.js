@@ -112,7 +112,7 @@ export class EngineState {
     this.txStates = {}
     this.missingTxs = new Set()
 
-    this.bcoin = options.io
+    this.bcoin = options.bcoin
     this.io = options.io
     this.localFolder = options.localFolder
   }

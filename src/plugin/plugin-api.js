@@ -2,17 +2,18 @@
 import type {
   AbcCorePluginOptions,
   AbcCurrencyEngine,
+  AbcCurrencyEngineOptions,
   AbcCurrencyInfo,
   AbcCurrencyPlugin,
   AbcEncodeUri,
   AbcIo,
-  AbcCurrencyEngineOptions,
   AbcParsedUri,
   AbcWalletInfo
 } from 'airbitz-core-types'
 
-import { PluginState } from './plugin-state.js'
 import { CurrencyEngine } from '../engine/engine-api.js'
+import { EngineState } from '../engine/engine-state.js'
+import { PluginState } from './plugin-state.js'
 
 /**
  * The core currency plugin.
@@ -35,8 +36,17 @@ export class CurrencyPlugin {
     walletInfo: AbcWalletInfo,
     options: AbcCurrencyEngineOptions
   ): Promise<AbcCurrencyEngine> {
+    const { io } = this
+
+    const engineState = new EngineState({
+      callbacks: {},
+      bcoin: {}, // TODO: Implement this
+      io,
+      localFolder: options.walletLocalFolder
+    })
+
     return Promise.resolve(
-      new CurrencyEngine(walletInfo, options, this.state, this.io)
+      new CurrencyEngine(walletInfo, options, this.state, engineState)
     )
   }
 

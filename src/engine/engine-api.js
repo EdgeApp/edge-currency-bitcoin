@@ -3,7 +3,6 @@ import type {
   AbcCurrencyEngine,
   AbcCurrencyEngineOptions,
   AbcFreshAddress,
-  AbcIo,
   AbcSpendInfo,
   AbcTransaction,
   AbcWalletInfo
@@ -92,25 +91,16 @@ export class CurrencyEngine {
     walletInfo: AbcWalletInfo,
     options: AbcCurrencyEngineOptions,
     pluginState: PluginState,
-    io: AbcIo
+    engineState: EngineState
   ) {
     // Validate that we are a valid AbcCurrencyEngine:
     // eslint-disable-next-line no-unused-vars
     const test: AbcCurrencyEngine = this
 
-    const bcoin = {} // TODO: Implement this
-    this.io = io
-    this.state = new EngineState({
-      callbacks: {},
-      io,
-      pluginState,
-      bcoin,
-      localFolder: options.walletLocalFolder
-    })
+    this.state = engineState
     this.plugin = pluginState
   }
 
-  io: AbcIo
   state: EngineState
   plugin: PluginState
 }

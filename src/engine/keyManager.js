@@ -200,14 +200,22 @@ export class KeyMananger {
   }
 
   sign (mtx: any) {
-    if (!this.masterKeys.masterPrivate) throw new Error('Can\'t sign without private key')
+    if (!this.masterKeys.masterPrivate) { throw new Error("Can't sign without private key") }
     const keys = []
     for (const input: any of mtx.inputs) {
       const { script, prevout } = input
       if (prevout) {
-        const [ branch: number, index: number ] = this.utxoToPath(prevout.hash)
-        const privKey = this.deriveKey(branch, index, this.masterKeys.masterPrivate)
-        const key = bcoin.primitives.KeyRing.fromScript(privKey, script, this.network)
+        const [branch: number, index: number] = this.utxoToPath(prevout.hash)
+        const privKey = this.deriveKey(
+          branch,
+          index,
+          this.masterKeys.masterPrivate
+        )
+        const key = bcoin.primitives.KeyRing.fromScript(
+          privKey,
+          script,
+          this.network
+        )
         keys.push(key)
       }
     }
@@ -233,7 +241,8 @@ export class KeyMananger {
       }
     }
     if (scriptHashForUtxo) {
-      const findByScriptHash = (key: Key) => key.scriptHash === scriptHashForUtxo
+      const findByScriptHash = (key: Key) =>
+        key.scriptHash === scriptHashForUtxo
       let key: any = null
       key = this.keys.receive.children.find(findByScriptHash)
       if (!key) {
@@ -243,7 +252,7 @@ export class KeyMananger {
       if (!key) throw new Error('Address is not part of this wallet')
       index = key.index
     }
-    return [ branch, index ]
+    return [branch, index]
   }
 
   scriptHashToKey (scriptHash: string): ?Key {
