@@ -1,11 +1,13 @@
 // @flow
 import type { AbcWalletInfo } from 'airbitz-core-types'
 import type { UtxoObj, EngineState, AddressObj } from './engine-state.js'
+// $FlowFixMe
+import buffer from 'buffer-hack'
+import bcoin from 'bcoin'
+import crypto from 'crypto'
 
 // $FlowFixMe
-const BufferJS = require('bufferPlaceHolder').Buffer
-const bcoin = require('bcoin')
-const crypto = require('crypto')
+const { Buffer } = buffer
 
 const GAP_LIMIT = 10
 const UNUSED = 0
@@ -172,7 +174,7 @@ export class KeyMananger {
 
     const coins = utxos.map(utxo => {
       const rawTx = this.engineState.txCache[utxo.txid]
-      const bcoinTX = bcoin.primitives.TX.fromRaw(BufferJS.from(rawTx, 'hex'))
+      const bcoinTX = bcoin.primitives.TX.fromRaw(Buffer.from(rawTx, 'hex'))
       const bcoinTXJSON = bcoinTX.getJSON(this.network)
       const height = this.engineState.txHeightCache[utxo.txid].height
       return new bcoin.primitives.Coin({
@@ -312,7 +314,7 @@ export class KeyMananger {
         this.network
       ).toPublic()
     } catch (e) {
-      const keyBuffer = BufferJS.from(seed, 'base64')
+      const keyBuffer = Buffer.from(seed, 'base64')
       privateKey = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
     }
     return privateKey.derivePath(this.masterPath)

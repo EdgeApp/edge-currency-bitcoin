@@ -11,14 +11,17 @@ import type {
   AbcWalletInfo
 } from 'airbitz-core-types'
 
+// $FlowFixMe
+import buffer from 'buffer-hack'
 import { CurrencyEngine } from '../engine/engine-api.js'
 import { EngineState } from '../engine/engine-state.js'
 import { PluginState } from './plugin-state.js'
 import { parse, serialize } from 'uri-js'
 import { bns } from 'biggystring'
-const bcoin = require('bcoin')
+import bcoin from 'bcoin'
+
 // $FlowFixMe
-const BufferJS = require('bufferPlaceHolder').Buffer
+const { Buffer } = buffer
 
 const getParameterByName = (param: string, url: string) => {
   const name = param.replace(/[[\]]/g, '\\$&')
@@ -55,7 +58,7 @@ export class CurrencyPlugin {
   state: PluginState
 
   createPrivateKey (walletType: string) {
-    const randomBuffer = BufferJS.from(this.io.random(32))
+    const randomBuffer = Buffer.from(this.io.random(32))
     const mnemonic = bcoin.hd.Mnemonic.fromEntropy(randomBuffer)
     return {
       [`${this.pluginName}Key`]: mnemonic.getPhrase()
