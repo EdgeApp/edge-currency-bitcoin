@@ -13,7 +13,7 @@ export const bitcoincashInfo: AbcCurrencyInfo = {
   ],
   walletTypes: [
     'wallet:bitcoincash-bip44',
-    'wallet:bitcoincash-bip32'
+    'wallet:bitcoincash'
   ],
 
   // Configuration options:

@@ -13,7 +13,7 @@ export const bitcoincashTestnetInfo: AbcCurrencyInfo = {
   ],
   walletTypes: [
     'wallet:bitcoincash-bip44-testnet',
-    'wallet:bitcoincash-bip32-testnet'
+    'wallet:bitcoincash-testnet'
   ],
 
   // Configuration options:

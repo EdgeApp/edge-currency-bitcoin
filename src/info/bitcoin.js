@@ -14,7 +14,7 @@ export const bitcoinInfo: AbcCurrencyInfo = {
   walletTypes: [
     'wallet:bitcoin-bip49',
     'wallet:bitcoin-bip44',
-    'wallet:bitcoin-bip32'
+    'wallet:bitcoin'
   ],
 
   // Configuration options:
