@@ -92,7 +92,7 @@ export class CurrencyPlugin {
       io,
       localFolder: options.walletLocalFolder
     })
-    // await engineState.load()
+    await engineState.load()
 
     return new CurrencyEngine(walletInfo, options, this.state, engineState)
   }
@@ -181,7 +181,7 @@ export class CurrencyPlugin {
 
     // Private stuff:
     this.io = options.io
-    this.state = new PluginState()
+    this.state = new PluginState(this.io, currencyInfo)
   }
 
   valid (address: string) {

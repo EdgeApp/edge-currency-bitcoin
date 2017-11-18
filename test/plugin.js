@@ -14,6 +14,7 @@ import {
   DogecoinPluginFactory,
   LitecoinPluginFactory
 } from '../src/index.js'
+import { makeMemoryFolder } from 'disklet'
 
 const plugins = [
   BitcoinPluginFactory,
@@ -36,7 +37,8 @@ for (const pluginFactory of plugins) {
 
   describe(`${pluginName} plugin`, function () {
     it('can be created manually', async function () {
-      const [io] = makeFakeIos()
+      const [io] = makeFakeIos(1)
+      io.folder = makeMemoryFolder()
       expect(pluginFactory.pluginType).to.equal('currency')
       const currencyPlugin = await pluginFactory.makePlugin({ io })
       expect(currencyPlugin.currencyInfo.pluginName).to.equal(pluginName)

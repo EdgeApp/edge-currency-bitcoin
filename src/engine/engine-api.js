@@ -32,7 +32,7 @@ export class CurrencyEngine {
   }
 
   getBlockHeight (): number {
-    return this.plugin.headerCache.height
+    return this.plugin.height
   }
 
   enableTokens (tokens: Array<string>): Promise<void> {

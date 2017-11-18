@@ -1,13 +1,5 @@
 // @flow
-
-export type HeaderCache = {
-  height: number,
-  headers: {
-    [height: number]: {
-      timestamp: number
-    }
-  }
-}
+import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'airbitz-core-js'
 
 /**
  * This object holds the plugin-wide per-currency caches.
@@ -15,7 +7,12 @@ export type HeaderCache = {
  */
 export class PluginState {
   // On-disk header information:
-  headerCache: HeaderCache
+  height: number
+  headerCache: {
+    [height: string]: {
+      timestamp: number
+    }
+  }
 
   // True if somebody is currently fetching a header:
   headerStates: {
@@ -30,11 +27,56 @@ export class PluginState {
     }
   }
 
-  constructor () {
+  // ------------------------------------------------------------------------
+  // Private stuff
+  // ------------------------------------------------------------------------
+  io: AbcIo
+  folder: DiskletFolder
+
+  constructor (io: AbcIo, currencyInfo: AbcCurrencyInfo) {
+    this.height = 0
+    this.headerCache = {}
     this.serverCache = {}
-    this.headerCache = {
-      height: 0,
-      headers: {}
+    this.io = io
+    this.folder = io.folder.folder('plugins').folder(currencyInfo.pluginName)
+  }
+
+  async load () {
+    try {
+      const headerCacheText = await this.folder.file('headers.json').getText()
+      const headerCacheJson = JSON.parse(headerCacheText)
+      // TODO: Validate JSON
+
+      this.height = headerCacheJson.height
+      this.headerCache = headerCacheJson.headers
+    } catch (e) {
+      this.headerCache = {}
     }
+
+    try {
+      const serverCacheText = await this.folder.file('servers.json').getText()
+      const serverCacheJson = JSON.parse(serverCacheText)
+      // TODO: Validate JSON
+
+      this.serverCache = serverCacheJson.servers
+    } catch (e) {
+      // TODO: No server cache. Fetch from the info server.
+    }
+
+    return this
+  }
+
+  async save () {
+    this.folder.file('headers.json').setText(
+      JSON.stringify({
+        height: this.height,
+        headers: this.headerCache
+      })
+    )
+    this.folder.file('servers.json').setText(
+      JSON.stringify({
+        servers: this.serverCache
+      })
+    )
   }
 }
