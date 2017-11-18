@@ -3,10 +3,10 @@
  * @flow
  */
 
-import type { EarnComFees, BitcoinFees } from './flowTypes.js'
-import { EarnComFeesSchema } from './jsonSchemas.js'
+import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
+import { EarnComFeesSchema } from '../utils/jsonSchemas.js'
 import { bns } from 'biggystring'
-import { validateObject } from './utils.js'
+import { validateObject } from '../utils/utils.js'
 
 export const ES_FEE_LOW = 'low'
 export const ES_FEE_STANDARD = 'standard'

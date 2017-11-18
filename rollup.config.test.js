@@ -11,7 +11,7 @@ const babelOptions = {
 
 export default {
   external: config.external,
-  input: 'src/**/*.test.js',
+  input: './test/**/*.js',
   output: [{ file: 'build/tests.cjs.js', format: 'cjs' }],
   plugins: [
     multiEntry(),

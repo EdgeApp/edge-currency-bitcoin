@@ -7,7 +7,7 @@ import type {
   AddressCache,
   AddressObj,
   UtxoObj
-} from './engine/engine-state.js'
+} from './engine-state.js'
 // import type { HeaderCache } from './pluginState.js'
 import coinselect from 'coinselect'
 

@@ -8,7 +8,7 @@ import { describe, it } from 'mocha'
 
 import type { AddressCache, AddressObj } from '../src/engine/engine-state.js'
 // import type { HeaderCache } from '../src/pluginState'
-import { pickUtxos } from './pickUtxos.js'
+import { pickUtxos } from '../src/engine/pickUtxos.js'
 
 // const headerCache: HeaderCache = {
 //   height: 300000,

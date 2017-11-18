@@ -1,5 +1,5 @@
 import { describe, it, before } from 'mocha'
-import { BitcoinPluginFactory } from '../../../plugin-index.js'
+import { BitcoinPluginFactory } from '../../../src/index.js'
 import { assert } from 'chai'
 const WALLET_TYPE = 'wallet:bitcoin'
 

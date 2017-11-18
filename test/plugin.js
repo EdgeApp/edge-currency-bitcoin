@@ -13,7 +13,7 @@ import {
   BitcoincashPluginFactory,
   DogecoinPluginFactory,
   LitecoinPluginFactory
-} from './plugin-index.js'
+} from '../src/index.js'
 
 const plugins = [
   BitcoinPluginFactory,

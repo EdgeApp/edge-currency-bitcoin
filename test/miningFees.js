@@ -6,9 +6,9 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import type { BitcoinFees } from '../src/flowTypes.js'
-import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
-import earnComTestFees from './test/earnComTestFees.json'
+import type { BitcoinFees } from '../src/utils/flowTypes.js'
+import { calcFeesFromEarnCom, calcMinerFeePerByte } from '../src/engine/miningFees.js'
+import earnComTestFees from './earnComTestFees.json'
 
 describe(`Mining Fees`, function () {
   it('calcFeesFromEarnCom from earn.com', function () {
