@@ -68,8 +68,9 @@ export class CurrencyPlugin {
   derivePublicKey (walletInfo: AbcWalletInfo) {
     if (!~this.currencyInfo.walletTypes.indexOf(walletInfo.type)) throw new Error('InvalidWalletType')
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
-    if (!walletInfo.keys[`${this.pluginName}Key`]) throw new Error('InvalidKeyName')
-    const mnemonic = bcoin.hd.Mnemonic.fromPhrase(walletInfo.keys[`${this.pluginName}Key`])
+    const walletType = walletInfo.keys[`${this.pluginName}Key`]
+    if (!walletType) throw new Error('InvalidKeyName')
+    const mnemonic = bcoin.hd.Mnemonic.fromPhrase(walletType)
     const privKey = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.pluginName)
     return {
       [`${this.pluginName}Key`]: walletInfo.keys[`${this.pluginName}Key`],
