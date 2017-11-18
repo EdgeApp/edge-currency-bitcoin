@@ -1,36 +1,36 @@
 // @flow
 import type { AbcCurrencyInfo } from 'airbitz-core-types'
 
-export const litecoinInfo: AbcCurrencyInfo = {
+export const litecoinTestnetInfo: AbcCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'LTC',
   currencyName: 'Litecoin',
   pluginName: 'litecoin',
   denominations: [{ name: 'LTC', multiplier: '100000000', symbol: 'Ł' }],
   walletTypes: [
-    'wallet:litecoin-bip49',
-    'wallet:litecoin-bip44'
+    'wallet:litecoin-bip49-tesnet',
+    'wallet:litecoin-bip44-tesnet'
   ],
 
   // Configuration options:
   defaultSettings: {
     network: {
-      type: 'litecoin',
-      magic: 0xd9b4bef9,
+      type: 'litecointestnet',
+      magic: 0x0709110b,
       keyPrefix: {
-        privkey: 0x80,
-        xpubkey: 0x0488b21e,
-        xprivkey: 0x0488ade4,
-        xpubkey58: 'xpub',
-        xprivkey58: 'xprv',
-        coinType: 0
+        privkey: 0xef,
+        xpubkey: 0x043587cf,
+        xprivkey: 0x04358394,
+        xpubkey58: 'tpub',
+        xprivkey58: 'tprv',
+        coinType: 1
       },
       addressPrefix: {
-        pubkeyhash: 0x00,
-        scripthash: 0x05,
-        witnesspubkeyhash: 0x06,
-        witnessscripthash: 0x0a,
-        bech32: 'bc'
+        pubkeyhash: 0x6f,
+        scripthash: 0xc4,
+        witnesspubkeyhash: 0x03,
+        witnessscripthash: 0x28,
+        bech32: 'tb'
       }
     },
     gapLimit: 10,

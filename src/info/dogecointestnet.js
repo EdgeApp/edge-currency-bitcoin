@@ -1,35 +1,34 @@
 // @flow
 import type { AbcCurrencyInfo } from 'airbitz-core-types'
 
-export const dogecoinInfo: AbcCurrencyInfo = {
+export const dogecoinTestnetInfo: AbcCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'DOGE',
   currencyName: 'Dogecoin',
   pluginName: 'dogecoin',
   denominations: [{ name: 'DOGE', multiplier: '100000000', symbol: 'Ð' }],
   walletTypes: [
-    'wallet:dogecoin-bip44'
+    'wallet:dogecoin-bip44-tesnet'
   ],
 
   // Configuration options:
   defaultSettings: {
     network: {
-      type: 'dogecoin',
       magic: 0x00000000,
       keyPrefix: {
-        privkey: 0xb0,
+        privkey: 0xef,
         xpubkey: 0x00000000,
         xprivkey: 0x00000000,
-        xprivkey58: 'xprv',
-        xpubkey58: 'xpub',
-        coinType: 0
+        xpubkey58: 'tpub',
+        xprivkey58: 'tprv',
+        coinType: 1
       },
       addressPrefix: {
-        pubkeyhash: 0x30,
-        scripthash: 0x32,
-        witnesspubkeyhash: 0x06,
-        witnessscripthash: 0x0a,
-        bech32: 'lc'
+        pubkeyhash: 0x6f,
+        scripthash: 0xc4,
+        witnesspubkeyhash: 0x03,
+        witnessscripthash: 0x28,
+        bech32: 'tb'
       }
     },
     gapLimit: 25,
