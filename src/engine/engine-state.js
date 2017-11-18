@@ -152,8 +152,9 @@ export class EngineState {
   localFolder: any
 
   refillServers () {
+    let lastUri = 1
     while (Object.keys(this.connections).length < 5) {
-      const uri = 'blah' // pickServerUri(serverCache, connections)
+      const uri = 'blah' + ++lastUri // pickServerUri(serverCache, connections)
       const callbacks: StratumCallbacks = {
         onOpen: (uri: string) => {
           console.log(`Connected to ${uri}`)
