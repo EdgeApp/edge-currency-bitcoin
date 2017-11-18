@@ -63,11 +63,11 @@ export class CurrencyPlugin {
   }
 
   derivePublicKey (walletInfo: AbcWalletInfo) {
-    if (!this.currencyInfo.walletTypes[walletInfo.type]) throw new Error('InvalidWalletType')
+    if (!~this.currencyInfo.walletTypes.indexOf(walletInfo.type)) throw new Error('InvalidWalletType')
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
     if (!walletInfo.keys[`${this.pluginName}Key`]) throw new Error('InvalidKeyName')
     const mnemonic = bcoin.hd.Mnemonic.fromPhrase(walletInfo.keys[`${this.pluginName}Key`])
-    const privKey = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
+    const privKey = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.pluginName)
     return {
       [`${this.pluginName}Key`]: walletInfo.keys[`${this.pluginName}Key`],
       [`${this.pluginName}Xpub`]: privKey.xpubkey()
@@ -93,9 +93,9 @@ export class CurrencyPlugin {
 
   parseUri (uri: string): AbcParsedUri {
     const parsedUri = parse(uri)
-    const info = this.currencyInfo.getInfo
+    const currencyInfo = this.currencyInfo
     if (parsedUri.scheme &&
-        parsedUri.scheme.toLowerCase() !== info.currencyName.toLowerCase()) throw new Error('InvalidUriError')
+        parsedUri.scheme.toLowerCase() !== currencyInfo.currencyName.toLowerCase()) throw new Error('InvalidUriError')
 
     let address = parsedUri.host || parsedUri.path
     if (!address) throw new Error('InvalidUriError')
@@ -113,10 +113,11 @@ export class CurrencyPlugin {
     }
 
     if (amountStr && typeof amountStr === 'string') {
-      const multiplier = info.getInfo.denominations.find(e => e.name === info.currencyCode).multiplier.toString()
+      const denom: any = currencyInfo.denominations.find(e => e.name === currencyInfo.currencyCode)
+      const multiplier: string = denom.multiplier.toString()
       const t = bns.mul(amountStr, multiplier)
       abcParsedUri.nativeAmount = bns.toFixed(t, 0, 0)
-      abcParsedUri.currencyCode = info.currencyCode
+      abcParsedUri.currencyCode = currencyInfo.currencyCode
     }
     return abcParsedUri
   }
@@ -125,10 +126,11 @@ export class CurrencyPlugin {
     if (!obj.publicAddress || !valid(obj.publicAddress)) throw new Error('InvalidPublicAddressError')
     if (!obj.nativeAmount && !obj.metadata) return obj.publicAddress
     let queryString = ''
-    const info = this.currencyInfo.getInfo
+    const info = this.currencyInfo
     if (obj.nativeAmount) {
       const currencyCode = obj.currencyCode || info.currencyCode
-      const multiplier = info.denominations.find(e => e.name === currencyCode).multiplier.toString()
+      const denom: any = info.denominations.find(e => e.name === currencyCode)
+      const multiplier: string = denom.multiplier.toString()
       // $FlowFixMe
       const amount = bns.div(obj.nativeAmount, multiplier, 8)
       queryString += 'amount=' + amount.toString() + '&'
@@ -166,7 +168,7 @@ export class CurrencyPlugin {
     this.state = new PluginState()
   }
 
-  valid (address) {
+  valid (address: string) {
     try {
       bcoin.primitives.Address.fromBase58(address)
       return true
