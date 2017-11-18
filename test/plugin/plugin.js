@@ -6,6 +6,8 @@ import fixtures from './fixtures.json'
 for (const fixture of fixtures) {
   const CurrencyPluginFactory = Factories[fixture['factory']]
   const WALLET_TYPE = fixture['WALLET_TYPE']
+  const keyName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Key'
+  const xpubName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Xpub'
 
   const opts = {
     io: {
@@ -47,8 +49,8 @@ for (const fixture of fixtures) {
     it('Create valid key', function () {
       const keys = plugin.createPrivateKey(WALLET_TYPE)
       assert.equal(!keys, false)
-      assert.equal(typeof keys.bitcoinKey, 'string')
-      const length = keys.bitcoinKey.split(' ').length
+      assert.equal(typeof keys[keyName], 'string')
+      const length = keys[keyName].split(' ').length
       assert.equal(length, 24)
     })
   })
@@ -67,8 +69,8 @@ for (const fixture of fixtures) {
     })
 
     it('Valid private key', function () {
-      keys = plugin.derivePublicKey({type: WALLET_TYPE, keys: {bitcoinKey: keys.bitcoinKey}})
-      assert.equal(keys.bitcoinXpub, fixture['xpub'])
+      keys = plugin.derivePublicKey({type: WALLET_TYPE, keys: {[keyName]: keys[keyName]}})
+      assert.equal(keys[xpubName], fixture['xpub'])
     })
 
     it('Invalid key name', function () {
