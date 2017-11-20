@@ -6,6 +6,10 @@ import disklet from 'disklet'
 import { KeyManager } from '../src/engine/keyManager.js'
 import { EngineState } from '../src/engine/engine-state.js'
 
+const network = 'bitcoin'
+const walletLocalFolder = disklet.makeMemoryFolder()
+const gapLimit = 10
+
 const walletInfo = {
   id: '1',
   type: 'wallet:bitcoin',
@@ -21,8 +25,6 @@ const io = {
   net: require('net')
 }
 
-const walletLocalFolder = disklet.makeMemoryFolder()
-
 const engineState = new EngineState({
   callbacks: {},
   bcoin: {}, // TODO: Implement this
@@ -30,11 +32,9 @@ const engineState = new EngineState({
   localFolder: walletLocalFolder
 })
 
-const gapLimit = 10
-
 describe(`Key Manager`, function () {
   it('creates new key manager', function () {
-    const keyManager = new KeyManager(walletInfo, engineState, gapLimit)
+    const keyManager = new KeyManager(walletInfo, engineState, gapLimit, network)
     assert.equal(keyManager.keys.receive.children.length, 10)
     assert(keyManager.keys.receive.pubKey)
     assert.equal(keyManager.keys.change.children.length, 0)
