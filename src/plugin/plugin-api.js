@@ -54,28 +54,64 @@ const valid = address => {
  */
 export class CurrencyPlugin {
   currencyInfo: AbcCurrencyInfo
+  network: string
   pluginName: string
   io: AbcIo
   state: PluginState
 
+  // ------------------------------------------------------------------------
+  // Private API
+  // ------------------------------------------------------------------------
+  constructor (options: AbcCorePluginOptions, currencyInfo: AbcCurrencyInfo) {
+    // Validate that we are a valid AbcCurrencyPlugin:
+    // eslint-disable-next-line no-unused-vars
+    const test: AbcCurrencyPlugin = this
+
+    // Public API:
+    this.currencyInfo = currencyInfo
+    this.network = this.currencyInfo.defaultSettings.network.type
+    this.pluginName = this.currencyInfo.pluginName
+
+    // Private API:
+    this.io = options.io
+    this.state = new PluginState()
+  }
+
+  valid (address: string) {
+    try {
+      bcoin.primitives.Address.fromBase58(address)
+      return true
+    } catch (e) {
+      try {
+        bcoin.primitives.Address.fromBech32(address)
+        return true
+      } catch (e) {
+        return false
+      }
+    }
+  }
+
+  // ------------------------------------------------------------------------
+  // Public API
+  // ------------------------------------------------------------------------
   createPrivateKey (walletType: string) {
     const randomBuffer = Buffer.from(this.io.random(32))
     const mnemonic = bcoin.hd.Mnemonic.fromEntropy(randomBuffer)
     return {
-      [`${this.pluginName}Key`]: mnemonic.getPhrase()
+      [`${this.network}Key`]: mnemonic.getPhrase()
     }
   }
 
   derivePublicKey (walletInfo: AbcWalletInfo) {
     if (!~this.currencyInfo.walletTypes.indexOf(walletInfo.type)) throw new Error('InvalidWalletType')
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
-    const walletType = walletInfo.keys[`${this.pluginName}Key`]
+    const walletType = walletInfo.keys[`${this.network}Key`]
     if (!walletType) throw new Error('InvalidKeyName')
     const mnemonic = bcoin.hd.Mnemonic.fromPhrase(walletType)
-    const privKey = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.pluginName)
+    const privKey = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
     return {
-      [`${this.pluginName}Key`]: walletInfo.keys[`${this.pluginName}Key`],
-      [`${this.pluginName}Xpub`]: privKey.xpubkey()
+      [`${this.network}Key`]: walletInfo.keys[`${this.network}Key`],
+      [`${this.network}Xpub`]: privKey.xpubkey()
     }
   }
 
@@ -154,37 +190,5 @@ export class CurrencyPlugin {
       path: obj.publicAddress,
       query: queryString
     })
-  }
-
-  // ------------------------------------------------------------------------
-  // Private stuff
-  // ------------------------------------------------------------------------
-  constructor (options: AbcCorePluginOptions, currencyInfo: AbcCurrencyInfo) {
-    // Validate that we are a valid AbcCurrencyPlugin:
-    // eslint-disable-next-line no-unused-vars
-    const test: AbcCurrencyPlugin = this
-
-    // Public API:
-    this.currencyInfo = currencyInfo
-
-    this.pluginName = currencyInfo.currencyName.toLowerCase()
-
-    // Private stuff:
-    this.io = options.io
-    this.state = new PluginState()
-  }
-
-  valid (address: string) {
-    try {
-      bcoin.primitives.Address.fromBase58(address)
-      return true
-    } catch (e) {
-      try {
-        bcoin.primitives.Address.fromBech32(address)
-        return true
-      } catch (e) {
-        return false
-      }
-    }
   }
 }
