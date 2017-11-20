@@ -43,15 +43,15 @@ export class KeyManager {
   constructor (
     keyInfo: AbcWalletInfo,
     engineState: EngineState,
-    gapLimit: number
+    gapLimit: number,
+    network: string
   ) {
     if (!keyInfo.keys) throw new Error('Missing Master Key')
 
     const walletType = keyInfo.type
     const bip = walletType.split('-')[1]
     this.bip = bip && bip.includes('bip') ? bip : 'bip32'
-    this.masterPath = ''
-    switch (bip) {
+    switch (this.bip) {
       case 'bip32':
         this.masterPath = 'm/0'
         break
@@ -61,16 +61,14 @@ export class KeyManager {
       case 'bip49':
         this.masterPath = "m/49'/0'/0'"
         break
+      default:
+        throw new Error('Unknown bip type')
     }
-    this.currencyName = walletType
-      .split(':')[1]
-      .split('-')[0]
-      .toLowerCase()
-    this.network = walletType.includes('testnet') ? 'testnet' : 'main'
 
+    this.network = network
     this.masterKeys = keyInfo.keys
-    this.masterKeys.masterPrivate = keyInfo.keys[`${this.currencyName}Key`]
-    this.masterKeys.masterPublic = keyInfo.keys[`${this.currencyName}Xpub`]
+    this.masterKeys.masterPrivate = keyInfo.keys[`${this.network}Key`]
+    this.masterKeys.masterPublic = keyInfo.keys[`${this.network}Xpub`]
 
     if (!this.masterKeys.masterPublic && !this.masterKeys.masterPrivate) {
       throw new Error('Missing Master Key')
