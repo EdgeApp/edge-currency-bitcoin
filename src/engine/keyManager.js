@@ -27,7 +27,7 @@ type KeyRing = {
   children: Array<Key>
 }
 
-export class KeyMananger {
+export class KeyManager {
   bip: string
   masterPath: string
   currencyName: string
@@ -433,5 +433,19 @@ export class KeyMananger {
     if (num <= 0xffff) return 3
     if (num <= 0xffffffff) return 5
     return 9
+  }
+
+  hash160 (hex: any) {
+    return crypto
+      .createHash('ripemd160')
+      .update(this.hash256(hex))
+      .digest()
+  }
+
+  hash256 (hex: any) {
+    return crypto
+      .createHash('sha256')
+      .update(hex)
+      .digest()
   }
 }
