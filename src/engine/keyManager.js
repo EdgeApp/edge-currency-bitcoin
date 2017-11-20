@@ -339,41 +339,32 @@ export class KeyMananger {
 
   deriveNewKeys (keyRing: KeyRing, branch: number) {
     let newPubKey = null
-    let index = 0
     let { pubKey } = keyRing
     const { children } = keyRing
     if (!pubKey) {
       keyRing.pubKey = this.deriveKey(branch)
       pubKey = keyRing.pubKey
     }
-    if (!children.length) {
-      newPubKey = this.deriveKey(0, pubKey)
+    if (children.length < this.gapLimit) {
+      newPubKey = this.deriveKey(children.length, pubKey)
     } else {
       for (let i = 0; i < children.length; i++) {
         if (children[i].state === USED && i < this.gapLimit) {
-          index = children.length
-          newPubKey = this.deriveKey(index, pubKey)
+          newPubKey = this.deriveKey(children.length, pubKey)
           break
         }
       }
     }
     if (newPubKey) {
-      let hash = ''
-      let type = 'pubkeyhash'
-      let version = -1
+      const index = children.length
+      let address = null
       if (this.bip === 'bip49') {
-        hash = '' // TODO
-        type = 'scripthash'
-        version = 1
+        const hash = 'e71debe251bb26c7e757d9ae265da6e5d00f31b9' // TODO
+        address = bcoin.primitives.Address.fromHash(hash, 'scripthash', 1, this.network)
       } else {
-        hash = '' // TODO
+        const pubKeyHash = this.hash160(newPubKey.publicKey)
+        address = bcoin.primitives.Address.fromPubkeyhash(pubKeyHash, this.network)
       }
-      const address = bcoin.primities.Address.fromHash(
-        hash,
-        type,
-        version,
-        this.network
-      )
       const scriptHash = this.addressToScriptHash(address)
       this.engineState.addAddress(
         scriptHash,
