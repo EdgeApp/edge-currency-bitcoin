@@ -357,13 +357,12 @@ export class KeyManager {
     }
     if (newPubKey) {
       const index = children.length
+      const pubKeyHash = this.hash160(newPubKey.publicKey)
       let address = null
       if (this.bip === 'bip49') {
-        const hash = 'e71debe251bb26c7e757d9ae265da6e5d00f31b9' // TODO
-        address = bcoin.primitives.Address.fromHash(hash, 'scripthash', 1, this.network)
+        address = bcoin.primitives.Address.fromScripthash(pubKeyHash, this.network).toBase58(this.network)
       } else {
-        const pubKeyHash = this.hash160(newPubKey.publicKey)
-        address = bcoin.primitives.Address.fromPubkeyhash(pubKeyHash, this.network)
+        address = bcoin.primitives.Address.fromPubkeyhash(pubKeyHash, this.network).toBase58(this.network)
       }
       const scriptHash = this.addressToScriptHash(address)
       this.engineState.addAddress(
