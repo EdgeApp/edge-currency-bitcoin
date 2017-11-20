@@ -5,18 +5,18 @@ import type {
   AbcCurrencyPlugin,
   AbcCurrencyPluginFactory
 } from 'airbitz-core-types'
+import bcoin from 'bcoin'
 
 import { bitcoinInfo } from './info/bitcoin.js'
-import { bitcoinTestnetInfo } from './info/bitcointestnet.js'
 import { bitcoincashInfo } from './info/bitcoincash.js'
 import { bitcoincashTestnetInfo } from './info/bitcoincashtestnet.js'
+import { bitcoinTestnetInfo } from './info/bitcointestnet.js'
 import { dogecoinInfo } from './info/dogecoin.js'
 import { dogecoinTestnetInfo } from './info/dogecointestnet.js'
 import { litecoinInfo } from './info/litecoin.js'
 import { litecoinTestnetInfo } from './info/litecointestnet.js'
 import { CurrencyPlugin } from './plugin/plugin-api.js'
 import { bcoinExtender } from './bcoin-extender/bcoin-extender'
-import bcoin from 'bcoin'
 
 const pluginsInfo = [
   bitcoinInfo,
@@ -43,7 +43,8 @@ function makePluginFactory (
     pluginName: currencyInfo.pluginName,
 
     makePlugin (options: AbcCorePluginOptions): Promise<AbcCurrencyPlugin> {
-      return Promise.resolve(new CurrencyPlugin(options, currencyInfo))
+      const plugin = new CurrencyPlugin(options, currencyInfo)
+      return plugin.state.load().then(() => plugin)
     }
   }
 }
@@ -51,8 +52,14 @@ function makePluginFactory (
 export const BitcoinPluginFactory = makePluginFactory(bitcoinInfo)
 export const BitcoinTestnetPluginFactory = makePluginFactory(bitcoinTestnetInfo)
 export const BitcoincashPluginFactory = makePluginFactory(bitcoincashInfo)
-export const BitcoincashTestnetPluginFactory = makePluginFactory(bitcoincashTestnetInfo)
+export const BitcoincashTestnetPluginFactory = makePluginFactory(
+  bitcoincashTestnetInfo
+)
 export const DogecoinPluginFactory = makePluginFactory(dogecoinInfo)
-export const DogecoinTestnetPluginFactory = makePluginFactory(dogecoinTestnetInfo)
+export const DogecoinTestnetPluginFactory = makePluginFactory(
+  dogecoinTestnetInfo
+)
 export const LitecoinPluginFactory = makePluginFactory(litecoinInfo)
-export const LitecoinTestnetPluginFactory = makePluginFactory(litecoinTestnetInfo)
+export const LitecoinTestnetPluginFactory = makePluginFactory(
+  litecoinTestnetInfo
+)

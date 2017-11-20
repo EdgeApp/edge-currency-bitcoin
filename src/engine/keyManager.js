@@ -200,7 +200,9 @@ export class KeyManager {
   }
 
   sign (mtx: any) {
-    if (!this.masterKeys.masterPrivate) { throw new Error("Can't sign without private key") }
+    if (!this.masterKeys.masterPrivate) {
+      throw new Error("Can't sign without private key")
+    }
     const keys = []
     for (const input: any of mtx.inputs) {
       const { script, prevout } = input

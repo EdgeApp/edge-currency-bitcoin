@@ -1,4 +1,5 @@
 // @flow
+import { makeFakeIos } from 'airbitz-core-js'
 import { describe, it, before } from 'mocha'
 import * as Factories from '../../src/index.js'
 import { assert } from 'chai'
@@ -10,9 +11,11 @@ for (const fixture of fixtures) {
   const keyName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Key'
   const xpubName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Xpub'
 
+  const [fakeIo] = makeFakeIos(1)
   const opts = {
     io: {
-      fetch: () => true,
+      fetch: fakeIo.fetch,
+      folder: fakeIo.folder,
       random: (size) => fixture['key'],
       net: require('net')
     }

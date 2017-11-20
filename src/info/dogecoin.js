@@ -7,9 +7,7 @@ export const dogecoinInfo: AbcCurrencyInfo = {
   currencyName: 'Dogecoin',
   pluginName: 'dogecoin',
   denominations: [{ name: 'DOGE', multiplier: '100000000', symbol: 'Ð' }],
-  walletTypes: [
-    'wallet:dogecoin-bip44'
-  ],
+  walletTypes: ['wallet:dogecoin-bip44'],
 
   // Configuration options:
   defaultSettings: {

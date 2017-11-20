@@ -1,4 +1,6 @@
 // @flow
+import type { AbcIo, DiskletFolder } from 'airbitz-core-types'
+
 import type { StratumCallbacks } from '../stratum/stratum-connection.js'
 import { StratumConnection } from '../stratum/stratum-connection.js'
 
@@ -129,6 +131,8 @@ export class EngineState {
       displayAddress,
       path
     }
+
+    this.save()
   }
 
   connect () {
@@ -148,8 +152,8 @@ export class EngineState {
   // Private stuff
   // ------------------------------------------------------------------------
   bcoin: any
-  io: any
-  localFolder: any
+  io: AbcIo
+  localFolder: DiskletFolder
 
   refillServers () {
     let lastUri = 1
@@ -176,4 +180,28 @@ export class EngineState {
   }
 
   pickNextTask (uri: string) {}
+
+  async load () {
+    try {
+      const addressCacheText = await this.localFolder
+        .file('addresses.json')
+        .getText()
+      const addressCacheJson = JSON.parse(addressCacheText)
+      // TODO: Validate JSON
+
+      this.addressCache = addressCacheJson.addresses
+    } catch (e) {
+      this.addressCache = {}
+    }
+
+    return this
+  }
+
+  async save () {
+    this.localFolder.file('addressses.json').setText(
+      JSON.stringify({
+        addresses: this.addressCache
+      })
+    )
+  }
 }

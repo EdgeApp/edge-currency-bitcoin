@@ -74,7 +74,7 @@ export class CurrencyPlugin {
 
     // Private API:
     this.io = options.io
-    this.state = new PluginState()
+    this.state = new PluginState(this.io, currencyInfo)
   }
 
   valid (address: string) {
@@ -103,7 +103,9 @@ export class CurrencyPlugin {
   }
 
   derivePublicKey (walletInfo: AbcWalletInfo) {
-    if (!~this.currencyInfo.walletTypes.indexOf(walletInfo.type)) throw new Error('InvalidWalletType')
+    if (!~this.currencyInfo.walletTypes.indexOf(walletInfo.type)) {
+      throw new Error('InvalidWalletType')
+    }
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
     const walletType = walletInfo.keys[`${this.network}Key`]
     if (!walletType) throw new Error('InvalidKeyName')
@@ -127,7 +129,8 @@ export class CurrencyPlugin {
       io,
       localFolder: options.walletLocalFolder
     })
-    // await engineState.load()
+
+    await engineState.load()
     const pluginState = new PluginState()
     const keyManager = new KeyManager(walletInfo, engineState, 10, this.network)
     return CurrencyEngine.makeEngine(keyManager, options, pluginState, engineState)
@@ -136,8 +139,12 @@ export class CurrencyPlugin {
   parseUri (uri: string): AbcParsedUri {
     const parsedUri = parse(uri)
     const currencyInfo = this.currencyInfo
-    if (parsedUri.scheme &&
-        parsedUri.scheme.toLowerCase() !== currencyInfo.currencyName.toLowerCase()) throw new Error('InvalidUriError')
+    if (
+      parsedUri.scheme &&
+      parsedUri.scheme.toLowerCase() !== currencyInfo.currencyName.toLowerCase()
+    ) {
+      throw new Error('InvalidUriError')
+    }
 
     let address = parsedUri.host || parsedUri.path
     if (!address) throw new Error('InvalidUriError')
@@ -155,7 +162,9 @@ export class CurrencyPlugin {
     }
 
     if (amountStr && typeof amountStr === 'string') {
-      const denom: any = currencyInfo.denominations.find(e => e.name === currencyInfo.currencyCode)
+      const denom: any = currencyInfo.denominations.find(
+        e => e.name === currencyInfo.currencyCode
+      )
       const multiplier: string = denom.multiplier.toString()
       const t = bns.mul(amountStr, multiplier)
       abcParsedUri.nativeAmount = bns.toFixed(t, 0, 0)
@@ -165,7 +174,9 @@ export class CurrencyPlugin {
   }
 
   encodeUri (obj: AbcEncodeUri): string {
-    if (!obj.publicAddress || !valid(obj.publicAddress)) throw new Error('InvalidPublicAddressError')
+    if (!obj.publicAddress || !valid(obj.publicAddress)) {
+      throw new Error('InvalidPublicAddressError')
+    }
     if (!obj.nativeAmount && !obj.metadata) return obj.publicAddress
     let queryString = ''
     const info = this.currencyInfo
@@ -180,8 +191,10 @@ export class CurrencyPlugin {
     if (obj.metadata) {
       // $FlowFixMe
       if (obj.metadata.label) queryString += `label=${obj.metadata.label}&`
-      // $FlowFixMe
-      if (obj.metadata.message) queryString += `message=${obj.metadata.message}&`
+      if (obj.metadata.message) {
+        // $FlowFixMe
+        queryString += `message=${obj.metadata.message}&`
+      }
     }
     queryString = queryString.substr(0, queryString.length - 1)
 
