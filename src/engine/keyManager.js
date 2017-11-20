@@ -381,19 +381,10 @@ export class KeyManager {
   }
 
   addressToScriptHash (address: string) {
-    const script = bcoin.script.fromAddress(address)
-    const scriptRaw = script.toRaw()
-    const scriptHash = crypto
-      .createHash('sha256')
-      .update(scriptRaw)
-      .digest()
-      .toString('hex')
+    const scriptRaw = bcoin.script.fromAddress(address).toRaw()
     // $FlowFixMe
-    const reversedScriptHash = scriptHash
-      .match(/../g)
-      .reverse()
-      .join('')
-    return reversedScriptHash
+    const scriptHash = this.hash256(scriptRaw).toString('hex').match(/../g).reverse().join('')
+    return scriptHash
   }
 
   async estimateSize (prev: any) {
