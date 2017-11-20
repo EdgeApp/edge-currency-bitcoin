@@ -18,6 +18,7 @@ import { EngineState } from '../engine/engine-state.js'
 import { PluginState } from './plugin-state.js'
 import { parse, serialize } from 'uri-js'
 import { bns } from 'biggystring'
+import { KeyManager } from '../engine/keyManager.js'
 import bcoin from 'bcoin'
 
 // $FlowFixMe
@@ -92,8 +93,8 @@ export class CurrencyPlugin {
     })
     // await engineState.load()
     const pluginState = new PluginState()
-
-    return CurrencyEngine.makeEngine(walletInfo, options, pluginState, engineState)
+    const keyManager = new KeyManager(walletInfo, engineState, 10, this.network)
+    return CurrencyEngine.makeEngine(keyManager, options, pluginState, engineState)
   }
 
   parseUri (uri: string): AbcParsedUri {

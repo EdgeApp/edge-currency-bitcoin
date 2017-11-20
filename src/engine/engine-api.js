@@ -4,8 +4,7 @@ import type {
   AbcCurrencyEngineOptions,
   AbcFreshAddress,
   AbcSpendInfo,
-  AbcTransaction,
-  AbcWalletInfo
+  AbcTransaction
 } from 'airbitz-core-types'
 
 import { EngineState } from './engine-state.js'
@@ -18,17 +17,16 @@ import { KeyManager } from './keyManager'
  * as well as generic (non-wallet) functionality.
  */
 export class CurrencyEngine {
-  walletInfo: AbcWalletInfo
+  keyManager: KeyManager
   options: AbcCurrencyEngineOptions
   engineState: EngineState
   pluginState: PluginState
-  keyManager: KeyManager
 
   // ------------------------------------------------------------------------
   // Private API
   // ------------------------------------------------------------------------
   constructor (
-    walletInfo: AbcWalletInfo,
+    keyManager: KeyManager,
     options: AbcCurrencyEngineOptions,
     pluginState: PluginState,
     engineState: EngineState
@@ -39,19 +37,17 @@ export class CurrencyEngine {
 
     this.engineState = engineState
     this.pluginState = pluginState
-    this.walletInfo = walletInfo
+    this.keyManager = keyManager
     this.options = options
-
-    this.keyManager = new KeyManager(this.walletInfo, this.engineState, 10)
   }
 
   static async makeEngine (
-    walletInfo: AbcWalletInfo,
+    keyManager: KeyManager,
     options: AbcCurrencyEngineOptions,
     pluginState: PluginState,
     engineState: EngineState
   ): Promise<AbcCurrencyEngine> {
-    const engine = new CurrencyEngine(walletInfo, options, pluginState, engineState)
+    const engine = new CurrencyEngine(keyManager, options, pluginState, engineState)
     return engine
   }
 
