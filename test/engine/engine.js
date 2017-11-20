@@ -1,7 +1,7 @@
 // @flow
+import { makeFakeIos } from 'airbitz-core-js'
 import * as Factories from '../../src/index.js'
 import assert from 'assert'
-import disklet from 'disklet'
 import { describe, it, before } from 'mocha'
 import fixtures from './fixtures.json'
 
@@ -27,11 +27,12 @@ for (const fixture of fixtures) {
 
   let plugin, keys, engine
   const emitter = new EventEmitter()
-  const walletLocalFolder = disklet.makeMemoryFolder()
-
+  const [fakeIo] = makeFakeIos(1)
+  const walletLocalFolder = fakeIo.folder
   const opts = {
     io: {
-      fetch: () => true,
+      fetch: fakeIo.fetch,
+      folder: fakeIo.folder,
       random: (size) => fixture['key'],
       net: require('net')
     }
