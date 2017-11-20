@@ -35,7 +35,9 @@ const gapLimit = 10
 describe(`Key Manager`, function () {
   it('creates new key manager', function () {
     const keyManager = new KeyManager(walletInfo, engineState, gapLimit)
-    assert.equal(keyManager.keys.receive.length, 10)
-    assert.equal(keyManager.keys.change.length, 0)
+    assert.equal(keyManager.keys.receive.children.length, 10)
+    assert(keyManager.keys.receive.pubKey)
+    assert.equal(keyManager.keys.change.children.length, 0)
+    assert(!keyManager.keys.change.pubKey)
   })
 })
