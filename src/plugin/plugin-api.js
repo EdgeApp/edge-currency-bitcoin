@@ -129,8 +129,9 @@ export class CurrencyPlugin {
       io,
       localFolder: options.walletLocalFolder
     })
-    await engineState.load()
     const keyManager = new KeyManager(walletInfo, engineState, 10, this.network)
+    await engineState.load()
+    await keyManager.load()
     return CurrencyEngine.makeEngine(keyManager, options, this.state, engineState)
   }
 
