@@ -154,7 +154,7 @@ for (const fixture of fixtures) {
           return true
         })
         .catch(e => {
-          // console.log(e)
+          console.log(e)
           throw new Error(e)
         })
     })
