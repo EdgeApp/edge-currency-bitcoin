@@ -129,11 +129,9 @@ export class CurrencyPlugin {
       io,
       localFolder: options.walletLocalFolder
     })
-
     await engineState.load()
-    const pluginState = new PluginState()
     const keyManager = new KeyManager(walletInfo, engineState, 10, this.network)
-    return CurrencyEngine.makeEngine(keyManager, options, pluginState, engineState)
+    return CurrencyEngine.makeEngine(keyManager, options, this.state, engineState)
   }
 
   parseUri (uri: string): AbcParsedUri {
