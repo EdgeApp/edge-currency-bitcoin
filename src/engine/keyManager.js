@@ -116,10 +116,10 @@ export class KeyMananger {
       }
     }
     this.keys.receive.children.sort(
-      (a, b) => (a.index > b.index ? -1 : a.index < b.index ? 1 : 0)
+      (a, b) => (a.index < b.index ? -1 : a.index > b.index ? 1 : 0)
     )
     this.keys.change.children.sort(
-      (a, b) => (a.index > b.index ? -1 : a.index < b.index ? 1 : 0)
+      (a, b) => (a.index < b.index ? -1 : a.index > b.index ? 1 : 0)
     )
     this.setLookAhead()
   }
@@ -281,14 +281,14 @@ export class KeyMananger {
 
   getNextAvailable (keys: Array<Key>) {
     let key = null
-    for (let i = keys.length - 1; i >= 0; i++) {
+    for (let i = 0; i < keys.length; i++) {
       if (keys[i].state === UNUSED) {
         key = keys[i]
         break
       }
     }
     if (!key) {
-      for (let i = keys.length - 1; i >= 0; i++) {
+      for (let i = 0; i < keys.length; i++) {
         if (keys[i].state === LEASED) {
           key = keys[i]
           break
@@ -380,7 +380,7 @@ export class KeyMananger {
         address,
         `${this.masterPath}/${branch}/${index}`
       )
-      children.unshift({
+      children.push({
         state: UNUSED,
         displayAddress: address,
         scriptHash: scriptHash,
