@@ -74,19 +74,7 @@ export class KeyManager {
       throw new Error('Missing Master Key')
     }
 
-    if (!this.masterKeys.masterPublic) {
-      this.masterKeys.masterPrivate = this.getPrivateFromSeed(
-        this.masterKeys.masterPrivate
-      )
-    } else {
-      this.masterKeys.masterPublic = bcoin.hd.PublicKey.fromBase58(
-        this.masterKeys.masterPublic,
-        this.network
-      )
-    }
-
     this.engineState = engineState
-
     this.gapLimit = gapLimit || GAP_LIMIT
     this.keys = {
       receive: {
@@ -119,38 +107,50 @@ export class KeyManager {
     this.keys.change.children.sort(
       (a, b) => (a.index < b.index ? -1 : a.index > b.index ? 1 : 0)
     )
-    this.setLookAhead()
   }
 
   // ////////////////////////////////////////////// //
   // /////////////// Public API /////////////////// //
   // ////////////////////////////////////////////// //
+  async load () {
+    if (!this.masterKeys.masterPublic) {
+      this.masterKeys.masterPrivate = await this.getPrivateFromSeed(
+        this.masterKeys.masterPrivate
+      )
+    } else {
+      this.masterKeys.masterPublic = bcoin.hd.PublicKey.fromBase58(
+        this.masterKeys.masterPublic,
+        this.network
+      )
+    }
+    await this.setLookAhead()
+  }
 
-  getReceiveAddress (): string {
+  async getReceiveAddress (): Promise<string> {
     return this.getNextAvailable(this.keys.receive.children)
   }
 
-  getChangeAddress (): string {
+  async getChangeAddress (): Promise<string> {
     if (this.bip === 'bip32') return this.getReceiveAddress()
     return this.getNextAvailable(this.keys.change.children)
   }
 
-  use (scriptHash: string) {
+  async use (scriptHash: string) {
     const keyToUse: ?Key = this.scriptHashToKey(scriptHash)
     if (keyToUse) keyToUse.state = USED
-    this.setLookAhead()
+    await this.setLookAhead()
   }
 
-  unuse (scriptHash: string) {
+  async unuse (scriptHash: string) {
     const keyToUnsue: ?Key = this.scriptHashToKey(scriptHash)
     if (keyToUnsue) keyToUnsue.state = UNUSED
-    this.setLookAhead()
+    await this.setLookAhead()
   }
 
-  lease (scriptHash: string) {
+  async lease (scriptHash: string) {
     const keyToLease: ?Key = this.scriptHashToKey(scriptHash)
     if (keyToLease) keyToLease.state = LEASED
-    this.setLookAhead()
+    await this.setLookAhead()
   }
 
   async createTX (
@@ -199,9 +199,14 @@ export class KeyManager {
     return mtx
   }
 
-  sign (mtx: any) {
+  async sign (mtx: any) {
     if (!this.masterKeys.masterPrivate) {
       throw new Error("Can't sign without private key")
+    }
+    if (typeof this.masterKeys.masterPrivate === 'string') {
+      this.masterKeys.masterPrivate = await this.getPrivateFromSeed(
+        this.masterKeys.masterPrivate
+      )
     }
     const keys = []
     for (const input: any of mtx.inputs) {
@@ -279,7 +284,7 @@ export class KeyManager {
     return null
   }
 
-  getNextAvailable (keys: Array<Key>) {
+  async getNextAvailable (keys: Array<Key>) {
     let key = null
     for (let i = 0; i < keys.length; i++) {
       if (keys[i].state === UNUSED) {
@@ -296,16 +301,16 @@ export class KeyManager {
       }
     }
     if (!key) {
-      this.setLookAhead()
+      await this.setLookAhead()
       return this.getNextAvailable(keys)
     }
 
     key.state = LEASED
-    this.setLookAhead()
+    await this.setLookAhead()
     return key.displayAddress
   }
 
-  getPrivateFromSeed (seed: string) {
+  async getPrivateFromSeed (seed: string) {
     let privateKey
     try {
       const mnemonic = bcoin.hd.Mnemonic.fromPhrase(seed)
@@ -320,11 +325,13 @@ export class KeyManager {
     return privateKey.derivePath(this.masterPath)
   }
 
-  setLookAhead () {
+  async setLookAhead () {
     if (this.bip !== 'bip32') {
-      if (this.deriveNewKeys(this.keys.change, 0)) this.setLookAhead()
+      const newKey = await this.deriveNewKeys(this.keys.change, 0)
+      if (newKey) await this.setLookAhead()
     }
-    if (this.deriveNewKeys(this.keys.receive, 1)) this.setLookAhead()
+    const newKey = await this.deriveNewKeys(this.keys.receive, 1)
+    if (newKey) await this.setLookAhead()
   }
 
   deriveKey (branch: number, index?: number, key?: any) {
@@ -337,7 +344,7 @@ export class KeyManager {
     return index ? key.derive(index) : key
   }
 
-  deriveNewKeys (keyRing: KeyRing, branch: number) {
+  async deriveNewKeys (keyRing: KeyRing, branch: number) {
     let newPubKey = null
     let { pubKey } = keyRing
     const { children } = keyRing
@@ -357,14 +364,14 @@ export class KeyManager {
     }
     if (newPubKey) {
       const index = children.length
-      const pubKeyHash = this.hash160(newPubKey.publicKey)
+      const pubKeyHash = await this.hash160(newPubKey.publicKey)
       let address = null
       if (this.bip === 'bip49') {
         address = bcoin.primitives.Address.fromScripthash(pubKeyHash, this.network).toBase58(this.network)
       } else {
         address = bcoin.primitives.Address.fromPubkeyhash(pubKeyHash, this.network).toBase58(this.network)
       }
-      const scriptHash = this.addressToScriptHash(address)
+      const scriptHash = await this.addressToScriptHash(address)
       this.engineState.addAddress(
         scriptHash,
         address,
@@ -380,14 +387,15 @@ export class KeyManager {
     return newPubKey
   }
 
-  addressToScriptHash (address: string) {
+  async addressToScriptHash (address: string) {
     const scriptRaw = bcoin.script.fromAddress(address).toRaw()
+    const scriptHashRaw = await this.hash256(scriptRaw)
     // $FlowFixMe
-    const scriptHash = this.hash256(scriptRaw).toString('hex').match(/../g).reverse().join('')
+    const scriptHash = scriptHashRaw.toString('hex').match(/../g).reverse().join('')
     return scriptHash
   }
 
-  async estimateSize (prev: any) {
+  estimateSize (prev: any) {
     const scale = bcoin.consensus.WITNESS_SCALE_FACTOR
     const address = prev.getAddress()
     if (!address) return -1
@@ -425,17 +433,19 @@ export class KeyManager {
     return 9
   }
 
-  hash160 (hex: any) {
-    return crypto
+  async hash160 (hex: any) {
+    return Promise.resolve(crypto
       .createHash('ripemd160')
-      .update(this.hash256(hex))
+      .update(await this.hash256(hex))
       .digest()
+    )
   }
 
-  hash256 (hex: any) {
-    return crypto
+  async hash256 (hex: any) {
+    return Promise.resolve(crypto
       .createHash('sha256')
       .update(hex)
       .digest()
+    )
   }
 }
