@@ -51,8 +51,14 @@ function makePluginFactory (
 export const BitcoinPluginFactory = makePluginFactory(bitcoinInfo)
 export const BitcoinTestnetPluginFactory = makePluginFactory(bitcoinTestnetInfo)
 export const BitcoincashPluginFactory = makePluginFactory(bitcoincashInfo)
-export const BitcoincashTestnetPluginFactory = makePluginFactory(bitcoincashTestnetInfo)
+export const BitcoincashTestnetPluginFactory = makePluginFactory(
+  bitcoincashTestnetInfo
+)
 export const DogecoinPluginFactory = makePluginFactory(dogecoinInfo)
-export const DogecoinTestnetPluginFactory = makePluginFactory(dogecoinTestnetInfo)
+export const DogecoinTestnetPluginFactory = makePluginFactory(
+  dogecoinTestnetInfo
+)
 export const LitecoinPluginFactory = makePluginFactory(litecoinInfo)
-export const LitecoinTestnetPluginFactory = makePluginFactory(litecoinTestnetInfo)
+export const LitecoinTestnetPluginFactory = makePluginFactory(
+  litecoinTestnetInfo
+)
