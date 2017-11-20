@@ -83,7 +83,7 @@ export class CurrencyPlugin {
     options: AbcCurrencyEngineOptions
   ): Promise<AbcCurrencyEngine> {
     const { io } = this
-
+    if (!options.walletLocalFolder) throw new Error('Cannot create an engine without a local folder')
     const engineState = new EngineState({
       callbacks: {},
       bcoin: {}, // TODO: Implement this
@@ -91,8 +91,9 @@ export class CurrencyPlugin {
       localFolder: options.walletLocalFolder
     })
     // await engineState.load()
+    const pluginState = new PluginState()
 
-    return new CurrencyEngine(walletInfo, options, this.state, engineState)
+    return CurrencyEngine.makeEngine(walletInfo, options, pluginState, engineState)
   }
 
   parseUri (uri: string): AbcParsedUri {
