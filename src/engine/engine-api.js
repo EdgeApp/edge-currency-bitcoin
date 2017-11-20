@@ -10,6 +10,7 @@ import type {
 
 import { EngineState } from './engine-state.js'
 import { PluginState } from '../plugin/plugin-state.js'
+import { KeyManager } from './keyManager'
 
 /**
  * The core currency plugin.
@@ -17,22 +18,62 @@ import { PluginState } from '../plugin/plugin-state.js'
  * as well as generic (non-wallet) functionality.
  */
 export class CurrencyEngine {
+  walletInfo: AbcWalletInfo
+  options: AbcCurrencyEngineOptions
+  engineState: EngineState
+  pluginState: PluginState
+  keyManager: KeyManager
+
+  // ------------------------------------------------------------------------
+  // Private API
+  // ------------------------------------------------------------------------
+  constructor (
+    walletInfo: AbcWalletInfo,
+    options: AbcCurrencyEngineOptions,
+    pluginState: PluginState,
+    engineState: EngineState
+  ) {
+    // Validate that we are a valid AbcCurrencyEngine:
+    // eslint-disable-next-line no-unused-vars
+    const test: AbcCurrencyEngine = this
+
+    this.engineState = engineState
+    this.pluginState = pluginState
+    this.walletInfo = walletInfo
+    this.options = options
+
+    this.keyManager = new KeyManager(this.walletInfo, this.engineState, 10)
+  }
+
+  static async makeEngine (
+    walletInfo: AbcWalletInfo,
+    options: AbcCurrencyEngineOptions,
+    pluginState: PluginState,
+    engineState: EngineState
+  ): Promise<AbcCurrencyEngine> {
+    const engine = new CurrencyEngine(walletInfo, options, pluginState, engineState)
+    return engine
+  }
+
+  // ------------------------------------------------------------------------
+  // Public API
+  // ------------------------------------------------------------------------
   updateSettings (settings: any): void {
     // TODO: Implement this
   }
 
   startEngine (): Promise<void> {
-    this.state.connect()
+    this.engineState.connect()
     return Promise.resolve()
   }
 
   killEngine (): Promise<void> {
-    this.state.disconnect()
+    this.engineState.disconnect()
     return Promise.resolve()
   }
 
   getBlockHeight (): number {
-    return this.plugin.headerCache.height
+    return this.pluginState.headerCache.height
   }
 
   enableTokens (tokens: Array<string>): Promise<void> {
@@ -83,24 +124,4 @@ export class CurrencyEngine {
   saveTx (abcTransaction: AbcTransaction): Promise<void> {
     return Promise.resolve() // TODO: Implement this
   }
-
-  // ------------------------------------------------------------------------
-  // Private stuff
-  // ------------------------------------------------------------------------
-  constructor (
-    walletInfo: AbcWalletInfo,
-    options: AbcCurrencyEngineOptions,
-    pluginState: PluginState,
-    engineState: EngineState
-  ) {
-    // Validate that we are a valid AbcCurrencyEngine:
-    // eslint-disable-next-line no-unused-vars
-    const test: AbcCurrencyEngine = this
-
-    this.state = engineState
-    this.plugin = pluginState
-  }
-
-  state: EngineState
-  plugin: PluginState
 }
