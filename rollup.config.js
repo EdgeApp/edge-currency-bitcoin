@@ -14,7 +14,7 @@ export default {
     ...Object.keys(packageJson.devDependencies),
     'buffer/'
   ],
-  input: './src/plugin-index.js',
+  input: './src/index.js',
   output: [
     { file: packageJson.main, format: 'cjs' },
     { file: packageJson.module, format: 'es' }

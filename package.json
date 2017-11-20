@@ -14,8 +14,8 @@
     "changelog.md",
     "lib/*"
   ],
-  "main": "./lib/plugin-index.js",
-  "module": "./lib/plugin-index.es.js",
+  "main": "./lib/index.js",
+  "module": "./lib/index.es.js",
   "repository": {
     "type": "git",
     "url": "git@github.com:Airbitz/edge-currency-bitcoin.git"
