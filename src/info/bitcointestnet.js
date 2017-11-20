@@ -5,16 +5,16 @@ export const bitcoinTestnetInfo: AbcCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BTC',
   currencyName: 'Bitcoin',
-  pluginName: 'bitcoin',
+  pluginName: 'bitcointestnet',
   denominations: [
     { name: 'BTC', multiplier: '100000000', symbol: '₿' },
     { name: 'mBTC', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
   walletTypes: [
-    'wallet:bitcoin-bip49-tesnet',
-    'wallet:bitcoin-bip44-tesnet',
-    'wallet:bitcoin-tesnet'
+    'wallet:bitcoin-bip49-testnet',
+    'wallet:bitcoin-bip44-testnet',
+    'wallet:bitcoin-testnet'
   ],
 
   // Configuration options:

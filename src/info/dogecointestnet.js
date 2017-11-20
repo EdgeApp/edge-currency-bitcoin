@@ -8,12 +8,13 @@ export const dogecoinTestnetInfo: AbcCurrencyInfo = {
   pluginName: 'dogecoin',
   denominations: [{ name: 'DOGE', multiplier: '100000000', symbol: 'Ð' }],
   walletTypes: [
-    'wallet:dogecoin-bip44-tesnet'
+    'wallet:dogecoin-bip44-testnet'
   ],
 
   // Configuration options:
   defaultSettings: {
     network: {
+      type: 'dogecointestnet',
       magic: 0x00000000,
       keyPrefix: {
         privkey: 0xef,

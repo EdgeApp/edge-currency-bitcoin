@@ -5,11 +5,11 @@ export const litecoinTestnetInfo: AbcCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'LTC',
   currencyName: 'Litecoin',
-  pluginName: 'litecoin',
+  pluginName: 'litecointestnet',
   denominations: [{ name: 'LTC', multiplier: '100000000', symbol: 'Ł' }],
   walletTypes: [
-    'wallet:litecoin-bip49-tesnet',
-    'wallet:litecoin-bip44-tesnet'
+    'wallet:litecoin-bip49-testnet',
+    'wallet:litecoin-bip44-testnet'
   ],
 
   // Configuration options:
