@@ -183,25 +183,40 @@ export class EngineState {
 
   async load () {
     try {
-      const addressCacheText = await this.localFolder
-        .file('addresses.json')
-        .getText()
-      const addressCacheJson = JSON.parse(addressCacheText)
+      const cacheText = await this.localFolder.file('addresses.json').getText()
+      const cacheJson = JSON.parse(cacheText)
       // TODO: Validate JSON
 
-      this.addressCache = addressCacheJson.addresses
+      this.addressCache = cacheJson.addresses
+      this.txHeightCache = cacheJson.heights
     } catch (e) {
       this.addressCache = {}
+      this.txHeightCache = {}
+    }
+
+    try {
+      const txCacheText = await this.localFolder.file('txs.json').getText()
+      const txCacheJson = JSON.parse(txCacheText)
+      // TODO: Validate JSON
+
+      this.txCache = txCacheJson.txs
+    } catch (e) {
+      this.txCache = {}
     }
 
     return this
   }
 
   async save () {
-    this.localFolder.file('addressses.json').setText(
+    await this.localFolder.file('addressses.json').setText(
       JSON.stringify({
-        addresses: this.addressCache
+        addresses: this.addressCache,
+        heights: this.txHeightCache
       })
     )
+
+    await this.localFolder
+      .file('txs.json')
+      .setText(JSON.stringify({ txs: this.txCache }))
   }
 }
