@@ -186,9 +186,22 @@ export class EngineState {
           console.log(`Connected to ${uri}`)
         },
 
-        onClose: (uri: string) => {
+        onClose: (
+          uri: string,
+          badMessages: number,
+          goodMessages: number,
+          latency: number,
+          error?: Error
+        ) => {
           console.log(`Disconnected from ${uri}`)
           delete this.connections[uri]
+          this.pluginState.serverDisconnected(
+            uri,
+            badMessages,
+            error != null,
+            goodMessages,
+            latency
+          )
           if (this.engineStarted) this.refillServers()
         },
 
