@@ -362,9 +362,15 @@ export class KeyManager {
       const pubKeyHash = await this.hash160(newPubKey.publicKey)
       let address = null
       if (this.bip === 'bip49') {
-        address = bcoin.primitives.Address.fromScripthash(pubKeyHash, this.network).toBase58(this.network)
+        address = bcoin.primitives.Address.fromScripthash(
+          pubKeyHash,
+          this.network
+        ).toBase58(this.network)
       } else {
-        address = bcoin.primitives.Address.fromPubkeyhash(pubKeyHash, this.network).toBase58(this.network)
+        address = bcoin.primitives.Address.fromPubkeyhash(
+          pubKeyHash,
+          this.network
+        ).toBase58(this.network)
       }
       const scriptHash = await this.addressToScriptHash(address)
       this.engineState.addAddress(
@@ -386,7 +392,11 @@ export class KeyManager {
     const scriptRaw = bcoin.script.fromAddress(address).toRaw()
     const scriptHashRaw = await this.hash256(scriptRaw)
     // $FlowFixMe
-    const scriptHash = scriptHashRaw.toString('hex').match(/../g).reverse().join('')
+    const scriptHash = scriptHashRaw
+      .toString('hex')
+      .match(/../g)
+      .reverse()
+      .join('')
     return scriptHash
   }
 
@@ -429,18 +439,20 @@ export class KeyManager {
   }
 
   async hash160 (hex: any) {
-    return Promise.resolve(crypto
-      .createHash('ripemd160')
-      .update(await this.hash256(hex))
-      .digest()
+    return Promise.resolve(
+      crypto
+        .createHash('ripemd160')
+        .update(await this.hash256(hex))
+        .digest()
     )
   }
 
   async hash256 (hex: any) {
-    return Promise.resolve(crypto
-      .createHash('sha256')
-      .update(hex)
-      .digest()
+    return Promise.resolve(
+      crypto
+        .createHash('sha256')
+        .update(hex)
+        .digest()
     )
   }
 }

@@ -4,15 +4,6 @@ import type { AbcIo, DiskletFolder } from 'airbitz-core-types'
 import type { StratumCallbacks } from '../stratum/stratum-connection.js'
 import { StratumConnection } from '../stratum/stratum-connection.js'
 
-export interface EngineStateCallbacks {}
-
-export interface EngineStateOptions {
-  callbacks: EngineStateCallbacks;
-  bcoin: any;
-  io: any;
-  localFolder: any;
-}
-
 export type UtxoObj = {
   txid: string, // tx_hash from Stratum
   index: number, // tx_pos from Stratum
@@ -33,6 +24,25 @@ export type AddressObj = {
 
 export type AddressCache = {
   [scriptHash: string]: AddressObj
+}
+
+export interface EngineStateCallbacks {
+  // Changes to the address cache (might also affect tx heights):
+  +updatedUtxos?: (addressHash: string) => void;
+  +updatedTxids?: (addressHash: string) => void;
+
+  // Changes to the chain height:
+  +updatedHeight?: () => void;
+
+  // Fetched a transaction from the network:
+  +fetchedTx?: (txid: string) => void;
+}
+
+export interface EngineStateOptions {
+  callbacks: EngineStateCallbacks;
+  bcoin: any;
+  io: any;
+  localFolder: any;
 }
 
 /**
