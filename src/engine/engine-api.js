@@ -176,6 +176,12 @@ export class CurrencyEngine {
     }
     return abcTransaction
   }
+
+  async signTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
+    await this.keyManager.sign(abcTransaction.otherParams.bcoinTx)
+    abcTransaction.date = Date.now() / MILI_TO_SEC
+    abcTransaction.signedTx = abcTransaction.otherParams.bcoinTx.toRaw().toString('hex')
+    return abcTransaction
   }
 
   broadcastTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
