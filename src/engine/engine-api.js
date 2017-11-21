@@ -111,6 +111,71 @@ export class CurrencyEngine {
 
   signTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
     return Promise.resolve(abcTransaction) // TODO: Implement this
+  async makeSpend (abcSpendInfo: AbcSpendInfo): Promise<AbcTransaction> {
+    // Can't spend without outputs
+    if (!abcSpendInfo.spendTargets || abcSpendInfo.spendTargets.length < 1) {
+      throw (new Error('Need to provide Spend Targets'))
+    }
+
+    const feeOption = abcSpendInfo.networkFeeOption || 'standard'
+    let rate, resultedTransaction
+
+    if (feeOption === 'custom') {
+      // customNetworkFee is in sat/Bytes in need to be converted to sat/KB
+      rate = parseInt(abcSpendInfo.customNetworkFee) * BYTES_TO_KB
+    } else {
+      // defualt fees are in sat/KB
+      rate = this.getRate(feeOption)
+    }
+
+    try {
+      const height = this.getBlockHeight()
+      const utxos = [] // Get real UTXO
+      const { spendTargets } = abcSpendInfo
+      resultedTransaction = await this.keyManager.createTX(
+        spendTargets,
+        utxos,
+        height,
+        rate,
+        this.txLibInfo.defaultSettings.maxFee
+      )
+    } catch (e) {
+      if (e.type === 'FundingError') throw new Error('InsufficientFundsError')
+      throw e
+    }
+    const allOurAddresses = this.engineState.addressCache.map(({ displayAddress }) => displayAddress)
+    const sumOfTx = abcSpendInfo.spendTargets.reduce((s, spendTarget: AbcSpendTarget) => {
+      if (spendTarget.publicAddress &&
+        allOurAddresses.indexOf(spendTarget.publicAddress) !== -1) {
+        return s
+      } else return s - parseInt(spendTarget.nativeAmount)
+    }, 0)
+
+    const ourReceiveAddresses = []
+    for (const i in resultedTransaction.outputs) {
+      const address = resultedTransaction.outputs[i].getAddress().toString(this.network)
+      if (address && allOurAddresses.indexOf(address) !== -1) {
+        ourReceiveAddresses.push(address)
+      }
+    }
+
+    const abcTransaction: AbcTransaction = {
+      ourReceiveAddresses,
+      otherParams: {
+        bcoinTx: resultedTransaction,
+        abcSpendInfo,
+        rate
+      },
+      currencyCode: this.txLibInfo.currencyCode,
+      txid: '',
+      date: 0,
+      blockHeight: 0,
+      nativeAmount: (sumOfTx - parseInt(resultedTransaction.getFee())).toString(),
+      networkFee: resultedTransaction.getFee().toString(),
+      signedTx: ''
+    }
+    return abcTransaction
+  }
   }
 
   broadcastTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
