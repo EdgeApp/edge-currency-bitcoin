@@ -135,7 +135,6 @@ export class CurrencyEngine {
   }
 
   getFreshAddress (options: any): AbcFreshAddress {
-    return ({}: any) // TODO: Implement this
   }
 
   addGapLimitAddresses (addresses: Array<string>, options: any): void {
