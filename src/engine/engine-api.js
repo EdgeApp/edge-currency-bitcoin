@@ -91,8 +91,47 @@ export class CurrencyEngine {
     return this.engineState.txCache.length
   }
 
-  getTransactions (options: any): Promise<Array<AbcTransaction>> {
-    return Promise.resolve([]) // TODO: Implement this
+  async getTransactions (options: any): Promise<Array<AbcTransaction>> {
+    const rawTxs = this.engineState.txCache
+    const abcTransactions = []
+    for (const txid in rawTxs) {
+      const bcoinTransaction = bcoin.primitives.TX.fromRaw(rawTxs[txid])
+      const allOurAddresses = this.engineState.addressCache.map(({ displayAddress }) => displayAddress)
+      const ourReceiveAddresses = []
+      const sumOfTx = bcoinTransaction.outputs.reduce((s, output) => {
+        const address = output.getAddress().toString(this.network)
+        if (address && allOurAddresses.indexOf(address) !== -1) {
+          ourReceiveAddresses.push(address)
+          return s
+        } else return s - parseInt(output.value)
+      }, 0)
+      const { height, firstSeen } = this.engineState.txHeightCache[txid]
+      let date = firstSeen
+      if (height && height !== -1) {
+        const blockHeight = this.pluginState.headerCache[height]
+        if (blockHeight) {
+          date = blockHeight.timestamp
+        }
+      }
+      const abcTransaction: AbcTransaction = {
+        ourReceiveAddresses,
+        currencyCode: this.txLibInfo.currencyCode,
+        txid: txid,
+        date: date,
+        blockHeight: height,
+        nativeAmount: (sumOfTx - parseInt(bcoinTransaction.getFee())).toString(),
+        networkFee: bcoinTransaction.getFee().toString(),
+        signedTx: rawTxs[txid]
+      }
+      abcTransactions.push(abcTransaction)
+    }
+
+    const startIndex = (options && options.startIndex) || 0
+    let endIndex = (options && options.numEntries) || abcTransactions.length
+    if (startIndex + endIndex > abcTransactions.length) {
+      endIndex = abcTransactions.length
+    }
+    return abcTransactions.slice(startIndex, endIndex)
   }
 
   getFreshAddress (options: any): AbcFreshAddress {
