@@ -5,14 +5,14 @@ export const bcoinExtender = (
   bcoin: any,
   pluginsInfo: Array<AbcCurrencyInfo>
 ) => {
-  for (const pluginInfo: AbcCurrencyInfo of pluginsInfo) {
-    const type = pluginInfo.defaultSettings.network.type
+  for (const { defaultSettings: { network } } of pluginsInfo) {
+    const type = network.type
     bcoin.networks.types.push(type)
     for (const param in bcoin.networks.main) {
-      if (!pluginInfo.defaultSettings.network[param]) {
-        pluginInfo.defaultSettings.network[param] = bcoin.networks.main[param]
+      if (!network[param]) {
+        network[param] = bcoin.networks.main[param]
       }
     }
-    bcoin.networks[type] = pluginInfo.defaultSettings.network
+    bcoin.networks[type] = network
   }
 }
