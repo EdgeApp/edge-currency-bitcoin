@@ -1,6 +1,8 @@
 // @flow
 import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'airbitz-core-js'
 
+import type { EngineState } from '../engine/engine-state.js'
+
 /**
  * This object holds the plugin-wide per-currency caches.
  * Engine plugins are responsible for keeping it up to date.
@@ -31,6 +33,7 @@ export class PluginState {
   // Private stuff
   // ------------------------------------------------------------------------
   io: AbcIo
+  engines: Array<EngineState>
   folder: DiskletFolder
 
   constructor (io: AbcIo, currencyInfo: AbcCurrencyInfo) {
@@ -38,6 +41,7 @@ export class PluginState {
     this.headerCache = {}
     this.serverCache = {}
     this.io = io
+    this.engines = []
     this.folder = io.folder.folder('plugins').folder(currencyInfo.pluginName)
   }
 
@@ -78,5 +82,13 @@ export class PluginState {
         servers: this.serverCache
       })
     )
+  }
+
+  addEngine (engineState: EngineState): void {
+    this.engines.push(engineState)
+  }
+
+  removeEngine (engineState: EngineState): void {
+    this.engines = this.engines.filter(engine => engine !== engineState)
   }
 }

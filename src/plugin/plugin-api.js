@@ -130,7 +130,8 @@ export class CurrencyPlugin {
       callbacks: {},
       bcoin: {}, // TODO: Implement this
       io,
-      localFolder: options.walletLocalFolder
+      localFolder: options.walletLocalFolder,
+      pluginState: this.state
     })
     const keyManager = new KeyManager(
       walletInfo,

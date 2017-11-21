@@ -1,6 +1,7 @@
 // @flow
 import type { AbcIo, DiskletFolder } from 'airbitz-core-types'
 
+import type { PluginState } from '../plugin/plugin-state.js'
 import type { StratumCallbacks } from '../stratum/stratum-connection.js'
 import { StratumConnection } from '../stratum/stratum-connection.js'
 
@@ -43,6 +44,7 @@ export interface EngineStateOptions {
   bcoin: any;
   io: any;
   localFolder: any;
+  pluginState: PluginState;
 }
 
 /**
@@ -123,6 +125,7 @@ export class EngineState {
     this.serverStates = {}
     this.txStates = {}
     this.missingTxs = new Set()
+    this.pluginState = options.pluginState
 
     this.bcoin = options.bcoin
     this.io = options.io
@@ -146,11 +149,13 @@ export class EngineState {
   }
 
   connect () {
+    this.pluginState.addEngine(this)
     this.engineStarted = true
     this.refillServers()
   }
 
   disconnect () {
+    this.pluginState.removeEngine(this)
     this.engineStarted = false
     for (const uri of Object.keys(this.connections)) {
       this.connections[uri].close()
@@ -164,6 +169,7 @@ export class EngineState {
   bcoin: any
   io: AbcIo
   localFolder: DiskletFolder
+  pluginState: PluginState
 
   refillServers () {
     let lastUri = 1

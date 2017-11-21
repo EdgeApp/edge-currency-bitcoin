@@ -30,6 +30,7 @@ const io = {
 const engineState = new EngineState({
   callbacks: {},
   bcoin: {}, // TODO: Implement this
+  pluginState: ({}: any), // TODO: Implement this
   io,
   localFolder: walletLocalFolder
 })
