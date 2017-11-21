@@ -4,7 +4,9 @@ import type {
   AbcCurrencyEngineOptions,
   AbcFreshAddress,
   AbcSpendInfo,
-  AbcTransaction
+  AbcTransaction,
+  AbcCurrencyInfo,
+  AbcSpendTarget
 } from 'airbitz-core-types'
 
 import { EngineState } from './engine-state.js'
@@ -26,6 +28,7 @@ export class CurrencyEngine {
   engineState: EngineState
   pluginState: PluginState
   options: AbcCurrencyEngineOptions
+  network: string
 
   // ------------------------------------------------------------------------
   // Private API
@@ -46,6 +49,7 @@ export class CurrencyEngine {
     this.engineState = engineState
     this.pluginState = pluginState
     this.options = options
+    this.network = this.txLibInfo.defaultSettings.network.type
   }
 
   static async makeEngine (
@@ -57,6 +61,14 @@ export class CurrencyEngine {
   ): Promise<AbcCurrencyEngine> {
     const engine = new CurrencyEngine(txLibInfo, keyManager, engineState, pluginState, options)
     return engine
+  }
+
+  getAllAddresses () {
+    const allOurAddresses = []
+    for (const scriptHash in this.engineState.addressCache) {
+      allOurAddresses.push(this.engineState.addressCache[scriptHash].displayAddress)
+    }
+    return allOurAddresses
   }
 
   // ------------------------------------------------------------------------
@@ -89,14 +101,16 @@ export class CurrencyEngine {
   }
 
   getBalance (options: any): string {
-    return this.engineState.addressCache.reduce((s, { utxos }) =>
-      s + utxos.reduce((a, { value }) =>
-        a + value, 0)
-      , 0).toString()
+    let balance = 0
+    for (const scriptHash in this.engineState.addressCache) {
+      const { utxos } = this.engineState.addressCache[scriptHash]
+      balance += utxos.reduce((s, { value }) => s + value, 0)
+    }
+    return balance.toString()
   }
 
   getNumTransactions (options: any): number {
-    return this.engineState.txCache.length
+    return Object.keys(this.engineState.txCache).length
   }
 
   async getTransactions (options: any): Promise<Array<AbcTransaction>> {
@@ -104,7 +118,7 @@ export class CurrencyEngine {
     const abcTransactions = []
     for (const txid in rawTxs) {
       const bcoinTransaction = bcoin.primitives.TX.fromRaw(rawTxs[txid])
-      const allOurAddresses = this.engineState.addressCache.map(({ displayAddress }) => displayAddress)
+      const allOurAddresses = this.getAllAddresses()
       const ourReceiveAddresses = []
       const sumOfTx = bcoinTransaction.outputs.reduce((s, output) => {
         const address = output.getAddress().toString(this.network)
@@ -116,7 +130,7 @@ export class CurrencyEngine {
       const { height, firstSeen } = this.engineState.txHeightCache[txid]
       let date = firstSeen
       if (height && height !== -1) {
-        const blockHeight = this.pluginState.headerCache[height]
+        const blockHeight = this.pluginState.headerCache[height.toString()]
         if (blockHeight) {
           date = blockHeight.timestamp
         }
@@ -124,6 +138,7 @@ export class CurrencyEngine {
       const abcTransaction: AbcTransaction = {
         ourReceiveAddresses,
         currencyCode: this.txLibInfo.currencyCode,
+        otherParams: {},
         txid: txid,
         date: date,
         blockHeight: height,
@@ -143,9 +158,8 @@ export class CurrencyEngine {
   }
 
   getFreshAddress (options: any): AbcFreshAddress {
-    this.keyManager.getReceiveAddress().then(address => {
-      return address
-    })
+    const abcAddress = { publicAddress: this.keyManager.getReceiveAddress() }
+    return abcAddress
   }
 
   addGapLimitAddresses (addresses: Array<string>, options: any): void {
@@ -153,7 +167,12 @@ export class CurrencyEngine {
   }
 
   isAddressUsed (address: string, options: any): boolean {
-    return this.keyManager.isUsed(address)
+    for (const scriptHash in this.engineState.addressCache) {
+      if (this.engineState.addressCache[scriptHash].displayAddress === address) {
+        return this.engineState.addressCache[scriptHash].used
+      }
+    }
+    return false
   }
 
   async makeSpend (abcSpendInfo: AbcSpendInfo): Promise<AbcTransaction> {
@@ -170,7 +189,7 @@ export class CurrencyEngine {
       rate = parseInt(abcSpendInfo.customNetworkFee) * BYTES_TO_KB
     } else {
       // defualt fees are in sat/KB
-      rate = this.getRate(feeOption)
+      rate = 100 // Needs to get real rate from rate calculator
     }
 
     try {
@@ -188,7 +207,7 @@ export class CurrencyEngine {
       if (e.type === 'FundingError') throw new Error('InsufficientFundsError')
       throw e
     }
-    const allOurAddresses = this.engineState.addressCache.map(({ displayAddress }) => displayAddress)
+    const allOurAddresses = this.getAllAddresses()
     const sumOfTx = abcSpendInfo.spendTargets.reduce((s, spendTarget: AbcSpendTarget) => {
       if (spendTarget.publicAddress &&
         allOurAddresses.indexOf(spendTarget.publicAddress) !== -1) {

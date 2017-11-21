@@ -126,11 +126,11 @@ export class KeyManager {
     await this.setLookAhead()
   }
 
-  async getReceiveAddress (): Promise<string> {
+  getReceiveAddress (): string {
     return this.getNextAvailable(this.keys.receive.children)
   }
 
-  async getChangeAddress (): Promise<string> {
+  getChangeAddress (): string {
     if (this.bip === 'bip32') return this.getReceiveAddress()
     return this.getNextAvailable(this.keys.change.children)
   }
@@ -151,10 +151,6 @@ export class KeyManager {
     const keyToLease: ?Key = this.scriptHashToKey(scriptHash)
     if (keyToLease) keyToLease.state = LEASED
     await this.setLookAhead()
-  }
-
-  isUsed (address: string) {
-    return this.addressToKey(address).state === USED
   }
 
   async createTX (
@@ -288,7 +284,7 @@ export class KeyManager {
     return null
   }
 
-  async getNextAvailable (keys: Array<Key>) {
+  getNextAvailable (keys: Array<Key>): string {
     let key = null
     for (let i = 0; i < keys.length; i++) {
       if (keys[i].state === UNUSED) {
@@ -304,13 +300,8 @@ export class KeyManager {
         }
       }
     }
-    if (!key) {
-      await this.setLookAhead()
-      return this.getNextAvailable(keys)
-    }
-
+    if (!key) return ''
     key.state = LEASED
-    await this.setLookAhead()
     return key.displayAddress
   }
 
