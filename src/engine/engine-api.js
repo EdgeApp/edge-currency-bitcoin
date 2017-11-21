@@ -88,7 +88,7 @@ export class CurrencyEngine {
   }
 
   getNumTransactions (options: any): number {
-    return 0 // TODO: Implement this
+    return this.engineState.txCache.length
   }
 
   getTransactions (options: any): Promise<Array<AbcTransaction>> {
