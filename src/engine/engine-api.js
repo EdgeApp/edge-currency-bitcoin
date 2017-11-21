@@ -10,6 +10,10 @@ import type {
 import { EngineState } from './engine-state.js'
 import { PluginState } from '../plugin/plugin-state.js'
 import { KeyManager } from './keyManager'
+import bcoin from 'bcoin'
+
+const BYTES_TO_KB = 1000
+const MILI_TO_SEC = 1000
 
 /**
  * The core currency plugin.
@@ -17,37 +21,41 @@ import { KeyManager } from './keyManager'
  * as well as generic (non-wallet) functionality.
  */
 export class CurrencyEngine {
+  txLibInfo: AbcCurrencyInfo
   keyManager: KeyManager
-  options: AbcCurrencyEngineOptions
   engineState: EngineState
   pluginState: PluginState
+  options: AbcCurrencyEngineOptions
 
   // ------------------------------------------------------------------------
   // Private API
   // ------------------------------------------------------------------------
   constructor (
+    txLibInfo: AbcCurrencyInfo,
     keyManager: KeyManager,
-    options: AbcCurrencyEngineOptions,
+    engineState: EngineState,
     pluginState: PluginState,
-    engineState: EngineState
+    options: AbcCurrencyEngineOptions
   ) {
     // Validate that we are a valid AbcCurrencyEngine:
     // eslint-disable-next-line no-unused-vars
     const test: AbcCurrencyEngine = this
 
+    this.txLibInfo = txLibInfo
+    this.keyManager = keyManager
     this.engineState = engineState
     this.pluginState = pluginState
-    this.keyManager = keyManager
     this.options = options
   }
 
   static async makeEngine (
+    txLibInfo: AbcCurrencyInfo,
     keyManager: KeyManager,
-    options: AbcCurrencyEngineOptions,
+    engineState: EngineState,
     pluginState: PluginState,
-    engineState: EngineState
+    options: AbcCurrencyEngineOptions
   ): Promise<AbcCurrencyEngine> {
-    const engine = new CurrencyEngine(keyManager, options, pluginState, engineState)
+    const engine = new CurrencyEngine(txLibInfo, keyManager, engineState, pluginState, options)
     return engine
   }
 
