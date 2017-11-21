@@ -81,7 +81,10 @@ export class CurrencyEngine {
   }
 
   getBalance (options: any): string {
-    return (0).toFixed(0) // TODO: Implement this
+    return this.engineState.addressCache.reduce((s, { utxos }) =>
+      s + utxos.reduce((a, { value }) =>
+        a + value, 0)
+      , 0).toString()
   }
 
   getNumTransactions (options: any): number {
