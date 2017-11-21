@@ -135,6 +135,9 @@ export class CurrencyEngine {
   }
 
   getFreshAddress (options: any): AbcFreshAddress {
+    this.keyManager.getReceiveAddress().then(address => {
+      return address
+    })
   }
 
   addGapLimitAddresses (addresses: Array<string>, options: any): void {
