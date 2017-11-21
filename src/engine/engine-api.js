@@ -47,7 +47,12 @@ export class CurrencyEngine {
     pluginState: PluginState,
     engineState: EngineState
   ): Promise<AbcCurrencyEngine> {
-    const engine = new CurrencyEngine(keyManager, options, pluginState, engineState)
+    const engine = new CurrencyEngine(
+      keyManager,
+      options,
+      pluginState,
+      engineState
+    )
     return engine
   }
 
