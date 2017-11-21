@@ -101,16 +101,9 @@ export class CurrencyEngine {
   }
 
   isAddressUsed (address: string, options: any): boolean {
-    return false // TODO: Implement this
+    return this.keyManager.isUsed(address)
   }
 
-  makeSpend (abcSpendInfo: AbcSpendInfo): Promise<AbcTransaction> {
-    const transaction: AbcTransaction = ({}: any)
-    return Promise.resolve(transaction) // TODO: Implement this
-  }
-
-  signTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
-    return Promise.resolve(abcTransaction) // TODO: Implement this
   async makeSpend (abcSpendInfo: AbcSpendInfo): Promise<AbcTransaction> {
     // Can't spend without outputs
     if (!abcSpendInfo.spendTargets || abcSpendInfo.spendTargets.length < 1) {

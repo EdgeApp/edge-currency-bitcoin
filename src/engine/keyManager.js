@@ -153,6 +153,10 @@ export class KeyManager {
     await this.setLookAhead()
   }
 
+  isUsed (address: string) {
+    return this.addressToKey(address).state === USED
+  }
+
   async createTX (
     spendTargets: Array<any>,
     utxos: Array<UtxoObj>,
