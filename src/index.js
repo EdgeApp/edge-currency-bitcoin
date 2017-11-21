@@ -16,7 +16,7 @@ import { dogecoinTestnetInfo } from './info/dogecointestnet.js'
 import { litecoinInfo } from './info/litecoin.js'
 import { litecoinTestnetInfo } from './info/litecointestnet.js'
 import { CurrencyPlugin } from './plugin/plugin-api.js'
-import { bcoinExtender } from './bcoin-extender/bcoin-extender'
+import { bcoinExtender } from './utils/bcoin-extender'
 
 const pluginsInfo = [
   bitcoinInfo,
