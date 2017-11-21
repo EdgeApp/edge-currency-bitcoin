@@ -124,7 +124,6 @@ for (const fixture of fixtures) {
     // })
 
     it('Make Engine', function () {
-      console.log({type: WALLET_TYPE, keys})
       return plugin.makeEngine({type: WALLET_TYPE, keys}, {
         callbacks,
         walletLocalFolder,
