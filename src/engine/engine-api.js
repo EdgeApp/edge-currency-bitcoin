@@ -72,7 +72,9 @@ export class CurrencyEngine {
   getAllAddresses () {
     const allOurAddresses = []
     for (const scriptHash in this.engineState.addressCache) {
-      allOurAddresses.push(this.engineState.addressCache[scriptHash].displayAddress)
+      allOurAddresses.push(
+        this.engineState.addressCache[scriptHash].displayAddress
+      )
     }
     return allOurAddresses
   }
@@ -148,7 +150,9 @@ export class CurrencyEngine {
         txid: txid,
         date: date,
         blockHeight: height,
-        nativeAmount: (sumOfTx - parseInt(bcoinTransaction.getFee())).toString(),
+        nativeAmount: (
+          sumOfTx - parseInt(bcoinTransaction.getFee())
+        ).toString(),
         networkFee: bcoinTransaction.getFee().toString(),
         signedTx: rawTxs[txid]
       }
@@ -174,7 +178,9 @@ export class CurrencyEngine {
 
   isAddressUsed (address: string, options: any): boolean {
     for (const scriptHash in this.engineState.addressCache) {
-      if (this.engineState.addressCache[scriptHash].displayAddress === address) {
+      if (
+        this.engineState.addressCache[scriptHash].displayAddress === address
+      ) {
         return this.engineState.addressCache[scriptHash].used
       }
     }
@@ -184,7 +190,7 @@ export class CurrencyEngine {
   async makeSpend (abcSpendInfo: AbcSpendInfo): Promise<AbcTransaction> {
     // Can't spend without outputs
     if (!abcSpendInfo.spendTargets || abcSpendInfo.spendTargets.length < 1) {
-      throw (new Error('Need to provide Spend Targets'))
+      throw new Error('Need to provide Spend Targets')
     }
 
     const feeOption = abcSpendInfo.networkFeeOption || 'standard'
@@ -214,16 +220,23 @@ export class CurrencyEngine {
       throw e
     }
     const allOurAddresses = this.getAllAddresses()
-    const sumOfTx = abcSpendInfo.spendTargets.reduce((s, spendTarget: AbcSpendTarget) => {
-      if (spendTarget.publicAddress &&
-        allOurAddresses.indexOf(spendTarget.publicAddress) !== -1) {
-        return s
-      } else return s - parseInt(spendTarget.nativeAmount)
-    }, 0)
+    const sumOfTx = abcSpendInfo.spendTargets.reduce(
+      (s, spendTarget: AbcSpendTarget) => {
+        if (
+          spendTarget.publicAddress &&
+          allOurAddresses.indexOf(spendTarget.publicAddress) !== -1
+        ) {
+          return s
+        } else return s - parseInt(spendTarget.nativeAmount)
+      },
+      0
+    )
 
     const ourReceiveAddresses = []
     for (const i in resultedTransaction.outputs) {
-      const address = resultedTransaction.outputs[i].getAddress().toString(this.network)
+      const address = resultedTransaction.outputs[i]
+        .getAddress()
+        .toString(this.network)
       if (address && allOurAddresses.indexOf(address) !== -1) {
         ourReceiveAddresses.push(address)
       }
@@ -240,7 +253,9 @@ export class CurrencyEngine {
       txid: '',
       date: 0,
       blockHeight: 0,
-      nativeAmount: (sumOfTx - parseInt(resultedTransaction.getFee())).toString(),
+      nativeAmount: (
+        sumOfTx - parseInt(resultedTransaction.getFee())
+      ).toString(),
       networkFee: resultedTransaction.getFee().toString(),
       signedTx: ''
     }
@@ -250,7 +265,9 @@ export class CurrencyEngine {
   async signTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
     await this.keyManager.sign(abcTransaction.otherParams.bcoinTx)
     abcTransaction.date = Date.now() / MILI_TO_SEC
-    abcTransaction.signedTx = abcTransaction.otherParams.bcoinTx.toRaw().toString('hex')
+    abcTransaction.signedTx = abcTransaction.otherParams.bcoinTx
+      .toRaw()
+      .toString('hex')
     return abcTransaction
   }
 

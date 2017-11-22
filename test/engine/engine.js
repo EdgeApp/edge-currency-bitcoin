@@ -5,7 +5,7 @@ import assert from 'assert'
 import { describe, it, before } from 'mocha'
 import fixtures from './fixtures.json'
 
-import request from 'request'
+// import request from 'request'
 // import jsonfile from 'jsonfile'
 
 import EventEmitter from 'events'
@@ -33,7 +33,7 @@ for (const fixture of fixtures) {
     io: {
       fetch: fakeIo.fetch,
       folder: fakeIo.folder,
-      random: (size) => fixture['key'],
+      random: size => fixture['key'],
       net: require('net')
     }
   }
@@ -59,30 +59,42 @@ for (const fixture of fixtures) {
 
   describe(`Engine Creation Errors for Wallet type ${WALLET_TYPE}`, function () {
     before('Plugin', function () {
-      return CurrencyPluginFactory.makePlugin(opts).then((currencyPlugin) => {
-        assert.equal(currencyPlugin.currencyInfo.currencyCode, fixture['Test Currency code'])
+      return CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
+        assert.equal(
+          currencyPlugin.currencyInfo.currencyCode,
+          fixture['Test Currency code']
+        )
         plugin = currencyPlugin
         keys = plugin.createPrivateKey(WALLET_TYPE)
-        keys = plugin.derivePublicKey({type: WALLET_TYPE, keys})
+        keys = plugin.derivePublicKey({ type: WALLET_TYPE, keys })
       })
     })
 
     it('Error when Making Engine without local folder', function () {
-      return plugin.makeEngine({type: WALLET_TYPE, keys}, { callbacks })
+      return plugin
+        .makeEngine({ type: WALLET_TYPE, keys }, { callbacks })
         .catch(e => {
-          assert.equal(e.message, 'Cannot create an engine without a local folder')
+          assert.equal(
+            e.message,
+            'Cannot create an engine without a local folder'
+          )
         })
     })
 
     it('Error when Making Engine without keys', function () {
-      return plugin.makeEngine({type: WALLET_TYPE}, { callbacks, walletLocalFolder })
+      return plugin
+        .makeEngine({ type: WALLET_TYPE }, { callbacks, walletLocalFolder })
         .catch(e => {
           assert.equal(e.message, 'Missing Master Key')
         })
     })
 
     it('Error when Making Engine without bitcoin key', function () {
-      return plugin.makeEngine({type: WALLET_TYPE, keys: { bitcoinXpub: keys.pub }}, { callbacks, walletLocalFolder })
+      return plugin
+        .makeEngine(
+          { type: WALLET_TYPE, keys: { bitcoinXpub: keys.pub } },
+          { callbacks, walletLocalFolder }
+        )
         .catch(e => {
           assert.equal(e.message, 'Missing Master Key')
         })
@@ -124,27 +136,49 @@ for (const fixture of fixtures) {
     // })
 
     it('Make Engine', function () {
-      return plugin.makeEngine({type: WALLET_TYPE, keys}, {
-        callbacks,
-        walletLocalFolder,
-        optionalSettings: {
-          enableOverrideServers: true,
-          electrumServers: [
-            ['testnetnode.arihanc.com', '51001']
-          ]
-        }
-      })
+      return plugin
+        .makeEngine(
+          { type: WALLET_TYPE, keys },
+          {
+            callbacks,
+            walletLocalFolder,
+            optionalSettings: {
+              enableOverrideServers: true,
+              electrumServers: [['testnetnode.arihanc.com', '51001']]
+            }
+          }
+        )
         .then(e => {
           engine = e
           assert.equal(typeof engine.startEngine, 'function', 'startEngine')
           assert.equal(typeof engine.killEngine, 'function', 'killEngine')
           // assert.equal(typeof engine.enableTokens, 'function', 'enableTokens')
-          assert.equal(typeof engine.getBlockHeight, 'function', 'getBlockHeight')
+          assert.equal(
+            typeof engine.getBlockHeight,
+            'function',
+            'getBlockHeight'
+          )
           assert.equal(typeof engine.getBalance, 'function', 'getBalance')
-          assert.equal(typeof engine.getNumTransactions, 'function', 'getNumTransactions')
-          assert.equal(typeof engine.getTransactions, 'function', 'getTransactions')
-          assert.equal(typeof engine.getFreshAddress, 'function', 'getFreshAddress')
-          assert.equal(typeof engine.addGapLimitAddresses, 'function', 'addGapLimitAddresses')
+          assert.equal(
+            typeof engine.getNumTransactions,
+            'function',
+            'getNumTransactions'
+          )
+          assert.equal(
+            typeof engine.getTransactions,
+            'function',
+            'getTransactions'
+          )
+          assert.equal(
+            typeof engine.getFreshAddress,
+            'function',
+            'getFreshAddress'
+          )
+          assert.equal(
+            typeof engine.addGapLimitAddresses,
+            'function',
+            'addGapLimitAddresses'
+          )
           assert.equal(typeof engine.isAddressUsed, 'function', 'isAddressUsed')
           assert.equal(typeof engine.makeSpend, 'function', 'makeSpend')
           assert.equal(typeof engine.signTx, 'function', 'signTx')

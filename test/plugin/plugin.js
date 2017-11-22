@@ -16,7 +16,7 @@ for (const fixture of fixtures) {
     io: {
       fetch: fakeIo.fetch,
       folder: fakeIo.folder,
-      random: (size) => fixture['key'],
+      random: size => fixture['key'],
       net: require('net')
     }
   }
@@ -25,14 +25,17 @@ for (const fixture of fixtures) {
     let plugin
 
     before('Plugin', function (done) {
-      CurrencyPluginFactory.makePlugin(opts).then((currencyPlugin) => {
+      CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
         plugin = currencyPlugin
         done()
       })
     })
 
     it('Test Currency code', function () {
-      assert.equal(plugin.currencyInfo.currencyCode, fixture['Test Currency code'])
+      assert.equal(
+        plugin.currencyInfo.currencyCode,
+        fixture['Test Currency code']
+      )
     })
   })
 
@@ -40,14 +43,17 @@ for (const fixture of fixtures) {
     let plugin
 
     before('Plugin', function (done) {
-      CurrencyPluginFactory.makePlugin(opts).then((currencyPlugin) => {
+      CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
         plugin = currencyPlugin
         done()
       })
     })
 
     it('Test Currency code', function () {
-      assert.equal(plugin.currencyInfo.currencyCode, fixture['Test Currency code'])
+      assert.equal(
+        plugin.currencyInfo.currencyCode,
+        fixture['Test Currency code']
+      )
     })
 
     it('Create valid key', function () {
@@ -64,8 +70,11 @@ for (const fixture of fixtures) {
     let keys
 
     before('Plugin', function (done) {
-      CurrencyPluginFactory.makePlugin(opts).then((currencyPlugin) => {
-        assert.equal(currencyPlugin.currencyInfo.currencyCode, fixture['Test Currency code'])
+      CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
+        assert.equal(
+          currencyPlugin.currencyInfo.currencyCode,
+          fixture['Test Currency code']
+        )
         plugin = currencyPlugin
         keys = plugin.createPrivateKey(WALLET_TYPE)
         done()
@@ -73,7 +82,10 @@ for (const fixture of fixtures) {
     })
 
     it('Valid private key', function () {
-      keys = plugin.derivePublicKey({type: WALLET_TYPE, keys: {[keyName]: keys[keyName]}})
+      keys = plugin.derivePublicKey({
+        type: WALLET_TYPE,
+        keys: { [keyName]: keys[keyName] }
+      })
       assert.equal(keys[xpubName], fixture['xpub'])
     })
 
@@ -94,49 +106,111 @@ for (const fixture of fixtures) {
     let plugin
 
     before('Plugin', function () {
-      CurrencyPluginFactory.makePlugin(opts).then((currencyPlugin) => {
-        assert.equal(currencyPlugin.currencyInfo.currencyCode, fixture['Test Currency code'])
+      CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
+        assert.equal(
+          currencyPlugin.currencyInfo.currencyCode,
+          fixture['Test Currency code']
+        )
         plugin = currencyPlugin
       })
     })
     it('address only', function () {
       const parsedUri = plugin.parseUri(fixture['parseUri']['address only'][0])
-      assert.equal(parsedUri.publicAddress, fixture['parseUri']['address only'][1])
+      assert.equal(
+        parsedUri.publicAddress,
+        fixture['parseUri']['address only'][1]
+      )
       assert.equal(parsedUri.nativeAmount, undefined)
       assert.equal(parsedUri.currencyCode, undefined)
     })
     it('uri address', function () {
       const parsedUri = plugin.parseUri(fixture['parseUri']['uri address'][0])
-      assert.equal(parsedUri.publicAddress, fixture['parseUri']['uri address'][1])
+      assert.equal(
+        parsedUri.publicAddress,
+        fixture['parseUri']['uri address'][1]
+      )
       assert.equal(parsedUri.nativeAmount, undefined)
       assert.equal(parsedUri.currencyCode, undefined)
     })
     it('uri address with amount', function () {
-      const parsedUri = plugin.parseUri(fixture['parseUri']['uri address with amount'][0])
-      assert.equal(parsedUri.publicAddress, fixture['parseUri']['uri address with amount'][1])
-      assert.equal(parsedUri.nativeAmount, fixture['parseUri']['uri address with amount'][2])
-      assert.equal(parsedUri.currencyCode, fixture['parseUri']['uri address with amount'][3])
+      const parsedUri = plugin.parseUri(
+        fixture['parseUri']['uri address with amount'][0]
+      )
+      assert.equal(
+        parsedUri.publicAddress,
+        fixture['parseUri']['uri address with amount'][1]
+      )
+      assert.equal(
+        parsedUri.nativeAmount,
+        fixture['parseUri']['uri address with amount'][2]
+      )
+      assert.equal(
+        parsedUri.currencyCode,
+        fixture['parseUri']['uri address with amount'][3]
+      )
     })
     it('uri address with amount & label', function () {
-      const parsedUri = plugin.parseUri(fixture['parseUri']['uri address with amount & label'][0])
-      assert.equal(parsedUri.publicAddress, fixture['parseUri']['uri address with amount & label'][1])
-      assert.equal(parsedUri.nativeAmount, fixture['parseUri']['uri address with amount & label'][2])
-      assert.equal(parsedUri.currencyCode, fixture['parseUri']['uri address with amount & label'][3])
-      assert.equal(parsedUri.metadata.label, fixture['parseUri']['uri address with amount & label'][4])
+      const parsedUri = plugin.parseUri(
+        fixture['parseUri']['uri address with amount & label'][0]
+      )
+      assert.equal(
+        parsedUri.publicAddress,
+        fixture['parseUri']['uri address with amount & label'][1]
+      )
+      assert.equal(
+        parsedUri.nativeAmount,
+        fixture['parseUri']['uri address with amount & label'][2]
+      )
+      assert.equal(
+        parsedUri.currencyCode,
+        fixture['parseUri']['uri address with amount & label'][3]
+      )
+      assert.equal(
+        parsedUri.metadata.label,
+        fixture['parseUri']['uri address with amount & label'][4]
+      )
     })
     it('uri address with amount, label & message', function () {
-      const parsedUri = plugin.parseUri(fixture['parseUri']['uri address with amount & label'][0])
-      assert.equal(parsedUri.publicAddress, fixture['parseUri']['uri address with amount & label'][1])
-      assert.equal(parsedUri.nativeAmount, fixture['parseUri']['uri address with amount & label'][2])
-      assert.equal(parsedUri.currencyCode, fixture['parseUri']['uri address with amount & label'][3])
-      assert.equal(parsedUri.metadata.label, fixture['parseUri']['uri address with amount & label'][4])
-      assert.equal(parsedUri.metadata.message, fixture['parseUri']['uri address with amount & label'][5])
+      const parsedUri = plugin.parseUri(
+        fixture['parseUri']['uri address with amount & label'][0]
+      )
+      assert.equal(
+        parsedUri.publicAddress,
+        fixture['parseUri']['uri address with amount & label'][1]
+      )
+      assert.equal(
+        parsedUri.nativeAmount,
+        fixture['parseUri']['uri address with amount & label'][2]
+      )
+      assert.equal(
+        parsedUri.currencyCode,
+        fixture['parseUri']['uri address with amount & label'][3]
+      )
+      assert.equal(
+        parsedUri.metadata.label,
+        fixture['parseUri']['uri address with amount & label'][4]
+      )
+      assert.equal(
+        parsedUri.metadata.message,
+        fixture['parseUri']['uri address with amount & label'][5]
+      )
     })
     it('uri address with unsupported param', function () {
-      const parsedUri = plugin.parseUri(fixture['parseUri']['uri address with amount & label'][0])
-      assert.equal(parsedUri.publicAddress, fixture['parseUri']['uri address with amount & label'][1])
-      assert.equal(parsedUri.nativeAmount, fixture['parseUri']['uri address with amount & label'][2])
-      assert.equal(parsedUri.currencyCode, fixture['parseUri']['uri address with amount & label'][3])
+      const parsedUri = plugin.parseUri(
+        fixture['parseUri']['uri address with amount & label'][0]
+      )
+      assert.equal(
+        parsedUri.publicAddress,
+        fixture['parseUri']['uri address with amount & label'][1]
+      )
+      assert.equal(
+        parsedUri.nativeAmount,
+        fixture['parseUri']['uri address with amount & label'][2]
+      )
+      assert.equal(
+        parsedUri.currencyCode,
+        fixture['parseUri']['uri address with amount & label'][3]
+      )
     })
   })
 
@@ -144,25 +218,39 @@ for (const fixture of fixtures) {
     let plugin
 
     before('Plugin', function () {
-      CurrencyPluginFactory.makePlugin(opts).then((currencyPlugin) => {
+      CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
         plugin = currencyPlugin
       })
     })
     it('address only', function () {
-      const encodedUri = plugin.encodeUri(fixture['encodeUri']['address only'][0])
+      const encodedUri = plugin.encodeUri(
+        fixture['encodeUri']['address only'][0]
+      )
       assert.equal(encodedUri, fixture['encodeUri']['address only'][1])
     })
     it('address & amount', function () {
-      const encodedUri = plugin.encodeUri(fixture['encodeUri']['address & amount'][0])
+      const encodedUri = plugin.encodeUri(
+        fixture['encodeUri']['address & amount'][0]
+      )
       assert.equal(encodedUri, fixture['encodeUri']['address & amount'][1])
     })
     it('address, amount, and label', function () {
-      const encodedUri = plugin.encodeUri(fixture['encodeUri']['address, amount, and label'][0])
-      assert.equal(encodedUri, fixture['encodeUri']['address, amount, and label'][1])
+      const encodedUri = plugin.encodeUri(
+        fixture['encodeUri']['address, amount, and label'][0]
+      )
+      assert.equal(
+        encodedUri,
+        fixture['encodeUri']['address, amount, and label'][1]
+      )
     })
     it('address, amount, label, & message', function () {
-      const encodedUri = plugin.encodeUri(fixture['encodeUri']['address, amount, label, & message'][0])
-      assert.equal(encodedUri, fixture['encodeUri']['address, amount, label, & message'][1])
+      const encodedUri = plugin.encodeUri(
+        fixture['encodeUri']['address, amount, label, & message'][0]
+      )
+      assert.equal(
+        encodedUri,
+        fixture['encodeUri']['address, amount, label, & message'][1]
+      )
     })
     it('invalid currencyCode', function () {
       assert.throws(() => {
