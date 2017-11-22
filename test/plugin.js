@@ -1,12 +1,18 @@
 // @flow
-import { expect } from 'chai'
-import { describe, it, afterEach } from 'mocha'
 import {
+  destroyAllContexts,
   makeFakeContexts,
-  makeFakeIos,
-  destroyAllContexts
+  makeFakeIos
 } from 'airbitz-core-js'
-import type { AbcAccount } from 'airbitz-core-types'
+import type {
+  AbcAccount,
+  AbcCurrencyPlugin,
+  AbcCurrencyPluginCallbacks,
+  AbcTransaction
+} from 'airbitz-core-types'
+import { expect } from 'chai'
+import { makeMemoryFolder } from 'disklet'
+import { afterEach, describe, it } from 'mocha'
 
 import {
   BitcoinPluginFactory,
@@ -38,7 +44,9 @@ for (const pluginFactory of plugins) {
     it('can be created manually', async function () {
       const [io] = makeFakeIos(1)
       expect(pluginFactory.pluginType).to.equal('currency')
-      const currencyPlugin = await pluginFactory.makePlugin({ io })
+      const currencyPlugin: AbcCurrencyPlugin = await pluginFactory.makePlugin({
+        io
+      })
       expect(currencyPlugin.currencyInfo.pluginName).to.equal(pluginName)
     })
 
@@ -48,3 +56,49 @@ for (const pluginFactory of plugins) {
     })
   })
 }
+
+describe('bitcoin plugin', function () {
+  it('can connect to a server', async function () {
+    const pluginFactory = BitcoinPluginFactory
+    const [io] = makeFakeIos(1)
+    io.net = require('net')
+    io.Socket = require('net').Socket
+    io.TLSSocket = require('tls').TLSSocket
+
+    const currencyPlugin: AbcCurrencyPlugin = await pluginFactory.makePlugin({
+      io
+    })
+
+    const keys = currencyPlugin.createPrivateKey(
+      currencyPlugin.currencyInfo.walletTypes[0]
+    )
+
+    let done: () => void
+    const promise = new Promise(resolve => {
+      done = resolve
+    })
+
+    const callbacks: AbcCurrencyPluginCallbacks = {
+      onBlockHeightChanged (blockHeight: number) {
+        done()
+      },
+      onTransactionsChanged (abcTransactions: Array<AbcTransaction>) {},
+      onBalanceChanged (currencyCode: string, nativeBalance: string) {},
+      onAddressesChecked (progressRatio: number) {},
+      onTxidsChanged (txids: Array<string>) {}
+    }
+
+    const engine = await currencyPlugin.makeEngine(
+      { id: '', keys, type: 'wallet:bitcoin' },
+      {
+        callbacks,
+        walletLocalFolder: makeMemoryFolder(),
+        walletLocalEncryptedFolder: makeMemoryFolder()
+      }
+    )
+
+    engine.startEngine()
+    await promise
+    engine.killEngine()
+  })
+})
