@@ -113,10 +113,11 @@ export class KeyManager {
   // /////////////// Public API /////////////////// //
   // ////////////////////////////////////////////// //
   async load () {
-    if (!this.masterKeys.masterPublic) {
+    if (this.masterKeys.masterPrivate) {
       this.masterKeys.masterPrivate = await this.getPrivateFromSeed(
         this.masterKeys.masterPrivate
       )
+      this.masterKeys.masterPublic = this.masterKeys.masterPrivate.toPublic()
     } else {
       this.masterKeys.masterPublic = bcoin.hd.PublicKey.fromBase58(
         this.masterKeys.masterPublic,
@@ -309,10 +310,7 @@ export class KeyManager {
     let privateKey
     try {
       const mnemonic = bcoin.hd.Mnemonic.fromPhrase(seed)
-      privateKey = bcoin.hd.PrivateKey.fromMnemonic(
-        mnemonic,
-        this.network
-      ).toPublic()
+      privateKey = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
     } catch (e) {
       const keyBuffer = Buffer.from(seed, 'base64')
       privateKey = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)

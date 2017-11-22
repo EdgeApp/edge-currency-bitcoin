@@ -186,10 +186,6 @@ for (const fixture of fixtures) {
           assert.equal(typeof engine.saveTx, 'function', 'saveTx')
           return true
         })
-        .catch(e => {
-          console.log(e)
-          throw new Error(e)
-        })
     })
 
     // it('Get BlockHeight', function (done) {
