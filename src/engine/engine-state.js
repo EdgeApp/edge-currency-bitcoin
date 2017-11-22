@@ -29,14 +29,14 @@ export type AddressCache = {
 
 export interface EngineStateCallbacks {
   // Changes to the address cache (might also affect tx heights):
-  +updatedUtxos?: (addressHash: string) => void;
-  +updatedTxids?: (addressHash: string) => void;
+  +onUtxosUpdated?: (addressHash: string) => void;
+  +onTxidsUpdated?: (addressHash: string) => void;
 
   // Changes to the chain height:
-  +updatedHeight?: () => void;
+  +onHeightUpdated?: (height: number) => void;
 
   // Fetched a transaction from the network:
-  +fetchedTx?: (txid: string) => void;
+  +onTxFetched?: (txid: string) => void;
 }
 
 export interface EngineStateOptions {
@@ -46,6 +46,8 @@ export interface EngineStateOptions {
   localFolder: any;
   pluginState: PluginState;
 }
+
+function nop () {}
 
 /**
  * This object holds the current state of the wallet engine.
@@ -126,6 +128,8 @@ export class EngineState {
     this.txStates = {}
     this.missingTxs = new Set()
     this.pluginState = options.pluginState
+    const { onHeightUpdated = nop } = options.callbacks
+    this.onHeightUpdated = onHeightUpdated
 
     this.bcoin = options.bcoin
     this.io = options.io
@@ -170,6 +174,7 @@ export class EngineState {
   io: AbcIo
   localFolder: DiskletFolder
   pluginState: PluginState
+  onHeightUpdated: (height: number) => void
 
   refillServers () {
     let lastUri = 1

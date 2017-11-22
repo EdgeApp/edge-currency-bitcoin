@@ -10,16 +10,17 @@ import type {
   AbcParsedUri,
   AbcWalletInfo
 } from 'airbitz-core-types'
-
+import bcoin from 'bcoin'
+import { bns } from 'biggystring'
 // $FlowFixMe
 import buffer from 'buffer-hack'
-import { CurrencyEngine } from '../engine/engine-api.js'
-import { EngineState } from '../engine/engine-state.js'
-import { PluginState } from './plugin-state.js'
 import { parse, serialize } from 'uri-js'
-import { bns } from 'biggystring'
+
+import { CurrencyEngine } from '../engine/engine-api.js'
+import type { EngineStateCallbacks } from '../engine/engine-state.js'
+import { EngineState } from '../engine/engine-state.js'
 import { KeyManager } from '../engine/keyManager.js'
-import bcoin from 'bcoin'
+import { PluginState } from './plugin-state.js'
 
 // $FlowFixMe
 const { Buffer } = buffer
@@ -126,8 +127,14 @@ export class CurrencyPlugin {
     if (!options.walletLocalFolder) {
       throw new Error('Cannot create an engine without a local folder')
     }
+
+    const callbacks: EngineStateCallbacks = {
+      onHeightUpdated (height: number) {
+        options.callbacks.onBlockHeightChanged(height)
+      }
+    }
     const engineState = new EngineState({
-      callbacks: {},
+      callbacks,
       bcoin: {}, // TODO: Implement this
       io,
       localFolder: options.walletLocalFolder,
