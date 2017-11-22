@@ -4,6 +4,7 @@ import type { AbcIo, DiskletFolder } from 'airbitz-core-types'
 import type { PluginState } from '../plugin/plugin-state.js'
 import type { StratumCallbacks } from '../stratum/stratum-connection.js'
 import { StratumConnection } from '../stratum/stratum-connection.js'
+import { subscribeHeight } from '../stratum/stratum-messages'
 
 export type UtxoObj = {
   txid: string, // tx_hash from Stratum
@@ -177,17 +178,38 @@ export class EngineState {
   onHeightUpdated: (height: number) => void
 
   refillServers () {
-    let lastUri = 1
+    const { io } = this
+
+    let i = 0
+    const servers = this.pluginState.sortStratumServers(
+      this.io.Socket !== null,
+      this.io.TLSSocket !== null
+    )
     while (Object.keys(this.connections).length < 5) {
-      const uri = 'blah' + ++lastUri // pickServerUri(serverCache, connections)
+      const uri = servers[i++]
+      if (!uri) break
+
       const callbacks: StratumCallbacks = {
         onOpen: (uri: string) => {
           console.log(`Connected to ${uri}`)
         },
 
-        onClose: (uri: string) => {
+        onClose: (
+          uri: string,
+          badMessages: number,
+          goodMessages: number,
+          latency: number,
+          error?: Error
+        ) => {
           console.log(`Disconnected from ${uri}`)
           delete this.connections[uri]
+          this.pluginState.serverDisconnected(
+            uri,
+            badMessages,
+            error != null,
+            goodMessages,
+            latency
+          )
           if (this.engineStarted) this.refillServers()
         },
 
@@ -196,11 +218,38 @@ export class EngineState {
         }
       }
 
-      this.connections[uri] = new StratumConnection(uri, { callbacks })
+      this.connections[uri] = new StratumConnection(uri, { callbacks, io })
+      this.serverStates[uri] = {
+        height: void 0,
+        addresses: {},
+        txids: new Set()
+      }
+      this.connections[uri].open()
     }
   }
 
-  pickNextTask (uri: string) {}
+  pickNextTask (uri: string) {
+    const serverState = this.serverStates[uri]
+
+    // Subscribe to height if this has never happened:
+    if (serverState.height === void 0) {
+      serverState.height = 0
+      return subscribeHeight(
+        (height: number) => {
+          console.log(`Stratum ${uri} sent height ${height}`)
+          serverState.height = height
+          if (this.pluginState.height < height) {
+            this.pluginState.height = height
+            this.onHeightUpdated(height)
+          }
+        },
+        (e: Error) => {
+          console.error(e)
+          this.connections[uri].close()
+        }
+      )
+    }
+  }
 
   async load () {
     try {
