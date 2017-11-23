@@ -157,16 +157,18 @@ export class StratumConnection {
       task: StratumTask
     }
   }
-  totalMessages: number
-  totalLatency: number
-  goodMessages: number
-  badMessages: number
 
   // Connection state:
   lastKeepalive: number
   partialMessage: string
   socket: net$Socket | void
   timer: number
+
+  // Connection stats:
+  badMessages: number
+  goodMessages: number
+  totalLatency: number
+  totalMessages: number
 
   /**
    * Called when the socket disconnects for any reason.
@@ -193,6 +195,11 @@ export class StratumConnection {
     this.lastKeepalive = Date.now()
     this.partialMessage = ''
     this.socket = socket
+
+    this.badMessages = 0
+    this.goodMessages = 0
+    this.totalLatency = 0
+    this.totalMessages = 0
 
     try {
       this.onOpen(this.uri)
