@@ -80,7 +80,6 @@ export class StratumConnection {
     ) {
       throw new TypeError(`Bad stratum URI: ${this.uri}`)
     }
-    console.log(`Connecting to ${this.uri}`)
 
     // Connect to the server:
     const socket =
@@ -174,7 +173,6 @@ export class StratumConnection {
    * Called when the socket disconnects for any reason.
    */
   onSocketClose (hadError: boolean) {
-    console.log(`Disconnected from ${this.uri}`)
     const connected = this.connected
     this.connected = false
     this.socket = void 0

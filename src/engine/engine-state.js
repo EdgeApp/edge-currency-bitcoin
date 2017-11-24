@@ -50,6 +50,8 @@ export interface EngineStateOptions {
 
 function nop () {}
 
+const TIME_LAZINESS = 10000
+
 /**
  * This object holds the current state of the wallet engine.
  * It is responsible for staying connected to Stratum servers and keeping
@@ -121,22 +123,6 @@ export class EngineState {
   // Transactions that are relevant to our addresses, but missing locally:
   missingTxs: Set<string>
 
-  constructor (options: EngineStateOptions) {
-    this.addressCache = {}
-    this.txCache = {}
-    this.connections = {}
-    this.serverStates = {}
-    this.txStates = {}
-    this.missingTxs = new Set()
-    this.pluginState = options.pluginState
-    const { onHeightUpdated = nop } = options.callbacks
-    this.onHeightUpdated = onHeightUpdated
-
-    this.bcoin = options.bcoin
-    this.io = options.io
-    this.localFolder = options.localFolder
-  }
-
   addAddress (scriptHash: string, displayAddress: string, path: string) {
     if (this.addressCache[scriptHash]) return
 
@@ -150,7 +136,7 @@ export class EngineState {
       path
     }
 
-    this.save()
+    this.dirtyAddressCache()
   }
 
   connect () {
@@ -176,6 +162,32 @@ export class EngineState {
   localFolder: DiskletFolder
   pluginState: PluginState
   onHeightUpdated: (height: number) => void
+
+  addressCacheDirty: boolean
+  addressCacheTimestamp: number
+  txCacheDirty: boolean
+  txCacheTimestamp: number
+
+  constructor (options: EngineStateOptions) {
+    this.addressCache = {}
+    this.txCache = {}
+    this.connections = {}
+    this.serverStates = {}
+    this.txStates = {}
+    this.missingTxs = new Set()
+
+    this.bcoin = options.bcoin
+    this.io = options.io
+    this.localFolder = options.localFolder
+    this.pluginState = options.pluginState
+    const { onHeightUpdated = nop } = options.callbacks
+    this.onHeightUpdated = onHeightUpdated
+
+    this.addressCacheDirty = false
+    this.addressCacheTimestamp = Date.now()
+    this.txCacheDirty = false
+    this.txCacheTimestamp = Date.now()
+  }
 
   refillServers () {
     const { io } = this
@@ -211,6 +223,12 @@ export class EngineState {
             latency
           )
           if (this.engineStarted) this.refillServers()
+          if (this.addressCacheDirty) {
+            this.saveAddressCache().then(e => console.error(e))
+          }
+          if (this.txCacheDirty) {
+            this.saveTxCache().then(e => console.error(e))
+          }
         },
 
         onQueueSpace: (uri: string) => {
@@ -238,10 +256,7 @@ export class EngineState {
         (height: number) => {
           console.log(`Stratum ${uri} sent height ${height}`)
           serverState.height = height
-          if (this.pluginState.height < height) {
-            this.pluginState.height = height
-            this.onHeightUpdated(height)
-          }
+          this.pluginState.updateHeight(height)
         },
         (e: Error) => {
           console.error(e)
@@ -257,6 +272,7 @@ export class EngineState {
       const cacheJson = JSON.parse(cacheText)
       // TODO: Validate JSON
 
+      this.addressCacheTimestamp = Date.now()
       this.addressCache = cacheJson.addresses
       this.txHeightCache = cacheJson.heights
     } catch (e) {
@@ -269,6 +285,7 @@ export class EngineState {
       const txCacheJson = JSON.parse(txCacheText)
       // TODO: Validate JSON
 
+      this.txCacheTimestamp = Date.now()
       this.txCache = txCacheJson.txs
     } catch (e) {
       this.txCache = {}
@@ -277,16 +294,42 @@ export class EngineState {
     return this
   }
 
-  async save () {
-    await this.localFolder.file('addressses.json').setText(
-      JSON.stringify({
-        addresses: this.addressCache,
-        heights: this.txHeightCache
+  saveAddressCache () {
+    return this.localFolder
+      .file('addressses.json')
+      .setText(
+        JSON.stringify({
+          addresses: this.addressCache,
+          heights: this.txHeightCache
+        })
+      )
+      .then(() => {
+        this.addressCacheDirty = false
+        this.addressCacheTimestamp = Date.now()
       })
-    )
+  }
 
-    await this.localFolder
+  saveTxCache () {
+    return this.localFolder
       .file('txs.json')
       .setText(JSON.stringify({ txs: this.txCache }))
+      .then(() => {
+        this.txCacheDirty = false
+        this.txCacheTimestamp = Date.now()
+      })
+  }
+
+  dirtyAddressCache () {
+    this.addressCacheDirty = true
+    if (this.addressCacheTimestamp + TIME_LAZINESS < Date.now()) {
+      this.saveAddressCache().catch(e => console.error(e))
+    }
+  }
+
+  dirtyTxCache () {
+    this.txCacheDirty = true
+    if (this.txCacheTimestamp + TIME_LAZINESS < Date.now()) {
+      this.saveTxCache().catch(e => console.error(e))
+    }
   }
 }

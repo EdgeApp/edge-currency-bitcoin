@@ -24,6 +24,8 @@ const defaultServers = {
   litecoin: []
 }
 
+const TIME_LAZINESS = 10000
+
 /**
  * Returns the average failure rate times the latency.
  * Lower scores are better.
@@ -107,6 +109,11 @@ export class PluginState {
   engines: Array<EngineState>
   folder: DiskletFolder
 
+  headerCacheDirty: boolean
+  headerCacheTimestamp: number
+  serverCacheDirty: boolean
+  serverCacheTimestamp: number
+
   constructor (io: AbcIo, currencyInfo: AbcCurrencyInfo) {
     this.height = 0
     this.headerCache = {}
@@ -115,6 +122,11 @@ export class PluginState {
     this.pluginName = currencyInfo.pluginName
     this.engines = []
     this.folder = io.folder.folder('plugins').folder(this.pluginName)
+
+    this.headerCacheDirty = false
+    this.headerCacheTimestamp = Date.now()
+    this.serverCacheDirty = false
+    this.serverCacheTimestamp = Date.now()
   }
 
   async load () {
@@ -123,6 +135,7 @@ export class PluginState {
       const headerCacheJson = JSON.parse(headerCacheText)
       // TODO: Validate JSON
 
+      this.headerCacheTimestamp = Date.now()
       this.height = headerCacheJson.height
       this.headerCache = headerCacheJson.headers
     } catch (e) {
@@ -134,6 +147,7 @@ export class PluginState {
       const serverCacheJson = JSON.parse(serverCacheText)
       // TODO: Validate JSON
 
+      this.serverCacheTimestamp = Date.now()
       this.serverCache = serverCacheJson.servers
     } catch (e) {
       this.insertServers(defaultServers[this.pluginName])
@@ -142,18 +156,47 @@ export class PluginState {
     return this
   }
 
-  async save () {
-    this.folder.file('headers.json').setText(
-      JSON.stringify({
-        height: this.height,
-        headers: this.headerCache
+  saveHeaderCache () {
+    return this.folder
+      .file('headers.json')
+      .setText(
+        JSON.stringify({
+          height: this.height,
+          headers: this.headerCache
+        })
+      )
+      .then(() => {
+        this.headerCacheDirty = false
+        this.headerCacheTimestamp = Date.now()
       })
-    )
-    this.folder.file('servers.json').setText(
-      JSON.stringify({
-        servers: this.serverCache
+  }
+
+  saveServerCache () {
+    return this.folder
+      .file('servers.json')
+      .setText(
+        JSON.stringify({
+          servers: this.serverCache
+        })
+      )
+      .then(() => {
+        this.serverCacheDirty = false
+        this.serverCacheTimestamp = Date.now()
       })
-    )
+  }
+
+  dirtyHeaderCache () {
+    this.headerCacheDirty = true
+    if (this.headerCacheTimestamp + TIME_LAZINESS < Date.now()) {
+      this.saveHeaderCache().catch(e => console.error(e))
+    }
+  }
+
+  dirtyServerCache () {
+    this.serverCacheDirty = true
+    if (this.serverCacheTimestamp + TIME_LAZINESS < Date.now()) {
+      this.saveServerCache().catch(e => console.error(e))
+    }
   }
 
   fetchStratumServers () {
@@ -172,9 +215,7 @@ export class PluginState {
       .then(json => {
         this.insertServers(json)
       })
-      .catch(e => {
-        // OK, no servers
-      })
+      .catch(e => io.console.error(e)) // OK, no servers
   }
 
   insertServers (serverArray: Array<string>) {
@@ -189,6 +230,7 @@ export class PluginState {
         }
       }
     }
+    this.dirtyServerCache()
 
     // Tell the engines about the new servers:
     for (const engine of this.engines) {
@@ -207,5 +249,24 @@ export class PluginState {
     this.serverCache[uri].disconnects += disconnected ? 1 : 0
     this.serverCache[uri].goodMessages += goodMessages
     this.serverCache[uri].latency = latency
+    this.dirtyServerCache()
+    if (this.headerCacheDirty) {
+      this.saveHeaderCache().catch(e => console.error(e))
+    }
+    if (this.serverCacheDirty) {
+      this.saveServerCache().catch(e => console.error(e))
+    }
+  }
+
+  updateHeight (height: number) {
+    if (this.height < height) {
+      this.height = height
+      this.dirtyHeaderCache()
+
+      // Tell the engines about our new height:
+      for (const engine of this.engines) {
+        engine.onHeightUpdated(height)
+      }
+    }
   }
 }
