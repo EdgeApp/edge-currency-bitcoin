@@ -31,26 +31,44 @@ export const EarnComFeesSchema = {
           'maxMinutes'
         ]
       }
-    },
+    }
   },
   required: ['fees']
 }
 
-export const electrumVersionSchema = {
+export const arrayOfStringScheme = {
   type: 'array',
   items: { type: 'string' }
+}
+
+export const electrumSubscribeHeightSchema = {
+  type: 'object',
+  properties: {
+    method: { type: 'string' },
+    params: { type: 'number' }
+  },
+  required: ['method', 'params']
+}
+
+export const electrumSubscribeScriptHashSchema = {
+  type: 'object',
+  properties: {
+    method: { type: 'string' },
+    params: arrayOfStringScheme
+  },
+  required: ['method', 'params']
 }
 
 export const electrumFetchHeaderSchema = {
   type: 'object',
   properties: {
-    'block_height': { type: 'number'},
-    'version': { type: 'number'},
-    'prev_block_hash': { type: 'string'},
-    'merkle_root': { type: 'string'},
-    'timestamp': { type: 'number'},
-    'bits': { type: 'number'},
-    'nonce': { type: 'number'}
+    block_height: { type: 'number' },
+    version: { type: 'number' },
+    prev_block_hash: { type: 'string' },
+    merkle_root: { type: 'string' },
+    timestamp: { type: 'number' },
+    bits: { type: 'number' },
+    nonce: { type: 'number' }
   },
   required: [
     'block_height',
@@ -61,4 +79,17 @@ export const electrumFetchHeaderSchema = {
     'bits',
     'nonce'
   ]
+}
+
+export const electrumFetchHistorySchema = {
+  type: 'array',
+  items: {
+    type: 'object',
+    properties: {
+      tx_hash: { type: 'string' },
+      height: { type: 'number' },
+      fee: { type: 'number' }
+    },
+    required: ['height', 'tx_hash']
+  }
 }
