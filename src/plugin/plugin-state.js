@@ -17,7 +17,7 @@ const infoServerUris = {
 }
 
 const defaultServers = {
-  bitcoin: ['electrum://electrum.hsmiths.com:50001'],
+  bitcoin: ['electrum://electrum.villocq.com:50001'],
   bitcoincash: [],
   bitcointestnet: [],
   dogecoin: [],

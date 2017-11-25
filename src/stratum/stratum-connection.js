@@ -85,8 +85,8 @@ export class StratumConnection {
     // Connect to the server:
     const socket =
       parsed.protocol === 'electrums:'
-        ? new this.io.net.TLSSocket()
-        : new this.io.net.Socket()
+        ? new this.io.TLSSocket()
+        : new this.io.Socket()
     socket.setEncoding('utf8')
     socket.on('close', (hadError: boolean) => this.onSocketClose(hadError))
     socket.on('connect', () => this.onSocketConnect(socket))
@@ -95,7 +95,6 @@ export class StratumConnection {
       host: parsed.hostname,
       port: Number(parsed.port)
     })
-    this.socket = socket
   }
 
   /**

@@ -61,7 +61,6 @@ describe('bitcoin plugin', function () {
   it('can connect to a server', async function () {
     const pluginFactory = BitcoinPluginFactory
     const [io] = makeFakeIos(1)
-    io.net = require('net')
     io.Socket = require('net').Socket
     io.TLSSocket = require('tls').TLSSocket
 
