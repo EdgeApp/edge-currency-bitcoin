@@ -93,3 +93,17 @@ export const electrumFetchHistorySchema = {
     required: ['height', 'tx_hash']
   }
 }
+
+export const electrumFetchUtxoSchema = {
+  type: 'array',
+  items: {
+    type: 'object',
+    properties: {
+      tx_hash: { type: 'string' },
+      tx_pos: { type: 'number' },
+      height: { type: 'number' },
+      value: { type: 'number' }
+    },
+    required: ['height', 'tx_hash', 'tx_pos', 'value']
+  }
+}

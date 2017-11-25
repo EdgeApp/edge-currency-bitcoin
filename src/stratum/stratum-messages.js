@@ -6,7 +6,8 @@ import {
   electrumFetchHeaderSchema,
   electrumSubscribeHeightSchema,
   electrumFetchHistorySchema,
-  electrumSubscribeScriptHashSchema
+  electrumSubscribeScriptHashSchema,
+  electrumFetchUtxoSchema
 } from '../utils/jsonSchemas.js'
 
 /**
@@ -188,6 +189,39 @@ export function fetchScriptHashHistory (
       const valid = validateObject(reply, electrumFetchHistorySchema)
       if (!valid) {
         throw new Error(`Bad Stratum scripthash.subscribe reply ${reply}`)
+      }
+      onDone(reply)
+    },
+    onFail
+  }
+}
+
+export type UtxoType = {
+  tx_hash: string,
+  tx_pos: number,
+  value: number,
+  height: number
+}
+
+/**
+ * Get utxo list of a script hash (address in script hash format).
+ * @param {string} scriptHash Script hash to fetch uxtos for
+ * @param {*} onDone Called when block header data is available.
+ * @param {*} onFail Called if the request fails.
+ */
+export function fetchScripthashUtxo (
+  scriptHash: string,
+  onDone: (arrayTx: Array<UtxoType>) => void,
+  onFail: OnFailHandler
+): StratumTask {
+  const method = 'blockchain.scripthash.listunspent'
+  return {
+    method,
+    params: [scriptHash],
+    onDone (reply: any) {
+      const valid = validateObject(reply, electrumFetchUtxoSchema)
+      if (!valid) {
+        throw new Error(`Bad Stratum scripthash.listunspent reply ${reply}`)
       }
       onDone(reply)
     },

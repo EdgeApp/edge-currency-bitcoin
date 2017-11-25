@@ -13,6 +13,7 @@ import {
   fetchTransaction,
   // subscribeScriptHash,
   // fetchScriptHashHistory,
+  // fetchScripthashUtxo,
   // type TxHistoryType,
   type FetchBlockHeaderType
 } from '../src/stratum/stratum-messages.js'
@@ -164,6 +165,33 @@ describe('StratumConnection', function () {
   //   const task = fetchScriptHashHistory(
   //     '187b07664e7f1c6a26911530652b24376c1a8d1ae734d7c9fa925e7f117b077d',
   //     (data: Array<TxHistoryType>) => {
+  //       expect(data.length).to.be.gte(0)
+  //       connection.close()
+  //       done()
+  //     },
+  //     () => {
+  //       throw new Error('should never happen')
+  //     }
+  //   )
+  //   let taskQueued = false
+  //   const callbacks: StratumCallbacks = {
+  //     onOpen (uri: string) {},
+  //     onClose (uri: string) {},
+  //     onQueueSpace (uri: string) {
+  //       if (taskQueued) {
+  //         return void 0
+  //       }
+  //       taskQueued = true
+  //       return task
+  //     }
+  //   }
+  //   const connection = new StratumConnection(ELECTRUM_SERVER, { callbacks, io })
+  //   connection.open()
+  // })
+  // it('fetchScripthashUtxo', function (done) {
+  //   const task = fetchScripthashUtxo(
+  //     '187b07664e7f1c6a26911530652b24376c1a8d1ae734d7c9fa925e7f117b077d',
+  //     (data: Array<fetchScripthashUtxo>) => {
   //       expect(data.length).to.be.gte(0)
   //       connection.close()
   //       done()
