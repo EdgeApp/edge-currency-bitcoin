@@ -1,7 +1,7 @@
 // @flow
 import type { OnFailHandler, StratumTask } from './stratum-connection.js'
 import { validateObject } from '../utils/utils.js'
-import { electrumVersionSchema } from '../utils/jsonSchemas.js'
+import { electrumVersionSchema, electrumFetchHeaderSchema } from '../utils/jsonSchemas.js'
 
 /**
  * Creates a server version query message.
@@ -48,6 +48,39 @@ export function subscribeHeight (
     onDone (reply: any) {
       if (typeof reply !== 'number') {
         throw new Error(`Bad Stratum height reply ${reply}`)
+      }
+      onDone(reply)
+    },
+    onFail
+  }
+}
+
+/**
+ * Gets a block header.
+ * @param {*} onDone Called when block header data is available.
+ * @param {*} onFail Called if the request fails.
+ */
+export type FetchBlockHeaderType = {
+  'block_height': number,
+  'version': number,
+  'prev_block_hash': string,
+  'merkle_root': string,
+  'timestamp': number,
+  'bits': number,
+  'nonce': number
+}
+export function fetchBlockHeader (
+  blockNumber: number,
+  onDone: (header: FetchBlockHeaderType) => void,
+  onFail: OnFailHandler
+): StratumTask {
+  return {
+    method: 'blockchain.block.get_header',
+    params: [blockNumber],
+    onDone (reply: any) {
+      const valid = validateObject(reply, electrumFetchHeaderSchema)
+      if (!valid) {
+        throw new Error(`Bad Stratum get_header reply ${reply}`)
       }
       onDone(reply)
     },

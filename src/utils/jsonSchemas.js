@@ -32,11 +32,33 @@ export const EarnComFeesSchema = {
         ]
       }
     },
-    required: ['fees']
-  }
+  },
+  required: ['fees']
 }
 
 export const electrumVersionSchema = {
   type: 'array',
   items: { type: 'string' }
+}
+
+export const electrumFetchHeaderSchema = {
+  type: 'object',
+  properties: {
+    'block_height': { type: 'number'},
+    'version': { type: 'number'},
+    'prev_block_hash': { type: 'string'},
+    'merkle_root': { type: 'string'},
+    'timestamp': { type: 'number'},
+    'bits': { type: 'number'},
+    'nonce': { type: 'number'}
+  },
+  required: [
+    'block_height',
+    'version',
+    'prev_block_hash',
+    'merkle_root',
+    'timestamp',
+    'bits',
+    'nonce'
+  ]
 }

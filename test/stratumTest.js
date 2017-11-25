@@ -6,7 +6,7 @@ import tls from 'tls'
 
 import type { StratumCallbacks } from '../src/stratum/stratum-connection.js'
 import { StratumConnection } from '../src/stratum/stratum-connection.js'
-import { fetchVersion, subscribeHeight } from '../src/stratum/stratum-messages.js'
+import { fetchVersion, subscribeHeight, fetchBlockHeader, type FetchBlockHeaderType } from '../src/stratum/stratum-messages.js'
 
 const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
 const io = {
@@ -45,6 +45,34 @@ describe('StratumConnection', function () {
     const task = subscribeHeight(
       data => {
         expect(data).to.be.at.least(400000)
+        done()
+      },
+      () => {
+        throw new Error('should never happen')
+      }
+    )
+    let taskQueued = false
+    const callbacks: StratumCallbacks = {
+      onOpen (uri: string) {},
+      onClose (uri: string) {},
+      onQueueSpace (uri: string) {
+        if (taskQueued) {
+          return void 0
+        }
+        taskQueued = true
+        return task
+      }
+    }
+    const connection = new StratumConnection(ELECTRUM_SERVER, { callbacks, io })
+    connection.open()
+  })
+  it('fetchBlockHeader', function (done) {
+    const task = fetchBlockHeader(
+      400000,
+      (data: FetchBlockHeaderType) => {
+        expect(data.block_height).to.equal(400000)
+        expect(data.prev_block_hash).to.equal('0000000000000000030034b661aed920a9bdf6bbfa6d2e7a021f78481882fa39')
+        expect(data.timestamp).to.equal(1456417484)
         done()
       },
       () => {
