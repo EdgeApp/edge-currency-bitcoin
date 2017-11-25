@@ -35,3 +35,8 @@ export const EarnComFeesSchema = {
     required: ['fees']
   }
 }
+
+export const electrumVersionSchema = {
+  type: 'array',
+  items: { type: 'string' }
+}

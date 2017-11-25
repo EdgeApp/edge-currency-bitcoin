@@ -1,5 +1,7 @@
 // @flow
 import type { OnFailHandler, StratumTask } from './stratum-connection.js'
+import { validateObject } from '../utils/utils.js'
+import { electrumVersionSchema } from '../utils/jsonSchemas.js'
 
 /**
  * Creates a server version query message.
@@ -12,11 +14,20 @@ export function fetchVersion (
     method: 'server.version',
     params: ['1.1', '1.1'],
     onDone (reply: any) {
-      if (typeof reply !== 'string') {
+      let ver = 0
+      const valid = validateObject(reply, electrumVersionSchema)
+      if (typeof reply === 'string') {
+        const parsed = reply.replace(/electrumx/i, '').replace(/electrum/i, '')
+        ver = parseFloat(parsed)
+      } else if (valid && reply.length === 2) {
+        ver = parseFloat(reply[1])
+      } else {
         throw new Error(`Bad Stratum version reply ${reply}`)
-        // TODO: Actually check the server version
       }
-      onDone(reply)
+      if (ver < 1.1) {
+        throw new Error('Stratum version too low' + ver.toString())
+      }
+      onDone(ver.toString())
     },
     onFail
   }
