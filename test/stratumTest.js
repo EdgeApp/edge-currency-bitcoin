@@ -10,6 +10,7 @@ import {
   fetchVersion,
   subscribeHeight,
   fetchBlockHeader,
+  fetchTransaction,
   // subscribeScriptHash,
   // fetchScriptHashHistory,
   // type TxHistoryType,
@@ -83,6 +84,33 @@ describe('StratumConnection', function () {
         expect(data.block_height).to.equal(400000)
         expect(data.prev_block_hash).to.equal('0000000000000000030034b661aed920a9bdf6bbfa6d2e7a021f78481882fa39')
         expect(data.timestamp).to.equal(1456417484)
+        connection.close()
+        done()
+      },
+      () => {
+        throw new Error('should never happen')
+      }
+    )
+    let taskQueued = false
+    const callbacks: StratumCallbacks = {
+      onOpen (uri: string) {},
+      onClose (uri: string) {},
+      onQueueSpace (uri: string) {
+        if (taskQueued) {
+          return void 0
+        }
+        taskQueued = true
+        return task
+      }
+    }
+    const connection = new StratumConnection(ELECTRUM_SERVER, { callbacks, io })
+    connection.open()
+  })
+  it('fetchTransaction', function (done) {
+    const task = fetchTransaction(
+      '0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098',
+      (data: string) => {
+        expect(data).to.equal('01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec11600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf621e73a82cbf2342c858eeac00000000')
         connection.close()
         done()
       },

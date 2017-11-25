@@ -107,6 +107,30 @@ export function fetchBlockHeader (
 }
 
 /**
+ * Gets a transaction.
+ * @param {string} txid Txid of transaction to fetch
+ * @param {*} onDone Called when block header data is available.
+ * @param {*} onFail Called if the request fails.
+ */
+export function fetchTransaction (
+  txid: string,
+  onDone: (txData: string) => void,
+  onFail: OnFailHandler
+): StratumTask {
+  return {
+    method: 'blockchain.transaction.get',
+    params: [txid],
+    onDone (reply: any) {
+      if (typeof reply !== 'string') {
+        throw new Error(`Bad Stratum transaction.get reply ${reply}`)
+      }
+      onDone(reply)
+    },
+    onFail
+  }
+}
+
+/**
  * Subscribes to a script hash (address in script hash format).
  * @param {string} scriptHash Script hash to fetch change hash for
  * @param {*} onDone Called each time the script hash's hash changes.
