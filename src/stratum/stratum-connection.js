@@ -95,6 +95,7 @@ export class StratumConnection {
       host: parsed.hostname,
       port: Number(parsed.port)
     })
+    this.socket = socket
   }
 
   /**
