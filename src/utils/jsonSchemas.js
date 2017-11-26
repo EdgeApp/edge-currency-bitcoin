@@ -41,11 +41,28 @@ export const arrayOfStringScheme = {
   items: { type: 'string' }
 }
 
-export const electrumSubscribeHeightSchema = {
+export const electrumHeaderSchema = {
+  type: 'object',
+  properties: {
+    block_height: { type: 'number' },
+    version: { type: 'number' },
+    prev_block_hash: { type: 'string' },
+    merkle_root: { type: 'string' },
+    timestamp: { type: 'number' },
+    bits: { type: 'number' },
+    nonce: { type: 'number' }
+  },
+  required: ['block_height', 'timestamp']
+}
+
+export const electrumSubscribeHeadersSchema = {
   type: 'object',
   properties: {
     method: { type: 'string' },
-    params: { type: 'number' }
+    params: {
+      type: 'array',
+      items: electrumHeaderSchema
+    }
   },
   required: ['method', 'params']
 }

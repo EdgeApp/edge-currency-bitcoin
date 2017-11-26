@@ -4,9 +4,10 @@ import { validateObject } from '../utils/utils.js'
 import {
   arrayOfStringScheme,
   electrumFetchHeaderSchema,
-  electrumSubscribeHeightSchema,
+  electrumSubscribeHeadersSchema,
   electrumFetchHistorySchema,
   electrumSubscribeScriptHashSchema,
+  electrumHeaderSchema,
   electrumFetchUtxoSchema
 } from '../utils/jsonSchemas.js'
 
@@ -46,25 +47,29 @@ export function subscribeHeight (
   onDone: (height: number) => void,
   onFail: OnFailHandler
 ): StratumTask {
-  const method = 'blockchain.numblocks.subscribe'
+  const method = 'blockchain.headers.subscribe'
   return {
     method,
     params: [],
     onDone (reply: any) {
       let height = 0
-      if (typeof reply === 'number') {
-        height = reply
-      } else if (
-        validateObject(reply, electrumSubscribeHeightSchema) &&
-        reply.method === method
-      ) {
-        height = reply.params
+      const validSubscribeHeader = validateObject(
+        reply,
+        electrumSubscribeHeadersSchema
+      )
+      if (validSubscribeHeader && reply.params.length === 1) {
+        height = reply.params[0].block_height
+      } else if (validateObject(reply, electrumHeaderSchema)) {
+        height = reply.block_height
       } else {
         throw new Error(`Bad Stratum height reply ${reply}`)
       }
       onDone(height)
     },
-    onFail
+    onFail (error) {
+      console.log('subscribeHeight onFail: ', error)
+      onFail(error)
+    }
   }
 }
 
