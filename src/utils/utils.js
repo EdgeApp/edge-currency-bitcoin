@@ -6,14 +6,22 @@
 import { validate } from 'jsonschema'
 
 function validateObject (object: any, schema: any) {
-  const result = validate(object, schema)
+  let result = null
+  try {
+    result = validate(object, schema)
+  } catch (e) {
+    console.log(e)
+    return false
+  }
 
-  if (result.errors.length === 0) {
+  if (result && result.errors && result.errors.length === 0) {
     return true
   } else {
-    for (const n in result.errors) {
-      const errMsg = result.errors[n].message
-      console.log('ERROR: validateObject:' + errMsg)
+    if (result.errors) {
+      for (const n in result.errors) {
+        const errMsg = result.errors[n].message
+        console.log('ERROR: validateObject:' + errMsg)
+      }
     }
     return false
   }

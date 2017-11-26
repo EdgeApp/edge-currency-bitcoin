@@ -22,13 +22,8 @@ export function fetchVersion (
     params: ['1.1', '1.1'],
     onDone (reply: any) {
       let ver = 0
-      if (typeof reply === 'string') {
-        const parsed = reply.replace(/electrumx/i, '').replace(/electrum/i, '')
-        ver = parseFloat(parsed)
-      } else if (
-        validateObject(reply, arrayOfStringScheme) &&
-        reply.length === 2
-      ) {
+      const valid = validateObject(reply, arrayOfStringScheme)
+      if (valid && reply.length === 2) {
         ver = parseFloat(reply[1])
       } else {
         throw new Error(`Bad Stratum version reply ${reply}`)
@@ -150,6 +145,8 @@ export function subscribeScriptHash (
       let hash: string = ''
       if (typeof reply === 'string') {
         hash = reply
+      } else if (reply === null) {
+        hash = ''
       } else if (
         validateObject(reply, electrumSubscribeScriptHashSchema) &&
         reply.method === method
@@ -160,7 +157,10 @@ export function subscribeScriptHash (
       }
       onDone(hash)
     },
-    onFail
+    onFail (error) {
+      console.log('subscribeScriptHash onFail: ', error)
+      onFail(error)
+    }
   }
 }
 
@@ -186,13 +186,17 @@ export function fetchScriptHashHistory (
     method,
     params: [scriptHash],
     onDone (reply: any) {
-      const valid = validateObject(reply, electrumFetchHistorySchema)
-      if (!valid) {
-        throw new Error(`Bad Stratum scripthash.subscribe reply ${reply}`)
+      if (reply !== null) {
+        if (!validateObject(reply, electrumFetchHistorySchema)) {
+          throw new Error(`Bad Stratum scripthash.get_history reply ${reply}`)
+        }
       }
       onDone(reply)
     },
-    onFail
+    onFail (error) {
+      console.log('fetchScriptHashHistory onFail: ', error)
+      onFail(error)
+    }
   }
 }
 
@@ -209,7 +213,7 @@ export type UtxoType = {
  * @param {*} onDone Called when block header data is available.
  * @param {*} onFail Called if the request fails.
  */
-export function fetchScripthashUtxo (
+export function fetchScriptHashUtxo (
   scriptHash: string,
   onDone: (arrayTx: Array<UtxoType>) => void,
   onFail: OnFailHandler
@@ -225,6 +229,9 @@ export function fetchScripthashUtxo (
       }
       onDone(reply)
     },
-    onFail
+    onFail (error) {
+      console.log('fetchScriptHashUtxo onFail: ', error)
+      onFail(error)
+    }
   }
 }
