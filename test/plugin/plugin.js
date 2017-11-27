@@ -13,12 +13,11 @@ for (const fixture of fixtures) {
 
   const [fakeIo] = makeFakeIos(1)
   const opts = {
-    io: {
-      fetch: fakeIo.fetch,
-      folder: fakeIo.folder,
+    io: Object.assign(fakeIo, {
       random: size => fixture['key'],
-      net: require('net')
-    }
+      Socket: require('net').Socket,
+      TLSSocket: require('tls').TLSSocket
+    })
   }
 
   describe(`Info for Wallet type ${WALLET_TYPE}`, function () {

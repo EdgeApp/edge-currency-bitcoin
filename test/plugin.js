@@ -6,6 +6,7 @@ import {
 } from 'airbitz-core-js'
 import type {
   AbcAccount,
+  AbcCurrencyEngine,
   AbcCurrencyPlugin,
   AbcCurrencyPluginCallbacks,
   AbcTransaction
@@ -87,7 +88,7 @@ describe('bitcoin plugin', function () {
       onTxidsChanged (txids: Array<string>) {}
     }
 
-    const engine = await currencyPlugin.makeEngine(
+    const engine: AbcCurrencyEngine = await currencyPlugin.makeEngine(
       { id: '', keys, type: 'wallet:bitcoin' },
       {
         callbacks,

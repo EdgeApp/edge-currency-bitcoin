@@ -13,15 +13,27 @@ export interface ServerInfo {
 
 const infoServerUris = {
   bitcoin: 'https://info1.edgesecure.co:8444/v1/electrumServers/BC1',
-  bitcoincash: 'https://info1.edgesecure.co:8444/v1/electrumServers/BCH'
+  bitcoincash: 'https://info1.edgesecure.co:8444/v1/electrumServers/BCH',
+  bitcointestnet: '',
+  dogecoin: '',
+  litecoin: ''
 }
 
 const defaultServers = {
-  bitcoin: ['electrum://electrum.villocq.com:50001'],
-  bitcoincash: [],
+  bitcoin: [
+    'electrum-bu-az-wusa2.airbitz.co:50001',
+    'electrum-bc-az-eusa.airbitz.co:50001',
+    'electrum://electrum.villocq.com:50001'
+  ],
+  bitcoincash: [
+    'electrum://electrum.zone:50001',
+    'electrum://yui.kurophoto.com:50001',
+    'electrums://yui.kurophoto.com:50002',
+    'electrums://electrum.zone:50002'
+  ],
   bitcointestnet: [],
   dogecoin: [],
-  litecoin: []
+  litecoin: ['electrum://electrum-ltc.festivaldelhumor.org:60001']
 }
 
 const TIME_LAZINESS = 10000
@@ -153,6 +165,9 @@ export class PluginState {
       this.insertServers(defaultServers[this.pluginName])
     }
 
+    // Fetch stratum servers in the background:
+    this.fetchStratumServers().catch(e => this.io.console.error(e))
+
     return this
   }
 
@@ -199,15 +214,16 @@ export class PluginState {
     }
   }
 
-  fetchStratumServers () {
+  fetchStratumServers (): Promise<void> {
     const { io } = this
     const url = infoServerUris[this.pluginName]
-    io.console.log(`GET ${url}`)
-    io
+    if (!url) return Promise.resolve()
+    io.console.info(`GET ${url}`)
+    return io
       .fetch(infoServerUris[this.pluginName])
       .then(result => {
         if (!result.ok) {
-          io.console.log(`Fetching ${url} failed with ${result.status}`)
+          io.console.error(`Fetching ${url} failed with ${result.status}`)
           throw new Error('Cannot fetch stratum server list')
         }
         return result.json()
@@ -215,7 +231,6 @@ export class PluginState {
       .then(json => {
         this.insertServers(json)
       })
-      .catch(e => io.console.error(e)) // OK, no servers
   }
 
   insertServers (serverArray: Array<string>) {
