@@ -31,7 +31,7 @@ const defaultServers = {
     'electrums://yui.kurophoto.com:50002',
     'electrums://electrum.zone:50002'
   ],
-  bitcointestnet: [],
+  bitcointestnet: ['electrum://testnetnode.arihanc.com:51001'],
   dogecoin: [],
   litecoin: ['electrum://electrum-ltc.festivaldelhumor.org:60001']
 }
