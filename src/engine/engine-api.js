@@ -105,6 +105,65 @@ export class CurrencyEngine {
     return allOurAddresses
   }
 
+  getTransaction (txid: string): AbcTransaction {
+    if (!this.engineState.txCache[txid]) throw new Error('Transaction not found')
+    const bcoinTransaction = bcoin.primitives.TX.fromRaw(this.engineState.txCache[txid], 'hex')
+    const bcoinJSON = bcoinTransaction.getJSON(this.network)
+    const allOurAddresses = this.getAllAddresses()
+    const ourReceiveAddresses = []
+    let nativeAmount = 0
+    let totalOutputAmount = 0
+    let totalInputAmount = 0
+
+    // Process tx outputs
+    bcoinJSON.outputs.forEach(({ address, value }) => {
+      totalOutputAmount += value
+      if (allOurAddresses.indexOf(address) !== -1) {
+        nativeAmount += value
+        ourReceiveAddresses.push(address)
+      }
+    })
+
+    // Process tx inputs
+    bcoinJSON.inputs.forEach(input => {
+      if (input.prevout) {
+        const { hash, index } = input.prevout
+        const rawTX = this.engineState.txCache[hash]
+        if (rawTX) {
+          const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(rawTX, 'hex')
+          const { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
+          totalInputAmount += value
+          if (allOurAddresses.indexOf(address) !== -1) {
+            nativeAmount -= value
+          }
+        }
+      }
+    })
+
+    const { height, firstSeen } = this.engineState.txHeightCache[txid]
+    let date = firstSeen
+    if (height && height !== -1) {
+      const blockHeight = this.pluginState.headerCache[height.toString()]
+      if (blockHeight) {
+        date = blockHeight.timestamp
+      }
+    }
+
+    const fee = totalInputAmount ? totalInputAmount - totalOutputAmount : 0
+    const abcTransaction: AbcTransaction = {
+      ourReceiveAddresses,
+      currencyCode: this.currencyInfo.currencyCode,
+      otherParams: {},
+      txid: txid,
+      date: date,
+      blockHeight: height,
+      nativeAmount: nativeAmount.toString(),
+      networkFee: fee.toString(),
+      signedTx: this.engineState.txCache[txid]
+    }
+    return abcTransaction
+  }
+
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
@@ -163,37 +222,7 @@ export class CurrencyEngine {
     const rawTxs = this.engineState.txCache
     const abcTransactions = []
     for (const txid in rawTxs) {
-      const bcoinTransaction = bcoin.primitives.TX.fromRaw(rawTxs[txid])
-      const allOurAddresses = this.getAllAddresses()
-      const ourReceiveAddresses = []
-      const sumOfTx = bcoinTransaction.outputs.reduce((s, output) => {
-        const address = output.getAddress().toString(this.network)
-        if (address && allOurAddresses.indexOf(address) !== -1) {
-          ourReceiveAddresses.push(address)
-          return s
-        } else return s - parseInt(output.value)
-      }, 0)
-      const { height, firstSeen } = this.engineState.txHeightCache[txid]
-      let date = firstSeen
-      if (height && height !== -1) {
-        const blockHeight = this.pluginState.headerCache[height.toString()]
-        if (blockHeight) {
-          date = blockHeight.timestamp
-        }
-      }
-      const abcTransaction: AbcTransaction = {
-        ourReceiveAddresses,
-        currencyCode: this.txLibInfo.currencyCode,
-        otherParams: {},
-        txid: txid,
-        date: date,
-        blockHeight: height,
-        nativeAmount: (
-          sumOfTx - parseInt(bcoinTransaction.getFee())
-        ).toString(),
-        networkFee: bcoinTransaction.getFee().toString(),
-        signedTx: rawTxs[txid]
-      }
+      const abcTransaction = this.getTransaction(txid)
       abcTransactions.push(abcTransaction)
     }
 
