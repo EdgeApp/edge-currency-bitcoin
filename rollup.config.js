@@ -1,31 +1,24 @@
-import replace from 'rollup-plugin-replace'
+import alias from 'rollup-plugin-alias'
 import babel from 'rollup-plugin-babel'
+import json from 'rollup-plugin-json'
 
-const packageJson = require('./package.json')
+import packageJson from './package.json'
 
-const babelConf = {
-  'presets': ['flow']
+const babelOptions = {
+  presets: ['flow']
 }
 
 export default {
-  input: 'src/index.js',
-  external: Object.keys(packageJson.dependencies),
-  plugins: [
-    replace({
-      bufferPlaceHolder: 'buffer/'
-    }),
-    babel(babelConf)
+  external: [
+    ...Object.keys(packageJson.dependencies),
+    ...Object.keys(packageJson.devDependencies),
+    'buffer/'
   ],
+  input: './src/index.js',
   output: [
-    {
-      file: packageJson['main'],
-      format: 'cjs',
-      sourcemap: true
-    },
-    {
-      file: packageJson['module'],
-      format: 'es',
-      sourcemap: true
-    }
-  ]
+    { file: packageJson.main, format: 'cjs' },
+    { file: packageJson.module, format: 'es' }
+  ],
+  plugins: [json(), alias({ 'buffer-hack': 'buffer/' }), babel(babelOptions)],
+  sourcemap: true
 }

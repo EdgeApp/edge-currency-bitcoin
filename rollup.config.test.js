@@ -1,26 +1,23 @@
-import replace from 'rollup-plugin-replace'
+import alias from 'rollup-plugin-alias'
 import babel from 'rollup-plugin-babel'
+import json from 'rollup-plugin-json'
+import multiEntry from 'rollup-plugin-multi-entry'
 
-const packageJson = require('./package.json')
+import config from './rollup.config.js'
 
-const babelConf = {
-  'presets': ['flow']
+const babelOptions = {
+  presets: ['flow']
 }
 
 export default {
-  input: 'src/index.js',
-  external: Object.keys(packageJson.dependencies),
+  external: config.external,
+  input: './test/**/*.js',
+  output: [{ file: 'build/tests.cjs.js', format: 'cjs' }],
   plugins: [
-    replace({
-      bufferPlaceHolder: 'buffer'
-    }),
-    babel(babelConf)
+    multiEntry(),
+    json(),
+    alias({ 'buffer-hack': 'buffer' }),
+    babel(babelOptions)
   ],
-  output: [
-    {
-      file: packageJson['test'],
-      format: 'cjs',
-      sourcemap: true
-    }
-  ]
+  sourcemap: true
 }

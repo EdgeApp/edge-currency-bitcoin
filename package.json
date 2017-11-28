@@ -2,83 +2,92 @@
   "name": "edge-currency-bitcoin",
   "version": "0.10.7",
   "description": "Edge Bitcoin currency plugin",
+  "homepage": "https://edgesecure.co",
+  "license": "SEE LICENSE IN LICENSE",
   "author": "Airbitz, Inc.",
   "contributors": [
-    "Eliran Zach <eliran@airbitz.co>",
-    "Paul Puey <paul@airbitz.co>",
+    "Eliran Zach <eliran@edgesecure.co>",
+    "Paul Puey <paul@edgesecure.co>",
     "Stan Synko <stan@airbitz.co>"
   ],
-  "license": "SEE LICENSE IN LICENSE",
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:Airbitz/edge-currency-bitcoin.git"
-  },
-  "url": "https://airbitz.co",
-  "main": "./lib/index.js",
-  "module": "./lib/index.es.js",
-  "test": "./lib/index.test.js",
-  "scripts": {
-    "lint": "standard '**/*.js' && flow",
-    "build": "rollup --config $ROLLUPCONFIG && npm run build:flow",
-    "build:flow": "flow-copy-source -v -i '**/test/**' src lib",
-    "prepare": "ROLLUPCONFIG=rollup.config.js npm run build",
-    "test": "npm run lint && mocha --exit",
-    "mocha": "npm run pretest && mocha --exit",
-    "pretest": "ROLLUPCONFIG=rollup.config.test.js npm run build",
-    "precommit": "npm run lint",
-    "updot": "updot",
-    "security": "nsp check"
-  },
   "files": [
     "changelog.md",
     "lib/*"
   ],
-  "standard": {
-    "parser": "babel-eslint",
-    "plugins": [
-      "flowtype"
-    ],
-    "globals": [
-      "describe",
-      "context",
-      "before",
-      "beforeEach",
-      "after",
-      "afterEach",
-      "it",
-      "expect"
-    ]
+  "main": "./lib/index.js",
+  "module": "./lib/index.es.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Airbitz/edge-currency-bitcoin.git"
+  },
+  "scripts": {
+    "build": "rollup -c && flow-copy-source src lib && npm run build:flow",
+    "build:flow": "flow-copy-source -i '**/*.test.js' src lib",
+    "build:test": "rollup -c rollup.config.test.js",
+    "precommit": "lint-staged && npm test && npm run build",
+    "flow": "flow status",
+    "format": "prettier-eslint --write '*.js' 'src/**/*.js' 'test/**/*.js'",
+    "lint": "eslint '*.js' 'src/**/*.js' 'test/**/*.js' && npm run flow",
+    "prepare": "npm run build",
+    "security": "nsp check",
+    "pretest": "npm run build:test",
+    "test": "npm run lint && npm run coverage && npm run report",
+    "updot": "updot",
+    "coverage": "nyc mocha --require source-map-support/register build/tests.cjs.js",
+    "report": "nyc report --reporter=html"
   },
   "dependencies": {
     "airbitz-core-types": "git+https://github.com/Airbitz/airbitz-core-types.git",
-    "bccoin": "git+https://github.com/Airbitz/bcoin.git#bcash",
-    "bcoin": "git+https://github.com/Airbitz/bcoin.git",
+    "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
     "biggystring": "^3.0.0",
     "buffer": "^5.0.8",
+    "coinselect": "^3.1.11",
     "jsonschema": "^1.2.0",
-    "lcoin": "git+https://github.com/Airbitz/bcoin.git#litecoin",
     "uri-js": "^3.0.2"
   },
   "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-eslint": "^8.0.1",
+    "airbitz-core-js": "git+https://github.com/Airbitz/airbitz-core-js.git#develop",
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^7.2.3",
     "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "babel-preset-flow": "^6.23.0",
+    "chai": "^4.1.2",
     "coinstring": "^2.3.0",
     "disklet": "^0.2.4",
-    "eslint-plugin-flowtype": "^2.36.0",
-    "flow-bin": "^0.56.0",
+    "eslint": "^4.5.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-flowtype": "^2.35.0",
+    "eslint-plugin-import": "^2.7.0",
+    "eslint-plugin-node": "^5.1.1",
+    "eslint-plugin-promise": "^3.4.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "flow-bin": "^0.58.0",
     "flow-copy-source": "^1.2.1",
     "husky": "^0.14.3",
     "jsonfile": "^4.0.0",
+    "lint-staged": "^5.0.0",
     "mocha": "^4.0.0",
     "node-fetch": "^1.7.2",
     "nsp": "^2.8.1",
+    "nyc": "^11.3.0",
+    "prettier-eslint-cli": "^4.4.0",
     "request": "^2.83.0",
     "rollup": "0.48.0",
+    "rollup-plugin-alias": "^1.4.0",
     "rollup-plugin-babel": "^3.0.2",
-    "rollup-plugin-replace": "^2.0.0",
-    "standard": "^10.0.2",
+    "rollup-plugin-json": "^2.3.0",
+    "rollup-plugin-multi-entry": "^2.0.2",
     "updot": "^1.1.4"
+  },
+  "importSort": {
+    ".js, .es": {
+      "parser": "babylon",
+      "style": "module"
+    }
+  },
+  "lint-staged": {
+    "*.js": [
+      "prettier-eslint --list-different"
+    ]
   }
 }

@@ -12,15 +12,15 @@ Since this package is not on NPM, you will have to use the current git version
 npm i git+ssh://git@github.com/Airbitz/airbitz-currency-bitcoin.git -s
 
 ```js
-import { BitcoinCurrencyPluginFactory } from `edge-currency-bitcoin`
+import { bitcoinCurrencyPluginFactory } from `edge-currency-bitcoin`
 ```
 
-Now you can pass `BitcoinCurrencyPluginFactory` to `edge-core-js`.
+Now you can pass `bitcoinCurrencyPluginFactory` to `edge-core-js`.
 
 ```js
 const context = makeReactNativeContext({
   apiKey: YOUR_API_KEY,
-  plugins: [ BitcoinCurrencyPluginFactory ]
+  plugins: [ bitcoinCurrencyPluginFactory ]
 })
 ```
 
@@ -44,3 +44,13 @@ This plugin exposes the following `otherSettings` which can be set using abcAcco
 [travis-url]: https://travis-ci.org/Airbitz/edge-currency-bitcoin
 [daviddm-image]: https://david-dm.org/Airbitz/edge-currency-bitcoin.svg?theme=shields.io
 [daviddm-url]: https://david-dm.org/Airbitz/edge-currency-bitcoin
+
+## Contributing
+
+Run `npm install` to download dependencies and build the library, then run `npm run test` to run the unit tests.
+
+All sources are in the [JavaScript Standard Style](http://standardjs.com/) + [Prettier](https://prettier.io/). We check files prior to each commit, so if you have formatting issues, you can run `npm run format` to fix them automatically.
+
+If you use Visual Studio Code, consider installing the [prettier-vscode](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) extension. You'll want to enable the `prettier.eslintIntegration` configuration option for this to work seamlessly with Standard.
+
+If you use Atom, you can use [prettier-atom](https://atom.io/packages/prettier-atom). You'll want to check the "ESLint Integration" setting for this to work seamlessly with Standard.

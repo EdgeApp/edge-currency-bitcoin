@@ -17,6 +17,8 @@
 .*/Libraries/react-native/ReactNative.js
 
 .*/react-native-fs/.*
+.*/oldsrc/.*
+.*/oldtest/.*
 [include]
 
 [libs]
@@ -45,4 +47,4 @@ suppress_comment=\\(.\\|\n\\)*\\$FlowExpectedError
 unsafe.enable_getters_and_setters=true
 
 [version]
-^0.56.0
+^0.58.0
