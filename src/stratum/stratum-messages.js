@@ -66,10 +66,7 @@ export function subscribeHeight (
       }
       onDone(height)
     },
-    onFail (error) {
-      console.log('subscribeHeight onFail: ', error)
-      onFail(error)
-    }
+    onFail
   }
 }
 
@@ -82,6 +79,7 @@ export type FetchBlockHeaderType = {
   bits: number,
   nonce: number
 }
+
 /**
  * Gets a block header.
  * @param {number} blockNumber Block number to fetch header for
@@ -162,10 +160,7 @@ export function subscribeScriptHash (
       }
       onDone(hash)
     },
-    onFail (error) {
-      console.log('subscribeScriptHash onFail: ', error)
-      onFail(error)
-    }
+    onFail
   }
 }
 
@@ -198,10 +193,7 @@ export function fetchScriptHashHistory (
       }
       onDone(reply)
     },
-    onFail (error) {
-      console.log('fetchScriptHashHistory onFail: ', error)
-      onFail(error)
-    }
+    onFail
   }
 }
 
@@ -234,9 +226,6 @@ export function fetchScriptHashUtxo (
       }
       onDone(reply)
     },
-    onFail (error) {
-      console.log('fetchScriptHashUtxo onFail: ', error)
-      onFail(error)
-    }
+    onFail
   }
 }

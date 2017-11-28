@@ -2,6 +2,7 @@
 import { URL } from 'url'
 
 import { fetchVersion } from './stratum-messages.js'
+import type { FetchBlockHeaderType } from './stratum-messages'
 
 export type OnFailHandler = (error: Error) => void
 export type OnCloseHandler = (
@@ -28,9 +29,12 @@ export interface StratumTask {
 }
 
 export interface StratumCallbacks {
-  +onOpen: (uri: string) => void;
-  +onClose: OnCloseHandler;
-  +onQueueSpace: (uri: string) => StratumTask | void;
+  +onOpen?: (uri: string) => void;
+  +onClose?: OnCloseHandler;
+  +onQueueSpace?: (uri: string) => StratumTask | void;
+
+  onNotifyHeader?: (uri: string, headerInfo: FetchBlockHeaderType) => void;
+  +onNotifyScriptHash?: (uri: string, scriptHash: string, hash: string) => void;
 }
 
 export interface StratumOptions {
@@ -53,12 +57,20 @@ export class StratumConnection {
 
   constructor (uri: string, options: StratumOptions) {
     const { callbacks = {}, io, queueSize = 10, timeout = 30 } = options
-    const { onOpen = nop, onClose = nop, onQueueSpace = nop } = callbacks
+    const {
+      onOpen = nop,
+      onClose = nop,
+      onQueueSpace = nop,
+      onNotifyHeader = nop,
+      onNotifyScriptHash = nop
+    } = callbacks
 
     this.io = io
     this.onClose = onClose
     this.onOpen = onOpen
     this.onQueueSpace = onQueueSpace
+    this.onNotifyHeader = onNotifyHeader
+    this.onNotifyScriptHash = onNotifyScriptHash
     this.queueSize = queueSize
     this.timeout = 1000 * timeout
     this.uri = uri
@@ -145,11 +157,15 @@ export class StratumConnection {
 
   // Options:
   io: any
+  queueSize: number
+  timeout: number // Converted to ms
+
+  // Callbacks:
   onClose: OnCloseHandler
   onOpen: (uri: string) => void
   onQueueSpace: (uri: string) => StratumTask | void
-  queueSize: number
-  timeout: number // Converted to ms
+  onNotifyHeader: (uri: string, headerInfo: FetchBlockHeaderType) => void
+  onNotifyScriptHash: (uri: string, scriptHash: string, hash: string) => void
 
   // Message queue:
   nextId: number
@@ -273,8 +289,24 @@ export class StratumConnection {
           message.task.onFail(e)
           ++this.badMessages
         }
+      } else if (json.method === 'blockchain.headers.subscribe') {
+        console.log(`${this.uri} notified header`)
+        try {
+          // TODO: Validate
+          this.onNotifyHeader(this.uri, json.params[0])
+        } catch (e) {
+          console.error(e)
+        }
+      } else if (json.method === 'blockchain.scripthash.subscribe') {
+        console.log(`${this.uri} notified scripthash change`)
+        try {
+          // TODO: Validate
+          this.onNotifyScriptHash(this.uri, json.params[0], json.params[1])
+        } catch (e) {
+          console.error(e)
+        }
       } else if (/subscribe$/.test(json.method)) {
-        // It's a subscription reply:
+        // It's some other kind of subscription.
       } else {
         throw new Error(`Bad Stratum reply ${messageJson}`)
       }

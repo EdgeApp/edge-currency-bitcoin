@@ -2,9 +2,20 @@
 import type { AbcIo, DiskletFolder } from 'airbitz-core-types'
 
 import type { PluginState } from '../plugin/plugin-state.js'
-import type { StratumCallbacks } from '../stratum/stratum-connection.js'
+import type {
+  StratumCallbacks,
+  StratumTask
+} from '../stratum/stratum-connection.js'
 import { StratumConnection } from '../stratum/stratum-connection.js'
-import { subscribeHeight } from '../stratum/stratum-messages'
+import {
+  fetchScriptHashHistory,
+  fetchScriptHashUtxo,
+  fetchTransaction,
+  fetchVersion,
+  subscribeHeight,
+  subscribeScriptHash
+} from '../stratum/stratum-messages'
+import type { FetchBlockHeaderType } from '../stratum/stratum-messages'
 
 export type UtxoObj = {
   txid: string, // tx_hash from Stratum
@@ -85,25 +96,30 @@ export class EngineState {
   // Status of active Stratum connections:
   serverStates: {
     [uri: string]: {
+      fetchingHeight: boolean,
+      fetchingVersion: boolean,
+
       // The server block height:
       // undefined - never subscribed
       // 0 - subscribed but no results yet
       // number - subscription result
       height: number | void,
+      version: string | void,
 
       // Address subscriptions:
       addresses: {
         [scriptHash: string]: {
-          // We have an `undefined` hash once we request a subscription,
-          // but the initial hash hasn't come back yet.
-          // Stratum sometimes returns `null` hashes as well:
-          hash: string | null | void,
-          fetchingUtxos: boolean,
-          fetchingTxids: boolean,
+          subscribed: boolean,
+
+          hash: string | null,
           // Timestamp of the last hash change.
           // The server with the latest timestamp "owns" an address for the sake
           // of fetching utxos and txids:
-          lastUpdate: number
+          lastUpdate: number,
+
+          fetchingUtxos: boolean,
+          fetchingTxids: boolean,
+          subscribing: boolean
         }
       },
 
@@ -111,7 +127,7 @@ export class EngineState {
       // Servers that know about txids are eligible to fetch those txs.
       // If no server knows about a txid, anybody can try fetching it,
       // but there is no penalty for failing:
-      txids: Set<string>
+      txids: { [txid: string]: true }
     }
   }
 
@@ -121,7 +137,7 @@ export class EngineState {
   }
 
   // Transactions that are relevant to our addresses, but missing locally:
-  missingTxs: Set<string>
+  missingTxs: { [txid: string]: true }
 
   addAddress (scriptHash: string, displayAddress: string, path: string) {
     if (this.addressCache[scriptHash]) return
@@ -137,6 +153,16 @@ export class EngineState {
     }
 
     this.dirtyAddressCache()
+    for (const uri of Object.keys(this.serverStates)) {
+      this.serverStates[uri].addresses[scriptHash] = {
+        fetchingTxids: false,
+        fetchingUtxos: false,
+        hash: null,
+        lastUpdate: 0,
+        subscribed: false,
+        subscribing: false
+      }
+    }
   }
 
   connect () {
@@ -162,6 +188,9 @@ export class EngineState {
   localFolder: DiskletFolder
   pluginState: PluginState
   onHeightUpdated: (height: number) => void
+  onTxFetched: (txid: string) => void
+  onTxidsUpdated: (addressHash: string) => void
+  onUtxosUpdated: (addressHash: string) => void
 
   addressCacheDirty: boolean
   addressCacheTimestamp: number
@@ -174,14 +203,22 @@ export class EngineState {
     this.connections = {}
     this.serverStates = {}
     this.txStates = {}
-    this.missingTxs = new Set()
+    this.missingTxs = {}
 
     this.bcoin = options.bcoin
     this.io = options.io
     this.localFolder = options.localFolder
     this.pluginState = options.pluginState
-    const { onHeightUpdated = nop } = options.callbacks
+    const {
+      onHeightUpdated = nop,
+      onUtxosUpdated = nop,
+      onTxidsUpdated = nop,
+      onTxFetched = nop
+    } = options.callbacks
     this.onHeightUpdated = onHeightUpdated
+    this.onTxFetched = onTxFetched
+    this.onTxidsUpdated = onTxidsUpdated
+    this.onUtxosUpdated = onUtxosUpdated
 
     this.addressCacheDirty = false
     this.addressCacheTimestamp = Date.now()
@@ -193,10 +230,9 @@ export class EngineState {
     const { io } = this
 
     let i = 0
-    const servers = this.pluginState.sortStratumServers(
-      this.io.Socket !== null,
-      this.io.TLSSocket !== null
-    )
+    const servers = this.pluginState
+      .sortStratumServers(this.io.Socket !== null, this.io.TLSSocket !== null)
+      .filter(uri => !this.connections[uri])
     while (Object.keys(this.connections).length < 5) {
       const uri = servers[i++]
       if (!uri) break
@@ -233,36 +269,265 @@ export class EngineState {
 
         onQueueSpace: (uri: string) => {
           return this.pickNextTask(uri)
+        },
+
+        onNotifyHeader: (uri: string, headerInfo: FetchBlockHeaderType) => {
+          this.serverStates[uri].height = headerInfo.block_height
+          this.pluginState.updateHeight(headerInfo.block_height)
+        },
+
+        onNotifyScriptHash: (uri: string, scriptHash: string, hash: string) => {
+          const addressState = this.serverStates[uri].addresses[scriptHash]
+          addressState.hash = hash
+          addressState.lastUpdate = Date.now()
         }
       }
 
       this.connections[uri] = new StratumConnection(uri, { callbacks, io })
       this.serverStates[uri] = {
+        fetchingHeight: false,
+        fetchingVersion: false,
         height: void 0,
+        version: void 0,
         addresses: {},
         txids: new Set()
       }
+      this.populateServerAddresses(uri)
       this.connections[uri].open()
     }
   }
 
-  pickNextTask (uri: string) {
+  pickNextTask (uri: string): StratumTask | void {
     const serverState = this.serverStates[uri]
 
+    // Check the version if we haven't done that already:
+    if (serverState.version === void 0 && !serverState.fetchingVersion) {
+      serverState.fetchingVersion = true
+      return fetchVersion(
+        (version: string) => {
+          console.log(`Stratum ${uri} sent version ${version}`)
+          serverState.fetchingVersion = false
+          serverState.version = version
+        },
+        (e: Error) => {
+          serverState.fetchingVersion = false
+          this.onConnectionFail(uri, e, 'getting version')
+        }
+      )
+    }
+
     // Subscribe to height if this has never happened:
-    if (serverState.height === void 0) {
-      serverState.height = 0
+    if (serverState.height === void 0 && !serverState.fetchingHeight) {
+      serverState.fetchingHeight = true
       return subscribeHeight(
         (height: number) => {
           console.log(`Stratum ${uri} sent height ${height}`)
+          serverState.fetchingHeight = false
           serverState.height = height
           this.pluginState.updateHeight(height)
         },
         (e: Error) => {
-          console.error(e)
-          this.connections[uri].close()
+          serverState.fetchingHeight = false
+          this.onConnectionFail(uri, e, 'subscribing to height')
         }
       )
+    }
+
+    // If this server is too old, bail out!
+    // TODO: Stop checking the height in the Stratum message creator.
+    // TODO: Check block headers to ensure we are on the right chain.
+    if (!serverState.version) return
+    if (serverState.version < '1.1') {
+      this.connections[uri].close()
+      return
+    }
+
+    // Fetch txids:
+    for (const txid of Object.keys(this.missingTxs)) {
+      if (!this.txStates[txid].fetching && this.serverCanGetTx(uri, txid)) {
+        this.txStates[txid] = { fetching: true }
+        return fetchTransaction(
+          txid,
+          (txData: string) => {
+            console.log(`Stratum ${uri} sent tx ${txid}`)
+            this.txStates[txid] = { fetching: false }
+            this.txCache[txid] = txData
+            delete this.missingTxs[txid]
+            this.onTxFetched(txid)
+          },
+          (e: Error) => {
+            this.txStates[txid] = { fetching: false }
+            if (!serverState.txids[txid]) {
+              this.onConnectionFail(uri, e, 'getting transaction')
+            } else {
+              // TODO: Don't penalize the server score either.
+            }
+          }
+        )
+      }
+    }
+
+    // Fetch utxos:
+    for (const address of Object.keys(serverState.addresses)) {
+      const addressState = serverState.addresses[address]
+      if (
+        addressState.hash &&
+        addressState.hash !== this.addressCache[address].utxoStratumHash &&
+        !addressState.fetchingUtxos &&
+        this.findBestServer(address) === uri
+      ) {
+        addressState.fetchingUtxos = true
+        return fetchScriptHashUtxo(
+          address,
+          (
+            utxos: Array<{
+              tx_hash: string,
+              tx_pos: number,
+              value: number,
+              height: number
+            }>
+          ) => {
+            console.log(`Stratum ${uri} sent utxos for ${address}`)
+            addressState.fetchingUtxos = false
+            if (!addressState.hash) {
+              throw new Error(
+                'Blank stratum hash (logic bug - should never happen)'
+              )
+            }
+            this.addressCache[address].utxoStratumHash = addressState.hash
+
+            // Process the UTXO list:
+            const utxoList: Array<UtxoObj> = []
+            for (const utxo of utxos) {
+              utxoList.push({
+                txid: utxo.tx_hash,
+                index: utxo.tx_pos,
+                value: utxo.value
+              })
+
+              // Save to the height cache:
+              if (this.txHeightCache[utxo.tx_hash]) {
+                this.txHeightCache[utxo.tx_hash].height = utxo.height
+              } else {
+                this.txHeightCache[utxo.tx_hash] = {
+                  firstSeen: Date.now(),
+                  height: utxo.height
+                }
+              }
+
+              // Add to the relevant txid list:
+              if (!this.txStates[utxo.tx_hash]) {
+                this.txStates[utxo.tx_hash] = { fetching: false }
+              }
+
+              // Add to the missing tx list:
+              if (!this.txCache[utxo.tx_hash]) {
+                this.missingTxs[utxo.tx_hash] = true
+              }
+            }
+
+            // Save to the address cache:
+            this.addressCache[address].utxos = utxoList
+
+            this.onUtxosUpdated(address)
+          },
+          (e: Error) => {
+            addressState.fetchingUtxos = false
+            this.onConnectionFail(uri, e, 'fetching utxos')
+          }
+        )
+      }
+    }
+
+    // Subscribe to addresses:
+    for (const address of Object.keys(this.addressCache)) {
+      const addressState = serverState.addresses[address]
+      if (!addressState.subscribed && !addressState.subscribing) {
+        addressState.subscribing = true
+        return subscribeScriptHash(
+          address,
+          (hash: string | null) => {
+            console.log(
+              `Stratum ${uri} subscribed to ${address} at ${hash || 'null'}`
+            )
+            addressState.subscribing = false
+            addressState.subscribed = true
+            addressState.hash = hash
+            addressState.lastUpdate = Date.now()
+          },
+          (e: Error) => {
+            addressState.subscribing = false
+            this.onConnectionFail(uri, e, 'subscribing to address')
+          }
+        )
+      }
+    }
+
+    // Fetch history:
+    for (const address of Object.keys(serverState.addresses)) {
+      const addressState = serverState.addresses[address]
+      if (
+        addressState.hash &&
+        addressState.hash !== this.addressCache[address].txidStratumHash &&
+        !addressState.fetchingTxids &&
+        this.findBestServer(address) === uri
+      ) {
+        addressState.fetchingTxids = true
+        return fetchScriptHashHistory(
+          address,
+          (
+            history: Array<{
+              tx_hash: string,
+              height: number,
+              fee?: number
+            }>
+          ) => {
+            console.log(`Stratum ${uri} sent history for ${address}`)
+            addressState.fetchingTxids = false
+            if (!addressState.hash) {
+              throw new Error(
+                'Blank stratum hash (logic bug - should never happen)'
+              )
+            }
+            this.addressCache[address].txidStratumHash = addressState.hash
+
+            // Process the UTXO list:
+            const txidList: Array<string> = []
+            for (const row of history) {
+              txidList.push(row.tx_hash)
+
+              // Save to the height cache:
+              if (this.txHeightCache[row.tx_hash]) {
+                this.txHeightCache[row.tx_hash].height = row.height
+              } else {
+                this.txHeightCache[row.tx_hash] = {
+                  firstSeen: Date.now(),
+                  height: row.height
+                }
+              }
+
+              // Add to the relevant txid list:
+              if (!this.txStates[row.tx_hash]) {
+                this.txStates[row.tx_hash] = { fetching: false }
+              }
+
+              // Add to the missing tx list:
+              if (!this.txCache[row.tx_hash]) {
+                this.missingTxs[row.tx_hash] = true
+              }
+            }
+
+            // Save to the address cache:
+            this.addressCache[address].txids = txidList
+
+            this.onTxidsUpdated(address)
+          },
+          (e: Error) => {
+            addressState.fetchingTxids = false
+            this.onConnectionFail(uri, e, 'getting history')
+          }
+        )
+      }
     }
   }
 
@@ -330,6 +595,57 @@ export class EngineState {
     this.txCacheDirty = true
     if (this.txCacheTimestamp + TIME_LAZINESS < Date.now()) {
       this.saveTxCache().catch(e => console.error(e))
+    }
+  }
+
+  findBestServer (address: string) {
+    let bestTime = 0
+    let bestUri = ''
+    for (const uri of Object.keys(this.connections)) {
+      const time = this.serverStates[uri].addresses[address].lastUpdate
+      if (bestTime < time) {
+        bestTime = time
+        bestUri = uri
+      }
+    }
+    return bestUri
+  }
+
+  serverCanGetTx (uri: string, txid: string) {
+    // If we have it, we can get it:
+    if (this.serverStates[uri].txids[txid]) return true
+
+    // If somebody else has it, let them get it:
+    for (const uri of Object.keys(this.connections)) {
+      if (this.serverStates[uri].txids[txid]) return false
+    }
+
+    // If nobody has it, we can try getting it:
+    return true
+  }
+
+  onConnectionFail (uri: string, e: Error, task: string) {
+    console.info(
+      `Stratum ${uri} failed with message "${e.message}" while ${task}`
+    )
+    if (this.connections[uri]) {
+      this.connections[uri].close()
+    }
+  }
+
+  populateServerAddresses (uri: string) {
+    const serverState = this.serverStates[uri]
+    for (const address of Object.keys(this.addressCache)) {
+      if (!serverState.addresses[address]) {
+        serverState.addresses[address] = {
+          fetchingTxids: false,
+          fetchingUtxos: false,
+          hash: null,
+          lastUpdate: 0,
+          subscribed: false,
+          subscribing: false
+        }
+      }
     }
   }
 }
