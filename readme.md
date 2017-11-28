@@ -12,15 +12,15 @@ Since this package is not on NPM, you will have to use the current git version
 npm i git+ssh://git@github.com/Airbitz/airbitz-currency-bitcoin.git -s
 
 ```js
-import { BitcoinCurrencyPluginFactory } from `edge-currency-bitcoin`
+import { bitcoinCurrencyPluginFactory } from `edge-currency-bitcoin`
 ```
 
-Now you can pass `BitcoinCurrencyPluginFactory` to `edge-core-js`.
+Now you can pass `bitcoinCurrencyPluginFactory` to `edge-core-js`.
 
 ```js
 const context = makeReactNativeContext({
   apiKey: YOUR_API_KEY,
-  plugins: [ BitcoinCurrencyPluginFactory ]
+  plugins: [ bitcoinCurrencyPluginFactory ]
 })
 ```
 

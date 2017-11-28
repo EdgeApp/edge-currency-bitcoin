@@ -50,27 +50,35 @@ function makePluginFactory (
 }
 
 // Bitcoin:
-export const BitcoinCurrencyPluginFactory = makePluginFactory(bitcoinInfo)
-export const BitcoinTestnetCurrencyPluginFactory = makePluginFactory(
+export const bitcoinCurrencyPluginFactory = makePluginFactory(bitcoinInfo)
+export const bitcoinTestnetCurrencyPluginFactory = makePluginFactory(
   bitcoinTestnetInfo
 )
 
 // Bitcoin Cash:
-export const BitcoincashCurrencyPluginFactory = makePluginFactory(
+export const bitcoincashCurrencyPluginFactory = makePluginFactory(
   bitcoincashInfo
 )
-export const BitcoincashTestnetCurrencyPluginFactory = makePluginFactory(
+export const bitcoincashTestnetCurrencyPluginFactory = makePluginFactory(
   bitcoincashTestnetInfo
 )
 
 // Such Dogecoin:
-export const DogecoinCurrencyPluginFactory = makePluginFactory(dogecoinInfo)
-export const DogecoinTestnetCurrencyPluginFactory = makePluginFactory(
+export const dogecoinCurrencyPluginFactory = makePluginFactory(dogecoinInfo)
+export const dogecoinTestnetCurrencyPluginFactory = makePluginFactory(
   dogecoinTestnetInfo
 )
 
 // Litecoin:
-export const LitecoinCurrencyPluginFactory = makePluginFactory(litecoinInfo)
-export const LitecoinTestnetCurrencyPluginFactory = makePluginFactory(
+export const litecoinCurrencyPluginFactory = makePluginFactory(litecoinInfo)
+export const litecoinTestnetCurrencyPluginFactory = makePluginFactory(
   litecoinTestnetInfo
 )
+
+// Legacy uppercased names:
+export {
+  bitcoinCurrencyPluginFactory as BitcoinCurrencyPluginFactory,
+  bitcoincashCurrencyPluginFactory as BitcoincashCurrencyPluginFactory,
+  dogecoinCurrencyPluginFactory as DogecoinCurrencyPluginFactory,
+  litecoinCurrencyPluginFactory as LitecoinCurrencyPluginFactory
+}

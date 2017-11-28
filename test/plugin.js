@@ -15,17 +15,17 @@ import { makeMemoryFolder } from 'disklet'
 import { afterEach, describe, it } from 'mocha'
 
 import {
-  BitcoinCurrencyPluginFactory,
-  BitcoincashCurrencyPluginFactory,
-  DogecoinCurrencyPluginFactory,
-  LitecoinCurrencyPluginFactory
+  bitcoinCurrencyPluginFactory,
+  bitcoincashCurrencyPluginFactory,
+  dogecoinCurrencyPluginFactory,
+  litecoinCurrencyPluginFactory
 } from '../src/index.js'
 
 const plugins = [
-  BitcoinCurrencyPluginFactory,
-  BitcoincashCurrencyPluginFactory,
-  DogecoinCurrencyPluginFactory,
-  LitecoinCurrencyPluginFactory
+  bitcoinCurrencyPluginFactory,
+  bitcoincashCurrencyPluginFactory,
+  dogecoinCurrencyPluginFactory,
+  litecoinCurrencyPluginFactory
 ]
 
 async function makeFakeAccount (plugins): Promise<AbcAccount> {
@@ -59,7 +59,7 @@ for (const pluginFactory of plugins) {
 
 describe('bitcoin plugin', function () {
   it('can connect to a server', async function () {
-    const pluginFactory = BitcoinCurrencyPluginFactory
+    const pluginFactory = bitcoinCurrencyPluginFactory
     const [io] = makeFakeIos(1)
     io.Socket = require('net').Socket
     io.TLSSocket = require('tls').TLSSocket
