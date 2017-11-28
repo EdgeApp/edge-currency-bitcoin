@@ -186,9 +186,7 @@ export class CurrencyEngine {
     return this.pluginState.height
   }
 
-  async enableTokens (tokens: Array<string>): Promise<void> {
-    return true
-  }
+  async enableTokens (tokens: Array<string>): Promise<void> {}
 
   async getEnabledTokens (): Promise<Array<string>> {
     return []
