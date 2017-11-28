@@ -31,8 +31,10 @@
     "prepare": "npm run build",
     "security": "nsp check",
     "pretest": "npm run build:test",
-    "test": "npm run lint && nyc mocha --require source-map-support/register build/tests.cjs.js",
-    "updot": "updot"
+    "test": "npm run lint && npm run coverage && npm run report",
+    "updot": "updot",
+    "coverage": "nyc mocha --require source-map-support/register build/tests.cjs.js",
+    "report": "nyc report --reporter=html"
   },
   "dependencies": {
     "airbitz-core-types": "git+https://github.com/Airbitz/airbitz-core-types.git",
