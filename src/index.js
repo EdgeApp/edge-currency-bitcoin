@@ -50,27 +50,27 @@ function makePluginFactory (
 }
 
 // Bitcoin:
-export const bitcoinCurrencyPluginFactory = makePluginFactory(bitcoinInfo)
-export const bitcoinTestnetCurrencyPluginFactory = makePluginFactory(
+export const BitcoinCurrencyPluginFactory = makePluginFactory(bitcoinInfo)
+export const BitcoinTestnetCurrencyPluginFactory = makePluginFactory(
   bitcoinTestnetInfo
 )
 
 // Bitcoin Cash:
-export const bitcoincashCurrencyPluginFactory = makePluginFactory(
+export const BitcoincashCurrencyPluginFactory = makePluginFactory(
   bitcoincashInfo
 )
-export const bitcoincashTestnetCurrencyPluginFactory = makePluginFactory(
+export const BitcoincashTestnetCurrencyPluginFactory = makePluginFactory(
   bitcoincashTestnetInfo
 )
 
 // Such Dogecoin:
-export const dogecoinCurrencyPluginFactory = makePluginFactory(dogecoinInfo)
-export const dogecoinTestnetCurrencyPluginFactory = makePluginFactory(
+export const DogecoinCurrencyPluginFactory = makePluginFactory(dogecoinInfo)
+export const DogecoinTestnetCurrencyPluginFactory = makePluginFactory(
   dogecoinTestnetInfo
 )
 
 // Litecoin:
-export const litecoinCurrencyPluginFactory = makePluginFactory(litecoinInfo)
-export const litecoinTestnetCurrencyPluginFactory = makePluginFactory(
+export const LitecoinCurrencyPluginFactory = makePluginFactory(litecoinInfo)
+export const LitecoinTestnetCurrencyPluginFactory = makePluginFactory(
   litecoinTestnetInfo
 )
