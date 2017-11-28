@@ -6,7 +6,6 @@ import {
 } from 'airbitz-core-js'
 import type {
   AbcAccount,
-  AbcCurrencyEngine,
   AbcCurrencyPlugin,
   AbcCurrencyPluginCallbacks,
   AbcTransaction
@@ -16,17 +15,17 @@ import { makeMemoryFolder } from 'disklet'
 import { afterEach, describe, it } from 'mocha'
 
 import {
-  BitcoinPluginFactory,
-  BitcoincashPluginFactory,
-  DogecoinPluginFactory,
-  LitecoinPluginFactory
+  bitcoinCurrencyPluginFactory,
+  bitcoincashCurrencyPluginFactory,
+  dogecoinCurrencyPluginFactory,
+  litecoinCurrencyPluginFactory
 } from '../src/index.js'
 
 const plugins = [
-  BitcoinPluginFactory,
-  BitcoincashPluginFactory,
-  DogecoinPluginFactory,
-  LitecoinPluginFactory
+  bitcoinCurrencyPluginFactory,
+  bitcoincashCurrencyPluginFactory,
+  dogecoinCurrencyPluginFactory,
+  litecoinCurrencyPluginFactory
 ]
 
 async function makeFakeAccount (plugins): Promise<AbcAccount> {
@@ -60,8 +59,7 @@ for (const pluginFactory of plugins) {
 
 describe('bitcoin plugin', function () {
   it('can connect to a server', async function () {
-    this.timeout(4000)
-    const pluginFactory = BitcoinPluginFactory
+    const pluginFactory = bitcoinCurrencyPluginFactory
     const [io] = makeFakeIos(1)
     io.Socket = require('net').Socket
     io.TLSSocket = require('tls').TLSSocket
@@ -70,12 +68,9 @@ describe('bitcoin plugin', function () {
       io
     })
 
-    // 1As1pFV7mdP9eUR28g7rYyzaNoG9ocUb61
-    const keys = {
-      dataKey: 'Y7HHm1rb3/PQxtNB5FXrRHFO8J2lIu23NSfYiczWBHc=',
-      bitcoinKey: 'cn7T6oZmB8LqaetNxE3Xidw95wlJGLZrFb/dSa6Hss4=',
-      syncKey: 'YDYgfh+MhzRqjHWFSVU32YgECEw='
-    }
+    const keys = currencyPlugin.createPrivateKey(
+      currencyPlugin.currencyInfo.walletTypes[0]
+    )
 
     let done: () => void
     const promise = new Promise(resolve => {
@@ -84,8 +79,7 @@ describe('bitcoin plugin', function () {
 
     const callbacks: AbcCurrencyPluginCallbacks = {
       onBlockHeightChanged (blockHeight: number) {
-        // Give the test 3 more seconds to get as far as it can:
-        setTimeout(() => done(), 3000)
+        done()
       },
       onTransactionsChanged (abcTransactions: Array<AbcTransaction>) {},
       onBalanceChanged (currencyCode: string, nativeBalance: string) {},
@@ -93,7 +87,7 @@ describe('bitcoin plugin', function () {
       onTxidsChanged (txids: Array<string>) {}
     }
 
-    const engine: AbcCurrencyEngine = await currencyPlugin.makeEngine(
+    const engine = await currencyPlugin.makeEngine(
       { id: '', keys, type: 'wallet:bitcoin' },
       {
         callbacks,
