@@ -186,12 +186,12 @@ export class CurrencyEngine {
     return this.pluginState.height
   }
 
-  enableTokens (tokens: Array<string>): Promise<void> {
-    return Promise.reject(new Error('This plugin has no tokens'))
+  async enableTokens (tokens: Array<string>): Promise<void> {
+    return true
   }
 
-  getEnabledTokens (): Promise<Array<string>> {
-    return Promise.resolve([])
+  async getEnabledTokens (): Promise<Array<string>> {
+    return []
   }
 
   addCustomToken (token: any): Promise<void> {
