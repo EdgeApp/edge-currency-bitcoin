@@ -139,7 +139,7 @@ export function fetchTransaction (
  */
 export function subscribeScriptHash (
   scriptHash: string,
-  onDone: (hash: string) => void,
+  onDone: (hash: string | null) => void,
   onFail: OnFailHandler
 ): StratumTask {
   const method = 'blockchain.scripthash.subscribe'
@@ -147,11 +147,11 @@ export function subscribeScriptHash (
     method,
     params: [scriptHash],
     onDone (reply: any) {
-      let hash: string = ''
-      if (typeof reply === 'string') {
+      let hash: string | null = null
+      if (reply === null) {
+        hash = null
+      } else if (typeof reply === 'string') {
         hash = reply
-      } else if (reply === null) {
-        hash = ''
       } else if (
         validateObject(reply, electrumSubscribeScriptHashSchema) &&
         reply.method === method

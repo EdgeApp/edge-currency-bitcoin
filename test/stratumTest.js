@@ -153,7 +153,7 @@ describe('StratumConnection', function () {
   it('subscribeScriptHash', function (done) {
     const task = subscribeScriptHash(
       '187b07664e7f1c6a26911530652b24376c1a8d1ae734d7c9fa925e7f117b077d',
-      (data: string) => {
+      (data: string | null) => {
         connection.close()
         assert.equal(
           data,
