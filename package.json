@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "airbitz-core-types": "git+https://github.com/Airbitz/airbitz-core-types.git",
+    "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
     "biggystring": "^3.0.0",
     "buffer": "^5.0.8",
     "coinselect": "^3.1.11",
@@ -49,7 +50,6 @@
     "babel-eslint": "^7.2.3",
     "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "babel-preset-flow": "^6.23.0",
-    "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
     "chai": "^4.1.2",
     "coinstring": "^2.3.0",
     "disklet": "^0.2.4",

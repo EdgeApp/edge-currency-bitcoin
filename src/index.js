@@ -49,17 +49,27 @@ function makePluginFactory (
   }
 }
 
-export const BitcoinPluginFactory = makePluginFactory(bitcoinInfo)
-export const BitcoinTestnetPluginFactory = makePluginFactory(bitcoinTestnetInfo)
-export const BitcoincashPluginFactory = makePluginFactory(bitcoincashInfo)
-export const BitcoincashTestnetPluginFactory = makePluginFactory(
+export const bitcoinPluginFactory = makePluginFactory(bitcoinInfo)
+export const bitcoinTestnetPluginFactory = makePluginFactory(bitcoinTestnetInfo)
+export const bitcoincashPluginFactory = makePluginFactory(bitcoincashInfo)
+export const bitcoincashTestnetPluginFactory = makePluginFactory(
   bitcoincashTestnetInfo
 )
-export const DogecoinPluginFactory = makePluginFactory(dogecoinInfo)
-export const DogecoinTestnetPluginFactory = makePluginFactory(
+export const dogecoinPluginFactory = makePluginFactory(dogecoinInfo)
+export const dogecoinTestnetPluginFactory = makePluginFactory(
   dogecoinTestnetInfo
 )
-export const LitecoinPluginFactory = makePluginFactory(litecoinInfo)
-export const LitecoinTestnetPluginFactory = makePluginFactory(
+export const litecoinPluginFactory = makePluginFactory(litecoinInfo)
+export const litecoinTestnetPluginFactory = makePluginFactory(
   litecoinTestnetInfo
 )
+
+// Deprecated names
+export const BitcoincashPluginFactory = bitcoincashPluginFactory
+export const BitcoincashTestnetPluginFactory = bitcoincashTestnetPluginFactory
+export const BitcoinPluginFactory = bitcoinPluginFactory
+export const BitcoinTestnetPluginFactory = bitcoinTestnetPluginFactory
+export const DogecoinPluginFactory = dogecoinPluginFactory
+export const DogecoinTestnetPluginFactory = dogecoinTestnetPluginFactory
+export const LitecoinPluginFactory = litecoinPluginFactory
+export const LitecoinTestnetPluginFactory = litecoinTestnetPluginFactory
