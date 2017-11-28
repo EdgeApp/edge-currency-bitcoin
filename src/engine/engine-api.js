@@ -56,6 +56,7 @@ export class CurrencyEngine {
   async load (): Promise<any> {
     const callbacks: EngineStateCallbacks = {
       onUtxosUpdated: (addressHash: string) => {
+        this.keyManager.use(addressHash)
         this.options.callbacks.onBalanceChanged(this.currencyInfo.currencyCode, this.getBalance())
       },
       // onTxidsUpdated: (addressHash: string) => {
