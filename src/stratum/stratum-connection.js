@@ -94,15 +94,21 @@ export class StratumConnection {
       host: parsed.hostname,
       port: Number(parsed.port)
     })
+    this.socket = socket
+    this.needsDisconnect = false
   }
 
   /**
    * Shuts down the underlying TCP connection.
    */
   close () {
-    this.connected = false
-    this.callOnClose()
-    if (this.socket) this.socket.end()
+    if (this.connected) {
+      this.connected = false
+      this.callOnClose()
+      if (this.socket) this.socket.end()
+    } else {
+      this.needsDisconnect = true
+    }
   }
 
   /**
@@ -122,9 +128,6 @@ export class StratumConnection {
    * This will fail if the connection is not connected.
    */
   submitTask (task: StratumTask) {
-    const { socket } = this
-    if (!socket) return
-
     // Add the message to the queue:
     const id = ++this.nextId
     this.pendingMessages[id.toString()] = {
@@ -158,6 +161,7 @@ export class StratumConnection {
   }
 
   // Connection state:
+  needsDisconnect: boolean
   lastKeepalive: number
   partialMessage: string
   socket: net$Socket | void
@@ -176,6 +180,7 @@ export class StratumConnection {
     const connected = this.connected
     this.connected = false
     this.socket = void 0
+    this.needsDisconnect = false
 
     const e: Error = hadError
       ? new Error('Stratum TCP socket error')
@@ -189,10 +194,14 @@ export class StratumConnection {
    * Called when the socket completes its connection.
    */
   onSocketConnect (socket: net$Socket) {
+    if (this.needsDisconnect) {
+      if (this.socket) this.socket.end()
+      return
+    }
+
     this.connected = true
     this.lastKeepalive = Date.now()
     this.partialMessage = ''
-    this.socket = socket
 
     this.badMessages = 0
     this.goodMessages = 0
@@ -231,9 +240,13 @@ export class StratumConnection {
    * Called in response to protocol errors (JSON parsing, etc.).
    */
   onFail (e: Error) {
-    this.connected = false
-    this.callOnClose(e)
-    if (this.socket) this.socket.end()
+    if (this.connected) {
+      this.connected = false
+      this.callOnClose(e)
+      if (this.socket) this.socket.end()
+    } else {
+      this.needsDisconnect = true
+    }
   }
 
   /**
@@ -339,7 +352,7 @@ export class StratumConnection {
   }
 
   transmitMessage (id: number, task: StratumTask) {
-    if (this.socket) {
+    if (this.socket && this.connected && !this.needsDisconnect) {
       // If this is a keepalive, record the time:
       if (task.method === 'server.version') {
         this.lastKeepalive = Date.now()
