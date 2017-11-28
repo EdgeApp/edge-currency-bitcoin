@@ -32,6 +32,13 @@ export const bitcoincashInfo: AbcCurrencyInfo = {
         witnesspubkeyhash: 0x06,
         witnessscripthash: 0x0a,
         bech32: 'bc'
+      },
+      newAddressFormat: {
+        pubkeyhash: 0x00,
+        scripthash: 0x05,
+        witnesspubkeyhash: 0x06,
+        witnessscripthash: 0x0a,
+        prefix: 'bitcoincash'
       }
     },
     gapLimit: 10,
