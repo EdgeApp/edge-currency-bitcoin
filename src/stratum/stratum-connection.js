@@ -1,5 +1,5 @@
 // @flow
-import { URL } from 'url'
+import url from 'url'
 
 import { fetchVersion } from './stratum-messages.js'
 import type { FetchBlockHeaderType } from './stratum-messages'
@@ -84,7 +84,7 @@ export class StratumConnection {
    * Activates the underlying TCP connection.
    */
   open () {
-    const parsed = new URL(this.uri)
+    const parsed = url.parse(this.uri)
     if (
       (parsed.protocol !== 'electrum:' && parsed.protocol !== 'electrums:') ||
       !parsed.hostname ||
