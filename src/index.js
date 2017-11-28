@@ -49,27 +49,28 @@ function makePluginFactory (
   }
 }
 
-export const bitcoinPluginFactory = makePluginFactory(bitcoinInfo)
-export const bitcoinTestnetPluginFactory = makePluginFactory(bitcoinTestnetInfo)
-export const bitcoincashPluginFactory = makePluginFactory(bitcoincashInfo)
-export const bitcoincashTestnetPluginFactory = makePluginFactory(
-  bitcoincashTestnetInfo
-)
-export const dogecoinPluginFactory = makePluginFactory(dogecoinInfo)
-export const dogecoinTestnetPluginFactory = makePluginFactory(
-  dogecoinTestnetInfo
-)
-export const litecoinPluginFactory = makePluginFactory(litecoinInfo)
-export const litecoinTestnetPluginFactory = makePluginFactory(
-  litecoinTestnetInfo
+// Bitcoin:
+export const bitcoinCurrencyPluginFactory = makePluginFactory(bitcoinInfo)
+export const bitcoinTestnetCurrencyPluginFactory = makePluginFactory(
+  bitcoinTestnetInfo
 )
 
-// Deprecated names
-export const BitcoincashPluginFactory = bitcoincashPluginFactory
-export const BitcoincashTestnetPluginFactory = bitcoincashTestnetPluginFactory
-export const BitcoinPluginFactory = bitcoinPluginFactory
-export const BitcoinTestnetPluginFactory = bitcoinTestnetPluginFactory
-export const DogecoinPluginFactory = dogecoinPluginFactory
-export const DogecoinTestnetPluginFactory = dogecoinTestnetPluginFactory
-export const LitecoinPluginFactory = litecoinPluginFactory
-export const LitecoinTestnetPluginFactory = litecoinTestnetPluginFactory
+// Bitcoin Cash:
+export const bitcoincashCurrencyPluginFactory = makePluginFactory(
+  bitcoincashInfo
+)
+export const bitcoincashTestnetCurrencyPluginFactory = makePluginFactory(
+  bitcoincashTestnetInfo
+)
+
+// Such Dogecoin:
+export const dogecoinCurrencyPluginFactory = makePluginFactory(dogecoinInfo)
+export const dogecoinTestnetCurrencyPluginFactory = makePluginFactory(
+  dogecoinTestnetInfo
+)
+
+// Litecoin:
+export const litecoinCurrencyPluginFactory = makePluginFactory(litecoinInfo)
+export const litecoinTestnetCurrencyPluginFactory = makePluginFactory(
+  litecoinTestnetInfo
+)
