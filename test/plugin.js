@@ -60,6 +60,7 @@ for (const pluginFactory of plugins) {
 
 describe('bitcoin plugin', function () {
   it('can connect to a server', async function () {
+    this.timeout(4000)
     const pluginFactory = BitcoinPluginFactory
     const [io] = makeFakeIos(1)
     io.Socket = require('net').Socket
@@ -69,9 +70,12 @@ describe('bitcoin plugin', function () {
       io
     })
 
-    const keys = currencyPlugin.createPrivateKey(
-      currencyPlugin.currencyInfo.walletTypes[0]
-    )
+    // 1As1pFV7mdP9eUR28g7rYyzaNoG9ocUb61
+    const keys = {
+      dataKey: 'Y7HHm1rb3/PQxtNB5FXrRHFO8J2lIu23NSfYiczWBHc=',
+      bitcoinKey: 'cn7T6oZmB8LqaetNxE3Xidw95wlJGLZrFb/dSa6Hss4=',
+      syncKey: 'YDYgfh+MhzRqjHWFSVU32YgECEw='
+    }
 
     let done: () => void
     const promise = new Promise(resolve => {
@@ -80,7 +84,8 @@ describe('bitcoin plugin', function () {
 
     const callbacks: AbcCurrencyPluginCallbacks = {
       onBlockHeightChanged (blockHeight: number) {
-        done()
+        // Give the test 3 more seconds to get as far as it can:
+        setTimeout(() => done(), 3000)
       },
       onTransactionsChanged (abcTransactions: Array<AbcTransaction>) {},
       onBalanceChanged (currencyCode: string, nativeBalance: string) {},

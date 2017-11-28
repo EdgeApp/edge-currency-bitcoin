@@ -320,10 +320,10 @@ export class KeyManager {
 
   async setLookAhead () {
     if (this.bip !== 'bip32') {
-      const newKey = await this.deriveNewKeys(this.keys.change, 0)
+      const newKey = await this.deriveNewKeys(this.keys.change, 1)
       if (newKey) await this.setLookAhead()
     }
-    const newKey = await this.deriveNewKeys(this.keys.receive, 1)
+    const newKey = await this.deriveNewKeys(this.keys.receive, 0)
     if (newKey) await this.setLookAhead()
   }
 
