@@ -5,26 +5,14 @@
 
 import { validate } from 'jsonschema'
 
-function validateObject (object: any, schema: any) {
+export function validateObject (object: any, schema: any) {
   let result = null
   try {
     result = validate(object, schema)
   } catch (e) {
-    console.log(e)
+    console.error(e)
     return false
   }
 
-  if (result && result.errors && result.errors.length === 0) {
-    return true
-  } else {
-    if (result.errors) {
-      for (const n in result.errors) {
-        const errMsg = result.errors[n].message
-        console.log('ERROR: validateObject:' + errMsg)
-      }
-    }
-    return false
-  }
+  return result && result.errors && result.errors.length === 0
 }
-
-export { validateObject }
