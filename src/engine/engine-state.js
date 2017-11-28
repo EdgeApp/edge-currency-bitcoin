@@ -231,7 +231,7 @@ export class EngineState {
 
     let i = 0
     const servers = this.pluginState
-      .sortStratumServers(this.io.Socket !== null, this.io.TLSSocket !== null)
+      .sortStratumServers(this.io.Socket != null, this.io.TLSSocket != null)
       .filter(uri => !this.connections[uri])
     while (Object.keys(this.connections).length < 5) {
       const uri = servers[i++]
@@ -260,10 +260,14 @@ export class EngineState {
           )
           if (this.engineStarted) this.refillServers()
           if (this.addressCacheDirty) {
-            this.saveAddressCache().catch(e => console.error('saveAddressCache', e.message))
+            this.saveAddressCache().catch(e =>
+              console.error('saveAddressCache', e.message)
+            )
           }
           if (this.txCacheDirty) {
-            this.saveTxCache().catch(e => console.error('saveTxCache', e.message))
+            this.saveTxCache().catch(e =>
+              console.error('saveTxCache', e.message)
+            )
           }
         },
 
