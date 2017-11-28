@@ -290,7 +290,7 @@ export class CurrencyEngine {
         utxos,
         height,
         rate,
-        this.txLibInfo.defaultSettings.maxFee
+        this.currencyInfo.defaultSettings.maxFee
       )
     } catch (e) {
       if (e.type === 'FundingError') throw new Error('InsufficientFundsError')
@@ -326,7 +326,7 @@ export class CurrencyEngine {
         abcSpendInfo,
         rate
       },
-      currencyCode: this.txLibInfo.currencyCode,
+      currencyCode: this.currencyInfo.currencyCode,
       txid: '',
       date: 0,
       blockHeight: 0,
