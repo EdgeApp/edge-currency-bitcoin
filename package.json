@@ -31,7 +31,7 @@
     "prepare": "npm run build",
     "security": "nsp check",
     "pretest": "npm run build:test",
-    "test": "npm run lint && mocha --require source-map-support/register build/tests.cjs.js",
+    "test": "npm run lint && nyc mocha --require source-map-support/register build/tests.cjs.js",
     "updot": "updot"
   },
   "dependencies": {
@@ -68,6 +68,7 @@
     "mocha": "^4.0.0",
     "node-fetch": "^1.7.2",
     "nsp": "^2.8.1",
+    "nyc": "^11.3.0",
     "prettier-eslint-cli": "^4.4.0",
     "request": "^2.83.0",
     "rollup": "0.48.0",
