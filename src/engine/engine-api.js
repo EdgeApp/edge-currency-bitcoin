@@ -176,9 +176,8 @@ export class CurrencyEngine {
     return Promise.resolve()
   }
 
-  killEngine (): Promise<void> {
-    this.engineState.disconnect()
-    return Promise.resolve()
+  async killEngine (): Promise<void> {
+    return this.engineState.disconnect()
   }
 
   getBlockHeight (): number {
