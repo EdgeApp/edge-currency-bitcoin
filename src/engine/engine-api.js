@@ -245,6 +245,15 @@ export class CurrencyEngine {
   }
 
   isAddressUsed (address: string, options: any): boolean {
+    try {
+      bcoin.primitives.Address.fromBase58(address)
+    } catch (e) {
+      try {
+        bcoin.primitives.Address.fromBech32(address)
+      } catch (e) {
+        throw new Error('Wrong formatted address')
+      }
+    }
     for (const scriptHash in this.engineState.addressCache) {
       if (
         this.engineState.addressCache[scriptHash].displayAddress === address
