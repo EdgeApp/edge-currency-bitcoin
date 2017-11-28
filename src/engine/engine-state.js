@@ -260,10 +260,10 @@ export class EngineState {
           )
           if (this.engineStarted) this.refillServers()
           if (this.addressCacheDirty) {
-            this.saveAddressCache().then(() => console.error('saveAddressCache'))
+            this.saveAddressCache().catch(e => console.error('saveAddressCache', e.message))
           }
           if (this.txCacheDirty) {
-            this.saveTxCache().then(() => console.error('saveTxCache'))
+            this.saveTxCache().catch(e => console.error('saveTxCache', e.message))
           }
         },
 
