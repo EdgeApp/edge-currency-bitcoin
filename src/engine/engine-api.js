@@ -1,5 +1,6 @@
 // @flow
 import type {
+  AbcWalletInfo,
   AbcCurrencyEngine,
   AbcCurrencyEngineOptions,
   AbcFreshAddress,
@@ -12,6 +13,7 @@ import type {
 import { EngineState } from './engine-state.js'
 import { PluginState } from '../plugin/plugin-state.js'
 import { KeyManager } from './keyManager'
+import type { EngineStateCallbacks } from './engine-state.js'
 import bcoin from 'bcoin'
 
 const BYTES_TO_KB = 1000
@@ -23,7 +25,8 @@ const MILI_TO_SEC = 1000
  * as well as generic (non-wallet) functionality.
  */
 export class CurrencyEngine {
-  txLibInfo: AbcCurrencyInfo
+  walletInfo: AbcWalletInfo
+  currencyInfo: AbcCurrencyInfo
   keyManager: KeyManager
   engineState: EngineState
   pluginState: PluginState
@@ -34,9 +37,8 @@ export class CurrencyEngine {
   // Private API
   // ------------------------------------------------------------------------
   constructor (
-    txLibInfo: AbcCurrencyInfo,
-    keyManager: KeyManager,
-    engineState: EngineState,
+    walletInfo: AbcWalletInfo,
+    currencyInfo: AbcCurrencyInfo,
     pluginState: PluginState,
     options: AbcCurrencyEngineOptions
   ) {
@@ -44,29 +46,53 @@ export class CurrencyEngine {
     // eslint-disable-next-line no-unused-vars
     const test: AbcCurrencyEngine = this
 
-    this.txLibInfo = txLibInfo
-    this.keyManager = keyManager
-    this.engineState = engineState
+    this.walletInfo = walletInfo
+    this.currencyInfo = currencyInfo
     this.pluginState = pluginState
     this.options = options
-    this.network = this.txLibInfo.defaultSettings.network.type
+    this.network = this.currencyInfo.defaultSettings.network.type
   }
 
-  static async makeEngine (
-    txLibInfo: AbcCurrencyInfo,
-    keyManager: KeyManager,
-    engineState: EngineState,
-    pluginState: PluginState,
-    options: AbcCurrencyEngineOptions
-  ): Promise<AbcCurrencyEngine> {
-    const engine = new CurrencyEngine(
-      txLibInfo,
-      keyManager,
-      engineState,
-      pluginState,
-      options
+  async load (): Promise<any> {
+    const callbacks: EngineStateCallbacks = {
+      onUtxosUpdated: (addressHash: string) => {
+        this.options.callbacks.onBalanceChanged(this.currencyInfo.currencyCode, this.getBalance())
+      },
+      // onTxidsUpdated: (addressHash: string) => {
+      //   this.options.callbacks.onTxidsChanged(height)
+      // },
+      onHeightUpdated: (height: number) => {
+        this.options.callbacks.onBlockHeightChanged(height)
+      },
+      onTxFetched: (txid: string) => {
+        const abcTransaction = this.getTransaction(txid)
+        this.options.callbacks.onTransactionsChanged([abcTransaction])
+      }
+    }
+    const gapLimit = this.currencyInfo.defaultSettings.gapLimit
+    let io = null
+    if (this.options.optionalSettings) {
+      io = this.options.optionalSettings.io
+    }
+
+    this.engineState = new EngineState({
+      callbacks,
+      bcoin,
+      io,
+      localFolder: this.options.walletLocalFolder,
+      pluginState: this.pluginState
+    })
+
+    await this.engineState.load()
+
+    this.keyManager = new KeyManager(
+      this.walletInfo,
+      this.engineState,
+      gapLimit,
+      this.network
     )
-    return engine
+
+    await this.keyManager.load()
   }
 
   getAllAddresses () {

@@ -15,11 +15,7 @@ import { bns } from 'biggystring'
 // $FlowFixMe
 import buffer from 'buffer-hack'
 import { parse, serialize } from 'uri-js'
-
 import { CurrencyEngine } from '../engine/engine-api.js'
-import type { EngineStateCallbacks } from '../engine/engine-state.js'
-import { EngineState } from '../engine/engine-state.js'
-import { KeyManager } from '../engine/keyManager.js'
 import { PluginState } from './plugin-state.js'
 
 // $FlowFixMe
@@ -122,39 +118,16 @@ export class CurrencyPlugin {
     walletInfo: AbcWalletInfo,
     options: AbcCurrencyEngineOptions
   ): Promise<AbcCurrencyEngine> {
-    const { io } = this
-    const gapLimit = this.currencyInfo.defaultSettings.gapLimit
+    if (!options.optionalSettings) {
+      options.optionalSettings = {}
+    }
+    options.optionalSettings.io = this.io
     if (!options.walletLocalFolder) {
       throw new Error('Cannot create an engine without a local folder')
     }
-
-    const callbacks: EngineStateCallbacks = {
-      onHeightUpdated (height: number) {
-        options.callbacks.onBlockHeightChanged(height)
-      }
-    }
-    const engineState = new EngineState({
-      callbacks,
-      bcoin: {}, // TODO: Implement this
-      io,
-      localFolder: options.walletLocalFolder,
-      pluginState: this.state
-    })
-    const keyManager = new KeyManager(
-      walletInfo,
-      engineState,
-      gapLimit,
-      this.network
-    )
-    await engineState.load()
-    await keyManager.load()
-    return CurrencyEngine.makeEngine(
-      this.currencyInfo,
-      keyManager,
-      engineState,
-      this.state,
-      options
-    )
+    const engine = new CurrencyEngine(walletInfo, this.currencyInfo, this.state, options)
+    await engine.load()
+    return engine
   }
 
   parseUri (uri: string): AbcParsedUri {
