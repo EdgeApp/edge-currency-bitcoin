@@ -1,5 +1,5 @@
 // @flow
-import url from 'url'
+import { parse } from 'uri-js'
 
 import { fetchVersion } from './stratum-messages.js'
 import type { FetchBlockHeaderType } from './stratum-messages'
@@ -84,10 +84,10 @@ export class StratumConnection {
    * Activates the underlying TCP connection.
    */
   open () {
-    const parsed = url.parse(this.uri)
+    const parsed = parse(this.uri)
     if (
-      (parsed.protocol !== 'electrum:' && parsed.protocol !== 'electrums:') ||
-      !parsed.hostname ||
+      (parsed.scheme !== 'electrum' && parsed.scheme !== 'electrums') ||
+      !parsed.host ||
       !parsed.port
     ) {
       throw new TypeError(`Bad stratum URI: ${this.uri}`)
@@ -95,7 +95,7 @@ export class StratumConnection {
 
     // Connect to the server:
     const socket =
-      parsed.protocol === 'electrums:'
+      parsed.scheme === 'electrums'
         ? new this.io.TLSSocket()
         : new this.io.Socket()
     socket.setEncoding('utf8')
@@ -103,7 +103,7 @@ export class StratumConnection {
     socket.on('connect', () => this.onSocketConnect(socket))
     socket.on('data', (data: string) => this.onSocketData(data))
     socket.connect({
-      host: parsed.hostname,
+      host: parsed.host,
       port: Number(parsed.port)
     })
     this.socket = socket
