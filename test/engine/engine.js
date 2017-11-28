@@ -97,15 +97,17 @@ for (const fixture of fixtures) {
         .folder(DATA_STORE_FOLDER)
         .file('addresses.json')
         .setText(JSON.stringify(dummyAddressData))
-        .then(() => walletLocalFolder
-          .folder(DATA_STORE_FOLDER)
-          .file('txs.json')
-          .setText(JSON.stringify(dummyTransactionsData))
+        .then(() =>
+          walletLocalFolder
+            .folder(DATA_STORE_FOLDER)
+            .file('txs.json')
+            .setText(JSON.stringify(dummyTransactionsData))
         )
-        .then(() => walletLocalFolder
-          .folder(DATA_STORE_FOLDER)
-          .file('headers.json')
-          .setText(JSON.stringify(dummyHeadersData))
+        .then(() =>
+          walletLocalFolder
+            .folder(DATA_STORE_FOLDER)
+            .file('headers.json')
+            .setText(JSON.stringify(dummyHeadersData))
         )
         .then(done)
     })
@@ -163,7 +165,9 @@ for (const fixture of fixtures) {
         })
     })
 
-    describe(`Is Address Used for Wallet type ${WALLET_TYPE} from cache`, function () {
+    describe(`Is Address Used for Wallet type ${
+      WALLET_TYPE
+    } from cache`, function () {
       it('Checking a wrong formated address', function (done) {
         try {
           engine.isAddressUsed('TestErrorWithWrongAddress')
@@ -174,9 +178,12 @@ for (const fixture of fixtures) {
         }
       })
 
-      it('Checking an address we don\'t own', function () {
+      it("Checking an address we don't own", function () {
         try {
-          assert.equal(engine.isAddressUsed('mnSmvy2q4dFNKQF18EBsrZrS7WEy6CieEE'), false)
+          assert.equal(
+            engine.isAddressUsed('mnSmvy2q4dFNKQF18EBsrZrS7WEy6CieEE'),
+            false
+          )
         } catch (e) {
           assert(e, 'Should throw')
           assert.equal(e.message, 'Address not found in wallet')
@@ -194,29 +201,45 @@ for (const fixture of fixtures) {
       // })
 
       it('Checking an empty P2SH address', function (done) {
-        assert.equal(engine.isAddressUsed('2Mw3JQLskGciTtkU99HCzfWwmTNUJ9PWS6E'), false)
+        assert.equal(
+          engine.isAddressUsed('2Mw3JQLskGciTtkU99HCzfWwmTNUJ9PWS6E'),
+          false
+        )
         done()
       })
 
       it('Checking a non empty P2SH address 1', function (done) {
-        assert.equal(engine.isAddressUsed('2Mwz97R1kZb1sGcpetvp71sYsfze1XMZsHK'), true)
+        assert.equal(
+          engine.isAddressUsed('2Mwz97R1kZb1sGcpetvp71sYsfze1XMZsHK'),
+          true
+        )
         done()
       })
 
       it('Checking a non empty P2SH address 2', function (done) {
-        assert.equal(engine.isAddressUsed('2MtegHVwZFy88UjdHU81wWiRkwDq5o8pWka'), true)
+        assert.equal(
+          engine.isAddressUsed('2MtegHVwZFy88UjdHU81wWiRkwDq5o8pWka'),
+          true
+        )
         done()
       })
 
       it('Checking a non empty P2SH address 3', function (done) {
-        assert.equal(engine.isAddressUsed('2NDXkx78MLWEm4fDuFXt7RSMSxY1eWyehuZ'), true)
+        assert.equal(
+          engine.isAddressUsed('2NDXkx78MLWEm4fDuFXt7RSMSxY1eWyehuZ'),
+          true
+        )
         done()
       })
     })
 
     describe(`Get Transactions from Wallet type ${WALLET_TYPE}`, function () {
       it('Should get number of transactions from cache', function (done) {
-        assert.equal(engine.getNumTransactions(), 4, 'should have 4 tx from cache')
+        assert.equal(
+          engine.getNumTransactions(),
+          4,
+          'should have 4 tx from cache'
+        )
         done()
       })
 
@@ -230,18 +253,21 @@ for (const fixture of fixtures) {
 
     it('Get BlockHeight', function (done) {
       this.timeout(10000)
-      request.get('https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY', (err, res, body) => {
-        assert(!err, 'getting block height from a second source')
-        emitter.once('onBlockHeightChange', height => {
-          const thirdPartyHeight = parseInt(JSON.parse(body).height)
-          assert(height >= thirdPartyHeight, 'Block height')
-          assert(engine.getBlockHeight() >= thirdPartyHeight, 'Block height')
-          done() // Can be "done" since the promise resolves before the event fires but just be on the safe side
-        })
-        engine.startEngine().catch(e => {
-          console.log('startEngine error', e, e.message)
-        })
-      })
+      request.get(
+        'https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY',
+        (err, res, body) => {
+          assert(!err, 'getting block height from a second source')
+          emitter.once('onBlockHeightChange', height => {
+            const thirdPartyHeight = parseInt(JSON.parse(body).height)
+            assert(height >= thirdPartyHeight, 'Block height')
+            assert(engine.getBlockHeight() >= thirdPartyHeight, 'Block height')
+            done() // Can be "done" since the promise resolves before the event fires but just be on the safe side
+          })
+          engine.startEngine().catch(e => {
+            console.log('startEngine error', e, e.message)
+          })
+        }
+      )
     })
   })
 
@@ -262,15 +288,22 @@ for (const fixture of fixtures) {
   // })
 
   describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
-    it('Should provide a non used BTC address when no options are provided', function (done) {
+    it('Should provide a non used BTC address when no options are provided', function (
+      done
+    ) {
       setTimeout(() => {
         const address = engine.getFreshAddress()
-        request.get(`https://api.blocktrail.com/v1/tBTC/address/${address.publicAddress}?api_key=MY_APIKEY`, (err, res, body) => {
-          const thirdPartyBalance = parseInt(JSON.parse(body).received)
-          assert(!err, 'getting address incoming txs from a second source')
-          assert(thirdPartyBalance === 0, 'Should have never received coins')
-          done()
-        })
+        request.get(
+          `https://api.blocktrail.com/v1/tBTC/address/${
+            address.publicAddress
+          }?api_key=MY_APIKEY`,
+          (err, res, body) => {
+            const thirdPartyBalance = parseInt(JSON.parse(body).received)
+            assert(!err, 'getting address incoming txs from a second source')
+            assert(thirdPartyBalance === 0, 'Should have never received coins')
+            done()
+          }
+        )
       }, 1000)
     })
     after('Stop the engine', function (done) {

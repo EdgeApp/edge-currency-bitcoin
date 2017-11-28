@@ -351,7 +351,10 @@ export class KeyManager {
       newPubKey = this.deriveKey(children.length, pubKey)
     } else {
       for (let i = 0; i < children.length; i++) {
-        if (children[i].state === USED && (children.length - i) <= this.gapLimit) {
+        if (
+          children[i].state === USED &&
+          children.length - i <= this.gapLimit
+        ) {
           newPubKey = this.deriveKey(children.length, pubKey)
           break
         }

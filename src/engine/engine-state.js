@@ -231,7 +231,7 @@ export class EngineState {
 
     let i = 0
     const servers = this.pluginState
-      .sortStratumServers(this.io.Socket !== null, this.io.TLSSocket !== null)
+      .sortStratumServers(this.io.Socket != null, this.io.TLSSocket != null)
       .filter(uri => !this.connections[uri])
     while (Object.keys(this.connections).length < 5) {
       const uri = servers[i++]
@@ -260,10 +260,14 @@ export class EngineState {
           )
           if (this.engineStarted) this.refillServers()
           if (this.addressCacheDirty) {
-            this.saveAddressCache().catch(e => console.error('saveAddressCache', e.message))
+            this.saveAddressCache().catch(e =>
+              console.error('saveAddressCache', e.message)
+            )
           }
           if (this.txCacheDirty) {
-            this.saveTxCache().catch(e => console.error('saveTxCache', e.message))
+            this.saveTxCache().catch(e =>
+              console.error('saveTxCache', e.message)
+            )
           }
         },
 
@@ -353,6 +357,7 @@ export class EngineState {
             this.txStates[txid] = { fetching: false }
             this.txCache[txid] = txData
             delete this.missingTxs[txid]
+            this.dirtyTxCache()
             this.onTxFetched(txid)
           },
           (e: Error) => {
@@ -429,6 +434,7 @@ export class EngineState {
             // Save to the address cache:
             this.addressCache[address].utxos = utxoList
 
+            this.dirtyAddressCache()
             this.onUtxosUpdated(address)
           },
           (e: Error) => {
@@ -519,6 +525,7 @@ export class EngineState {
 
             // Save to the address cache:
             this.addressCache[address].txids = txidList
+            this.dirtyAddressCache()
 
             this.onTxidsUpdated(address)
           },
@@ -560,6 +567,7 @@ export class EngineState {
   }
 
   saveAddressCache () {
+    this.io.console.info('Saving address cache')
     return this.localFolder
       .file('addressses.json')
       .setText(
@@ -575,6 +583,7 @@ export class EngineState {
   }
 
   saveTxCache () {
+    this.io.console.info('Saving tx cache')
     return this.localFolder
       .file('txs.json')
       .setText(JSON.stringify({ txs: this.txCache }))

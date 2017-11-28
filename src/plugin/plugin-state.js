@@ -172,6 +172,7 @@ export class PluginState {
   }
 
   saveHeaderCache () {
+    this.io.console.info('Saving header cache')
     return this.folder
       .file('headers.json')
       .setText(
@@ -187,6 +188,7 @@ export class PluginState {
   }
 
   saveServerCache () {
+    this.io.console.info('Saving server cache')
     return this.folder
       .file('servers.json')
       .setText(

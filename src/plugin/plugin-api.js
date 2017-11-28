@@ -125,7 +125,12 @@ export class CurrencyPlugin {
     if (!options.walletLocalFolder) {
       throw new Error('Cannot create an engine without a local folder')
     }
-    const engine = new CurrencyEngine(walletInfo, this.currencyInfo, this.state, options)
+    const engine = new CurrencyEngine(
+      walletInfo,
+      this.currencyInfo,
+      this.state,
+      options
+    )
     await engine.load()
     return engine
   }
