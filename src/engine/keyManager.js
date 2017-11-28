@@ -92,10 +92,12 @@ export class KeyManager {
     for (const scriptHash in this.engineState.addressCache) {
       const address: AddressObj = this.engineState.addressCache[scriptHash]
       const { txids, displayAddress, path } = address
-      const [branch, index] = path.split(this.masterPath)[1].split('/')
+      let [branch, index] = path.split(this.masterPath + '/')[1].split('/')
+      branch = parseInt(branch)
+      index = parseInt(index)
       const state = txids && txids.length > 0 ? USED : UNUSED
-      const key = { state, displayAddress, scriptHash, index: parseInt(index) }
-      if (branch) {
+      const key = { state, displayAddress, scriptHash, index }
+      if (branch === 0) {
         this.keys.receive.children.push(key)
       } else {
         this.keys.change.children.push(key)
