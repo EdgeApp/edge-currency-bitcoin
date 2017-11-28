@@ -2,24 +2,16 @@
 import { makeFakeIos } from 'airbitz-core-js'
 import * as Factories from '../../src/index.js'
 import assert from 'assert'
-import { describe, it, before } from 'mocha'
+import { describe, it, before, after } from 'mocha'
 import fixtures from './fixtures.json'
+import dummyHeadersData from './dummyHeadersData.json'
+import dummyAddressData from './dummyAddressData.json'
+import dummyTransactionsData from './dummyTransactionsData.json'
 
-// import request from 'request'
-// import jsonfile from 'jsonfile'
+import request from 'request'
 
 import EventEmitter from 'events'
-// import cs from 'coinstring'
-// import path from 'path'
-// import DATA_STORE_FOLDER = 'txEngineFolderBTC'
-// import DATA_STORE_FILE = 'walletLocalDataV4.json'
-// import TRANSACTION_STORE_FILE = 'transactionsV1.json'
-// import TRANSACTION_ID_STORE_FILE = 'transactionsIdsV1.json'
-// // import MEMORY_DUMP_STORE_FILE = 'dummyMemoryDumpV1.json'
-// import dummyWalletData = path.join(__dirname, './dummyWalletData.json')
-// import dummyTransactions = path.join(__dirname, './dummyTransactions.json')
-// import dummyTransactionsIds = path.join(__dirname, './dummyTransactionsIds.json')
-// const dummyMemoryDump = path.join(__dirname, './dummyMemoryDump.json')
+const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 
 for (const fixture of fixtures) {
   const CurrencyPluginFactory = Factories[fixture['factory']]
@@ -100,39 +92,23 @@ for (const fixture of fixtures) {
     })
   })
   describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
-    // before('Create local cache file', function (done) {
-    //   let walletData = jsonfile.readFileSync(dummyWalletData)
-    //   let transactions = jsonfile.readFileSync(dummyTransactions)
-    //   let transactionsIds = jsonfile.readFileSync(dummyTransactionsIds)
-    //   // let memoryDump = jsonfile.readFileSync(dummyMemoryDump)
-    //   walletLocalFolder
-    //   .folder(DATA_STORE_FOLDER)
-    //   .file(DATA_STORE_FILE)
-    //   .setText(JSON.stringify(walletData))
-    //   .then(() => walletLocalFolder
-    //     .folder(DATA_STORE_FOLDER)
-    //     .file(TRANSACTION_STORE_FILE)
-    //     .setText(JSON.stringify(transactions))
-    //   )
-    //   .then(() => walletLocalFolder
-    //     .folder(DATA_STORE_FOLDER)
-    //     .file(TRANSACTION_ID_STORE_FILE)
-    //     .setText(JSON.stringify(transactionsIds))
-    //   )
-    //   // .then(() => walletLocalFolder
-    //   //   .folder(DATA_STORE_FOLDER)
-    //   //   .file(MEMORY_DUMP_STORE_FILE)
-    //   //   .setText(JSON.stringify(memoryDump))
-    //   // )
-    //   .then(() => BitcoinPluginFactory.makePlugin(opts))
-    //   .then((bitcoinPlugin) => {
-    //     assert.equal(bitcoinPlugin.currencyInfo.currencyCode, 'BTC')
-    //     plugin = bitcoinPlugin
-    //     keys = plugin.createPrivateKey(WALLET_TYPE)
-    //     keys = plugin.derivePublicKey({type: WALLET_TYPE, keys: {bitcoinKey: keys.bitcoinKey}})
-    //   })
-    //   .then(done)
-    // })
+    before('Create local cache file', function (done) {
+      walletLocalFolder
+        .folder(DATA_STORE_FOLDER)
+        .file('addresses.json')
+        .setText(JSON.stringify(dummyAddressData))
+        .then(() => walletLocalFolder
+          .folder(DATA_STORE_FOLDER)
+          .file('txs.json')
+          .setText(JSON.stringify(dummyTransactionsData))
+        )
+        .then(() => walletLocalFolder
+          .folder(DATA_STORE_FOLDER)
+          .file('headers.json')
+          .setText(JSON.stringify(dummyHeadersData))
+        )
+        .then(done)
+    })
 
     it('Make Engine', function () {
       return plugin
@@ -140,7 +116,7 @@ for (const fixture of fixtures) {
           { type: WALLET_TYPE, keys },
           {
             callbacks,
-            walletLocalFolder,
+            walletLocalFolder: walletLocalFolder.folder(DATA_STORE_FOLDER),
             optionalSettings: {
               enableOverrideServers: true,
               electrumServers: [['testnetnode.arihanc.com', '51001']]
@@ -187,92 +163,120 @@ for (const fixture of fixtures) {
         })
     })
 
-    // it('Get BlockHeight', function (done) {
-    //   this.timeout(10000)
-    //   request.get('https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY', (err, res, body) => {
-    //     assert(!err, 'getting block height from a second source')
-    //     emitter.once('onBlockHeightChange', height => {
-    //       const thirdPartyHeight = parseInt(JSON.parse(body).height)
-    //       assert(height >= thirdPartyHeight, 'Block height')
-    //       assert(engine.getBlockHeight() >= thirdPartyHeight, 'Block height')
-    //       done() // Can be "done" since the promise resolves before the event fires but just be on the safe side
-    //     })
-    //     engine.startEngine().catch(e => console.log(e))
-    //   })
-    // })
+    describe(`Is Address Used for Wallet type ${WALLET_TYPE} from cache`, function () {
+      it('Checking a wrong formated address', function (done) {
+        try {
+          engine.isAddressUsed('TestErrorWithWrongAddress')
+        } catch (e) {
+          assert(e, 'Should throw')
+          assert.equal(e.message, 'Wrong formatted address')
+          done()
+        }
+      })
+
+      it('Checking an address we don\'t own', function () {
+        try {
+          assert.equal(engine.isAddressUsed('mnSmvy2q4dFNKQF18EBsrZrS7WEy6CieEE'), false)
+        } catch (e) {
+          assert(e, 'Should throw')
+          assert.equal(e.message, 'Address not found in wallet')
+        }
+      })
+
+      // it('Checking an empty P2WSH address', function (done) {
+      //   assert.equal(engine.isAddressUsed('tb1qng4wvp6chgm6erdc8hcgn7ewpkv8gqlm6m6ja6'), false)
+      //   done()
+      // })
+
+      // it('Checking a non empty P2WSH address', function (done) {
+      //   assert.equal(engine.isAddressUsed('tb1qprslq433fsq8pjdw3tu3x3ynk5f486ngp8lrxu'), true)
+      //   done()
+      // })
+
+      it('Checking an empty P2SH address', function (done) {
+        assert.equal(engine.isAddressUsed('2Mw3JQLskGciTtkU99HCzfWwmTNUJ9PWS6E'), false)
+        done()
+      })
+
+      it('Checking a non empty P2SH address 1', function (done) {
+        assert.equal(engine.isAddressUsed('2Mwz97R1kZb1sGcpetvp71sYsfze1XMZsHK'), true)
+        done()
+      })
+
+      it('Checking a non empty P2SH address 2', function (done) {
+        assert.equal(engine.isAddressUsed('2MtegHVwZFy88UjdHU81wWiRkwDq5o8pWka'), true)
+        done()
+      })
+
+      it('Checking a non empty P2SH address 3', function (done) {
+        assert.equal(engine.isAddressUsed('2NDXkx78MLWEm4fDuFXt7RSMSxY1eWyehuZ'), true)
+        done()
+      })
+    })
+
+    describe(`Get Transactions from Wallet type ${WALLET_TYPE}`, function () {
+      it('Should get number of transactions from cache', function (done) {
+        assert.equal(engine.getNumTransactions(), 4, 'should have 4 tx from cache')
+        done()
+      })
+
+      it('Should get transactions from cache', function (done) {
+        engine.getTransactions().then(txs => {
+          assert.equal(txs.length, 4, 'should have 4 tx from cache')
+          done()
+        })
+      })
+    })
+
+    it('Get BlockHeight', function (done) {
+      this.timeout(10000)
+      request.get('https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY', (err, res, body) => {
+        assert(!err, 'getting block height from a second source')
+        emitter.once('onBlockHeightChange', height => {
+          const thirdPartyHeight = parseInt(JSON.parse(body).height)
+          assert(height >= thirdPartyHeight, 'Block height')
+          assert(engine.getBlockHeight() >= thirdPartyHeight, 'Block height')
+          done() // Can be "done" since the promise resolves before the event fires but just be on the safe side
+        })
+        engine.startEngine().catch(e => {
+          console.log('startEngine error', e, e.message)
+        })
+      })
+    })
   })
 
-  // describe(`Is Address Used for Wallet type ${WALLET_TYPE}`, function () {
-  //   it('Checking a wrong formated address', function (done) {
-  //     try {
-  //       engine.isAddressUsed('TestErrorWithWrongAddress')
-  //     } catch (e) {
-  //       assert(e, 'Should throw')
-  //       assert.equal(e.message, 'Wrong formatted address')
-  //       done()
-  //     }
-  //   })
-
-  //   it('Checking an address we don\'t own', function () {
-  //     try {
-  //       assert.equal(engine.isAddressUsed('mnSmvy2q4dFNKQF18EBsrZrS7WEy6CieEE'), false)
-  //     } catch (e) {
-  //       assert(e, 'Should throw')
-  //       assert.equal(e.message, 'Address not found in wallet')
-  //     }
-  //   })
-
-  //   it('Checking an empty P2WSH address', function (done) {
-  //     assert.equal(engine.isAddressUsed('tb1qng4wvp6chgm6erdc8hcgn7ewpkv8gqlm6m6ja6'), false)
-  //     done()
-  //   })
-
-  //   // it('Checking a non empty P2WSH address from cache', function (done) {
-  //   //   assert.equal(engine.isAddressUsed('tb1qprslq433fsq8pjdw3tu3x3ynk5f486ngp8lrxu'), true)
-  //   //   done()
-  //   // })
-
-  //   // it('Checking a non empty P2WSH address from network', function (done) {
-  //   //   setTimeout(() => {
-  //   //     assert.equal(engine.isAddressUsed('tb1qzsqz3akrp8745gsrl45pa2370gculzwx4qcf5v'), true)
-  //   //     done()
-  //   //   }, 1000)
-  //   // })
-
-  //   it('Checking an empty P2SH address', function (done) {
-  //     assert.equal(engine.isAddressUsed('2N4frroJPKpiYJPYYtspKYLseUKCFuJpFkL'), false)
-  //     done()
-  //   })
-
-  //   // it('Checking a non empty P2SH address from cache', function (done) {
-  //   //   this.timeout(0)
-  //   //   setTimeout(() => {
-  //   //     assert.equal(engine.isAddressUsed('2MtC7HgJCJVKFGShw2T35NU9rEp7hzkQHGj'), true)
-  //   //     done()
-  //   //   }, 10000)
-  //   // })
-
-  //   it('Checking a non empty address P2SH from network', function (done) {
+  // describe(`Is Address Used for Wallet type ${WALLET_TYPE} from network`, function () {
+  //   it('Checking a non empty P2WSH address', function (done) {
   //     setTimeout(() => {
-  //       assert.equal(engine.isAddressUsed('2MtC7HgJCJVKFGShw2T35NU9rEp7hzkQHGj'), true)
+  //       assert.equal(engine.isAddressUsed('tb1qzsqz3akrp8745gsrl45pa2370gculzwx4qcf5v'), true)
+  //       done()
+  //     }, 1000)
+  //   })
+
+  //   it('Checking a non empty address P2SH', function (done) {
+  //     setTimeout(() => {
+  //       assert.equal(engine.isAddressUsed('2MtegHVwZFy88UjdHU81wWiRkwDq5o8pWka'), true)
   //       done()
   //     }, 1000)
   //   })
   // })
 
-  // describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
-  //   it('Should provide a non used BTC address when no options are provided', function (done) {
-  //     setTimeout(() => {
-  //       let address = engine.getFreshAddress()
-  //       request.get(`https://api.blocktrail.com/v1/tBTC/address/${address.publicAddress}?api_key=MY_APIKEY`, (err, res, body) => {
-  //         const thirdPartyBalance = parseInt(JSON.parse(body).received)
-  //         assert(!err, 'getting address incoming txs from a second source')
-  //         assert(thirdPartyBalance === 0, 'Should have never received coins')
-  //         done()
-  //       })
-  //     }, 1000)
-  //   })
-  // })
+  describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
+    it('Should provide a non used BTC address when no options are provided', function (done) {
+      setTimeout(() => {
+        const address = engine.getFreshAddress()
+        request.get(`https://api.blocktrail.com/v1/tBTC/address/${address.publicAddress}?api_key=MY_APIKEY`, (err, res, body) => {
+          const thirdPartyBalance = parseInt(JSON.parse(body).received)
+          assert(!err, 'getting address incoming txs from a second source')
+          assert(thirdPartyBalance === 0, 'Should have never received coins')
+          done()
+        })
+      }, 1000)
+    })
+    after('Stop the engine', function (done) {
+      engine.killEngine().then(done)
+    })
+  })
 
   // // let abcSpendInfo = {
   // //   networkFeeOption: 'high',
