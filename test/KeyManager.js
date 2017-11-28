@@ -36,8 +36,9 @@ const engineState = new EngineState({
 })
 
 describe(`Key Manager`, function () {
+  let keyManager
   it('creates new key manager', function () {
-    const keyManager = new KeyManager(
+    keyManager = new KeyManager(
       walletInfo,
       engineState,
       gapLimit,
@@ -45,6 +46,14 @@ describe(`Key Manager`, function () {
     )
     keyManager.load().then(() => {
       assert.equal(keyManager.keys.receive.children.length, 10)
+      assert(keyManager.keys.receive.pubKey)
+      assert.equal(keyManager.keys.change.children.length, 0)
+      assert(!keyManager.keys.change.pubKey)
+    })
+  })
+  it('should create new keys', function () {
+    keyManager.use('695ea63c25dba84f51ec52de2d31f965730b447c0a8c594569c40184d85fe91b').then(() => {
+      assert.equal(keyManager.keys.receive.children.length, 17)
       assert(keyManager.keys.receive.pubKey)
       assert.equal(keyManager.keys.change.children.length, 0)
       assert(!keyManager.keys.change.pubKey)
