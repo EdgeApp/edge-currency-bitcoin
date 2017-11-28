@@ -271,8 +271,11 @@ export class EngineState {
           }
         },
 
-        onQueueSpace: (uri: string) => {
-          return this.pickNextTask(uri)
+        onQueueSpace: uri => {
+          const start = Date.now()
+          const task = this.pickNextTask(uri)
+          console.log(`bench: Picked task in ${Date.now() - start}ms`)
+          return task
         },
 
         onNotifyHeader: (uri: string, headerInfo: FetchBlockHeaderType) => {
