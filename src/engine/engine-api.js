@@ -171,9 +171,11 @@ export class CurrencyEngine {
     // TODO: Implement this
   }
 
-  startEngine (): Promise<void> {
-    this.engineState.connect()
-    return Promise.resolve()
+  async startEngine (): Promise<void> {
+    const cachedTXs = await this.getTransactions()
+    this.options.callbacks.onTransactionsChanged(cachedTXs)
+    this.options.callbacks.onBalanceChanged(this.currencyInfo.currencyCode, this.getBalance())
+    return this.engineState.connect()
   }
 
   async killEngine (): Promise<void> {
