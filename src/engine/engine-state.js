@@ -357,6 +357,7 @@ export class EngineState {
             this.txStates[txid] = { fetching: false }
             this.txCache[txid] = txData
             delete this.missingTxs[txid]
+            this.dirtyTxCache()
             this.onTxFetched(txid)
           },
           (e: Error) => {
@@ -433,6 +434,7 @@ export class EngineState {
             // Save to the address cache:
             this.addressCache[address].utxos = utxoList
 
+            this.dirtyAddressCache()
             this.onUtxosUpdated(address)
           },
           (e: Error) => {
@@ -523,6 +525,7 @@ export class EngineState {
 
             // Save to the address cache:
             this.addressCache[address].txids = txidList
+            this.dirtyAddressCache()
 
             this.onTxidsUpdated(address)
           },
@@ -564,6 +567,7 @@ export class EngineState {
   }
 
   saveAddressCache () {
+    this.io.console.info('Saving address cache')
     return this.localFolder
       .file('addressses.json')
       .setText(
@@ -579,6 +583,7 @@ export class EngineState {
   }
 
   saveTxCache () {
+    this.io.console.info('Saving tx cache')
     return this.localFolder
       .file('txs.json')
       .setText(JSON.stringify({ txs: this.txCache }))
