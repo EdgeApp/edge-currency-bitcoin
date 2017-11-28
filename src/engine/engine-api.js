@@ -56,7 +56,10 @@ export class CurrencyEngine {
   async load (): Promise<any> {
     const callbacks: EngineStateCallbacks = {
       onUtxosUpdated: (addressHash: string) => {
-        this.options.callbacks.onBalanceChanged(this.currencyInfo.currencyCode, this.getBalance())
+        this.options.callbacks.onBalanceChanged(
+          this.currencyInfo.currencyCode,
+          this.getBalance()
+        )
       },
       // onTxidsUpdated: (addressHash: string) => {
       //   this.options.callbacks.onTxidsChanged(height)
@@ -106,8 +109,13 @@ export class CurrencyEngine {
   }
 
   getTransaction (txid: string): AbcTransaction {
-    if (!this.engineState.txCache[txid]) throw new Error('Transaction not found')
-    const bcoinTransaction = bcoin.primitives.TX.fromRaw(this.engineState.txCache[txid], 'hex')
+    if (!this.engineState.txCache[txid]) {
+      throw new Error('Transaction not found')
+    }
+    const bcoinTransaction = bcoin.primitives.TX.fromRaw(
+      this.engineState.txCache[txid],
+      'hex'
+    )
     const bcoinJSON = bcoinTransaction.getJSON(this.network)
     const allOurAddresses = this.getAllAddresses()
     const ourReceiveAddresses = []
@@ -131,7 +139,9 @@ export class CurrencyEngine {
         const rawTX = this.engineState.txCache[hash]
         if (rawTX) {
           const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(rawTX, 'hex')
-          const { value, address } = prevoutBcoinTX.getJSON(this.network).outputs[index]
+          const { value, address } = prevoutBcoinTX.getJSON(
+            this.network
+          ).outputs[index]
           totalInputAmount += value
           if (allOurAddresses.indexOf(address) !== -1) {
             nativeAmount -= value
@@ -174,7 +184,10 @@ export class CurrencyEngine {
   async startEngine (): Promise<void> {
     const cachedTXs = await this.getTransactions()
     this.options.callbacks.onTransactionsChanged(cachedTXs)
-    this.options.callbacks.onBalanceChanged(this.currencyInfo.currencyCode, this.getBalance())
+    this.options.callbacks.onBalanceChanged(
+      this.currencyInfo.currencyCode,
+      this.getBalance()
+    )
     return this.engineState.connect()
   }
 

@@ -36,6 +36,7 @@
 const DELIMITER = ':'
 const POOL65 = Buffer.allocUnsafe(65)
 const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l'
+// prettier-ignore
 const TABLE = [
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -56,12 +57,14 @@ const TABLE = [
 
 function polymod (pre) {
   const b = pre >>> 25
-  return ((pre & 0x1ffffff) << 5) ^
+  return (
+    ((pre & 0x1ffffff) << 5) ^
     (-((b >> 0) & 1) & 0x3b6a57b2) ^
     (-((b >> 1) & 1) & 0x26508e6d) ^
     (-((b >> 2) & 1) & 0x1ea119fa) ^
     (-((b >> 3) & 1) & 0x3d4233dd) ^
     (-((b >> 4) & 1) & 0x2a1462b3)
+  )
 }
 
 /**
@@ -79,12 +82,16 @@ function serialize (hrp, data) {
   for (i = 0; i < hrp.length; i++) {
     const ch = hrp.charCodeAt(i)
 
-    if ((ch >> 5) === 0) { throw new Error('Invalid bech32 character.') }
+    if (ch >> 5 === 0) {
+      throw new Error('Invalid bech32 character.')
+    }
 
     chk = polymod(chk) ^ (ch >> 5)
   }
 
-  if (i + 7 + data.length > 90) { throw new Error('Invalid bech32 data length.') }
+  if (i + 7 + data.length > 90) {
+    throw new Error('Invalid bech32 data length.')
+  }
 
   chk = polymod(chk)
 
@@ -101,17 +108,23 @@ function serialize (hrp, data) {
   for (let i = 0; i < data.length; i++) {
     const ch = data[i]
 
-    if ((ch >> 5) !== 0) { throw new Error('Invalid bech32 value.') }
+    if (ch >> 5 !== 0) {
+      throw new Error('Invalid bech32 value.')
+    }
 
     chk = polymod(chk) ^ ch
     str += CHARSET[ch]
   }
 
-  for (let i = 0; i < 6; i++) { chk = polymod(chk) }
+  for (let i = 0; i < 6; i++) {
+    chk = polymod(chk)
+  }
 
   chk ^= 1
 
-  for (let i = 0; i < 6; i++) { str += CHARSET[(chk >>> ((5 - i) * 5)) & 0x1f] }
+  for (let i = 0; i < 6; i++) {
+    str += CHARSET[(chk >>> ((5 - i) * 5)) & 0x1f]
+  }
 
   return str
 }
@@ -125,13 +138,19 @@ function serialize (hrp, data) {
 function deserialize (str) {
   let dlen = 0
 
-  if (str.length < 8 || str.length > 90) { throw new Error('Invalid bech32 string length.') }
+  if (str.length < 8 || str.length > 90) {
+    throw new Error('Invalid bech32 string length.')
+  }
 
-  while (dlen < str.length && str[(str.length - 1) - dlen] !== DELIMITER) { dlen++ }
+  while (dlen < str.length && str[str.length - 1 - dlen] !== DELIMITER) {
+    dlen++
+  }
 
   const hlen = str.length - (1 + dlen)
 
-  if (hlen < 1 || dlen < 6) { throw new Error('Invalid bech32 data length.') }
+  if (hlen < 1 || dlen < 6) {
+    throw new Error('Invalid bech32 data length.')
+  }
 
   dlen -= 6
 
@@ -145,13 +164,15 @@ function deserialize (str) {
   for (let i = 0; i < hlen; i++) {
     let ch = str.charCodeAt(i)
 
-    if (ch < 0x21 || ch > 0x7e) { throw new Error('Invalid bech32 character.') }
+    if (ch < 0x21 || ch > 0x7e) {
+      throw new Error('Invalid bech32 character.')
+    }
 
     if (ch >= 0x61 && ch <= 0x7a) {
       lower = true
     } else if (ch >= 0x41 && ch <= 0x5a) {
       upper = true
-      ch = (ch - 0x41) + 0x61
+      ch = ch - 0x41 + 0x61
     }
 
     hrp += String.fromCharCode(ch)
@@ -161,28 +182,42 @@ function deserialize (str) {
   chk = polymod(chk)
 
   let i
-  for (i = 0; i < hlen; i++) { chk = polymod(chk) ^ (str.charCodeAt(i) & 0x1f) }
+  for (i = 0; i < hlen; i++) {
+    chk = polymod(chk) ^ (str.charCodeAt(i) & 0x1f)
+  }
 
   i++
 
   while (i < str.length) {
     const ch = str.charCodeAt(i)
-    const v = (ch & 0x80) ? -1 : TABLE[ch]
+    const v = ch & 0x80 ? -1 : TABLE[ch]
 
-    if (ch >= 0x61 && ch <= 0x7a) { lower = true } else if (ch >= 0x41 && ch <= 0x5a) { upper = true }
+    if (ch >= 0x61 && ch <= 0x7a) {
+      lower = true
+    } else if (ch >= 0x41 && ch <= 0x5a) {
+      upper = true
+    }
 
-    if (v === -1) { throw new Error('Invalid bech32 character.') }
+    if (v === -1) {
+      throw new Error('Invalid bech32 character.')
+    }
 
     chk = polymod(chk) ^ v
 
-    if (i + 6 < str.length) { data[i - (1 + hlen)] = v }
+    if (i + 6 < str.length) {
+      data[i - (1 + hlen)] = v
+    }
 
     i++
   }
 
-  if (lower && upper) { throw new Error('Invalid bech32 casing.') }
+  if (lower && upper) {
+    throw new Error('Invalid bech32 casing.')
+  }
 
-  if (chk !== 1) { throw new Error('Invalid bech32 checksum.') }
+  if (chk !== 1) {
+    throw new Error('Invalid bech32 checksum.')
+  }
 
   return [hrp, data.slice(0, dlen)]
 }
@@ -205,12 +240,16 @@ function convert (data, output, frombits, tobits, pad, off) {
   let bits = 0
   let j = 0
 
-  if (pad !== -1) { output[j++] = pad }
+  if (pad !== -1) {
+    output[j++] = pad
+  }
 
   for (let i = off; i < data.length; i++) {
     const value = data[i]
 
-    if ((value >> frombits) !== 0) { throw new Error('Invalid bech32 bits.') }
+    if (value >> frombits !== 0) {
+      throw new Error('Invalid bech32 bits.')
+    }
 
     acc = (acc << frombits) | value
     bits += frombits
@@ -222,9 +261,13 @@ function convert (data, output, frombits, tobits, pad, off) {
   }
 
   if (pad !== -1) {
-    if (bits > 0) { output[j++] = (acc << (tobits - bits)) & maxv }
+    if (bits > 0) {
+      output[j++] = (acc << (tobits - bits)) & maxv
+    }
   } else {
-    if (bits >= frombits || ((acc << (tobits - bits)) & maxv)) { throw new Error('Invalid bech32 bits.') }
+    if (bits >= frombits || (acc << (tobits - bits)) & maxv) {
+      throw new Error('Invalid bech32 bits.')
+    }
   }
 
   return output.slice(0, j)
@@ -241,9 +284,13 @@ function convert (data, output, frombits, tobits, pad, off) {
 function encode (hrp, version, hash) {
   const output = POOL65
 
-  if (version < 0 || version > 16) { throw new Error('Invalid bech32 version.') }
+  if (version < 0 || version > 16) {
+    throw new Error('Invalid bech32 version.')
+  }
 
-  if (hash.length < 2 || hash.length > 40) { throw new Error('Invalid bech32 data length.') }
+  if (hash.length < 2 || hash.length > 40) {
+    throw new Error('Invalid bech32 data length.')
+  }
 
   const data = convert(hash, output, 8, 5, version, 0)
 
@@ -259,15 +306,21 @@ function encode (hrp, version, hash) {
 function decode (str) {
   const [hrp, data] = deserialize(str)
 
-  if (data.length === 0 || data.length > 65) { throw new Error('Invalid bech32 data length.') }
+  if (data.length === 0 || data.length > 65) {
+    throw new Error('Invalid bech32 data length.')
+  }
 
-  if (data[0] > 16) { throw new Error('Invalid bech32 version.') }
+  if (data[0] > 16) {
+    throw new Error('Invalid bech32 version.')
+  }
 
   const version = data[0]
   const output = data
   const hash = convert(data, output, 5, 8, -1, 1)
 
-  if (hash.length < 2 || hash.length > 40) { throw new Error('Invalid bech32 data length.') }
+  if (hash.length < 2 || hash.length > 40) {
+    throw new Error('Invalid bech32 data length.')
+  }
 
   return new AddrResult(hrp, version, hash)
 }

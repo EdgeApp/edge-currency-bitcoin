@@ -2,7 +2,7 @@
 import type { AbcCurrencyInfo } from 'airbitz-core-types'
 // import bcashaddress from './bcashaddress.js'
 
-const patchBachAddress = (bcoin) => {
+const patchBachAddress = bcoin => {
   const addressProto = bcoin.primitives.Address.prototype
   const toBase58 = addressProto.toBase58
   addressProto.toBase58 = function (network) {
