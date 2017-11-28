@@ -21,8 +21,8 @@ const infoServerUris = {
 
 const defaultServers = {
   bitcoin: [
-    'electrum-bu-az-wusa2.airbitz.co:50001',
-    'electrum-bc-az-eusa.airbitz.co:50001',
+    'electrum://electrum-bu-az-wusa2.airbitz.co:50001',
+    'electrum://electrum-bc-az-eusa.airbitz.co:50001',
     'electrum://electrum.villocq.com:50001'
   ],
   bitcoincash: [
