@@ -150,7 +150,8 @@ export class CurrencyEngine {
       }
     })
 
-    const { height, firstSeen } = this.engineState.txHeightCache[txid]
+    const { height = -1, firstSeen = Date.now() } =
+      this.engineState.txHeightCache[txid] || {}
     let date = firstSeen
     if (height && height !== -1) {
       const blockHeight = this.pluginState.headerCache[height.toString()]
