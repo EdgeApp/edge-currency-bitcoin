@@ -231,11 +231,13 @@ export class KeyManager {
       const { prevout } = input
       if (prevout) {
         const [branch: number, index: number] = this.utxoToPath(prevout.hash)
-        const privateKey = this.deriveKey(
-          branch,
-          index,
-          this.masterKeys.masterPrivate
-        ).privateKey
+        const keyRing = branch === 0 ? this.keys.receive : this.keys.change
+        let { privKey } = keyRing
+        if (!privKey) {
+          keyRing.privKey = this.masterKeys.masterPrivate.derive(branch)
+          privKey = keyRing.privKey
+        }
+        const privateKey = privKey.derive(index).privateKey
         const nested = (this.bip === 'bip49')
         const witness = (this.bip === 'bip49')
         const key = bcoin.primitives.KeyRing.fromOptions({
