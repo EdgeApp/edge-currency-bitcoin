@@ -231,20 +231,26 @@ export class KeyManager {
       const { script, prevout } = input
       if (prevout) {
         const [branch: number, index: number] = this.utxoToPath(prevout.hash)
-        const privKey = this.deriveKey(
+        const privateKey = this.deriveKey(
           branch,
           index,
           this.masterKeys.masterPrivate
-        )
-        const key = bcoin.primitives.KeyRing.fromScript(
-          privKey,
-          script,
-          this.network
-        )
+        ).privateKey
+        const nested = (this.bip === 'bip49')
+        const witness = (this.bip === 'bip49')
+        const key = bcoin.primitives.KeyRing.fromOptions({
+          network: this.network,
+          privateKey,
+          nested,
+          witness,
+          script
+        })
+        key.network = bcoin.network.get(this.network)
         keys.push(key)
       }
     }
-    mtx.sign(keys)
+    await mtx.template(keys)
+    mtx.sign(keys, 1)
   }
 
   // ////////////////////////////////////////////// //
