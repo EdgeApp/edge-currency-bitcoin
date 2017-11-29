@@ -228,7 +228,7 @@ export class KeyManager {
     }
     const keys = []
     for (const input: any of mtx.inputs) {
-      const { script, prevout } = input
+      const { prevout } = input
       if (prevout) {
         const [branch: number, index: number] = this.utxoToPath(prevout.hash)
         const privateKey = this.deriveKey(
@@ -239,11 +239,9 @@ export class KeyManager {
         const nested = (this.bip === 'bip49')
         const witness = (this.bip === 'bip49')
         const key = bcoin.primitives.KeyRing.fromOptions({
-          network: this.network,
           privateKey,
           nested,
-          witness,
-          script
+          witness
         })
         key.network = bcoin.network.get(this.network)
         keys.push(key)
