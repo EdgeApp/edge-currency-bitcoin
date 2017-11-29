@@ -306,9 +306,6 @@ for (const fixture of fixtures) {
         )
       }, 1000)
     })
-    after('Stop the engine', function (done) {
-      engine.killEngine().then(done)
-    })
   })
 
   // // let abcSpendInfo = {
@@ -325,85 +322,94 @@ for (const fixture of fixtures) {
   // //   ]
   // // }
 
-  // let templateSpend = {
-  //   networkFeeOption: 0,
-  //   metadata: {
-  //     name: 'Transfer to College Fund',
-  //     category: 'Transfer:Wallet:College Fund'
-  //   },
-  //   spendTargets: [
-  //     {
-  //       currencyCode: 'BTC',
-  //       publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
-  //       nativeAmount: '210000' // 0.021 BTC
-  //     },
-  //     {
-  //       currencyCode: 'BTC',
-  //       publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
-  //       nativeAmount: '420000' // 0.042 BTC
-  //     }
-  //   ]
-  // }
+  // $FlowFixMe
+  const templateSpend = {
+    networkFeeOption: 'low',
+    metadata: {
+      name: 'Transfer to College Fund',
+      category: 'Transfer:Wallet:College Fund'
+    },
+    spendTargets: [
+      {
+        currencyCode: 'BTC',
+        publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
+        nativeAmount: '210000' // 0.021 BTC
+      },
+      {
+        currencyCode: 'BTC',
+        publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
+        nativeAmount: '420000' // 0.042 BTC
+      }
+    ]
+  }
 
-  // describe(`Make Spend and Sign for Wallet type ${WALLET_TYPE}`, function () {
-  //   it('Should fail since no spend target is given', function () {
-  //     let abcSpendInfo = {
-  //       networkFeeOption: 'high',
-  //       metadata: {
-  //         name: 'Transfer to College Fund',
-  //         category: 'Transfer:Wallet:College Fund'
-  //       }
-  //     }
-  //     return engine.makeSpend(abcSpendInfo).catch(e => {
-  //       assert(e, 'Should throw')
-  //     })
-  //   })
+  describe(`Make Spend and Sign for Wallet type ${WALLET_TYPE}`, function () {
+    it('Should fail since no spend target is given', function () {
+      const abcSpendInfo = {
+        networkFeeOption: 'high',
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        }
+      }
+      return engine.makeSpend(abcSpendInfo).catch(e => {
+        assert(e, 'Should throw')
+      })
+    })
 
-  //   it('Should build transaction with low fee', function () {
-  //     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'low' })).then(a => {
-  //       // console.log('makeSpend', a)
-  //       return engine.signTx(a)
-  //     })
-  //     .then(a => {
-  //       // console.log('sign', a)
-  //     })
-  //     .catch(a => console.log('error', a))
-  //   })
+    it('Should build transaction with low fee', function () {
+      // $FlowFixMe
+      return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'low' }))
+        .then(a => {
+          return engine.signTx(a)
+        })
+        .then(a => {
+          // console.log('sign', a)
+        })
+        // .catch(a => console.log('error', a))
+    })
 
-  //   it('Should build transaction with standard fee', function () {
-  //     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'standard' })).then(a => {
-  //       // console.log('makeSpend', a)
-  //       return engine.signTx(a)
-  //     })
-  //     .then(a => {
-  //       // console.log('sign', a)
-  //     })
-  //     .catch(a => console.log('error', a))
-  //   })
+    it('Should build transaction with standard fee', function () {
+      // $FlowFixMe
+      return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'standard' }))
+        .then(a => {
+          return engine.signTx(a)
+        })
+        .then(a => {
+          // console.log('sign', a)
+        })
+        // .catch(a => console.log('error', a))
+    })
 
-  //   it('Should build transaction with high fee', function () {
-  //     return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' })).then(a => {
-  //       // console.log('makeSpend', a)
-  //       return engine.signTx(a)
-  //     })
-  //     .then(a => {
-  //       // console.log('sign', a)
-  //     })
-  //     .catch(a => console.log('error', a))
-  //   })
+    it('Should build transaction with high fee', function () {
+      // $FlowFixMe
+      return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' }))
+        .then(a => {
+          return engine.signTx(a)
+        })
+        .then(a => {
+          // console.log('sign', a)
+        })
+        // .catch(a => console.log('error', a))
+    })
 
-  //   it('Should build transaction with custom fee', function () {
-  //     return engine.makeSpend(Object.assign(templateSpend, {
-  //       networkFeeOption: 'custom',
-  //       customNetworkFee: '1000'
-  //     })).then(a => {
-  //       // console.log('makeSpend', a)
-  //       return engine.signTx(a)
-  //     })
-  //     .then(a => {
-  //       // console.log('sign', a)
-  //     })
-  //     .catch(a => console.log('error', a))
-  //   })
-  // })
+    it('Should build transaction with custom fee', function () {
+      // $FlowFixMe
+      return engine.makeSpend(Object.assign(templateSpend, {
+        networkFeeOption: 'custom',
+        customNetworkFee: '1000'
+      }))
+        .then(a => {
+          return engine.signTx(a)
+        })
+        .then(a => {
+          // console.log('sign', a)
+        })
+        // .catch(a => console.log('error', a))
+    })
+
+    after('Stop the engine', function (done) {
+      engine.killEngine().then(done)
+    })
+  })
 }
