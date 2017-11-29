@@ -542,6 +542,8 @@ export class EngineState {
   }
 
   async load () {
+    this.io.console.info('Loading wallet engine caches')
+
     try {
       const cacheText = await this.localFolder.file('addresses.json').getText()
       const cacheJson = JSON.parse(cacheText)
@@ -570,15 +572,15 @@ export class EngineState {
   }
 
   saveAddressCache () {
+    const json = JSON.stringify({
+      addresses: this.addressCache,
+      heights: this.txHeightCache
+    })
+
     this.io.console.info('Saving address cache')
     return this.localFolder
-      .file('addressses.json')
-      .setText(
-        JSON.stringify({
-          addresses: this.addressCache,
-          heights: this.txHeightCache
-        })
-      )
+      .file('addresses.json')
+      .setText(json)
       .then(() => {
         this.addressCacheDirty = false
         this.addressCacheTimestamp = Date.now()
@@ -586,10 +588,12 @@ export class EngineState {
   }
 
   saveTxCache () {
+    const json = JSON.stringify({ txs: this.txCache })
+
     this.io.console.info('Saving tx cache')
     return this.localFolder
       .file('txs.json')
-      .setText(JSON.stringify({ txs: this.txCache }))
+      .setText(json)
       .then(() => {
         this.txCacheDirty = false
         this.txCacheTimestamp = Date.now()
