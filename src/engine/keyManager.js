@@ -348,33 +348,23 @@ export class KeyManager {
     if (newKey) await this.setLookAhead()
   }
 
-  deriveKey (branch: number, index?: number, key?: any) {
-    if (typeof index !== 'number' && !key) {
-      key = index
-      index = 0
-    }
-    key = key || this.masterKeys.masterPublic
-    key = key.derive(branch)
-    return (index || index === 0) ? key.derive(index) : key
-  }
-
   async deriveNewKeys (keyRing: KeyRing, branch: number) {
     let newPubKey = null
     let { pubKey } = keyRing
     const { children } = keyRing
     if (!pubKey) {
-      keyRing.pubKey = this.deriveKey(branch)
+      keyRing.pubKey = this.masterKeys.masterPublic.derive(branch)
       pubKey = keyRing.pubKey
     }
     if (children.length < this.gapLimit) {
-      newPubKey = this.deriveKey(children.length, pubKey)
+      newPubKey = pubKey.derive(children.length)
     } else {
       for (let i = 0; i < children.length; i++) {
         if (
           children[i].state === USED &&
           children.length - i <= this.gapLimit
         ) {
-          newPubKey = this.deriveKey(children.length, pubKey)
+          newPubKey = pubKey.derive(children.length)
           break
         }
       }
