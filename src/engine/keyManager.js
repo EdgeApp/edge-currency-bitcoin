@@ -377,19 +377,19 @@ export class KeyManager {
     }
     if (newPubKey) {
       const index = children.length
-      const pubKeyHash = await this.hash160(newPubKey.publicKey)
-      let address = null
+      let nested = false
+      let witness = false
       if (this.bip === 'bip49') {
-        address = bcoin.primitives.Address.fromScripthash(
-          pubKeyHash,
-          this.network
-        ).toBase58(this.network)
-      } else {
-        address = bcoin.primitives.Address.fromPubkeyhash(
-          pubKeyHash,
-          this.network
-        ).toBase58(this.network)
+        nested = true
+        witness = true
       }
+      const key = bcoin.primitives.KeyRing.fromOptions({
+        publicKey: newPubKey,
+        nested,
+        witness
+      })
+      key.network = bcoin.network.get(this.network)
+      const address = key.getAddress('base58')
       const scriptHash = await this.addressToScriptHash(address)
       this.engineState.addAddress(
         scriptHash,
