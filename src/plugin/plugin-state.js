@@ -16,7 +16,7 @@ const infoServerUris = {
   bitcoincash: 'https://info1.edgesecure.co:8444/v1/electrumServers/BCH',
   bitcointestnet: '',
   dogecoin: '',
-  litecoin: ''
+  litecoin: 'https://info1.edgesecure.co:8444/v1/electrumServers/LTC'
 }
 
 const defaultServers = {
