@@ -355,7 +355,7 @@ export class KeyManager {
     }
     key = key || this.masterKeys.masterPublic
     key = key.derive(branch)
-    return index ? key.derive(index) : key
+    return (index || index === 0) ? key.derive(index) : key
   }
 
   async deriveNewKeys (keyRing: KeyRing, branch: number) {
