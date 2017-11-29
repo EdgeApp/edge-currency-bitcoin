@@ -393,22 +393,35 @@ for (const fixture of fixtures) {
         // .catch(a => console.log('error', a))
     })
 
-    it('Should build transaction with custom fee', function () {
+    it('Should build transaction with custom fee', function (done) {
+      this.timeout(0)
       // $FlowFixMe
-      return engine.makeSpend(Object.assign(templateSpend, {
+      engine.makeSpend(Object.assign(templateSpend, {
         networkFeeOption: 'custom',
         customNetworkFee: '1000'
       }))
-        .then(a => {
+        .then(function (a) {
+          // console.log('makeSpend', a)
           return engine.signTx(a)
         })
-        .then(a => {
-          // console.log('sign', a)
+        .then(function (a) {
+          // console.log('signTx', a)
+          // console.log('signTx', a.otherParams.bcoinTx.inputs)
+          done()
+          // return engine.broadcastTx(a)
         })
-        // .catch(a => console.log('error', a))
+        // .then(function (a) {
+        //   console.log('broadcastTx', a)
+        //   done()
+        // })
+        // .catch(function (a) {
+        //   console.log('error', a)
+        //   done()
+        // })
     })
 
     after('Stop the engine', function (done) {
+      console.log('kill engine')
       engine.killEngine().then(done)
     })
   })
