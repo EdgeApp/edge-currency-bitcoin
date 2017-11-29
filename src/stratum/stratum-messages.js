@@ -229,3 +229,22 @@ export function fetchScriptHashUtxo (
     onFail
   }
 }
+
+export function broadcastTx (
+  rawTx: string,
+  onDone: (txid: string) => void,
+  onFail: OnFailHandler
+): StratumTask {
+  const method = 'blockchain.transaction.broadcast'
+  return {
+    method,
+    params: [rawTx],
+    onDone (reply: any) {
+      if (typeof reply !== 'string') {
+        throw new Error(`transaction.broadcast error. reply ${reply}`)
+      }
+      onDone(reply)
+    },
+    onFail
+  }
+}
