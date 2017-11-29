@@ -14,6 +14,7 @@ import { EngineState } from './engine-state.js'
 import { PluginState } from '../plugin/plugin-state.js'
 import { KeyManager } from './keyManager'
 import type { EngineStateCallbacks } from './engine-state.js'
+import { broadcastTx } from '../stratum/stratum-messages.js'
 import bcoin from 'bcoin'
 
 const BYTES_TO_KB = 1000
@@ -392,7 +393,28 @@ export class CurrencyEngine {
   }
 
   broadcastTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
-    return Promise.resolve(abcTransaction) // TODO: Implement this
+    let onDone, onFail
+
+    const prom = new Promise((resolve, reject) => {
+      onDone = (txid: string) => {
+        console.log('onDone', txid)
+        abcTransaction.txid = txid
+        resolve(abcTransaction)
+      }
+      onFail = (e) => {
+        console.log('onFail', e)
+        reject(e)
+      }
+    })
+    // $FlowFixMe
+    const task = broadcastTx(abcTransaction.signedTx, onDone, onFail)
+
+    for (const uri of Object.keys(this.engineState.connections)) {
+      this.engineState.connections[uri].submitTask(task)
+      break
+    }
+
+    return prom
   }
 
   saveTx (abcTransaction: AbcTransaction): Promise<void> {
