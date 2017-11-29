@@ -202,7 +202,7 @@ for (const fixture of fixtures) {
 
       it('Checking an empty P2SH address', function (done) {
         assert.equal(
-          engine.isAddressUsed('2Mw3JQLskGciTtkU99HCzfWwmTNUJ9PWS6E'),
+          engine.isAddressUsed('2N9DbpGaQEeLLZgPQP4gc9oKkrFHdsj5Eew'),
           false
         )
         done()
@@ -210,7 +210,7 @@ for (const fixture of fixtures) {
 
       it('Checking a non empty P2SH address 1', function (done) {
         assert.equal(
-          engine.isAddressUsed('2Mwz97R1kZb1sGcpetvp71sYsfze1XMZsHK'),
+          engine.isAddressUsed('2MwLo2ghJeXTgpDccHGcsTbdS9YVfM3K5GG'),
           true
         )
         done()
@@ -218,7 +218,7 @@ for (const fixture of fixtures) {
 
       it('Checking a non empty P2SH address 2', function (done) {
         assert.equal(
-          engine.isAddressUsed('2MtegHVwZFy88UjdHU81wWiRkwDq5o8pWka'),
+          engine.isAddressUsed('2MxRjw65NxR4DsRj2z1f5xFnKkU5uMRCsoT'),
           true
         )
         done()
@@ -226,7 +226,7 @@ for (const fixture of fixtures) {
 
       it('Checking a non empty P2SH address 3', function (done) {
         assert.equal(
-          engine.isAddressUsed('2NDXkx78MLWEm4fDuFXt7RSMSxY1eWyehuZ'),
+          engine.isAddressUsed('2MxvxJh44wq17vhzGqFcAsuYsVmdEJKWuFV'),
           true
         )
         done()
