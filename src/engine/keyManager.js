@@ -176,25 +176,8 @@ export class KeyManager {
     const coins = utxos.map(utxo => {
       const rawTx = this.engineState.txCache[utxo.txid]
       const bcoinTX = bcoin.primitives.TX.fromRaw(rawTx, 'hex')
-      const bcoinTXJSON = bcoinTX.getJSON(this.network)
       const height = this.engineState.txHeightCache[utxo.txid].height
-      const script = bcoin.script.fromRaw(bcoinTXJSON.outputs[utxo.index].script, 'hex')
-      let coinbase = false
-      if (!bcoinTXJSON.inputs ||
-          !bcoinTXJSON.inputs.length
-      ) {
-        coinbase = true
-      }
-
-      return new bcoin.primitives.Coin({
-        version: bcoinTXJSON.version,
-        height: height,
-        value: utxo.value,
-        script: script,
-        coinbase: coinbase,
-        hash: utxo.txid,
-        index: utxo.index
-      })
+      return bcoin.primitives.Coin.fromTX(bcoinTX, utxo.index, height)
     })
 
     await mtx.fund(coins, {
