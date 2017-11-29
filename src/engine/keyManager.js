@@ -207,6 +207,13 @@ export class KeyManager {
       estimate: prev => this.estimateSize(prev)
     })
 
+    if (!mtx.isSane()) {
+      throw new Error('TX failed sanity check.')
+    }
+
+    if (!mtx.verifyInputs(this.engineState.pluginState.height)) {
+      throw new Error('TX failed context check.')
+    }
     return mtx
   }
 
