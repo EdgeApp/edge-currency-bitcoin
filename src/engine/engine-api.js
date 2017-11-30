@@ -367,8 +367,15 @@ export class CurrencyEngine {
       // customNetworkFee is in sat/Bytes in need to be converted to sat/KB
       rate = parseInt(abcSpendInfo.customNetworkFee) * BYTES_TO_KB
     } else {
-      // defualt fees are in sat/KB
-      rate = 100 // Needs to get real rate from rate calculator
+      const amountForTx = abcSpendInfo.spendTargets.reduce((s, { nativeAmount }) =>
+        s + parseInt(nativeAmount), 0)
+      rate = calcMinerFeePerByte(
+        amountForTx.toString(),
+        feeOption,
+        abcSpendInfo.customNetworkFee || '',
+        this.fees
+      )
+      rate = parseInt(rate) * BYTES_TO_KB
     }
 
     try {
