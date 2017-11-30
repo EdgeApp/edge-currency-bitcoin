@@ -232,11 +232,11 @@ export class CurrencyEngine {
   }
 
   async updateFeeTable () {
-    try {
-      if (this.options.optionalSettings &&
-        this.options.optionalSettings.io &&
-        this.feeInfoServer !== '' &&
-        this.rawTransactionFees.lastUpdated < Date.now() - this.feeUpdateInterval) {
+    if (this.options.optionalSettings &&
+      this.options.optionalSettings.io &&
+      this.feeInfoServer !== '' &&
+      this.rawTransactionFees.lastUpdated < Date.now() - this.feeUpdateInterval) {
+      try {
         const results = await this.options.optionalSettings.io.fetch(this.feeInfoServer)
         if (results.status !== 200) {
           throw new Error(results.body)
@@ -245,12 +245,13 @@ export class CurrencyEngine {
         this.rawTransactionFees.lastUpdated = Date.now()
         this.rawTransactionFees.fees = fees
         this.fees = calcFeesFromEarnCom(this.fees, { fees })
+      } catch (e) {
+        console.log('Error while trying to update fee table', e)
+      } finally {
         this.feeTimer = setTimeout(() => {
           this.updateFeeTable()
         }, this.feeUpdateInterval)
       }
-    } catch (e) {
-      console.log('Error while trying to update fee table', e)
     }
   }
 
