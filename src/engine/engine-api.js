@@ -72,6 +72,9 @@ export class CurrencyEngine {
       standardFeeLowAmount: '',
       standardFeeHighAmount: ''
     }
+    if (this.currencyInfo.defaultSettings.simpleFeeSettings) {
+      Object.assign(this.fees, this.currencyInfo.defaultSettings.simpleFeeSettings)
+    }
     this.rawTransactionFees = {
       lastUpdated: 0,
       fees: []
