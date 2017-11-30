@@ -251,6 +251,13 @@ for (const fixture of fixtures) {
           done()
         })
       })
+
+      it('Should get transactions from cache with options', function (done) {
+        engine.getTransactions({startIndex: 1, numEntries: 2}).then(txs => {
+          assert.equal(txs.length, 2, 'should have 2 tx from cache')
+          done()
+        })
+      })
     })
 
     it('Get BlockHeight', function (done) {
@@ -420,6 +427,13 @@ for (const fixture of fixtures) {
         //   console.log('error', a)
         //   done()
         // })
+    })
+
+    it('Should throw InsufficientFundsError', function () {
+      // $FlowFixMe
+      templateSpend.spendTargets[0].nativeAmount = '2100000000'
+      return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' }))
+        .catch(e => assert.equal(e.message, 'InsufficientFundsError'))
     })
 
     after('Stop the engine', function (done) {
