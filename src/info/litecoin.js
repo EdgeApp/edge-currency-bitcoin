@@ -35,18 +35,15 @@ export const litecoinInfo: AbcCurrencyInfo = {
     defaultFee: 50000,
     feeUpdateInterval: 60000,
     feeInfoServer: '',
-    simpleFeeSettings: { low: 6, standard: 2, high: 0 },
-    electrumServers: [['electrum-ltc.festivaldelhumor.org', '60001']],
-    diskPath: {
-      folder: 'txEngineFolderLTC',
-      files: {
-        walletLocalData: 'walletLocalDataLitecoinV1.json',
-        transactions: 'transactionsLitecoinV1.json',
-        headerList: 'headersLitecoinV1.json',
-        transactionsIds: 'transactionsIdsLitecoinV1.json',
-        wallet: 'walletLitecoinDBv1.json'
-      }
-    }
+    simpleFeeSettings: {
+      highFee: '20',
+      lowFee: '5',
+      standardFeeLow: '10',
+      standardFeeHigh: '15',
+      standardFeeLowAmount: '',
+      standardFeeHighAmount: ''
+    },
+    electrumServers: [['electrum-ltc.festivaldelhumor.org', '60001']]
   },
   metaTokens: [],
 

@@ -49,19 +49,15 @@ export const bitcoincashTestnetInfo: AbcCurrencyInfo = {
     defaultFee: 10000,
     feeUpdateInterval: 60000,
     feeInfoServer: '',
-    simpleFeeSettings: { low: 6, standard: 2, high: 0 },
-    electrumServers: [['h.1209k.com', '50001']],
-    diskPath: {
-      folder: 'txEngineFolderBCH',
-      files: {
-        walletLocalData: 'walletLocalDataV4.json',
-        transactions: 'transactionsV1.json',
-        headerList: 'headersV1.json',
-        transactionsIds: 'transactionsIdsV1.json',
-        wallet: 'walletDBv1.json',
-        memoryDump: 'dummyMemoryDumpV1.json'
-      }
-    }
+    simpleFeeSettings: {
+      highFee: '10',
+      lowFee: '1',
+      standardFeeLow: '5',
+      standardFeeHigh: '9',
+      standardFeeLowAmount: '',
+      standardFeeHighAmount: ''
+    },
+    electrumServers: [['h.1209k.com', '50001']]
   },
   metaTokens: [],
 

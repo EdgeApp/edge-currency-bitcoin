@@ -43,7 +43,14 @@ export const bitcoinInfo: AbcCurrencyInfo = {
     defaultFee: 1000,
     feeUpdateInterval: 60000,
     feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
-    simpleFeeSettings: { low: 6, standard: 2, high: 0 },
+    simpleFeeSettings: {
+      highFee: '150',
+      lowFee: '20',
+      standardFeeLow: '50',
+      standardFeeHigh: '100',
+      standardFeeLowAmount: '',
+      standardFeeHighAmount: ''
+    },
     electrumServers: [
       ['raspi.hsmiths.com', '51001'],
       ['electrum.hsmiths.com', '8080'],

@@ -42,8 +42,15 @@ export const bitcoinTestnetInfo: AbcCurrencyInfo = {
     maxFee: 1000000,
     defaultFee: 1000,
     feeUpdateInterval: 60000,
-    feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
-    simpleFeeSettings: { low: 6, standard: 2, high: 0 },
+    feeInfoServer: '',
+    simpleFeeSettings: {
+      highFee: '30',
+      lowFee: '5',
+      standardFeeLow: '10',
+      standardFeeHigh: '15',
+      standardFeeLowAmount: '',
+      standardFeeHighAmount: ''
+    },
     electrumServers: [
       ['raspi.hsmiths.com', '51001'],
       ['electrum.hsmiths.com', '8080'],
@@ -56,18 +63,7 @@ export const bitcoinTestnetInfo: AbcCurrencyInfo = {
       ['currentlane.lovebitco.in', '50001'],
       ['helicarrier.bauerj.eu', '50001'],
       ['erbium1.sytes.net', '50001']
-    ],
-    diskPath: {
-      folder: 'txEngineFolderBTC',
-      files: {
-        walletLocalData: 'walletLocalDataV4.json',
-        transactions: 'transactionsV1.json',
-        headerList: 'headersV1.json',
-        transactionsIds: 'transactionsIdsV1.json',
-        wallet: 'walletDBv1.json',
-        memoryDump: 'dummyMemoryDumpV1.json'
-      }
-    }
+    ]
   },
   metaTokens: [],
 

@@ -33,25 +33,22 @@ export const dogecoinInfo: AbcCurrencyInfo = {
     gapLimit: 25,
     maxFee: 1000000,
     feeUpdateInterval: 10000,
-    feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
-    simpleFeeSettings: { low: 6, standard: 2, high: 0 },
+    feeInfoServer: '',
+    simpleFeeSettings: {
+      highFee: '10',
+      lowFee: '1',
+      standardFeeLow: '5',
+      standardFeeHigh: '9',
+      standardFeeLowAmount: '',
+      standardFeeHighAmount: ''
+    },
     electrumServers: [
       ['electrum-ltc.bysh.me', '50002'],
       ['elec.luggs.co', '444'],
       ['ltc01.knas.systems', '50004'],
       ['electrum-ltc0.snel.it', '50004'],
       ['electrum-ltc.petrkr.net', '60002']
-    ],
-    diskPath: {
-      folder: 'txEngineFolderLTC',
-      files: {
-        walletLocalData: 'walletLocalDataLitecoinV1.json',
-        transactions: 'transactionsLitecoinV1.json',
-        headerList: 'headersLitecoinV1.json',
-        transactionsIds: 'transactionsIdsLitecoinV1.json',
-        wallet: 'walletLitecoinDBv1.json'
-      }
-    }
+    ]
   },
   metaTokens: [],
 
