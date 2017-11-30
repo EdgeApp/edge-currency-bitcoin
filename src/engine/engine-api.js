@@ -265,10 +265,12 @@ export class CurrencyEngine {
       this.currencyInfo.currencyCode,
       this.getBalance()
     )
+    await this.updateFeeTable()
     return this.engineState.connect()
   }
 
   async killEngine (): Promise<void> {
+    clearTimeout(this.feeTimer)
     return this.engineState.disconnect()
   }
 
