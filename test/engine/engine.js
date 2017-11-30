@@ -7,6 +7,7 @@ import fixtures from './fixtures.json'
 import dummyHeadersData from './dummyHeadersData.json'
 import dummyAddressData from './dummyAddressData.json'
 import dummyTransactionsData from './dummyTransactionsData.json'
+import fetch from 'node-fetch'
 
 import request from 'request'
 
@@ -25,7 +26,8 @@ for (const fixture of fixtures) {
     io: Object.assign(fakeIo, {
       random: size => fixture['key'],
       Socket: require('net').Socket,
-      TLSSocket: require('tls').TLSSocket
+      TLSSocket: require('tls').TLSSocket,
+      fetch: fetch
     })
   }
 
