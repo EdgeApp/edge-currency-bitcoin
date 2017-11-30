@@ -322,7 +322,7 @@ export class CurrencyEngine {
     }
 
     const startIndex = (options && options.startIndex) || 0
-    let endIndex = (options && options.numEntries) || abcTransactions.length
+    let endIndex = (options && options.numEntries + startIndex) || abcTransactions.length
     if (startIndex + endIndex > abcTransactions.length) {
       endIndex = abcTransactions.length
     }
