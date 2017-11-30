@@ -248,3 +248,22 @@ export function broadcastTx (
     onFail
   }
 }
+
+export function fetchEstimateFee (
+  blocksToBeIncludedIn: string,
+  onDone: (fee: number) => void,
+  onFail: OnFailHandler
+): StratumTask {
+  const method = 'blockchain.estimatefee'
+  return {
+    method,
+    params: [blocksToBeIncludedIn],
+    onDone (reply: any) {
+      if (reply === null || reply === undefined) {
+        throw new Error(`blockchain.estimatefee error. reply ${reply}`)
+      }
+      onDone(parseInt(reply))
+    },
+    onFail
+  }
+}
