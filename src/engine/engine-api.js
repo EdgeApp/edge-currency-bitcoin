@@ -14,6 +14,8 @@ import { EngineState } from './engine-state.js'
 import { PluginState } from '../plugin/plugin-state.js'
 import { KeyManager } from './keyManager'
 import type { EngineStateCallbacks } from './engine-state.js'
+import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
+import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import { broadcastTx } from '../stratum/stratum-messages.js'
 import bcoin from 'bcoin'
 
@@ -33,6 +35,14 @@ export class CurrencyEngine {
   pluginState: PluginState
   options: AbcCurrencyEngineOptions
   network: string
+  rawTransactionFees: {
+    lastUpdated: number,
+    fees: Array<any>
+  }
+  feeInfoServer: string
+  feeUpdateInterval: number
+  feeTimer: any
+  fees: BitcoinFees
 
   // ------------------------------------------------------------------------
   // Private API
@@ -52,6 +62,20 @@ export class CurrencyEngine {
     this.pluginState = pluginState
     this.options = options
     this.network = this.currencyInfo.defaultSettings.network.type
+    this.feeInfoServer = this.currencyInfo.defaultSettings.feeInfoServer
+    this.feeUpdateInterval = this.currencyInfo.defaultSettings.feeUpdateInterval
+    this.fees = {
+      highFee: '',
+      lowFee: '',
+      standardFeeLow: '',
+      standardFeeHigh: '',
+      standardFeeLowAmount: '',
+      standardFeeHighAmount: ''
+    }
+    this.rawTransactionFees = {
+      lastUpdated: 0,
+      fees: []
+    }
 
     // Benchmark some GUI callbacks:
     const benchHack: any = this.options.callbacks
@@ -202,6 +226,29 @@ export class CurrencyEngine {
       signedTx: this.engineState.txCache[txid]
     }
     return abcTransaction
+  }
+
+  async updateFeeTable () {
+    try {
+      if (this.options.optionalSettings &&
+        this.options.optionalSettings.io &&
+        this.feeInfoServer !== '' &&
+        this.rawTransactionFees.lastUpdated < Date.now() - this.feeUpdateInterval) {
+        const results = await this.options.optionalSettings.io.fetch(this.feeInfoServer)
+        if (results.status !== 200) {
+          throw new Error(results.body)
+        }
+        const { fees }: EarnComFees = await results.json()
+        this.rawTransactionFees.lastUpdated = Date.now()
+        this.rawTransactionFees.fees = fees
+        this.fees = calcFeesFromEarnCom(this.fees, { fees })
+        this.feeTimer = setTimeout(() => {
+          this.updateFeeTable()
+        }, this.feeUpdateInterval)
+      }
+    } catch (e) {
+      console.log('Error while trying to update fee table', e)
+    }
   }
 
   // ------------------------------------------------------------------------
