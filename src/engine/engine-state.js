@@ -9,6 +9,7 @@ import type {
 import { StratumConnection } from '../stratum/stratum-connection.js'
 import {
   fetchScriptHashHistory,
+  fetchScriptHashUtxo,
   fetchTransaction,
   fetchVersion,
   subscribeHeight,
@@ -358,58 +359,6 @@ export class EngineState {
             console.log(`Stratum ${uri} sent tx ${txid}`)
             this.txStates[txid] = { fetching: false }
             this.txCache[txid] = txData
-
-            const bcoinTransaction = this.bcoin.primitives.TX.fromRaw(txData, 'hex')
-            const bcoinJSON = bcoinTransaction.getJSON(this.pluginState.pluginName)
-            // Save to the height cache:
-            if (this.txHeightCache[txid]) {
-              this.txHeightCache[txid].height = bcoinJSON.height
-            } else {
-              this.txHeightCache[txid] = {
-                firstSeen: Date.now(),
-                height: bcoinJSON.height
-              }
-            }
-
-            // Run over our address and test if either of them are in the inputs or outputs for this tx
-            for (const scriptHash in this.addressCache) {
-              const addressObj = this.addressCache[scriptHash]
-              const displayAddress = this.addressCache[scriptHash].displayAddress
-
-              // Process tx outputs
-              for (let index = 0; index < bcoinJSON.outputs.length; index++) {
-                const { address, value } = bcoinJSON.outputs[index]
-                // If we own this address try and add the UTXO if it's new
-                if (address === displayAddress) {
-                  const existingUTXO = addressObj.utxos.find(utxo => {
-                    return (utxo.index === index && utxo.txid === txid)
-                  })
-                  if (!existingUTXO) {
-                    addressObj.utxos.push({ txid, index, value })
-                    this.dirtyAddressCache()
-                    this.onUtxosUpdated(displayAddress)
-                  }
-                }
-              }
-
-              // Process tx inputs
-              for (const input of bcoinJSON.inputs) {
-                // If it's not a coinbase then it has a prevout
-                if (input.prevout) {
-                  const { index } = input.prevout
-                  // Test if we own the utxo
-                  const existingUTXOIndex = addressObj.utxos.findIndex(utxo => {
-                    return (utxo.index === index && utxo.txid === input.prevout.rhash())
-                  })
-                  // If we have it, Remove it and break
-                  if (existingUTXOIndex !== -1) {
-                    addressObj.utxos.splice(existingUTXOIndex, 1)
-                    this.onUtxosUpdated(displayAddress)
-                    break
-                  }
-                }
-              }
-            }
             delete this.missingTxs[txid]
             this.dirtyTxCache()
             this.onTxFetched(txid)
@@ -421,6 +370,79 @@ export class EngineState {
             } else {
               // TODO: Don't penalize the server score either.
             }
+          }
+        )
+      }
+    }
+
+    // Fetch utxos:
+    for (const address of Object.keys(serverState.addresses)) {
+      const addressState = serverState.addresses[address]
+      if (
+        addressState.hash &&
+        addressState.hash !== this.addressCache[address].utxoStratumHash &&
+        !addressState.fetchingUtxos &&
+        this.findBestServer(address) === uri
+      ) {
+        addressState.fetchingUtxos = true
+        return fetchScriptHashUtxo(
+          address,
+          (
+            utxos: Array<{
+              tx_hash: string,
+              tx_pos: number,
+              value: number,
+              height: number
+            }>
+          ) => {
+            console.log(`Stratum ${uri} sent utxos for ${address}`)
+            addressState.fetchingUtxos = false
+            if (!addressState.hash) {
+              throw new Error(
+                'Blank stratum hash (logic bug - should never happen)'
+              )
+            }
+            this.addressCache[address].utxoStratumHash = addressState.hash
+
+            // Process the UTXO list:
+            const utxoList: Array<UtxoObj> = []
+            for (const utxo of utxos) {
+              utxoList.push({
+                txid: utxo.tx_hash,
+                index: utxo.tx_pos,
+                value: utxo.value
+              })
+
+              // Save to the height cache:
+              if (this.txHeightCache[utxo.tx_hash]) {
+                this.txHeightCache[utxo.tx_hash].height = utxo.height
+              } else {
+                this.txHeightCache[utxo.tx_hash] = {
+                  firstSeen: Date.now(),
+                  height: utxo.height
+                }
+              }
+
+              // Add to the relevant txid list:
+              if (!this.txStates[utxo.tx_hash]) {
+                this.txStates[utxo.tx_hash] = { fetching: false }
+              }
+
+              // Add to the missing tx list:
+              if (!this.txCache[utxo.tx_hash]) {
+                this.missingTxs[utxo.tx_hash] = true
+              }
+            }
+
+            // Save to the address cache:
+            this.addressCache[address].utxos = utxoList
+
+            this.dirtyAddressCache()
+            this.onUtxosUpdated(address)
+          },
+          (e: Error) => {
+            addressState.fetchingUtxos = false
+            this.onConnectionFail(uri, e, 'fetching utxos')
           }
         )
       }
