@@ -396,10 +396,10 @@ export class EngineState {
               for (const input of bcoinJSON.inputs) {
                 // If it's not a coinbase then it has a prevout
                 if (input.prevout) {
-                  const { hash, index } = input.prevout
+                  const { index } = input.prevout
                   // Test if we own the utxo
                   const existingUTXOIndex = addressObj.utxos.findIndex(utxo => {
-                    return (utxo.index === index && utxo.txid === hash)
+                    return (utxo.index === index && utxo.txid === input.prevout.rhash())
                   })
                   // If we have it, Remove it and break
                   if (existingUTXOIndex !== -1) {
