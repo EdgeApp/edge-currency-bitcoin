@@ -213,7 +213,7 @@ export class KeyManager {
     for (const input: any of mtx.inputs) {
       const { prevout } = input
       if (prevout) {
-        const [branch: number, index: number] = this.utxoToPath(prevout.hash)
+        const [branch: number, index: number] = this.utxoToPath(prevout)
         const keyRing = branch === 0 ? this.keys.receive : this.keys.change
         let { privKey } = keyRing
         if (!privKey) {
@@ -246,7 +246,7 @@ export class KeyManager {
   // ////////////// Private API /////////////////// //
   // ////////////////////////////////////////////// //
 
-  utxoToPath (txid: string): Array<number> {
+  utxoToPath (prevout: any): Array<number> {
     let scriptHashForUtxo = null
     let branch: number = 0
     let index: number = 0
@@ -255,7 +255,9 @@ export class KeyManager {
       if (!addressObj) throw new Error('Address is not part of this wallet')
       const utxos: Array<UtxoObj> = addressObj.utxos
 
-      if (utxos.find((utxo: UtxoObj) => utxo.txid === txid)) {
+      if (utxos.find((utxo: UtxoObj) => {
+        return (utxo.txid === prevout.hash && prevout.index === utxo.index)
+      })) {
         scriptHashForUtxo = scriptHash
         break
       }
