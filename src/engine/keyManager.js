@@ -256,7 +256,7 @@ export class KeyManager {
       const utxos: Array<UtxoObj> = addressObj.utxos
 
       if (utxos.find((utxo: UtxoObj) => {
-        return (utxo.txid === prevout.hash && prevout.index === utxo.index)
+        return (utxo.txid === prevout.rhash() && prevout.index === utxo.index)
       })) {
         scriptHashForUtxo = scriptHash
         break
