@@ -9,7 +9,6 @@ import type {
 import { StratumConnection } from '../stratum/stratum-connection.js'
 import {
   fetchScriptHashHistory,
-  fetchScriptHashUtxo,
   fetchTransaction,
   fetchVersion,
   subscribeHeight,
