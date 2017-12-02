@@ -194,7 +194,7 @@ export class KeyManager {
       throw new Error('TX failed sanity check.')
     }
 
-    if (!mtx.verifyInputs(this.engineState.pluginState.height)) {
+    if (!mtx.verifyInputs(blockHeight)) {
       throw new Error('TX failed context check.')
     }
     return mtx
