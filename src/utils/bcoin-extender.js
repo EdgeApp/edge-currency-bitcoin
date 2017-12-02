@@ -19,7 +19,7 @@ const patchBachAddress = bcoin => {
 }
 
 const patchBcashTX = bcoin => {
-  const txProto = bcoin.primitives.Address.prototype
+  const txProto = bcoin.primitives.TX.prototype
   const signature = txProto.signature
   txProto.signature = function (index, prev, value, key, type, version) {
     if (type === -100) {
