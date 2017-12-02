@@ -34,6 +34,7 @@ export class KeyManager {
   network: string
   masterKeys: any
   engineState: EngineState
+  walletLocalEncryptedFolder: any
   gapLimit: number
   keys: {
     receive: KeyRing,
@@ -43,6 +44,7 @@ export class KeyManager {
   constructor (
     keyInfo: AbcWalletInfo,
     engineState: EngineState,
+    walletLocalEncryptedFolder: any,
     gapLimit: number,
     network: string
   ) {
@@ -69,6 +71,7 @@ export class KeyManager {
     this.masterKeys = keyInfo.keys
     this.masterKeys.masterPrivate = keyInfo.keys[`${this.network}Key`]
     this.masterKeys.masterPublic = keyInfo.keys[`${this.network}Xpub`]
+    this.walletLocalEncryptedFolder = walletLocalEncryptedFolder
 
     if (!this.masterKeys.masterPublic && !this.masterKeys.masterPrivate) {
       throw new Error('Missing Master Key')
@@ -115,17 +118,54 @@ export class KeyManager {
   // /////////////// Public API /////////////////// //
   // ////////////////////////////////////////////// //
   async load () {
-    if (this.masterKeys.masterPrivate) {
-      this.masterKeys.masterPrivate = await this.getPrivateFromSeed(
-        this.masterKeys.masterPrivate
-      )
-      this.masterKeys.masterPublic = this.masterKeys.masterPrivate.toPublic()
-    } else {
-      this.masterKeys.masterPublic = bcoin.hd.PublicKey.fromBase58(
-        this.masterKeys.masterPublic,
-        this.network
-      )
+    let privateKey = null
+
+    // See if we have an xpriv key stored in local encrypted storage
+    console.log('PTIMER START loadEncryptedFromDisk ' + Date.now())
+    let keyObj = await this.loadEncryptedFromDisk()
+    console.log('PTIMER END loadEncryptedFromDisk ' + Date.now())
+    if (keyObj) {
+      try {
+        // bcoin says fromJSON but it's really from JS object
+        console.log('PTIMER START fromJSON ' + Date.now())
+        privateKey = bcoin.hd.PrivateKey.fromJSON(keyObj)
+        console.log('PTIMER END fromJSON ' + Date.now())
+      } catch (e) {
+        console.log('PTIMER CATCH key=NULL ' + Date.now())
+        privateKey = null
+        keyObj = null
+      }
     }
+
+    if (!privateKey) {
+      if (this.masterKeys.masterPrivate) {
+        privateKey = await this.getPrivateFromSeed(
+          this.masterKeys.masterPrivate
+        )
+        console.log('masterPublic ' + Date.now(), this.masterKeys.masterPublic)
+      } else {
+        this.masterKeys.masterPublic = bcoin.hd.PublicKey.fromBase58(
+          this.masterKeys.masterPublic,
+          this.network
+        )
+      }
+    }
+
+    if (privateKey) {
+      this.masterKeys.masterPrivate = privateKey.derivePath(this.masterPath)
+      this.masterKeys.masterPublic = this.masterKeys.masterPrivate.toPublic()
+    }
+
+    // If we didn't have a stored key AND do have a privateKey, store it now
+    if (!keyObj && privateKey) {
+      // bcoin says toJSON but it's really to JS object
+      console.log('START key.toJSON ' + Date.now())
+      keyObj = privateKey.toJSON()
+      console.log('START saveEncryptedToDisk ' + Date.now())
+      await this.saveEncryptedToDisk(keyObj)
+      console.log('END saveEncryptedToDisk' + Date.now())
+    }
+
     await this.setLookAhead()
   }
 
@@ -321,13 +361,19 @@ export class KeyManager {
   async getPrivateFromSeed (seed: string) {
     let privateKey
     try {
+      console.log('PTIMER START Mnemonic.fromPhrase ' + Date.now())
       const mnemonic = bcoin.hd.Mnemonic.fromPhrase(seed)
+      console.log('PTIMER START PrivateKey.fromMnemonic ' + Date.now())
       privateKey = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
+      console.log('PTIMER END PrivateKey.fromMnemonic ' + Date.now())
     } catch (e) {
+      console.log('PTIMER CATCH Buffer.from(seed) ' + Date.now())
       const keyBuffer = Buffer.from(seed, 'base64')
+      console.log('PTIMER END Buffer.from(seed) ' + Date.now())
       privateKey = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
+      console.log('PTIMER END PrivateKey.fromSeed ' + Date.now())
     }
-    return privateKey.derivePath(this.masterPath)
+    return privateKey
   }
 
   async setLookAhead () {
@@ -337,6 +383,23 @@ export class KeyManager {
     }
     const newKey = await this.deriveNewKeys(this.keys.receive, 0)
     if (newKey) await this.setLookAhead()
+  }
+
+  async loadEncryptedFromDisk () {
+    try {
+      const data: string = await this.walletLocalEncryptedFolder.file('privateKey').getText()
+      const dataObj = JSON.parse(data)
+      return dataObj
+    } catch (e) {
+      return null
+    }
+  }
+
+  async saveEncryptedToDisk (xprivObj: any) {
+    try {
+      const xprivJson = JSON.stringify(xprivObj)
+      await this.walletLocalEncryptedFolder.file('privateKey').setText(xprivJson)
+    } catch (e) {}
   }
 
   async deriveNewKeys (keyRing: KeyRing, branch: number) {

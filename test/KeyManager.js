@@ -38,7 +38,7 @@ const engineState = new EngineState({
 describe(`Key Manager`, function () {
   let keyManager
   it('creates new key manager', function () {
-    keyManager = new KeyManager(walletInfo, engineState, gapLimit, network)
+    keyManager = new KeyManager(walletInfo, engineState, null, gapLimit, network)
     keyManager.load().then(() => {
       assert.equal(keyManager.keys.receive.children.length, 10)
       assert(keyManager.keys.receive.pubKey)

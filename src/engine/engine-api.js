@@ -147,6 +147,7 @@ export class CurrencyEngine {
     this.keyManager = new KeyManager(
       this.walletInfo,
       this.engineState,
+      this.options.walletLocalEncryptedFolder,
       gapLimit,
       this.network
     )
