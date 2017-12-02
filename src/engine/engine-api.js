@@ -384,9 +384,18 @@ export class CurrencyEngine {
 
     try {
       const height = this.getBlockHeight()
-      let utxos = []
+      const utxos = []
       for (const scriptHash in this.engineState.addressCache) {
-        utxos = utxos.concat(this.engineState.addressCache[scriptHash].utxos)
+        this.engineState.addressCache[scriptHash].utxos.forEach(utxo => {
+          const rawTx = this.engineState.txCache[utxo.txid]
+          let height = -1
+          if (this.engineState.txHeightCache[utxo.txid]) {
+            height = this.engineState.txHeightCache[utxo.txid].height
+          }
+          if (rawTx) {
+            utxos.push({utxo, rawTx, height})
+          }
+        })
       }
       const { spendTargets } = abcSpendInfo
       resultedTransaction = await this.keyManager.createTX(
