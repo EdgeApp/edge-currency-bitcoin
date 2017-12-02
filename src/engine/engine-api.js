@@ -384,7 +384,7 @@ export class CurrencyEngine {
 
     try {
       const height = this.getBlockHeight()
-      const utxos = []
+      const utxos: any = []
       for (const scriptHash in this.engineState.addressCache) {
         this.engineState.addressCache[scriptHash].utxos.forEach(utxo => {
           const rawTx = this.engineState.txCache[utxo.txid]
