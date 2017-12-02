@@ -158,7 +158,11 @@ export class KeyManager {
 
   async createTX (
     spendTargets: Array<any>,
-    utxos: Array<UtxoObj>,
+    utxos: Array<{
+      utxo: UtxoObj,
+      rawTx: string,
+      height: number
+    }>,
     blockHeight: number,
     rate: number,
     maxFee?: number
@@ -173,10 +177,8 @@ export class KeyManager {
       mtx.addOutput(script, value)
     }
 
-    const coins = utxos.map(utxo => {
-      const rawTx = this.engineState.txCache[utxo.txid]
+    const coins = utxos.map(({utxo, rawTx, height}) => {
       const bcoinTX = bcoin.primitives.TX.fromRaw(rawTx, 'hex')
-      const height = this.engineState.txHeightCache[utxo.txid].height
       return bcoin.primitives.Coin.fromTX(bcoinTX, utxo.index, height)
     })
 
