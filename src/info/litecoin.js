@@ -36,10 +36,10 @@ export const litecoinInfo: AbcCurrencyInfo = {
     feeUpdateInterval: 60000,
     feeInfoServer: '',
     simpleFeeSettings: {
-      highFee: '20',
-      lowFee: '5',
-      standardFeeLow: '10',
-      standardFeeHigh: '15',
+      highFee: '300',
+      lowFee: '100',
+      standardFeeLow: '150',
+      standardFeeHigh: '200',
       standardFeeLowAmount: '',
       standardFeeHighAmount: ''
     },
