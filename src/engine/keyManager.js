@@ -233,13 +233,9 @@ export class KeyManager {
       }
     }
     await mtx.template(keys)
-    let type = 0
-    if (this.bip === 'bip49') {
-      type = 1
-    } else if (this.network.includes('bitcoincash')) {
-      type = -100
-    }
-    mtx.sign(keys, type)
+    if (this.network.includes('bitcoincash')) {
+      mtx.sign(keys, -100)
+    } else mtx.sign(keys)
   }
 
   // ////////////////////////////////////////////// //
