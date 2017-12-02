@@ -184,7 +184,7 @@ export class KeyManager {
 
     await mtx.fund(coins, {
       selection: 'age',
-      round: true,
+      round: false,
       changeAddress: this.getChangeAddress(),
       height: blockHeight,
       rate: rate,
