@@ -48,8 +48,8 @@ export const bitcoinTestnetInfo: AbcCurrencyInfo = {
       lowFee: '5',
       standardFeeLow: '10',
       standardFeeHigh: '15',
-      standardFeeLowAmount: '',
-      standardFeeHighAmount: ''
+      standardFeeLowAmount: '17320',
+      standardFeeHighAmount: '86700000'
     },
     electrumServers: [
       ['raspi.hsmiths.com', '51001'],

@@ -51,8 +51,8 @@ export const bitcoincashInfo: AbcCurrencyInfo = {
       lowFee: '3',
       standardFeeLow: '5',
       standardFeeHigh: '10',
-      standardFeeLowAmount: '',
-      standardFeeHighAmount: ''
+      standardFeeLowAmount: '1000000',
+      standardFeeHighAmount: '65000000'
     },
     electrumServers: [['h.1209k.com', '50001']]
   },

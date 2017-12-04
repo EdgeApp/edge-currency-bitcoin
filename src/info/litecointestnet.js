@@ -40,8 +40,8 @@ export const litecoinTestnetInfo: AbcCurrencyInfo = {
       lowFee: '1',
       standardFeeLow: '5',
       standardFeeHigh: '9',
-      standardFeeLowAmount: '',
-      standardFeeHighAmount: ''
+      standardFeeLowAmount: '200000',
+      standardFeeHighAmount: '98100000000'
     },
     electrumServers: [['electrum-ltc.festivaldelhumor.org', '60001']]
   },
