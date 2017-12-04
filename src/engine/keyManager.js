@@ -32,11 +32,11 @@ export class KeyManager {
   masterPath: string
   currencyName: string
   network: string
-  masterKeys: any
   engineState: EngineState
   walletLocalEncryptedFolder: any
   gapLimit: number
   keys: {
+    master: KeyRing,
     receive: KeyRing,
     change: KeyRing
   }
@@ -48,8 +48,28 @@ export class KeyManager {
     gapLimit: number,
     network: string
   ) {
-    if (!keyInfo.keys) throw new Error('Missing Master Key')
-
+    this.network = network
+    if (!keyInfo.keys ||
+      (!keyInfo.keys[`${this.network}Xpub`] && !keyInfo.keys[`${this.network}Key`])) {
+      throw new Error('Missing Master Key')
+    }
+    this.keys = {
+      master: {
+        pubKey: keyInfo.keys[`${this.network}Xpub`],
+        privKey: keyInfo.keys[`${this.network}Key`],
+        children: []
+      },
+      receive: {
+        pubKey: null,
+        privKey: null,
+        children: []
+      },
+      change: {
+        pubKey: null,
+        privKey: null,
+        children: []
+      }
+    }
     const walletType = keyInfo.type
     const bip = walletType.split('-')[1]
     this.bip = bip && bip.includes('bip') ? bip : 'bip32'
@@ -66,31 +86,9 @@ export class KeyManager {
       default:
         throw new Error('Unknown bip type')
     }
-
-    this.network = network
-    this.masterKeys = keyInfo.keys
-    this.masterKeys.masterPrivate = keyInfo.keys[`${this.network}Key`]
-    this.masterKeys.masterPublic = keyInfo.keys[`${this.network}Xpub`]
     this.walletLocalEncryptedFolder = walletLocalEncryptedFolder
-
-    if (!this.masterKeys.masterPublic && !this.masterKeys.masterPrivate) {
-      throw new Error('Missing Master Key')
-    }
-
     this.engineState = engineState
     this.gapLimit = gapLimit || GAP_LIMIT
-    this.keys = {
-      receive: {
-        pubKey: null,
-        privKey: null,
-        children: []
-      },
-      change: {
-        pubKey: null,
-        privKey: null,
-        children: []
-      }
-    }
 
     for (const scriptHash in this.engineState.addressCache) {
       const address: AddressObj = this.engineState.addressCache[scriptHash]
@@ -138,22 +136,21 @@ export class KeyManager {
     }
 
     if (!privateKey) {
-      if (this.masterKeys.masterPrivate) {
+      if (this.keys.master.privKey) {
         privateKey = await this.getPrivateFromSeed(
-          this.masterKeys.masterPrivate
+          this.keys.master.privKey
         )
-        console.log('masterPublic ' + Date.now(), this.masterKeys.masterPublic)
       } else {
-        this.masterKeys.masterPublic = bcoin.hd.PublicKey.fromBase58(
-          this.masterKeys.masterPublic,
+        this.keys.master.pubKey = bcoin.hd.PublicKey.fromBase58(
+          this.keys.master.pubKey,
           this.network
         )
       }
     }
 
     if (privateKey) {
-      this.masterKeys.masterPrivate = privateKey.derivePath(this.masterPath)
-      this.masterKeys.masterPublic = this.masterKeys.masterPrivate.toPublic()
+      this.keys.master.privKey = privateKey.derivePath(this.masterPath)
+      this.keys.master.pubKey = this.keys.master.privKey.toPublic()
     }
 
     // If we didn't have a stored key AND do have a privateKey, store it now
@@ -243,12 +240,12 @@ export class KeyManager {
   }
 
   async sign (mtx: any) {
-    if (!this.masterKeys.masterPrivate) {
+    if (!this.keys.master.privKey) {
       throw new Error("Can't sign without private key")
     }
-    if (typeof this.masterKeys.masterPrivate === 'string') {
-      this.masterKeys.masterPrivate = await this.getPrivateFromSeed(
-        this.masterKeys.masterPrivate
+    if (typeof this.keys.master.privKey === 'string') {
+      this.keys.master.privKey = await this.getPrivateFromSeed(
+        this.keys.master.privKey
       )
     }
     const keys = []
@@ -259,7 +256,7 @@ export class KeyManager {
         const keyRing = branch === 0 ? this.keys.receive : this.keys.change
         let { privKey } = keyRing
         if (!privKey) {
-          keyRing.privKey = this.masterKeys.masterPrivate.derive(branch)
+          keyRing.privKey = this.keys.master.privKey.derive(branch)
           privKey = keyRing.privKey
         }
         const privateKey = privKey.derive(index).privateKey
@@ -407,7 +404,7 @@ export class KeyManager {
     let { pubKey } = keyRing
     const { children } = keyRing
     if (!pubKey) {
-      keyRing.pubKey = this.masterKeys.masterPublic.derive(branch)
+      keyRing.pubKey = this.keys.master.pubKey.derive(branch)
       pubKey = keyRing.pubKey
     }
     if (children.length < this.gapLimit) {
