@@ -8,6 +8,7 @@ import type {
 } from '../stratum/stratum-connection.js'
 import { StratumConnection } from '../stratum/stratum-connection.js'
 import {
+  broadcastTx,
   fetchScriptHashHistory,
   fetchScriptHashUtxo,
   fetchTransaction,
@@ -163,6 +164,34 @@ export class EngineState {
         subscribing: false
       }
     }
+  }
+
+  broadcastTx (rawTx: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const uris = Object.keys(this.connections)
+      let resolved = false
+      let bad = 0
+
+      const task = broadcastTx(
+        rawTx,
+        () => {
+          // We resolve if any server succeeds:
+          if (!resolved) {
+            resolved = true
+            resolve()
+          }
+        },
+        (e: Error) => {
+          // We fail if every server failed:
+          if (++bad === uris.length) reject(e)
+        }
+      )
+
+      for (const uri of uris) {
+        const connection = this.connections[uri]
+        connection.submitTask(task)
+      }
+    })
   }
 
   connect () {
