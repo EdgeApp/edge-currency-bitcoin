@@ -16,7 +16,6 @@ import { KeyManager } from './keyManager'
 import type { EngineStateCallbacks } from './engine-state.js'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
-import { broadcastTx } from '../stratum/stratum-messages.js'
 import bcoin from 'bcoin'
 
 const BYTES_TO_KB = 1000
@@ -462,29 +461,16 @@ export class CurrencyEngine {
     return abcTransaction
   }
 
-  broadcastTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
-    let onDone, onFail
-
-    const prom = new Promise((resolve, reject) => {
-      onDone = (txid: string) => {
-        console.log('onDone', txid)
-        abcTransaction.txid = txid
-        resolve(abcTransaction)
-      }
-      onFail = (e) => {
-        console.log('onFail', e)
-        reject(e)
-      }
-    })
-    // $FlowFixMe
-    const task = broadcastTx(abcTransaction.signedTx, onDone, onFail)
-
-    for (const uri of Object.keys(this.engineState.connections)) {
-      this.engineState.connections[uri].submitTask(task)
-      break
+  async broadcastTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
+    try {
+      await this.engineState.broadcastTx(abcTransaction.signedTx)
+      const txid = 'whatever' // placeholder until broadcastTx returns the real TXID
+      abcTransaction.txid = txid
+      return abcTransaction
+    } catch (e) {
+      console.log('error broadcasting tx', e)
+      return abcTransaction
     }
-
-    return prom
   }
 
   saveTx (abcTransaction: AbcTransaction): Promise<void> {
