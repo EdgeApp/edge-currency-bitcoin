@@ -473,8 +473,7 @@ export class CurrencyEngine {
 
   async broadcastTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
     try {
-      await this.engineState.broadcastTx(abcTransaction.signedTx)
-      const txid = 'whatever' // placeholder until broadcastTx returns the real TXID
+      const txid = await this.engineState.broadcastTx(abcTransaction.signedTx)
       abcTransaction.txid = txid
       return abcTransaction
     } catch (e) {

@@ -166,7 +166,7 @@ export class EngineState {
     }
   }
 
-  broadcastTx (rawTx: string): Promise<void> {
+  broadcastTx (rawTx: string): Promise<string> {
     return new Promise((resolve, reject) => {
       const uris = Object.keys(this.connections)
       let resolved = false
@@ -174,11 +174,11 @@ export class EngineState {
 
       const task = broadcastTx(
         rawTx,
-        () => {
+        (txid: string) => {
           // We resolve if any server succeeds:
           if (!resolved) {
             resolved = true
-            resolve()
+            resolve(txid)
           }
         },
         (e: Error) => {
