@@ -72,7 +72,10 @@ export class CurrencyEngine {
       standardFeeHighAmount: ''
     }
     if (this.currencyInfo.defaultSettings.simpleFeeSettings) {
-      Object.assign(this.fees, this.currencyInfo.defaultSettings.simpleFeeSettings)
+      Object.assign(
+        this.fees,
+        this.currencyInfo.defaultSettings.simpleFeeSettings
+      )
     }
     this.rawTransactionFees = {
       lastUpdated: 0,
@@ -232,12 +235,16 @@ export class CurrencyEngine {
   }
 
   async updateFeeTable () {
-    if (this.options.optionalSettings &&
+    if (
+      this.options.optionalSettings &&
       this.options.optionalSettings.io &&
       this.feeInfoServer !== '' &&
-      this.rawTransactionFees.lastUpdated < Date.now() - this.feeUpdateInterval) {
+      this.rawTransactionFees.lastUpdated < Date.now() - this.feeUpdateInterval
+    ) {
       try {
-        const results = await this.options.optionalSettings.io.fetch(this.feeInfoServer)
+        const results = await this.options.optionalSettings.io.fetch(
+          this.feeInfoServer
+        )
         if (results.status !== 200) {
           throw new Error(results.body)
         }
@@ -322,7 +329,8 @@ export class CurrencyEngine {
     }
 
     const startIndex = (options && options.startIndex) || 0
-    let endIndex = (options && options.numEntries + startIndex) || abcTransactions.length
+    let endIndex =
+      (options && options.numEntries + startIndex) || abcTransactions.length
     if (startIndex + endIndex > abcTransactions.length) {
       endIndex = abcTransactions.length
     }
@@ -371,8 +379,10 @@ export class CurrencyEngine {
       // customNetworkFee is in sat/Bytes in need to be converted to sat/KB
       rate = parseInt(abcSpendInfo.customNetworkFee) * BYTES_TO_KB
     } else {
-      const amountForTx = abcSpendInfo.spendTargets.reduce((s, { nativeAmount }) =>
-        s + parseInt(nativeAmount), 0)
+      const amountForTx = abcSpendInfo.spendTargets.reduce(
+        (s, { nativeAmount }) => s + parseInt(nativeAmount),
+        0
+      )
       rate = calcMinerFeePerByte(
         amountForTx.toString(),
         feeOption,
@@ -393,7 +403,7 @@ export class CurrencyEngine {
             height = this.engineState.txHeightCache[utxo.txid].height
           }
           if (rawTx) {
-            utxos.push({utxo, rawTx, height})
+            utxos.push({ utxo, rawTx, height })
           }
         })
       }

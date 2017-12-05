@@ -49,8 +49,11 @@ export class KeyManager {
     network: string
   ) {
     this.network = network
-    if (!keyInfo.keys ||
-      (!keyInfo.keys[`${this.network}Xpub`] && !keyInfo.keys[`${this.network}Key`])) {
+    if (
+      !keyInfo.keys ||
+      (!keyInfo.keys[`${this.network}Xpub`] &&
+        !keyInfo.keys[`${this.network}Key`])
+    ) {
       throw new Error('Missing Master Key')
     }
     this.keys = {
@@ -137,9 +140,7 @@ export class KeyManager {
 
     if (!privateKey) {
       if (this.keys.master.privKey) {
-        privateKey = await this.getPrivateFromSeed(
-          this.keys.master.privKey
-        )
+        privateKey = await this.getPrivateFromSeed(this.keys.master.privKey)
       } else {
         this.keys.master.pubKey = bcoin.hd.PublicKey.fromBase58(
           this.keys.master.pubKey,
@@ -214,7 +215,7 @@ export class KeyManager {
       mtx.addOutput(script, value)
     }
 
-    const coins = utxos.map(({utxo, rawTx, height}) => {
+    const coins = utxos.map(({ utxo, rawTx, height }) => {
       const bcoinTX = bcoin.primitives.TX.fromRaw(rawTx, 'hex')
       return bcoin.primitives.Coin.fromTX(bcoinTX, utxo.index, height)
     })
@@ -260,8 +261,8 @@ export class KeyManager {
           privKey = keyRing.privKey
         }
         const privateKey = privKey.derive(index).privateKey
-        const nested = (this.bip === 'bip49')
-        const witness = (this.bip === 'bip49')
+        const nested = this.bip === 'bip49'
+        const witness = this.bip === 'bip49'
         const key = bcoin.primitives.KeyRing.fromOptions({
           privateKey,
           nested,
@@ -290,9 +291,11 @@ export class KeyManager {
       if (!addressObj) throw new Error('Address is not part of this wallet')
       const utxos: Array<UtxoObj> = addressObj.utxos
 
-      if (utxos.find((utxo: UtxoObj) => {
-        return (utxo.txid === prevout.rhash() && prevout.index === utxo.index)
-      })) {
+      if (
+        utxos.find((utxo: UtxoObj) => {
+          return utxo.txid === prevout.rhash() && prevout.index === utxo.index
+        })
+      ) {
         scriptHashForUtxo = scriptHash
         break
       }
@@ -384,7 +387,9 @@ export class KeyManager {
 
   async loadEncryptedFromDisk () {
     try {
-      const data: string = await this.walletLocalEncryptedFolder.file('privateKey').getText()
+      const data: string = await this.walletLocalEncryptedFolder
+        .file('privateKey')
+        .getText()
       const dataObj = JSON.parse(data)
       return dataObj
     } catch (e) {
@@ -395,7 +400,9 @@ export class KeyManager {
   async saveEncryptedToDisk (xprivObj: any) {
     try {
       const xprivJson = JSON.stringify(xprivObj)
-      await this.walletLocalEncryptedFolder.file('privateKey').setText(xprivJson)
+      await this.walletLocalEncryptedFolder
+        .file('privateKey')
+        .setText(xprivJson)
     } catch (e) {}
   }
 
