@@ -20,7 +20,7 @@ export const dogecoinInfo: AbcCurrencyInfo = {
         xprivkey: 0x00000000,
         xprivkey58: 'xprv',
         xpubkey58: 'xpub',
-        coinType: 0
+        coinType: 3
       },
       addressPrefix: {
         pubkeyhash: 0x30,
