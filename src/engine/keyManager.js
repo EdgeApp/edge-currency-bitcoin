@@ -13,6 +13,7 @@ const GAP_LIMIT = 10
 const UNUSED = 0
 const LEASED = 1
 const USED = 2
+const nop = () => {}
 
 type Key = {
   state: number,
@@ -32,31 +33,33 @@ export class KeyManager {
   masterPath: string
   currencyName: string
   network: string
-  engineState: EngineState
-  walletLocalEncryptedFolder: any
   gapLimit: number
-  keys: {
-    master: KeyRing,
-    receive: KeyRing,
-    change: KeyRing
-  }
+  keys: Keys
+  onNewAddress: (scriptHash: string, address: string, path: string) => void
+  onNewKey: (keys: any) => void
+  addressCache: AddressCache
+  seed: string
 
-  constructor (
-    keyInfo: AbcWalletInfo,
-    engineState: EngineState,
-    walletLocalEncryptedFolder: any,
-    gapLimit: number,
-    network: string
-  ) {
-    this.network = network
-    if (!keyInfo.keys ||
-      (!keyInfo.keys[`${this.network}Xpub`] && !keyInfo.keys[`${this.network}Key`])) {
+  constructor ({
+    walletType,
+    rawKeys = {},
+    seed = '',
+    gapLimit = GAP_LIMIT,
+    network,
+    callbacks,
+    addressCache = {}
+  }: KeyManagerOptions) {
+    // Check for any way to init the wallet with either a seed or master keys
+    if (seed === '' && (!rawKeys.master ||
+      (!rawKeys.master.xpriv && !rawKeys.master.xpub))) {
       throw new Error('Missing Master Key')
     }
+    this.seed = seed
+    // Create KeyRing templates
     this.keys = {
       master: {
-        pubKey: keyInfo.keys[`${this.network}Xpub`],
-        privKey: keyInfo.keys[`${this.network}Key`],
+        pubKey: null,
+        privKey: null,
         children: []
       },
       receive: {
@@ -70,7 +73,23 @@ export class KeyManager {
         children: []
       }
     }
-    const walletType = keyInfo.type
+    // Try to load as many keys as possible from the cache
+    for (const branch in rawKeys) {
+      if (rawKeys[branch].xpriv) {
+        this.keys[branch].privKey = bcoin.hd.PrivateKey.fromBase58(
+          rawKeys[branch].xpriv,
+          this.network
+        )
+      }
+      if (rawKeys[branch].xpub) {
+        this.keys[branch].pubKey = bcoin.hd.PublicKey.fromBase58(
+          rawKeys[branch].xpub,
+          this.network
+        )
+      }
+    }
+    // Create master derivation path from network and bip type
+    this.network = network
     const bip = walletType.split('-')[1]
     this.bip = bip && bip.includes('bip') ? bip : 'bip32'
     switch (this.bip) {
@@ -86,12 +105,22 @@ export class KeyManager {
       default:
         throw new Error('Unknown bip type')
     }
-    this.walletLocalEncryptedFolder = walletLocalEncryptedFolder
-    this.engineState = engineState
-    this.gapLimit = gapLimit || GAP_LIMIT
 
-    for (const scriptHash in this.engineState.addressCache) {
-      const address: AddressObj = this.engineState.addressCache[scriptHash]
+    // Setup gapLimit
+    this.gapLimit = gapLimit
+
+    // Set the callbacks with nops as default
+    const {
+      onNewAddress = nop,
+      onNewKey = nop
+    } = callbacks
+    this.onNewAddress = onNewAddress
+    this.onNewKey = onNewKey
+    this.addressCache = addressCache
+
+    // Load addresses from Cache
+    for (const scriptHash in this.addressCache) {
+      const address: AddressObj = this.addressCache[scriptHash]
       const { txids, displayAddress, path } = address
       let [branch, index] = path.split(this.masterPath + '/')[1].split('/')
       branch = parseInt(branch)
