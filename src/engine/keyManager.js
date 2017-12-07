@@ -362,6 +362,24 @@ export class KeyManager {
     return privateKey
   }
 
+  saveKeysToCache () {
+    try {
+      const keys = {}
+      for (const type in this.keys) {
+        keys[type] = {}
+        if (this.keys[type].privKey) {
+          keys[type].xpriv = this.keys[type].privKey.toBase58(this.network)
+        }
+        if (this.keys[type].pubKey) {
+          keys[type].xpub = this.keys[type].pubKey.toBase58(this.network)
+        }
+      }
+      this.onNewKey(keys)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   async setLookAhead () {
     if (this.bip !== 'bip32') {
       const newKey = await this.deriveNewKeys(this.keys.change, 1)
