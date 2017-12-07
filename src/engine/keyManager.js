@@ -347,17 +347,11 @@ export class KeyManager {
   async getPrivateFromSeed (seed: string) {
     let privateKey
     try {
-      console.log('PTIMER START Mnemonic.fromPhrase ' + Date.now())
       const mnemonic = bcoin.hd.Mnemonic.fromPhrase(seed)
-      console.log('PTIMER START PrivateKey.fromMnemonic ' + Date.now())
       privateKey = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
-      console.log('PTIMER END PrivateKey.fromMnemonic ' + Date.now())
     } catch (e) {
-      console.log('PTIMER CATCH Buffer.from(seed) ' + Date.now())
       const keyBuffer = Buffer.from(seed, 'base64')
-      console.log('PTIMER END Buffer.from(seed) ' + Date.now())
       privateKey = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
-      console.log('PTIMER END PrivateKey.fromSeed ' + Date.now())
     }
     return privateKey
   }
