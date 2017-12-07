@@ -255,6 +255,41 @@ export class CurrencyEngine {
     }
   }
 
+  getRate ({ spendTargets, networkFeeOption = 'standard', customNetworkFee = '' }: AbcSpendInfo): number {
+    if (networkFeeOption === 'custom' && customNetworkFee !== '') {
+      // customNetworkFee is in sat/Bytes in need to be converted to sat/KB
+      return parseInt(customNetworkFee) * BYTES_TO_KB
+    } else {
+      const amountForTx = spendTargets
+        .reduce((s, { nativeAmount }) => s + parseInt(nativeAmount), 0)
+        .toString()
+      const rate = calcMinerFeePerByte(
+        amountForTx,
+        networkFeeOption,
+        customNetworkFee,
+        this.fees
+      )
+      return parseInt(rate) * BYTES_TO_KB
+    }
+  }
+
+  getUTXOs () {
+    const utxos: any = []
+    for (const scriptHash in this.engineState.addressCache) {
+      this.engineState.addressCache[scriptHash].utxos.forEach(utxo => {
+        const rawTx = this.engineState.txCache[utxo.txid]
+        let height = -1
+        if (this.engineState.txHeightCache[utxo.txid]) {
+          height = this.engineState.txHeightCache[utxo.txid].height
+        }
+        if (rawTx) {
+          utxos.push({utxo, rawTx, height})
+        }
+      })
+    }
+    return utxos
+  }
+
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
