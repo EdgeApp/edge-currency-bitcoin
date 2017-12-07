@@ -1,17 +1,19 @@
 // @flow
-import { makeFakeIos } from 'airbitz-core-js'
-import * as Factories from '../../src/index.js'
-import assert from 'assert'
-import { describe, it, before, after } from 'mocha'
-import fixtures from './fixtures.json'
-import dummyHeadersData from './dummyHeadersData.json'
-import dummyAddressData from './dummyAddressData.json'
-import dummyTransactionsData from './dummyTransactionsData.json'
-import fetch from 'node-fetch'
+import EventEmitter from 'events'
 
+import { makeFakeIos } from 'airbitz-core-js'
+import type { AbcSpendInfo } from 'airbitz-core-types'
+import { assert } from 'chai'
+import { after, before, describe, it } from 'mocha'
+import fetch from 'node-fetch'
 import request from 'request'
 
-import EventEmitter from 'events'
+import * as Factories from '../../src/index.js'
+import dummyAddressData from './dummyAddressData.json'
+import dummyHeadersData from './dummyHeadersData.json'
+import dummyTransactionsData from './dummyTransactionsData.json'
+import fixtures from './fixtures.json'
+
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 
 for (const fixture of fixtures) {
@@ -253,7 +255,7 @@ for (const fixture of fixtures) {
       })
 
       it('Should get transactions from cache with options', function (done) {
-        engine.getTransactions({startIndex: 1, numEntries: 2}).then(txs => {
+        engine.getTransactions({ startIndex: 1, numEntries: 2 }).then(txs => {
           assert.equal(txs.length, 2, 'should have 2 tx from cache')
           done()
         })
@@ -332,7 +334,7 @@ for (const fixture of fixtures) {
   // // }
 
   // $FlowFixMe
-  const templateSpend = {
+  const templateSpend: AbcSpendInfo = {
     networkFeeOption: 'low',
     metadata: {
       name: 'Transfer to College Fund',
@@ -368,47 +370,55 @@ for (const fixture of fixtures) {
 
     it('Should build transaction with low fee', function () {
       // $FlowFixMe
-      return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'low' }))
+      return engine
+        .makeSpend(Object.assign(templateSpend, { networkFeeOption: 'low' }))
         .then(a => {
           return engine.signTx(a)
         })
         .then(a => {
           // console.log('sign', a)
         })
-        // .catch(a => console.log('error', a))
+      // .catch(a => console.log('error', a))
     })
 
     it('Should build transaction with standard fee', function () {
       // $FlowFixMe
-      return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'standard' }))
+      return engine
+        .makeSpend(
+          Object.assign(templateSpend, { networkFeeOption: 'standard' })
+        )
         .then(a => {
           return engine.signTx(a)
         })
         .then(a => {
           // console.log('sign', a)
         })
-        // .catch(a => console.log('error', a))
+      // .catch(a => console.log('error', a))
     })
 
     it('Should build transaction with high fee', function () {
       // $FlowFixMe
-      return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' }))
+      return engine
+        .makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' }))
         .then(a => {
           return engine.signTx(a)
         })
         .then(a => {
           // console.log('sign', a)
         })
-        // .catch(a => console.log('error', a))
+      // .catch(a => console.log('error', a))
     })
 
     it('Should build transaction with custom fee', function (done) {
       this.timeout(0)
       // $FlowFixMe
-      engine.makeSpend(Object.assign(templateSpend, {
-        networkFeeOption: 'custom',
-        customNetworkFee: '1000'
-      }))
+      engine
+        .makeSpend(
+          Object.assign(templateSpend, {
+            networkFeeOption: 'custom',
+            customNetworkFee: '1000'
+          })
+        )
         .then(function (a) {
           // console.log('makeSpend', a)
           return engine.signTx(a)
@@ -419,20 +429,21 @@ for (const fixture of fixtures) {
           done()
           // return engine.broadcastTx(a)
         })
-        // .then(function (a) {
-        //   console.log('broadcastTx', a)
-        //   done()
-        // })
-        // .catch(function (a) {
-        //   console.log('error', a)
-        //   done()
-        // })
+      // .then(function (a) {
+      //   console.log('broadcastTx', a)
+      //   done()
+      // })
+      // .catch(function (a) {
+      //   console.log('error', a)
+      //   done()
+      // })
     })
 
     it('Should throw InsufficientFundsError', function () {
       // $FlowFixMe
       templateSpend.spendTargets[0].nativeAmount = '2100000000'
-      return engine.makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' }))
+      return engine
+        .makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' }))
         .catch(e => assert.equal(e.message, 'InsufficientFundsError'))
     })
 

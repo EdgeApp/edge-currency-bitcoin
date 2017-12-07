@@ -341,8 +341,8 @@ export class KeyManager {
           this.saveKeysToCache()
         }
         const privateKey = privKey.derive(index).privateKey
-        const nested = (this.bip === 'bip49')
-        const witness = (this.bip === 'bip49')
+        const nested = this.bip === 'bip49'
+        const witness = this.bip === 'bip49'
         const key = bcoin.primitives.KeyRing.fromOptions({
           privateKey,
           nested,
@@ -371,9 +371,11 @@ export class KeyManager {
       if (!addressObj) throw new Error('Address is not part of this wallet')
       const utxos: Array<UtxoObj> = addressObj.utxos
 
-      if (utxos.find((utxo: UtxoObj) => {
-        return (utxo.txid === prevout.rhash() && prevout.index === utxo.index)
-      })) {
+      if (
+        utxos.find((utxo: UtxoObj) => {
+          return utxo.txid === prevout.rhash() && prevout.index === utxo.index
+        })
+      ) {
         scriptHashForUtxo = scriptHash
         break
       }

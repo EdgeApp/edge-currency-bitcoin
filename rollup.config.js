@@ -12,7 +12,11 @@ export default {
   external: [
     ...Object.keys(packageJson.dependencies),
     ...Object.keys(packageJson.devDependencies),
-    'buffer/'
+    'buffer/',
+    'crypto',
+    'events',
+    'net',
+    'tls'
   ],
   input: './src/index.js',
   output: [

@@ -191,7 +191,7 @@ export class EngineState {
     }
   }
 
-  broadcastTx (rawTx: string): Promise<void> {
+  broadcastTx (rawTx: string): Promise<string> {
     return new Promise((resolve, reject) => {
       const uris = Object.keys(this.connections)
       let resolved = false
@@ -199,11 +199,11 @@ export class EngineState {
 
       const task = broadcastTx(
         rawTx,
-        () => {
+        (txid: string) => {
           // We resolve if any server succeeds:
           if (!resolved) {
             resolved = true
-            resolve()
+            resolve(txid)
           }
         },
         (e: Error) => {
@@ -600,6 +600,7 @@ export class EngineState {
   async load () {
     this.io.console.info('Loading wallet engine caches')
 
+    // Load the address and height caches:
     try {
       const cacheText = await this.localFolder.file('addresses.json').getText()
       const cacheJson = JSON.parse(cacheText)
@@ -613,6 +614,7 @@ export class EngineState {
       this.txHeightCache = {}
     }
 
+    // Load transaction data cache:
     try {
       const txCacheText = await this.localFolder.file('txs.json').getText()
       const txCacheJson = JSON.parse(txCacheText)
@@ -622,6 +624,27 @@ export class EngineState {
       this.txCache = txCacheJson.txs
     } catch (e) {
       this.txCache = {}
+    }
+
+    // Update the derived information:
+    for (const scriptHash of Object.keys(this.addressCache)) {
+      const address = this.addressCache[scriptHash]
+      for (const txid of address.txids) {
+        if (!this.txStates[txid]) {
+          this.txStates[txid] = { fetching: false }
+        }
+        if (!this.txCache[txid]) {
+          this.missingTxs[txid] = true
+        }
+      }
+      for (const utxo of address.utxos) {
+        if (!this.txStates[utxo.txid]) {
+          this.txStates[utxo.txid] = { fetching: false }
+        }
+        if (!this.txCache[utxo.txid]) {
+          this.missingTxs[utxo.txid] = true
+        }
+      }
     }
 
     return this

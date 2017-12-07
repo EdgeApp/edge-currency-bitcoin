@@ -73,7 +73,10 @@ export class CurrencyEngine {
       standardFeeHighAmount: ''
     }
     if (this.currencyInfo.defaultSettings.simpleFeeSettings) {
-      Object.assign(this.fees, this.currencyInfo.defaultSettings.simpleFeeSettings)
+      Object.assign(
+        this.fees,
+        this.currencyInfo.defaultSettings.simpleFeeSettings
+      )
     }
     this.rawTransactionFees = {
       lastUpdated: 0,
@@ -256,12 +259,16 @@ export class CurrencyEngine {
   }
 
   async updateFeeTable () {
-    if (this.options.optionalSettings &&
+    if (
+      this.options.optionalSettings &&
       this.options.optionalSettings.io &&
       this.feeInfoServer !== '' &&
-      this.rawTransactionFees.lastUpdated < Date.now() - this.feeUpdateInterval) {
+      this.rawTransactionFees.lastUpdated < Date.now() - this.feeUpdateInterval
+    ) {
       try {
-        const results = await this.options.optionalSettings.io.fetch(this.feeInfoServer)
+        const results = await this.options.optionalSettings.io.fetch(
+          this.feeInfoServer
+        )
         if (results.status !== 200) {
           throw new Error(results.body)
         }
@@ -381,7 +388,8 @@ export class CurrencyEngine {
     }
 
     const startIndex = (options && options.startIndex) || 0
-    let endIndex = (options && options.numEntries + startIndex) || abcTransactions.length
+    let endIndex =
+      (options && options.numEntries + startIndex) || abcTransactions.length
     if (startIndex + endIndex > abcTransactions.length) {
       endIndex = abcTransactions.length
     }
@@ -492,8 +500,7 @@ export class CurrencyEngine {
 
   async broadcastTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
     try {
-      await this.engineState.broadcastTx(abcTransaction.signedTx)
-      const txid = 'whatever' // placeholder until broadcastTx returns the real TXID
+      const txid = await this.engineState.broadcastTx(abcTransaction.signedTx)
       abcTransaction.txid = txid
       return abcTransaction
     } catch (e) {
