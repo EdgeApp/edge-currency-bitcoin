@@ -430,6 +430,7 @@ export class KeyManager {
     if (!pubKey) {
       keyRing.pubKey = this.keys.master.pubKey.derive(branch)
       pubKey = keyRing.pubKey
+      this.saveKeysToCache()
     }
     if (children.length < this.gapLimit) {
       newPubKey = pubKey.derive(children.length)
