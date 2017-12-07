@@ -52,6 +52,22 @@ export type RawKeys = {
   change?: RawKeyRing
 }
 
+export type createTxOptions = {
+  outputs: Array<AbcSpendTarget>,
+  utxos: Array<{
+    utxo: UtxoObj,
+    rawTx: RawTx,
+    height: number
+  }>,
+  height: number,
+  rate: number,
+  maxFee: number,
+  setRBF?: boolean,
+  RBFraw?: RawTx,
+  CPFP?: Txid,
+  CPFPlimit?: number
+}
+
 export interface KeyManagerCallbacks {
   // When deriving new address send it to caching and subscribing
   +onNewAddress?: (scriptHash: string, address: string, path: string) => void;
@@ -235,6 +251,17 @@ export class KeyManager {
     maxFee?: number
   ): any {
     if (spendTargets.length === 0) throw new Error('No outputs available.')
+  async createTX ({
+    outputs,
+    utxos,
+    height,
+    rate,
+    maxFee,
+    setRBF = false,
+    RBFraw = '',
+    CPFP = '',
+    CPFPlimit = 1
+  }: createTxOptions): any {
     const mtx = new bcoin.primitives.MTX()
 
     // Add the outputs
