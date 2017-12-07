@@ -1,13 +1,9 @@
 {
 	"addresses": {
 		"89b98eff75735462941855264901ccbf966870a07142883c61b84c5aadd4bf2b": {
-			"txids": ["99701d23ae201fafeafeafa2120f048213f4cec6030208a35b4adab98f500bf0"],
+			"txids": ["99701d23ae201fafeafeafa2120f048213f4cec6030208a35b4adab98f500bf0", "c5b4b48406155c5cbddcb0be3ffcfb42dc1b698856913bd79cd0f154fb05c8a1"],
 			"txidStratumHash": "",
-			"utxos": [{
-				"txid": "99701d23ae201fafeafeafa2120f048213f4cec6030208a35b4adab98f500bf0",
-				"index": 0,
-				"value": 130000000
-			}],
+			"utxos": [],
 			"utxoStratumHash": "",
 			"used": true,
 			"displayAddress": "2MwLo2ghJeXTgpDccHGcsTbdS9YVfM3K5GG",
@@ -143,9 +139,13 @@
 			"path": "m/49'/0'/0'/1/2"
 		},
 		"71645254fbbc598e79527e19b0df3240a31758071b9c1155f883795446344635": {
-			"txids": [],
+			"txids": ["c5b4b48406155c5cbddcb0be3ffcfb42dc1b698856913bd79cd0f154fb05c8a1"],
 			"txidStratumHash": "",
-			"utxos": [],
+			"utxos": [{
+				"txid": "c5b4b48406155c5cbddcb0be3ffcfb42dc1b698856913bd79cd0f154fb05c8a1",
+				"index": 2,
+				"value": 128370000
+			}],
 			"utxoStratumHash": "",
 			"used": false,
 			"displayAddress": "2NAhbbvcme5FwmmfpQsfhp8pnHrnF58B8yH",
@@ -221,6 +221,10 @@
 		"e1d703801f2f64400cc98d9a2e7b6a4bcb304ff9e718685b9932c0d46cd124b3": {
 			"height": 1250602,
 			"firstSeen": 1511925758
+		},
+		"c5b4b48406155c5cbddcb0be3ffcfb42dc1b698856913bd79cd0f154fb05c8a1": {
+			"height": 1250624,
+			"firstSeen": 1511926758
 		}
 	}
 }

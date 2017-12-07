@@ -19,6 +19,7 @@ const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 for (const fixture of fixtures) {
   const CurrencyPluginFactory = Factories[fixture['factory']]
   const WALLET_TYPE = fixture['WALLET_TYPE']
+  const TX_AMOUNT = fixture['TX_AMOUNT']
 
   let plugin, keys, engine
   const emitter = new EventEmitter()
@@ -243,15 +244,15 @@ for (const fixture of fixtures) {
       it('Should get number of transactions from cache', function (done) {
         assert.equal(
           engine.getNumTransactions(),
-          5,
-          'should have 5 tx from cache'
+          TX_AMOUNT,
+          `should have ${TX_AMOUNT} tx from cache`
         )
         done()
       })
 
       it('Should get transactions from cache', function (done) {
         engine.getTransactions().then(txs => {
-          assert.equal(txs.length, 5, 'should have 5 tx from cache')
+          assert.equal(txs.length, TX_AMOUNT, `should have ${TX_AMOUNT} tx from cache`)
           done()
         })
       })
