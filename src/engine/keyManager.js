@@ -264,8 +264,11 @@ export class KeyManager {
   }: createTxOptions): any {
     const mtx = new bcoin.primitives.MTX()
 
+    // If it's not a CPFP transaction it has to have outputs
+    const mtx = new bcoin.primitives.MTX()
+    let subtractFee = false
     // Add the outputs
-    for (const spendTarget of spendTargets) {
+    for (const spendTarget of outputs) {
       const value = parseInt(spendTarget.nativeAmount)
       const script = bcoin.script.fromAddress(spendTarget.publicAddress)
       mtx.addOutput(script, value)
@@ -280,7 +283,8 @@ export class KeyManager {
       selection: 'age',
       round: false,
       changeAddress: this.getChangeAddress(),
-      height: blockHeight,
+      subtractFee: subtractFee,
+      height: height,
       rate: rate,
       maxFee: maxFee,
       estimate: prev => this.estimateSize(prev)
