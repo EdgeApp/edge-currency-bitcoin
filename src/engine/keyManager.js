@@ -76,7 +76,8 @@ export interface KeyManagerCallbacks {
 }
 
 export type KeyManagerOptions = {
-  walletType: WalletType,
+  account?: number,
+  bip?: string,
   rawKeys?: RawKeys,
   seed?: string,
   gapLimit: number,
@@ -98,7 +99,8 @@ export class KeyManager {
   seed: string
 
   constructor ({
-    walletType,
+    account = 0,
+    bip = 'bip32',
     rawKeys = {},
     seed = '',
     gapLimit = GAP_LIMIT,
@@ -147,8 +149,8 @@ export class KeyManager {
     }
     // Create master derivation path from network and bip type
     this.network = network
-    const bip = walletType.split('-')[1]
-    this.bip = bip && bip.includes('bip') ? bip : 'bip32'
+    this.bip = bip
+    const coinType = bcoin.network.get(this.network).keyPrefix.coinType
     switch (this.bip) {
       case 'bip32':
         this.masterPath = 'm/0'

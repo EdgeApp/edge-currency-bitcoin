@@ -167,11 +167,12 @@ export class CurrencyEngine {
     if (this.walletInfo.keys && this.walletInfo.keys[`${this.network}Key`]) {
       seed = this.walletInfo.keys[`${this.network}Key`]
     }
+    const bip = this.walletInfo.type.split('-')[1]
 
     this.keyManager = new KeyManager({
       seed: seed,
       rawKeys: rawKeys,
-      walletType: this.walletInfo.type,
+      bip: bip,
       gapLimit: gapLimit,
       network: this.network,
       callbacks: keyManagerCallbacks,
