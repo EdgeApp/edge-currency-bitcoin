@@ -11,6 +11,7 @@ import { bitcoinInfo } from './info/bitcoin.js'
 import { bitcoincashInfo } from './info/bitcoincash.js'
 import { bitcoincashTestnetInfo } from './info/bitcoincashtestnet.js'
 import { bitcoinTestnetInfo } from './info/bitcointestnet.js'
+import { dashInfo } from './info/dash.js'
 import { dogecoinInfo } from './info/dogecoin.js'
 import { dogecoinTestnetInfo } from './info/dogecointestnet.js'
 import { litecoinInfo } from './info/litecoin.js'
@@ -23,6 +24,7 @@ const pluginsInfo = [
   bitcoinTestnetInfo,
   bitcoincashInfo,
   bitcoincashTestnetInfo,
+  dashInfo,
   dogecoinInfo,
   dogecoinTestnetInfo,
   litecoinInfo,
@@ -63,6 +65,8 @@ export const bitcoincashTestnetCurrencyPluginFactory = makePluginFactory(
   bitcoincashTestnetInfo
 )
 
+// Dash:
+export const dashCurrencyPluginFactory = makePluginFactory(dashInfo)
 // Such Dogecoin:
 export const dogecoinCurrencyPluginFactory = makePluginFactory(dogecoinInfo)
 export const dogecoinTestnetCurrencyPluginFactory = makePluginFactory(
@@ -79,6 +83,7 @@ export const litecoinTestnetCurrencyPluginFactory = makePluginFactory(
 export {
   bitcoinCurrencyPluginFactory as BitcoinCurrencyPluginFactory,
   bitcoincashCurrencyPluginFactory as BitcoincashCurrencyPluginFactory,
+  dashCurrencyPluginFactory as DashCurrencyPluginFactory,
   dogecoinCurrencyPluginFactory as DogecoinCurrencyPluginFactory,
   litecoinCurrencyPluginFactory as LitecoinCurrencyPluginFactory
 }
