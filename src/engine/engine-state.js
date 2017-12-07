@@ -57,6 +57,7 @@ export interface EngineStateOptions {
   bcoin: any;
   io: any;
   localFolder: any;
+  encryptedLocalFolder: any;
   pluginState: PluginState;
 }
 
@@ -215,6 +216,7 @@ export class EngineState {
   bcoin: any
   io: AbcIo
   localFolder: DiskletFolder
+  encryptedLocalFolder: DiskletFolder
   pluginState: PluginState
   onHeightUpdated: (height: number) => void
   onTxFetched: (txid: string) => void
@@ -237,6 +239,7 @@ export class EngineState {
     this.bcoin = options.bcoin
     this.io = options.io
     this.localFolder = options.localFolder
+    this.encryptedLocalFolder = options.encryptedLocalFolder
     this.pluginState = options.pluginState
     const {
       onHeightUpdated = nop,
