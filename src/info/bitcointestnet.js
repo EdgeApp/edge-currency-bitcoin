@@ -68,9 +68,9 @@ export const bitcoinTestnetInfo: AbcCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  blockExplorer: 'https://insight.bitpay.com/block/%s',
-  addressExplorer: 'https://insight.bitpay.com/address/%s',
-  transactionExplorer: 'https://insight.bitpay.com/tx/%s',
+  blockExplorer: 'https://test-insight.bitpay.com//block/%s',
+  addressExplorer: 'https://test-insight.bitpay.com//address/%s',
+  transactionExplorer: 'https://test-insight.bitpay.com//tx/%s',
 
   // Images:
   symbolImage:

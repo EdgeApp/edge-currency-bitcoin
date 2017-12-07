@@ -35,27 +35,21 @@ export const dogecoinInfo: AbcCurrencyInfo = {
     feeUpdateInterval: 10000,
     feeInfoServer: '',
     simpleFeeSettings: {
-      highFee: '10',
-      lowFee: '1',
-      standardFeeLow: '5',
-      standardFeeHigh: '9',
+      highFee: '1000',
+      lowFee: '100',
+      standardFeeLow: '500',
+      standardFeeHigh: '750',
       standardFeeLowAmount: '',
       standardFeeHighAmount: ''
     },
-    electrumServers: [
-      ['electrum-ltc.bysh.me', '50002'],
-      ['elec.luggs.co', '444'],
-      ['ltc01.knas.systems', '50004'],
-      ['electrum-ltc0.snel.it', '50004'],
-      ['electrum-ltc.petrkr.net', '60002']
-    ]
+    electrumServers: []
   },
   metaTokens: [],
 
   // Explorers:
-  addressExplorer: 'https://live.blockcypher.com/ltc/address/%s',
-  blockExplorer: 'https://live.blockcypher.com/ltc/block/%s',
-  transactionExplorer: 'https://live.blockcypher.com/ltc/tx/%s',
+  addressExplorer: 'https://live.blockcypher.com/doge/address/%s',
+  blockExplorer: 'https://live.blockcypher.com/doge/block/%s',
+  transactionExplorer: 'https://live.blockcypher.com/doge/tx/%s',
 
   // Images:
   symbolImage:

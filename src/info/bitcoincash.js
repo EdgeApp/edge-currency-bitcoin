@@ -29,15 +29,15 @@ export const bitcoincashInfo: AbcCurrencyInfo = {
       addressPrefix: {
         pubkeyhash: 0x00,
         scripthash: 0x05,
-        witnesspubkeyhash: 0x06,
-        witnessscripthash: 0x0a,
-        bech32: 'bc'
+        witnesspubkeyhash: null,
+        witnessscripthash: null,
+        bech32: null
       },
       newAddressFormat: {
         pubkeyhash: 0x00,
         scripthash: 0x05,
-        witnesspubkeyhash: 0x06,
-        witnessscripthash: 0x0a,
+        witnesspubkeyhash: null,
+        witnessscripthash: null,
         prefix: 'bitcoincash'
       }
     },
