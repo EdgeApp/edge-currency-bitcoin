@@ -274,8 +274,8 @@ export class KeyManager {
     let scriptHashForUtxo = null
     let branch: number = 0
     let index: number = 0
-    for (const scriptHash: string in this.engineState.addressCache) {
-      const addressObj: AddressObj = this.engineState.addressCache[scriptHash]
+    for (const scriptHash: string in this.addressCache) {
+      const addressObj: AddressObj = this.addressCache[scriptHash]
       if (!addressObj) throw new Error('Address is not part of this wallet')
       const utxos: Array<UtxoObj> = addressObj.utxos
 
