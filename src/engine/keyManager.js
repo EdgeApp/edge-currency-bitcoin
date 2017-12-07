@@ -469,26 +469,27 @@ export class KeyManager {
     let newPubKey = null
     let { pubKey } = keyRing
     const { children } = keyRing
+    const childLen = children.length
     if (!pubKey) {
       keyRing.pubKey = this.keys.master.pubKey.derive(branch)
       pubKey = keyRing.pubKey
       this.saveKeysToCache()
     }
-    if (children.length < this.gapLimit) {
-      newPubKey = pubKey.derive(children.length)
+    if (childLen < this.gapLimit) {
+      newPubKey = pubKey.derive(childLen)
     } else {
-      for (let i = 0; i < children.length; i++) {
+      for (let i = 0; i < childLen; i++) {
         if (
           children[i].used &&
-          children.length - i <= this.gapLimit
+          childLen - i <= this.gapLimit
         ) {
-          newPubKey = pubKey.derive(children.length)
+          newPubKey = pubKey.derive(childLen)
           break
         }
       }
     }
     if (newPubKey) {
-      const index = children.length
+      const index = childLen
       let nested = false
       let witness = false
       if (this.bip === 'bip49') {
