@@ -393,53 +393,23 @@ export class CurrencyEngine {
     return false
   }
 
-  async makeSpend (abcSpendInfo: AbcSpendInfo): Promise<AbcTransaction> {
+  async makeSpend (abcSpendInfo: AbcSpendInfo, options?: any = {}): Promise<AbcTransaction> {
     // Can't spend without outputs
-    if (!abcSpendInfo.spendTargets || abcSpendInfo.spendTargets.length < 1) {
+    if (!options.CPFP &&
+      (!abcSpendInfo.spendTargets || abcSpendInfo.spendTargets.length < 1)) {
       throw new Error('Need to provide Spend Targets')
     }
-
-    const feeOption = abcSpendInfo.networkFeeOption || 'standard'
-    let rate, resultedTransaction
-
-    if (feeOption === 'custom') {
-      // customNetworkFee is in sat/Bytes in need to be converted to sat/KB
-      rate = parseInt(abcSpendInfo.customNetworkFee) * BYTES_TO_KB
-    } else {
-      const amountForTx = abcSpendInfo.spendTargets.reduce((s, { nativeAmount }) =>
-        s + parseInt(nativeAmount), 0)
-      rate = calcMinerFeePerByte(
-        amountForTx.toString(),
-        feeOption,
-        abcSpendInfo.customNetworkFee || '',
-        this.fees
-      )
-      rate = parseInt(rate) * BYTES_TO_KB
-    }
+    let resultedTransaction
 
     try {
-      const height = this.getBlockHeight()
-      const utxos: any = []
-      for (const scriptHash in this.engineState.addressCache) {
-        this.engineState.addressCache[scriptHash].utxos.forEach(utxo => {
-          const rawTx = this.engineState.txCache[utxo.txid]
-          let height = -1
-          if (this.engineState.txHeightCache[utxo.txid]) {
-            height = this.engineState.txHeightCache[utxo.txid].height
-          }
-          if (rawTx) {
-            utxos.push({utxo, rawTx, height})
-          }
-        })
-      }
-      const { spendTargets } = abcSpendInfo
-      resultedTransaction = await this.keyManager.createTX(
-        spendTargets,
-        utxos,
-        height,
-        rate,
-        this.currencyInfo.defaultSettings.maxFee
-      )
+      Object.assign(options, {
+        rate: this.getRate(abcSpendInfo),
+        maxFee: this.currencyInfo.defaultSettings.maxFee,
+        outputs: abcSpendInfo.spendTargets,
+        utxos: this.getUTXOs(),
+        height: this.getBlockHeight()
+      })
+      resultedTransaction = await this.keyManager.createTX(options)
     } catch (e) {
       if (e.type === 'FundingError') throw new Error('InsufficientFundsError')
       throw e
