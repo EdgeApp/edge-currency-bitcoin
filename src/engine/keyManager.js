@@ -10,18 +10,16 @@ import crypto from 'crypto'
 const { Buffer } = buffer
 
 const GAP_LIMIT = 10
-const UNUSED = 0
-const LEASED = 1
-const USED = 2
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
 const nop = () => {}
 
 export type Txid = string
 export type WalletType = string
 export type RawTx = string
+export type BlockHeight = number
 
 export type Key = {
-  state: number,
+  used: boolean,
   displayAddress: string,
   scriptHash: string,
   index: number
@@ -57,9 +55,9 @@ export type createTxOptions = {
   utxos: Array<{
     utxo: UtxoObj,
     rawTx: RawTx,
-    height: number
+    height: BlockHeight
   }>,
-  height: number,
+  height: BlockHeight,
   rate: number,
   maxFee: number,
   setRBF?: boolean,
@@ -186,8 +184,8 @@ export class KeyManager {
         let [branch, index] = pathSuffix.split('/')
         branch = parseInt(branch)
         index = parseInt(index)
-        const state = txids && txids.length > 0 ? USED : UNUSED
-        const key = { state, displayAddress, scriptHash, index }
+        const used = txids && txids.length > 0
+        const key = { used, displayAddress, scriptHash, index }
         if (branch === 0) {
           this.keys.receive.children.push(key)
         } else {
@@ -228,19 +226,13 @@ export class KeyManager {
 
   async use (scriptHash: string) {
     const keyToUse: ?Key = this.scriptHashToKey(scriptHash)
-    if (keyToUse) keyToUse.state = USED
+    if (keyToUse) keyToUse.used = true
     await this.setLookAhead()
   }
 
   async unuse (scriptHash: string) {
     const keyToUnsue: ?Key = this.scriptHashToKey(scriptHash)
-    if (keyToUnsue) keyToUnsue.state = UNUSED
-    await this.setLookAhead()
-  }
-
-  async lease (scriptHash: string) {
-    const keyToLease: ?Key = this.scriptHashToKey(scriptHash)
-    if (keyToLease) keyToLease.state = LEASED
+    if (keyToUnsue) keyToUnsue.used = false
     await this.setLookAhead()
   }
 
@@ -425,21 +417,12 @@ export class KeyManager {
   getNextAvailable (keys: Array<Key>): string {
     let key = null
     for (let i = 0; i < keys.length; i++) {
-      if (keys[i].state === UNUSED) {
+      if (!keys[i].used) {
         key = keys[i]
         break
       }
     }
-    if (!key) {
-      for (let i = 0; i < keys.length; i++) {
-        if (keys[i].state === LEASED) {
-          key = keys[i]
-          break
-        }
-      }
-    }
     if (!key) return ''
-    key.state = LEASED
     return key.displayAddress
   }
 
@@ -496,7 +479,7 @@ export class KeyManager {
     } else {
       for (let i = 0; i < children.length; i++) {
         if (
-          children[i].state === USED &&
+          children[i].used &&
           children.length - i <= this.gapLimit
         ) {
           newPubKey = pubKey.derive(children.length)
@@ -526,7 +509,7 @@ export class KeyManager {
         `${this.masterPath}/${branch}/${index}`
       )
       children.push({
-        state: UNUSED,
+        used: false,
         displayAddress: address,
         scriptHash: scriptHash,
         index: index
