@@ -14,6 +14,7 @@ import { EngineState } from './engine-state.js'
 import { PluginState } from '../plugin/plugin-state.js'
 import { KeyManager } from './keyManager'
 import type { EngineStateCallbacks } from './engine-state.js'
+import type { KeyManagerCallbacks } from './keyManager'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import bcoin from 'bcoin'
@@ -108,7 +109,7 @@ export class CurrencyEngine {
   }
 
   async load (): Promise<any> {
-    const callbacks: EngineStateCallbacks = {
+    const engineStateCallbacks: EngineStateCallbacks = {
       onUtxosUpdated: (addressHash: string) => {
         this.keyManager.use(addressHash)
         this.options.callbacks.onBalanceChanged(
@@ -128,28 +129,51 @@ export class CurrencyEngine {
       }
     }
     const gapLimit = this.currencyInfo.defaultSettings.gapLimit
-    let io = null
-    if (this.options.optionalSettings) {
-      io = this.options.optionalSettings.io
-    }
+    const io = this.options.optionalSettings
+      ? this.options.optionalSettings.io
+      : null
 
     this.engineState = new EngineState({
-      callbacks,
-      bcoin,
-      io,
+      callbacks: engineStateCallbacks,
+      bcoin: bcoin,
+      io: io,
       localFolder: this.options.walletLocalFolder,
+      encryptedLocalFolder: this.options.walletLocalEncryptedFolder,
       pluginState: this.pluginState
     })
 
     await this.engineState.load()
 
-    this.keyManager = new KeyManager(
-      this.walletInfo,
-      this.engineState,
-      this.options.walletLocalEncryptedFolder,
-      gapLimit,
-      this.network
-    )
+    const keyManagerCallbacks: KeyManagerCallbacks = {
+      onNewAddress: (scriptHash: string, address: string, path: string) => {
+        return this.engineState.addAddress(scriptHash, address, path)
+      },
+      onNewKey: (keys: any) => this.engineState.saveKeys(keys)
+    }
+
+    const rawKeys = await this.engineState.loadKeys()
+    if (!rawKeys.master) {
+      rawKeys.master = {}
+    }
+    if (!rawKeys.master.xpub) {
+      if (this.walletInfo.keys && this.walletInfo.keys[`${this.network}Xpub`]) {
+        rawKeys.master.xpub = this.walletInfo.keys[`${this.network}Xpub`]
+      }
+    }
+    let seed = ''
+    if (this.walletInfo.keys && this.walletInfo.keys[`${this.network}Key`]) {
+      seed = this.walletInfo.keys[`${this.network}Key`]
+    }
+
+    this.keyManager = new KeyManager({
+      seed: seed,
+      rawKeys: rawKeys,
+      walletType: this.walletInfo.type,
+      gapLimit: gapLimit,
+      network: this.network,
+      callbacks: keyManagerCallbacks,
+      addressCache: this.engineState.addressCache
+    })
 
     await this.keyManager.load()
   }
@@ -442,7 +466,7 @@ export class CurrencyEngine {
       otherParams: {
         bcoinTx: resultedTransaction,
         abcSpendInfo,
-        rate
+        rate: options.rate
       },
       currencyCode: this.currencyInfo.currencyCode,
       txid: '',
