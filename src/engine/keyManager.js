@@ -181,15 +181,18 @@ export class KeyManager {
     for (const scriptHash in this.addressCache) {
       const address: AddressObj = this.addressCache[scriptHash]
       const { txids, displayAddress, path } = address
-      let [branch, index] = path.split(this.masterPath + '/')[1].split('/')
-      branch = parseInt(branch)
-      index = parseInt(index)
-      const state = txids && txids.length > 0 ? USED : UNUSED
-      const key = { state, displayAddress, scriptHash, index }
-      if (branch === 0) {
-        this.keys.receive.children.push(key)
-      } else {
-        this.keys.change.children.push(key)
+      const pathSuffix = path.split(this.masterPath + '/')[1]
+      if (pathSuffix) {
+        let [branch, index] = pathSuffix.split('/')
+        branch = parseInt(branch)
+        index = parseInt(index)
+        const state = txids && txids.length > 0 ? USED : UNUSED
+        const key = { state, displayAddress, scriptHash, index }
+        if (branch === 0) {
+          this.keys.receive.children.push(key)
+        } else {
+          this.keys.change.children.push(key)
+        }
       }
     }
     // Cache is not sorted so sort addresses according to derivation index
