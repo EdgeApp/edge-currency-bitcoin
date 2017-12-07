@@ -239,18 +239,6 @@ export class KeyManager {
     await this.setLookAhead()
   }
 
-  async createTX (
-    spendTargets: Array<any>,
-    utxos: Array<{
-      utxo: UtxoObj,
-      rawTx: string,
-      height: number
-    }>,
-    blockHeight: number,
-    rate: number,
-    maxFee?: number
-  ): any {
-    if (spendTargets.length === 0) throw new Error('No outputs available.')
   async createTX ({
     outputs,
     utxos,
@@ -262,7 +250,9 @@ export class KeyManager {
     CPFP = '',
     CPFPlimit = 1
   }: createTxOptions): any {
-    const mtx = new bcoin.primitives.MTX()
+    // If it's not a CPFP transaction it has to have outputs
+    // CPFP transactions can receive an empty outputs array
+    if (outputs.length === 0 && CPFP !== '') throw new Error('No outputs available.')
 
     // If it's not a CPFP transaction it has to have outputs
     const mtx = new bcoin.primitives.MTX()
@@ -272,6 +262,26 @@ export class KeyManager {
       const value = parseInt(spendTarget.nativeAmount)
       const script = bcoin.script.fromAddress(spendTarget.publicAddress)
       mtx.addOutput(script, value)
+    }
+
+    if (CPFP) {
+      utxos = utxos.filter(({ utxo }) => utxo.txid === CPFP)
+      // If not outputs are given try and build the most efficient TX
+      if (!mtx.outputs || mtx.outputs.length === 0) {
+        // Sort the UTXO's by size
+        utxos = utxos.sort((a, b) => parseInt(b.utxo.value) - parseInt(a.utxo.value))
+        // Try and get only the biggest UTXO's unless the limit is 0 which means take all
+        if (CPFPlimit) utxos = utxos.slice(0, CPFPlimit)
+        // CPFP transactions will try to not have change
+        // by subtracting moving all the value from the UTXO's
+        // and substracting the fee from the total output value
+        const value = utxos.reduce((s, { utxo }) => s + utxo.value, 0)
+        subtractFee = true
+        // CPFP transactions will add a change address as a single output
+        const addressForOutput = this.getChangeAddress()
+        const script = bcoin.script.fromAddress(addressForOutput)
+        mtx.addOutput(script, value)
+      }
     }
 
     const coins = utxos.map(({utxo, rawTx, height}) => {
