@@ -167,6 +167,30 @@ export class EngineState {
     }
   }
 
+  async saveKeys (keys: any) {
+    try {
+      const json = JSON.stringify({ keys: keys })
+      await this.encryptedLocalFolder
+        .file('keys.json')
+        .setText(json)
+      this.io.console.info('Saved keys cache')
+    } catch (e) {
+      console.error('Error saving Keys', e)
+    }
+  }
+
+  async loadKeys () {
+    try {
+      const keysCacheText = await this.encryptedLocalFolder.file('keys.json').getText()
+      const keysCacheJson = JSON.parse(keysCacheText)
+      // TODO: Validate JSON
+      return keysCacheJson.keys
+    } catch (e) {
+      console.log(e)
+      return {}
+    }
+  }
+
   broadcastTx (rawTx: string): Promise<void> {
     return new Promise((resolve, reject) => {
       const uris = Object.keys(this.connections)
