@@ -229,13 +229,12 @@ export class KeyManager {
   }
 
   async sign (mtx: any) {
-    if (!this.keys.master.privKey) {
+    if (!this.keys.master.privKey && this.seed === '') {
       throw new Error("Can't sign without private key")
     }
-    if (typeof this.keys.master.privKey === 'string') {
-      this.keys.master.privKey = await this.getPrivateFromSeed(
-        this.keys.master.privKey
-      )
+    if (!this.keys.master.privKey) {
+      this.keys.master.privKey = await this.getPrivateFromSeed(this.seed)
+      this.saveKeysToCache()
     }
     const keys = []
     for (const input: any of mtx.inputs) {
@@ -247,6 +246,7 @@ export class KeyManager {
         if (!privKey) {
           keyRing.privKey = this.keys.master.privKey.derive(branch)
           privKey = keyRing.privKey
+          this.saveKeysToCache()
         }
         const privateKey = privKey.derive(index).privateKey
         const nested = (this.bip === 'bip49')
