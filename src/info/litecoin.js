@@ -20,7 +20,7 @@ export const litecoinInfo: AbcCurrencyInfo = {
         xprivkey: 0x0488ade4,
         xpubkey58: 'xpub',
         xprivkey58: 'xprv',
-        coinType: 0
+        coinType: 2
       },
       addressPrefix: {
         pubkeyhash: 0x00,

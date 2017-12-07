@@ -27,7 +27,7 @@ export const bitcoincashTestnetInfo: AbcCurrencyInfo = {
         xprivkey: 0x04358394,
         xpubkey58: 'tpub',
         xprivkey58: 'tprv',
-        coinType: 1
+        coinType: 146
       },
       addressPrefix: {
         pubkeyhash: 0x6f,

@@ -156,10 +156,10 @@ export class KeyManager {
         this.masterPath = 'm/0'
         break
       case 'bip44':
-        this.masterPath = "m/44'/0'/0'"
+        this.masterPath = `m/44'/${coinType}'/${account}'`
         break
       case 'bip49':
-        this.masterPath = "m/49'/0'/0'"
+        this.masterPath = `m/49'/${coinType}'/${account}'`
         break
       default:
         throw new Error('Unknown bip type')
