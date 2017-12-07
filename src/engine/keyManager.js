@@ -1,6 +1,6 @@
 // @flow
-import type { AbcWalletInfo } from 'airbitz-core-types'
-import type { UtxoObj, EngineState, AddressObj } from './engine-state.js'
+import type { AbcSpendTarget } from 'airbitz-core-types'
+import type { UtxoObj, AddressObj, AddressCache } from './engine-state.js'
 // $FlowFixMe
 import buffer from 'buffer-hack'
 import bcoin from 'bcoin'
@@ -15,17 +15,57 @@ const LEASED = 1
 const USED = 2
 const nop = () => {}
 
-type Key = {
+export type Txid = string
+export type WalletType = string
+export type RawTx = string
+
+export type Key = {
   state: number,
   displayAddress: string,
   scriptHash: string,
   index: number
 }
 
-type KeyRing = {
+export type KeyRing = {
   pubKey: any,
   privKey: any,
   children: Array<Key>
+}
+
+export type Keys = {
+  master: KeyRing,
+  receive: KeyRing,
+  change: KeyRing
+}
+
+export type RawKey = string
+
+export type RawKeyRing = {
+  xpriv?: RawKey,
+  xpub?: string
+}
+
+export type RawKeys = {
+  master?: RawKeyRing,
+  receive?: RawKeyRing,
+  change?: RawKeyRing
+}
+
+export interface KeyManagerCallbacks {
+  // When deriving new address send it to caching and subscribing
+  +onNewAddress?: (scriptHash: string, address: string, path: string) => void;
+  // When deriving new key send it to caching
+  +onNewKey?: (keys: any) => void;
+}
+
+export type KeyManagerOptions = {
+  walletType: WalletType,
+  rawKeys?: RawKeys,
+  seed?: string,
+  gapLimit: number,
+  network: string,
+  callbacks: KeyManagerCallbacks,
+  addressCache?: AddressCache
 }
 
 export class KeyManager {
