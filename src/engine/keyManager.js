@@ -13,6 +13,7 @@ const GAP_LIMIT = 10
 const UNUSED = 0
 const LEASED = 1
 const USED = 2
+const RBF_SEQUENCE_NUM = 0xffffffff - 2
 const nop = () => {}
 
 export type Txid = string
@@ -258,13 +259,23 @@ export class KeyManager {
       estimate: prev => this.estimateSize(prev)
     })
 
+    // If TX is RBF mark is by changing the Inputs sequences
+    if (setRBF) {
+      for (const input of mtx.inputs) {
+        input.sequence = RBF_SEQUENCE_NUM
+      }
+    }
+
+    // Check consensus rules for fees and outputs
     if (!mtx.isSane()) {
       throw new Error('TX failed sanity check.')
     }
 
-    if (!mtx.verifyInputs(blockHeight)) {
+    // Check consensus rules for inputs
+    if (!mtx.verifyInputs(height)) {
       throw new Error('TX failed context check.')
     }
+
     return mtx
   }
 
