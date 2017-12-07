@@ -371,23 +371,6 @@ export class KeyManager {
     if (newKey) await this.setLookAhead()
   }
 
-  async loadEncryptedFromDisk () {
-    try {
-      const data: string = await this.walletLocalEncryptedFolder.file('privateKey').getText()
-      const dataObj = JSON.parse(data)
-      return dataObj
-    } catch (e) {
-      return null
-    }
-  }
-
-  async saveEncryptedToDisk (xprivObj: any) {
-    try {
-      const xprivJson = JSON.stringify(xprivObj)
-      await this.walletLocalEncryptedFolder.file('privateKey').setText(xprivJson)
-    } catch (e) {}
-  }
-
   async deriveNewKeys (keyRing: KeyRing, branch: number) {
     let newPubKey = null
     let { pubKey } = keyRing
