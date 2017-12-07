@@ -460,7 +460,7 @@ export class KeyManager {
       key.network = bcoin.network.get(this.network)
       const address = key.getAddress('base58')
       const scriptHash = await this.addressToScriptHash(address)
-      this.engineState.addAddress(
+      this.onNewAddress(
         scriptHash,
         address,
         `${this.masterPath}/${branch}/${index}`
