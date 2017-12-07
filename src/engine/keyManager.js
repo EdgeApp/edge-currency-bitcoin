@@ -142,53 +142,16 @@ export class KeyManager {
   // /////////////// Public API /////////////////// //
   // ////////////////////////////////////////////// //
   async load () {
-    let privateKey = null
-
-    // See if we have an xpriv key stored in local encrypted storage
-    console.log('PTIMER START loadEncryptedFromDisk ' + Date.now())
-    let keyObj = await this.loadEncryptedFromDisk()
-    console.log('PTIMER END loadEncryptedFromDisk ' + Date.now())
-    if (keyObj) {
-      try {
-        // bcoin says fromJSON but it's really from JS object
-        console.log('PTIMER START fromJSON ' + Date.now())
-        privateKey = bcoin.hd.PrivateKey.fromJSON(keyObj)
-        console.log('PTIMER END fromJSON ' + Date.now())
-      } catch (e) {
-        console.log('PTIMER CATCH key=NULL ' + Date.now())
-        privateKey = null
-        keyObj = null
-      }
-    }
-
-    if (!privateKey) {
-      if (this.keys.master.privKey) {
-        privateKey = await this.getPrivateFromSeed(
-          this.keys.master.privKey
-        )
-      } else {
-        this.keys.master.pubKey = bcoin.hd.PublicKey.fromBase58(
-          this.keys.master.pubKey,
-          this.network
-        )
-      }
-    }
-
-    if (privateKey) {
+    // If we don't have any master key we will now create it from seed
+    if (!this.keys.master.privKey && !this.keys.master.pubKey) {
+      const privateKey = await this.getPrivateFromSeed(this.seed)
       this.keys.master.privKey = privateKey.derivePath(this.masterPath)
       this.keys.master.pubKey = this.keys.master.privKey.toPublic()
+      this.saveKeysToCache()
+    } else if (!this.keys.master.pubKey) {
+      this.keys.master.pubKey = this.keys.master.privKey.toPublic()
+      this.saveKeysToCache()
     }
-
-    // If we didn't have a stored key AND do have a privateKey, store it now
-    if (!keyObj && privateKey) {
-      // bcoin says toJSON but it's really to JS object
-      console.log('START key.toJSON ' + Date.now())
-      keyObj = privateKey.toJSON()
-      console.log('START saveEncryptedToDisk ' + Date.now())
-      await this.saveEncryptedToDisk(keyObj)
-      console.log('END saveEncryptedToDisk' + Date.now())
-    }
-
     await this.setLookAhead()
   }
 
