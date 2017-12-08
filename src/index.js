@@ -83,6 +83,7 @@ export {
   bitcoinCurrencyPluginFactory as BitcoinCurrencyPluginFactory,
   bitcoinTestnetCurrencyPluginFactory as BitcoinTestnetCurrencyPluginFactory,
   bitcoincashCurrencyPluginFactory as BitcoincashCurrencyPluginFactory,
+  bitcoincashTestnetCurrencyPluginFactory as BitcoincashTestnetCurrencyPluginFactory,
   dashCurrencyPluginFactory as DashCurrencyPluginFactory,
   dogecoinCurrencyPluginFactory as DogecoinCurrencyPluginFactory,
   litecoinCurrencyPluginFactory as LitecoinCurrencyPluginFactory
