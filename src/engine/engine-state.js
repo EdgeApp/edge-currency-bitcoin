@@ -255,6 +255,7 @@ export class EngineState {
   constructor (options: EngineStateOptions) {
     this.addressCache = {}
     this.txCache = {}
+    this.txHeightCache = {}
     this.connections = {}
     this.serverStates = {}
     this.txStates = {}
@@ -604,7 +605,10 @@ export class EngineState {
     try {
       const cacheText = await this.localFolder.file('addresses.json').getText()
       const cacheJson = JSON.parse(cacheText)
+
       // TODO: Validate JSON
+      if (!cacheJson.addresses) throw new Error('Missing addresses in cache')
+      if (!cacheJson.heights) throw new Error('Missing heights in cache')
 
       this.addressCacheTimestamp = Date.now()
       this.addressCache = cacheJson.addresses
@@ -618,7 +622,9 @@ export class EngineState {
     try {
       const txCacheText = await this.localFolder.file('txs.json').getText()
       const txCacheJson = JSON.parse(txCacheText)
+
       // TODO: Validate JSON
+      if (!txCacheJson.txs) throw new Error('Missing txs in cache')
 
       this.txCacheTimestamp = Date.now()
       this.txCache = txCacheJson.txs
