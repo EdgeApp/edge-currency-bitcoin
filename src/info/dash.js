@@ -35,6 +35,7 @@ export const dashInfo: AbcCurrencyInfo = {
     defaultFee: 10000,
     feeUpdateInterval: 60000,
     feeInfoServer: '',
+    infoServer: '',
     simpleFeeSettings: {
       highFee: '300',
       lowFee: '100',

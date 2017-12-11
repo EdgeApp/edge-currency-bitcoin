@@ -34,6 +34,7 @@ export const dogecoinInfo: AbcCurrencyInfo = {
     maxFee: 1000000,
     feeUpdateInterval: 10000,
     feeInfoServer: '',
+    infoServer: '',
     simpleFeeSettings: {
       highFee: '1000',
       lowFee: '100',

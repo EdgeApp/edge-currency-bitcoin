@@ -43,6 +43,7 @@ export const bitcoinTestnetInfo: AbcCurrencyInfo = {
     defaultFee: 1000,
     feeUpdateInterval: 60000,
     feeInfoServer: '',
+    infoServer: '',
     simpleFeeSettings: {
       highFee: '30',
       lowFee: '5',
