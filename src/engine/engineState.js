@@ -90,6 +90,9 @@ export class EngineState {
   // Maps from display addresses to script hashes:
   scriptHashes: { [displayAddress: string]: string }
 
+  // Address usage information sent by the GUI:
+  usedAddresses: { [scriptHash: string]: true }
+
   // On-disk hex transaction data:
   txCache: { [txid: string]: string }
 
@@ -176,6 +179,13 @@ export class EngineState {
         subscribed: false,
         subscribing: false
       }
+    }
+  }
+
+  markAddressesUsed (scriptHashes: Array<string>) {
+    for (const scriptHash of scriptHashes) {
+      this.usedAddresses[scriptHash] = true
+      this.refreshAddressInfo(scriptHash)
     }
   }
 
@@ -267,6 +277,7 @@ export class EngineState {
     this.addressCache = {}
     this.addressInfos = {}
     this.scriptHashes = {}
+    this.usedAddresses = {}
     this.txCache = {}
     this.txHeightCache = {}
     this.connections = {}
@@ -736,7 +747,9 @@ export class EngineState {
     const { displayAddress, path } = address
 
     // It is used if it has transactions:
-    const used = address.txids.length + address.utxos.length !== 0
+    const used =
+      this.usedAddresses[scriptHash] ||
+      address.txids.length + address.utxos.length !== 0
 
     // We only include existing stuff:
     const txids = address.txids.filter(txid => this.txCache[txid])
