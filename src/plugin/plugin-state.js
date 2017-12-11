@@ -32,6 +32,10 @@ const defaultServers = {
     'electrums://electrum.zone:50002'
   ],
   bitcointestnet: ['electrum://testnetnode.arihanc.com:51001'],
+  dash: [
+    'electrum://ele.coinpools.de:50008',
+    'electrum://electrum.dash.siampm.com:50002'
+  ],
   dogecoin: [],
   litecoin: ['electrum://electrum-ltc.festivaldelhumor.org:60001']
 }
