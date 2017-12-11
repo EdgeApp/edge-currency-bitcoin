@@ -196,7 +196,8 @@ export class PluginState {
   // Private stuff
   // ------------------------------------------------------------------------
   io: AbcIo
-  pluginName: string
+  defaultServers: Array<string>
+  infoServerUris: string
 
   engines: Array<EngineState>
   folder: DiskletFolder
@@ -211,9 +212,15 @@ export class PluginState {
     this.headerCache = {}
     this.serverCache = {}
     this.io = io
-    this.pluginName = currencyInfo.pluginName
+    this.defaultServers = []
+    this.infoServerUris = ''
+    if (currencyInfo.defaultSettings) {
+      this.defaultServers = currencyInfo.defaultSettings.electrumServers || []
+      this.infoServerUris = currencyInfo.defaultSettings.infoServer || ''
+    }
+
     this.engines = []
-    this.folder = io.folder.folder('plugins').folder(this.pluginName)
+    this.folder = io.folder.folder('plugins').folder(currencyInfo.pluginName)
 
     this.headerCacheDirty = false
     this.headerCacheTimestamp = Date.now()
@@ -242,9 +249,7 @@ export class PluginState {
       this.serverCacheTimestamp = Date.now()
       this.serverCache = serverCacheJson.servers
     } catch (e) {
-      if (defaultServers[this.pluginName]) {
-        this.insertServers(defaultServers[this.pluginName])
-      }
+      this.insertServers(this.defaultServers)
     }
 
     // Fetch stratum servers in the background:
@@ -300,14 +305,13 @@ export class PluginState {
 
   fetchStratumServers (): Promise<void> {
     const { io } = this
-    const url = infoServerUris[this.pluginName]
-    if (!url) return Promise.resolve()
-    io.console.info(`GET ${url}`)
+    if (this.infoServerUris === '') return Promise.resolve()
+    io.console.info(`GET ${this.infoServerUris}`)
     return io
-      .fetch(infoServerUris[this.pluginName])
+      .fetch(this.infoServerUris)
       .then(result => {
         if (!result.ok) {
-          io.console.error(`Fetching ${url} failed with ${result.status}`)
+          io.console.error(`Fetching ${this.infoServerUris} failed with ${result.status}`)
           throw new Error('Cannot fetch stratum server list')
         }
         return result.json()
