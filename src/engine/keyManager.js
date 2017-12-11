@@ -107,8 +107,10 @@ export class KeyManager {
     addressCache = {}
   }: KeyManagerOptions) {
     // Check for any way to init the wallet with either a seed or master keys
-    if (seed === '' && (!rawKeys.master ||
-      (!rawKeys.master.xpriv && !rawKeys.master.xpub))) {
+    if (
+      seed === '' &&
+      (!rawKeys.master || (!rawKeys.master.xpriv && !rawKeys.master.xpub))
+    ) {
       throw new Error('Missing Master Key')
     }
     this.seed = seed
@@ -167,10 +169,7 @@ export class KeyManager {
     this.gapLimit = gapLimit
 
     // Set the callbacks with nops as default
-    const {
-      onNewAddress = nop,
-      onNewKey = nop
-    } = callbacks
+    const { onNewAddress = nop, onNewKey = nop } = callbacks
     this.onNewAddress = onNewAddress
     this.onNewKey = onNewKey
     this.addressCache = addressCache
@@ -249,7 +248,9 @@ export class KeyManager {
   }: createTxOptions): any {
     // If it's not a CPFP transaction it has to have outputs
     // CPFP transactions can receive an empty outputs array
-    if (outputs.length === 0 && CPFP !== '') throw new Error('No outputs available.')
+    if (outputs.length === 0 && CPFP !== '') {
+      throw new Error('No outputs available.')
+    }
 
     // If it's not a CPFP transaction it has to have outputs
     const mtx = new bcoin.primitives.MTX()
@@ -266,7 +267,9 @@ export class KeyManager {
       // If not outputs are given try and build the most efficient TX
       if (!mtx.outputs || mtx.outputs.length === 0) {
         // Sort the UTXO's by size
-        utxos = utxos.sort((a, b) => parseInt(b.utxo.value) - parseInt(a.utxo.value))
+        utxos = utxos.sort(
+          (a, b) => parseInt(b.utxo.value) - parseInt(a.utxo.value)
+        )
         // Try and get only the biggest UTXO's unless the limit is 0 which means take all
         if (CPFPlimit) utxos = utxos.slice(0, CPFPlimit)
         // CPFP transactions will try to not have change
@@ -281,7 +284,7 @@ export class KeyManager {
       }
     }
 
-    const coins = utxos.map(({utxo, rawTx, height}) => {
+    const coins = utxos.map(({ utxo, rawTx, height }) => {
       const bcoinTX = bcoin.primitives.TX.fromRaw(rawTx, 'hex')
       return bcoin.primitives.Coin.fromTX(bcoinTX, utxo.index, height)
     })
@@ -479,10 +482,7 @@ export class KeyManager {
       newPubKey = pubKey.derive(childLen)
     } else {
       for (let i = 0; i < childLen; i++) {
-        if (
-          children[i].used &&
-          childLen - i <= this.gapLimit
-        ) {
+        if (children[i].used && childLen - i <= this.gapLimit) {
           newPubKey = pubKey.derive(childLen)
           break
         }

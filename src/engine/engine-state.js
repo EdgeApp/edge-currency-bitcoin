@@ -170,9 +170,7 @@ export class EngineState {
   async saveKeys (keys: any) {
     try {
       const json = JSON.stringify({ keys: keys })
-      await this.encryptedLocalFolder
-        .file('keys.json')
-        .setText(json)
+      await this.encryptedLocalFolder.file('keys.json').setText(json)
       this.io.console.info('Saved keys cache')
     } catch (e) {
       console.error('Error saving Keys', e)
@@ -181,7 +179,9 @@ export class EngineState {
 
   async loadKeys () {
     try {
-      const keysCacheText = await this.encryptedLocalFolder.file('keys.json').getText()
+      const keysCacheText = await this.encryptedLocalFolder
+        .file('keys.json')
+        .getText()
       const keysCacheJson = JSON.parse(keysCacheText)
       // TODO: Validate JSON
       return keysCacheJson.keys
