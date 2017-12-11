@@ -45,8 +45,15 @@ export const dashInfo: AbcCurrencyInfo = {
       standardFeeHighAmount: '981000000'
     },
     electrumServers: [
-      ['ele.coinpools.de', '50008'],
-      ['electrum.dash.siampm.com', '50002']
+      'electrum://electrum.dash.siampm.com:50001',
+      'electrum://e-1.claudioboxx.com:50005',
+      'electrum://electrum.leblancnet.us:50015',
+      'electrums://e-1.claudioboxx.com:50006',
+      'electrums://ele.nummi.it:50008',
+      'electrums://178.62.234.69:50002',
+      'electrum://178.62.234.69:50001',
+      'electrums://electrum.leblancnet.us:50016',
+      'electrums://electrum.dash.siampm.com:50002'
     ]
   },
   metaTokens: [],

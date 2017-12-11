@@ -52,19 +52,7 @@ export const bitcoinTestnetInfo: AbcCurrencyInfo = {
       standardFeeLowAmount: '17320',
       standardFeeHighAmount: '86700000'
     },
-    electrumServers: [
-      ['raspi.hsmiths.com', '51001'],
-      ['electrum.hsmiths.com', '8080'],
-      ['electrum.hsmiths.com', '50001'],
-      ['e-x.not.fyi', '50001'],
-      ['us.electrum.be', '50001'],
-      ['mooo.not.fyi', '50011'],
-      ['electrum.festivaldelhumor.org', '50001'],
-      ['electrum.be', '50001'],
-      ['currentlane.lovebitco.in', '50001'],
-      ['helicarrier.bauerj.eu', '50001'],
-      ['erbium1.sytes.net', '50001']
-    ]
+    electrumServers: ['electrum://testnetnode.arihanc.com:51001']
   },
   metaTokens: [],
 

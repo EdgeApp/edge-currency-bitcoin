@@ -53,18 +53,24 @@ export const bitcoinInfo: AbcCurrencyInfo = {
       standardFeeHighAmount: '8670000'
     },
     electrumServers: [
-      ['raspi.hsmiths.com', '51001'],
-      ['electrum.hsmiths.com', '8080'],
-      ['electrum.hsmiths.com', '50001'],
-      ['e-x.not.fyi', '50001'],
-      ['us.electrum.be', '50001'],
-      ['mooo.not.fyi', '50011'],
-      ['electrum.festivaldelhumor.org', '50001'],
-      ['electrum.be', '50001'],
-      ['currentlane.lovebitco.in', '50001'],
-      ['helicarrier.bauerj.eu', '50001'],
-      ['erbium1.sytes.net', '50001']
-    ],
+      'electrums://electrum-bc-az-eusa.airbitz.co:50002',
+      'electrum://electrum-bc-az-eusa.airbitz.co:50001',
+      'electrum://electrum.hsmiths.com:8080',
+      'electrums://E-X.not.fyi:50002',
+      'electrums://node.arihanc.com:50002',
+      'electrum://node.arihanc.com:50001',
+      'electrums://electrum.petrkr.net:50002',
+      'electrum://electrum.petrkr.net:50001',
+      'electrums://electrum2.everynothing.net:50002',
+      'electrum://electrum2.everynothing.net:50001',
+      'electrums://lith.strangled.net:50002',
+      'electrums://s4.noip.pl:50104',
+      'electrum://currentlane.lovebitco.in:50001',
+      'electrums://electrum.hsmiths.com:50002',
+      'electrum://electrum.hsmiths.com:50001',
+      'electrums://electrumx.westeurope.cloudapp.azure.com:50002',
+      'electrum://electrumx.westeurope.cloudapp.azure.com:50001'
+    ]
   },
   metaTokens: [],
 
