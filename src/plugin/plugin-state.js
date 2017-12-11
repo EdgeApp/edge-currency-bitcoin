@@ -166,7 +166,9 @@ export class PluginState {
       this.serverCacheTimestamp = Date.now()
       this.serverCache = serverCacheJson.servers
     } catch (e) {
-      this.insertServers(defaultServers[this.pluginName])
+      if (defaultServers[this.pluginName]) {
+        this.insertServers(defaultServers[this.pluginName])
+      }
     }
 
     // Fetch stratum servers in the background:
