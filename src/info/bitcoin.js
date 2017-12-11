@@ -65,17 +65,6 @@ export const bitcoinInfo: AbcCurrencyInfo = {
       ['helicarrier.bauerj.eu', '50001'],
       ['erbium1.sytes.net', '50001']
     ],
-    diskPath: {
-      folder: 'txEngineFolderBTC',
-      files: {
-        walletLocalData: 'walletLocalDataV4.json',
-        transactions: 'transactionsV1.json',
-        headerList: 'headersV1.json',
-        transactionsIds: 'transactionsIdsV1.json',
-        wallet: 'walletDBv1.json',
-        memoryDump: 'dummyMemoryDumpV1.json'
-      }
-    }
   },
   metaTokens: [],
 
