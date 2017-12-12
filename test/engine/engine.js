@@ -322,41 +322,6 @@ for (const fixture of fixtures) {
     })
   })
 
-  // // let abcSpendInfo = {
-  // //   networkFeeOption: 'high',
-  // //   metadata:  {
-  // //     name: 'Transfer to College Fund',
-  // //     category: 'Transfer:Wallet:College Fund',
-  // //   },
-  // //   spendTargets: [
-  // //     {
-  // //       destWallet,
-  // //       nativeAmount: '210000000' // 2.1 BTC
-  // //     },
-  // //   ]
-  // // }
-
-  // $FlowFixMe
-  const templateSpend: AbcSpendInfo = {
-    networkFeeOption: 'low',
-    metadata: {
-      name: 'Transfer to College Fund',
-      category: 'Transfer:Wallet:College Fund'
-    },
-    spendTargets: [
-      {
-        currencyCode: 'BTC',
-        publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
-        nativeAmount: '210000' // 0.021 BTC
-      },
-      {
-        currencyCode: 'BTC',
-        publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
-        nativeAmount: '420000' // 0.042 BTC
-      }
-    ]
-  }
-
   describe(`Make Spend and Sign for Wallet type ${WALLET_TYPE}`, function () {
     it('Should fail since no spend target is given', function () {
       const abcSpendInfo = {
@@ -372,56 +337,175 @@ for (const fixture of fixtures) {
     })
 
     it('Should build transaction with low fee', function () {
+      // $FlowFixMde
+      const templateSpend: AbcSpendInfo = {
+        networkFeeOption: 'low',
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        },
+        spendTargets: [
+          {
+            currencyCode: 'BTC',
+            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
+            nativeAmount: '210000' // 0.021 BTC
+          },
+          {
+            currencyCode: 'BTC',
+            publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
+            nativeAmount: '420000' // 0.042 BTC
+          }
+        ]
+      }
       // $FlowFixMe
       return engine
-        .makeSpend(Object.assign(templateSpend, { networkFeeOption: 'low' }))
+        .makeSpend(templateSpend)
         .then(a => {
           return engine.signTx(a)
         })
         .then(a => {
           // console.log('sign', a)
         })
-      // .catch(a => console.log('error', a))
     })
 
-    it('Should build transaction with standard fee', function () {
+    it('Should build transaction with low standard fee', function () {
       // $FlowFixMe
+      const templateSpend: AbcSpendInfo = {
+        networkFeeOption: 'standard',
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        },
+        spendTargets: [
+          {
+            currencyCode: 'BTC',
+            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
+            nativeAmount: '17320'
+          }
+        ]
+      }
       return engine
-        .makeSpend(
-          Object.assign(templateSpend, { networkFeeOption: 'standard' })
-        )
+        .makeSpend(templateSpend)
         .then(a => {
           return engine.signTx(a)
         })
         .then(a => {
-          // console.log('sign', a)
+          console.log('sign', a)
         })
-      // .catch(a => console.log('error', a))
+    })
+
+    it('Should build transaction with middle standard fee', function () {
+      // $FlowFixMe
+      const templateSpend: AbcSpendInfo = {
+        networkFeeOption: 'standard',
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        },
+        spendTargets: [
+          {
+            currencyCode: 'BTC',
+            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
+            nativeAmount: '43350000'
+          }
+        ]
+      }
+      return engine
+        .makeSpend(templateSpend)
+        .then(a => {
+          return engine.signTx(a)
+        })
+        .then(a => {
+          console.log('sign', a)
+        })
+    })
+
+    it('Should build transaction with high standard fee', function () {
+      // $FlowFixMe
+      const templateSpend: AbcSpendInfo = {
+        networkFeeOption: 'standard',
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        },
+        spendTargets: [
+          {
+            currencyCode: 'BTC',
+            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
+            nativeAmount: '86700000'
+          },
+          {
+            currencyCode: 'BTC',
+            publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
+            nativeAmount: '420000' // 0.042 BTC
+          }
+        ]
+      }
+      return engine
+        .makeSpend(templateSpend)
+        .then(a => {
+          return engine.signTx(a)
+        })
+        .then(a => {
+          console.log('sign', a)
+        })
     })
 
     it('Should build transaction with high fee', function () {
       // $FlowFixMe
+      const templateSpend: AbcSpendInfo = {
+        networkFeeOption: 'high',
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        },
+        spendTargets: [
+          {
+            currencyCode: 'BTC',
+            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
+            nativeAmount: '210000' // 0.021 BTC
+          },
+          {
+            currencyCode: 'BTC',
+            publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
+            nativeAmount: '420000' // 0.042 BTC
+          }
+        ]
+      }
       return engine
-        .makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' }))
+        .makeSpend(templateSpend)
         .then(a => {
           return engine.signTx(a)
         })
         .then(a => {
           // console.log('sign', a)
         })
-      // .catch(a => console.log('error', a))
     })
 
-    it('Should build transaction with custom fee', function (done) {
-      this.timeout(0)
+    it('Should build transaction with custom fee', function () {
+      const templateSpend: AbcSpendInfo = {
+        networkFeeOption: 'custom',
+        customNetworkFee: '1000',
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        },
+        spendTargets: [
+          {
+            currencyCode: 'BTC',
+            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
+            nativeAmount: '210000' // 0.021 BTC
+          },
+          {
+            currencyCode: 'BTC',
+            publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
+            nativeAmount: '420000' // 0.042 BTC
+          }
+        ]
+      }
       // $FlowFixMe
-      engine
-        .makeSpend(
-          Object.assign(templateSpend, {
-            networkFeeOption: 'custom',
-            customNetworkFee: '1000'
-          })
-        )
+      return engine
+        .makeSpend(templateSpend)
         .then(function (a) {
           // console.log('makeSpend', a)
           return engine.signTx(a)
@@ -429,24 +513,33 @@ for (const fixture of fixtures) {
         .then(function (a) {
           // console.log('signTx', a)
           // console.log('signTx', a.otherParams.bcoinTx.inputs)
-          done()
-          // return engine.broadcastTx(a)
         })
-      // .then(function (a) {
-      //   console.log('broadcastTx', a)
-      //   done()
-      // })
-      // .catch(function (a) {
-      //   console.log('error', a)
-      //   done()
-      // })
     })
 
     it('Should throw InsufficientFundsError', function () {
       // $FlowFixMe
-      templateSpend.spendTargets[0].nativeAmount = '2100000000'
+      const templateSpend: AbcSpendInfo = {
+        networkFeeOption: 'high',
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        },
+        spendTargets: [
+          {
+            currencyCode: 'BTC',
+            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
+            nativeAmount: '2100000000' // 0.021 BTC
+          },
+          {
+            currencyCode: 'BTC',
+            publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
+            nativeAmount: '420000' // 0.042 BTC
+          }
+        ]
+      }
+      // $FlowFixMe
       return engine
-        .makeSpend(Object.assign(templateSpend, { networkFeeOption: 'high' }))
+        .makeSpend(templateSpend)
         .catch(e => assert.equal(e.message, 'InsufficientFundsError'))
     })
 
