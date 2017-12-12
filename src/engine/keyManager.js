@@ -18,17 +18,18 @@ export type WalletType = string
 export type RawTx = string
 export type BlockHeight = number
 
-export type Key = {
+export type Address = {
   used: boolean,
   displayAddress: string,
   scriptHash: string,
-  index: number
+  index: number,
+  branch: number
 }
 
 export type KeyRing = {
   pubKey: any,
   privKey: any,
-  children: Array<Key>
+  children: Array<Address>
 }
 
 export type Keys = {
@@ -48,6 +49,14 @@ export type RawKeys = {
   master?: RawKeyRing,
   receive?: RawKeyRing,
   change?: RawKeyRing
+}
+
+export type DisplayAddressMap = {
+  [displayAddress: string]: Address
+}
+
+export type ScriptHashMap = {
+  [scriptHash: string]: Address
 }
 
 export type createTxOptions = {
@@ -94,6 +103,8 @@ export class KeyManager {
   onNewAddress: (scriptHash: string, address: string, path: string) => void
   onNewKey: (keys: any) => void
   addressCache: AddressCache
+  displayAddressMap: DisplayAddressMap
+  scriptHashMap: ScriptHashMap
   seed: string
 
   constructor ({
@@ -132,7 +143,10 @@ export class KeyManager {
         children: []
       }
     }
-    // Try to load as many keys as possible from the cache
+    // Creating empty maps
+    this.displayAddressMap = {}
+    this.scriptHashMap = {}
+    // Try to load as many pubKey/privKey as possible from the cache
     for (const branch in rawKeys) {
       if (rawKeys[branch].xpriv) {
         this.keys[branch].privKey = bcoin.hd.PrivateKey.fromBase58(
@@ -184,11 +198,13 @@ export class KeyManager {
         branch = parseInt(branch)
         index = parseInt(index)
         const used = txids && txids.length > 0
-        const key = { used, displayAddress, scriptHash, index }
+        const address = { used, displayAddress, scriptHash, index, branch }
+        this.displayAddressMap[displayAddress] = address
+        this.scriptHashMap[scriptHash] = address
         if (branch === 0) {
-          this.keys.receive.children.push(key)
+          this.keys.receive.children.push(address)
         } else {
-          this.keys.change.children.push(key)
+          this.keys.change.children.push(address)
         }
       }
     }
@@ -224,13 +240,13 @@ export class KeyManager {
   }
 
   async use (scriptHash: string) {
-    const keyToUse: ?Key = this.scriptHashToKey(scriptHash)
+    const keyToUse: ?Address = this.scriptHashMap[scriptHash]
     if (keyToUse) keyToUse.used = true
     await this.setLookAhead()
   }
 
   async unuse (scriptHash: string) {
-    const keyToUnsue: ?Key = this.scriptHashToKey(scriptHash)
+    const keyToUnsue: ?Address = this.scriptHashMap[scriptHash]
     if (keyToUnsue) keyToUnsue.used = false
     await this.setLookAhead()
   }
@@ -364,8 +380,6 @@ export class KeyManager {
 
   utxoToPath (prevout: any): Array<number> {
     let scriptHashForUtxo = null
-    let branch: number = 0
-    let index: number = 0
     for (const scriptHash: string in this.addressCache) {
       const addressObj: AddressObj = this.addressCache[scriptHash]
       if (!addressObj) throw new Error('Address is not part of this wallet')
@@ -380,48 +394,19 @@ export class KeyManager {
         break
       }
     }
+    let address: ?Address = null
     if (scriptHashForUtxo) {
-      const findByScriptHash = (key: Key) =>
-        key.scriptHash === scriptHashForUtxo
-      let key: any = null
-      key = this.keys.receive.children.find(findByScriptHash)
-      if (!key) {
-        key = this.keys.change.children.find(findByScriptHash)
-        branch = 1
-      }
-      if (!key) throw new Error('Address is not part of this wallet')
-      index = key.index
+      address = this.scriptHashMap[scriptHashForUtxo]
     }
-    return [branch, index]
+    if (!address) throw new Error('Address is not part of this wallet')
+    return [address.branch, address.index]
   }
 
-  scriptHashToKey (scriptHash: string): ?Key {
-    for (const branch: string in this.keys) {
-      for (const keyForBranch: Key of this.keys[branch].children) {
-        if (keyForBranch.scriptHash === scriptHash) {
-          return keyForBranch
-        }
-      }
-    }
-    return null
-  }
-
-  addressToKey (address: string): ?Key {
-    for (const branch: string in this.keys) {
-      for (const keyForBranch: Key of this.keys[branch].children) {
-        if (keyForBranch.displayAddress === address) {
-          return keyForBranch
-        }
-      }
-    }
-    return null
-  }
-
-  getNextAvailable (keys: Array<Key>): string {
+  getNextAvailable (addresses: Array<Address>): string {
     let key = null
-    for (let i = 0; i < keys.length; i++) {
-      if (!keys[i].used) {
-        key = keys[i]
+    for (let i = 0; i < addresses.length; i++) {
+      if (!addresses[i].used) {
+        key = addresses[i]
         break
       }
     }
@@ -502,19 +487,24 @@ export class KeyManager {
         witness
       })
       key.network = bcoin.network.get(this.network)
-      const address = key.getAddress('base58')
-      const scriptHash = await this.addressToScriptHash(address)
+      const displayAddress = key.getAddress('base58')
+      const scriptHash = await this.addressToScriptHash(displayAddress)
+      const used = false
       this.onNewAddress(
         scriptHash,
-        address,
+        displayAddress,
         `${this.masterPath}/${branch}/${index}`
       )
-      children.push({
-        used: false,
-        displayAddress: address,
-        scriptHash: scriptHash,
-        index: index
-      })
+      const address = {
+        used,
+        displayAddress,
+        scriptHash,
+        index,
+        branch
+      }
+      children.push(address)
+      this.displayAddressMap[displayAddress] = address
+      this.scriptHashMap[scriptHash] = address
     }
     return newPubKey
   }
