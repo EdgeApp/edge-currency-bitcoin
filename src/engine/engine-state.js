@@ -329,9 +329,9 @@ export class EngineState {
         },
 
         onQueueSpace: uri => {
-          const start = Date.now()
+          // const start = Date.now()
           const task = this.pickNextTask(uri)
-          console.log(`bench: Picked task in ${Date.now() - start}ms`)
+          // console.log(`bench: Picked task in ${Date.now() - start}ms`)
           return task
         },
 

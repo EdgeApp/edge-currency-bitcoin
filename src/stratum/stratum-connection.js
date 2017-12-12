@@ -270,7 +270,7 @@ export class StratumConnection {
    */
   onMessage (messageJson: string) {
     try {
-      const start = Date.now()
+      // const start = Date.now()
       const json = JSON.parse(messageJson)
 
       if (json.id) {
@@ -290,10 +290,10 @@ export class StratumConnection {
           message.task.onFail(e)
           ++this.badMessages
         }
-        console.log(
-          `bench: Handled reply ${message.task.method} in ${Date.now() -
-            start}ms`
-        )
+        // console.log(
+        //   `bench: Handled reply ${message.task.method} in ${Date.now() -
+        //     start}ms`
+        // )
       } else if (json.method === 'blockchain.headers.subscribe') {
         console.log(`${this.uri} notified header`)
         try {
@@ -302,10 +302,10 @@ export class StratumConnection {
         } catch (e) {
           console.error(e)
         }
-        console.log(
-          `bench: Handled notification ${json.method} in ${Date.now() -
-            start}ms`
-        )
+        // console.log(
+        //   `bench: Handled notification ${json.method} in ${Date.now() -
+        //     start}ms`
+        // )
       } else if (json.method === 'blockchain.scripthash.subscribe') {
         console.log(`${this.uri} notified scripthash change`)
         try {
@@ -314,10 +314,10 @@ export class StratumConnection {
         } catch (e) {
           console.error(e)
         }
-        console.log(
-          `bench: Handled notification ${json.method} in ${Date.now() -
-            start}ms`
-        )
+        // console.log(
+        //   `bench: Handled notification ${json.method} in ${Date.now() -
+        //     start}ms`
+        // )
       } else if (/subscribe$/.test(json.method)) {
         // It's some other kind of subscription.
       } else {
