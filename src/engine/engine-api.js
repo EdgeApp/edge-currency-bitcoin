@@ -287,7 +287,11 @@ export class CurrencyEngine {
     }
   }
 
-  getRate ({ spendTargets, networkFeeOption = 'standard', customNetworkFee = '' }: AbcSpendInfo): number {
+  getRate ({
+    spendTargets,
+    networkFeeOption = 'standard',
+    customNetworkFee = ''
+  }: AbcSpendInfo): number {
     if (networkFeeOption === 'custom' && customNetworkFee !== '') {
       // customNetworkFee is in sat/Bytes in need to be converted to sat/KB
       return parseInt(customNetworkFee) * BYTES_TO_KB
@@ -315,7 +319,7 @@ export class CurrencyEngine {
           height = this.engineState.txHeightCache[utxo.txid].height
         }
         if (rawTx) {
-          utxos.push({utxo, rawTx, height})
+          utxos.push({ utxo, rawTx, height })
         }
       })
     }
@@ -426,10 +430,15 @@ export class CurrencyEngine {
     return false
   }
 
-  async makeSpend (abcSpendInfo: AbcSpendInfo, options?: any = {}): Promise<AbcTransaction> {
+  async makeSpend (
+    abcSpendInfo: AbcSpendInfo,
+    options?: any = {}
+  ): Promise<AbcTransaction> {
     // Can't spend without outputs
-    if (!options.CPFP &&
-      (!abcSpendInfo.spendTargets || abcSpendInfo.spendTargets.length < 1)) {
+    if (
+      !options.CPFP &&
+      (!abcSpendInfo.spendTargets || abcSpendInfo.spendTargets.length < 1)
+    ) {
       throw new Error('Need to provide Spend Targets')
     }
     let resultedTransaction

@@ -252,7 +252,11 @@ for (const fixture of fixtures) {
 
       it('Should get transactions from cache', function (done) {
         engine.getTransactions().then(txs => {
-          assert.equal(txs.length, TX_AMOUNT, `should have ${TX_AMOUNT} tx from cache`)
+          assert.equal(
+            txs.length,
+            TX_AMOUNT,
+            `should have ${TX_AMOUNT} tx from cache`
+          )
           done()
         })
       })

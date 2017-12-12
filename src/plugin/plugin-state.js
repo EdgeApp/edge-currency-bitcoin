@@ -206,7 +206,9 @@ export class PluginState {
       .fetch(this.infoServerUris)
       .then(result => {
         if (!result.ok) {
-          io.console.error(`Fetching ${this.infoServerUris} failed with ${result.status}`)
+          io.console.error(
+            `Fetching ${this.infoServerUris} failed with ${result.status}`
+          )
           throw new Error('Cannot fetch stratum server list')
         }
         return result.json()
