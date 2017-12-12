@@ -182,16 +182,6 @@ export class CurrencyEngine {
     await this.keyManager.load()
   }
 
-  getAllAddresses () {
-    const allOurAddresses = []
-    for (const scriptHash in this.engineState.addressCache) {
-      allOurAddresses.push(
-        this.engineState.addressCache[scriptHash].displayAddress
-      )
-    }
-    return allOurAddresses
-  }
-
   getTransaction (txid: string): AbcTransaction {
     if (!this.engineState.txCache[txid]) {
       throw new Error('Transaction not found')
@@ -201,7 +191,6 @@ export class CurrencyEngine {
       'hex'
     )
     const bcoinJSON = bcoinTransaction.getJSON(this.network)
-    const allOurAddresses = this.getAllAddresses()
     const ourReceiveAddresses = []
     let nativeAmount = 0
     let totalOutputAmount = 0
@@ -210,7 +199,7 @@ export class CurrencyEngine {
     // Process tx outputs
     bcoinJSON.outputs.forEach(({ address, value }) => {
       totalOutputAmount += value
-      if (allOurAddresses.indexOf(address) !== -1) {
+      if (this.keyManager.displayAddressMap[address]) {
         nativeAmount += value
         ourReceiveAddresses.push(address)
       }
@@ -227,7 +216,7 @@ export class CurrencyEngine {
             this.network
           ).outputs[index]
           totalInputAmount += value
-          if (allOurAddresses.indexOf(address) !== -1) {
+          if (this.keyManager.displayAddressMap[address]) {
             nativeAmount -= value
           }
         }
@@ -456,12 +445,11 @@ export class CurrencyEngine {
       if (e.type === 'FundingError') throw new Error('InsufficientFundsError')
       throw e
     }
-    const allOurAddresses = this.getAllAddresses()
     const sumOfTx = abcSpendInfo.spendTargets.reduce(
       (s, spendTarget: AbcSpendTarget) => {
         if (
           spendTarget.publicAddress &&
-          allOurAddresses.indexOf(spendTarget.publicAddress) !== -1
+          this.keyManager.displayAddressMap[spendTarget.publicAddress]
         ) {
           return s
         } else return s - parseInt(spendTarget.nativeAmount)
@@ -474,7 +462,9 @@ export class CurrencyEngine {
       const address = resultedTransaction.outputs[i]
         .getAddress()
         .toString(this.network)
-      if (address && allOurAddresses.indexOf(address) !== -1) {
+      if (
+        address &&
+        this.keyManager.displayAddressMap[address]) {
         ourReceiveAddresses.push(address)
       }
     }
