@@ -82,33 +82,6 @@ export class CurrencyEngine {
       lastUpdated: 0,
       fees: []
     }
-
-    // Benchmark some GUI callbacks:
-    const benchHack: any = this.options.callbacks
-    const {
-      onBalanceChanged,
-      onBlockHeightChanged,
-      onTransactionsChanged
-    } = this.options.callbacks
-    benchHack.onBalanceChanged = (cc, balance) => {
-      const start = Date.now()
-      onBalanceChanged(cc, balance)
-      console.log(`bench: Called onBalanceChanged in ${Date.now() - start}ms`)
-    }
-    benchHack.onBlockHeightChanged = height => {
-      const start = Date.now()
-      onBlockHeightChanged(height)
-      console.log(
-        `bench: Called onBlockHeightChanged in ${Date.now() - start}ms`
-      )
-    }
-    benchHack.onTransactionsChanged = txs => {
-      const start = Date.now()
-      onTransactionsChanged(txs)
-      console.log(
-        `bench: Called onTransactionsChanged in ${Date.now() - start}ms`
-      )
-    }
   }
 
   async load (): Promise<any> {
