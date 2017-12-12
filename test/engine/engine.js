@@ -394,7 +394,7 @@ for (const fixture of fixtures) {
           return engine.signTx(a)
         })
         .then(a => {
-          console.log('sign', a)
+          // console.log('sign', a)
         })
     })
 
@@ -420,7 +420,7 @@ for (const fixture of fixtures) {
           return engine.signTx(a)
         })
         .then(a => {
-          console.log('sign', a)
+          // console.log('sign', a)
         })
     })
 
@@ -451,7 +451,7 @@ for (const fixture of fixtures) {
           return engine.signTx(a)
         })
         .then(a => {
-          console.log('sign', a)
+          // console.log('sign', a)
         })
     })
 
