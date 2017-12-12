@@ -170,16 +170,20 @@ export class CurrencyEngine {
     let totalInputAmount = 0
 
     // Process tx outputs
-    bcoinJSON.outputs.forEach(({ address, value }) => {
+    const outputsLength = bcoinJSON.outputs.length
+    for (let i = 0; i < outputsLength; i++) {
+      const { address, value } = bcoinJSON.outputs[i]
       totalOutputAmount += value
       if (this.keyManager.displayAddressMap[address]) {
         nativeAmount += value
         ourReceiveAddresses.push(address)
       }
-    })
+    }
 
     // Process tx inputs
-    bcoinJSON.inputs.forEach(input => {
+    const inputsLength = bcoinJSON.inputs.length
+    for (let i = 0; i < inputsLength; i++) {
+      const input = bcoinJSON.inputs[i]
       if (input.prevout) {
         const { hash, index } = input.prevout
         const rawTX = this.engineState.txCache[hash]
@@ -194,7 +198,7 @@ export class CurrencyEngine {
           }
         }
       }
-    })
+    }
 
     const { height = -1, firstSeen = Date.now() } =
       this.engineState.txHeightCache[txid] || {}
@@ -274,7 +278,9 @@ export class CurrencyEngine {
   getUTXOs () {
     const utxos: any = []
     for (const scriptHash in this.engineState.addressCache) {
-      this.engineState.addressCache[scriptHash].utxos.forEach(utxo => {
+      const utxoLength = this.engineState.addressCache[scriptHash].utxos.length
+      for (let i = 0; i < utxoLength; i++) {
+        const utxo = this.engineState.addressCache[scriptHash].utxos[i]
         const rawTx = this.engineState.txCache[utxo.txid]
         let height = -1
         if (this.engineState.txHeightCache[utxo.txid]) {
@@ -283,7 +289,7 @@ export class CurrencyEngine {
         if (rawTx) {
           utxos.push({ utxo, rawTx, height })
         }
-      })
+      }
     }
     return utxos
   }
@@ -337,7 +343,10 @@ export class CurrencyEngine {
     let balance = 0
     for (const scriptHash in this.engineState.addressCache) {
       const { utxos } = this.engineState.addressCache[scriptHash]
-      balance += utxos.reduce((s, { value }) => s + value, 0)
+      const utxoLength = utxos.length
+      for (let i = 0; i < utxoLength; i++) {
+        balance += utxos[i].value
+      }
     }
     return balance.toString()
   }
