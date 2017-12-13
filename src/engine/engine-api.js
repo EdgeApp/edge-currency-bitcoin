@@ -444,9 +444,7 @@ export class CurrencyEngine {
       const address = resultedTransaction.outputs[i]
         .getAddress()
         .toString(this.network)
-      if (
-        address &&
-        this.keyManager.displayAddressMap[address]) {
+      if (address && this.keyManager.displayAddressMap[address]) {
         ourReceiveAddresses.push(address)
       }
     }
