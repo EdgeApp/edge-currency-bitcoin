@@ -1,6 +1,6 @@
 // @flow
 import type { AbcSpendTarget } from 'airbitz-core-types'
-import type { UtxoObj, AddressObj, AddressCache } from './engine-state.js'
+import type { UtxoInfo, AddressInfo, AddressInfos } from './engine-state.js'
 // $FlowFixMe
 import buffer from 'buffer-hack'
 import bcoin from 'bcoin'
@@ -62,7 +62,7 @@ export type ScriptHashMap = {
 export type createTxOptions = {
   outputs: Array<AbcSpendTarget>,
   utxos: Array<{
-    utxo: UtxoObj,
+    utxo: UtxoInfo,
     rawTx: RawTx,
     height: BlockHeight
   }>,
@@ -90,7 +90,7 @@ export type KeyManagerOptions = {
   gapLimit: number,
   network: string,
   callbacks: KeyManagerCallbacks,
-  addressCache?: AddressCache
+  addressCache?: AddressInfos
 }
 
 export class KeyManager {
@@ -102,7 +102,7 @@ export class KeyManager {
   keys: Keys
   onNewAddress: (scriptHash: string, address: string, path: string) => void
   onNewKey: (keys: any) => void
-  addressCache: AddressCache
+  addressCache: AddressInfos
   displayAddressMap: DisplayAddressMap
   scriptHashMap: ScriptHashMap
   seed: string
@@ -190,7 +190,7 @@ export class KeyManager {
 
     // Load addresses from Cache
     for (const scriptHash in this.addressCache) {
-      const address: AddressObj = this.addressCache[scriptHash]
+      const address: AddressInfo = this.addressCache[scriptHash]
       const { txids, displayAddress, path } = address
       const pathSuffix = path.split(this.masterPath + '/')[1]
       if (pathSuffix) {
@@ -381,12 +381,12 @@ export class KeyManager {
   utxoToPath (prevout: any): Array<number> {
     let scriptHashForUtxo = null
     for (const scriptHash: string in this.addressCache) {
-      const addressObj: AddressObj = this.addressCache[scriptHash]
+      const addressObj: AddressInfo = this.addressCache[scriptHash]
       if (!addressObj) throw new Error('Address is not part of this wallet')
-      const utxos: Array<UtxoObj> = addressObj.utxos
+      const utxos: Array<UtxoInfo> = addressObj.utxos
 
       if (
-        utxos.find((utxo: UtxoObj) => {
+        utxos.find((utxo: UtxoInfo) => {
           return utxo.txid === prevout.rhash() && prevout.index === utxo.index
         })
       ) {

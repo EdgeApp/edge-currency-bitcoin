@@ -15,20 +15,24 @@ import {
   fetchVersion,
   subscribeHeight,
   subscribeScriptHash
-} from '../stratum/stratum-messages'
-import type { FetchBlockHeaderType } from '../stratum/stratum-messages'
+} from '../stratum/stratum-messages.js'
+import type {
+  StratumBlockHeader,
+  StratumHistoryRow,
+  StratumUtxo
+} from '../stratum/stratum-messages.js'
 
-export type UtxoObj = {
+export type UtxoInfo = {
   txid: string, // tx_hash from Stratum
   index: number, // tx_pos from Stratum
   value: number // Satoshis fit in a number
 }
 
-export type AddressObj = {
+export type AddressInfo = {
   txids: Array<string>,
   txidStratumHash: string,
 
-  utxos: Array<UtxoObj>,
+  utxos: Array<UtxoInfo>,
   utxoStratumHash: string,
 
   used: boolean, // Set by `addGapLimitAddress`
@@ -36,8 +40,8 @@ export type AddressObj = {
   path: string // TODO: Define the contents of this member.
 }
 
-export type AddressCache = {
-  [scriptHash: string]: AddressObj
+export type AddressInfos = {
+  [scriptHash: string]: AddressInfo
 }
 
 export interface EngineStateCallbacks {
@@ -72,7 +76,7 @@ const TIME_LAZINESS = 10000
  */
 export class EngineState {
   // On-disk address information:
-  addressCache: AddressCache
+  addressCache: AddressInfos
 
   // On-disk transaction information:
   txCache: {
@@ -335,7 +339,7 @@ export class EngineState {
           return task
         },
 
-        onNotifyHeader: (uri: string, headerInfo: FetchBlockHeaderType) => {
+        onNotifyHeader: (uri: string, headerInfo: StratumBlockHeader) => {
           this.serverStates[uri].height = headerInfo.block_height
           this.pluginState.updateHeight(headerInfo.block_height)
         },
@@ -444,14 +448,7 @@ export class EngineState {
         addressState.fetchingUtxos = true
         return fetchScriptHashUtxo(
           address,
-          (
-            utxos: Array<{
-              tx_hash: string,
-              tx_pos: number,
-              value: number,
-              height: number
-            }>
-          ) => {
+          (utxos: Array<StratumUtxo>) => {
             console.log(`Stratum ${uri} sent utxos for ${address}`)
             addressState.fetchingUtxos = false
             if (!addressState.hash) {
@@ -462,7 +459,7 @@ export class EngineState {
             this.addressCache[address].utxoStratumHash = addressState.hash
 
             // Process the UTXO list:
-            const utxoList: Array<UtxoObj> = []
+            const utxoList: Array<UtxoInfo> = []
             for (const utxo of utxos) {
               utxoList.push({
                 txid: utxo.tx_hash,
@@ -541,13 +538,7 @@ export class EngineState {
         addressState.fetchingTxids = true
         return fetchScriptHashHistory(
           address,
-          (
-            history: Array<{
-              tx_hash: string,
-              height: number,
-              fee?: number
-            }>
-          ) => {
+          (history: Array<StratumHistoryRow>) => {
             console.log(`Stratum ${uri} sent history for ${address}`)
             addressState.fetchingTxids = false
             if (!addressState.hash) {

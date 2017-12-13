@@ -6,7 +6,7 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import type { AddressCache, AddressObj } from '../src/engine/engine-state.js'
+import type { AddressInfos, AddressInfo } from '../src/engine/engine-state.js'
 // import type { HeaderCache } from '../src/pluginState'
 import { pickUtxos } from '../src/engine/pickUtxos.js'
 
@@ -16,7 +16,7 @@ import { pickUtxos } from '../src/engine/pickUtxos.js'
 // }
 //
 
-const addressObj: AddressObj = {
+const addressObj: AddressInfo = {
   txids: ['txid1'],
   txidStratumHash: 'mystratumhash',
 
@@ -29,7 +29,7 @@ const addressObj: AddressObj = {
 
 describe(`Pick UTXOs`, function () {
   it('Exact fit 1 utxo', function () {
-    const addressCache: AddressCache = {
+    const addressCache: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
         utxos: [{ txid: 'txid1', index: 0, value: 100 }]
@@ -53,7 +53,7 @@ describe(`Pick UTXOs`, function () {
   })
 
   it('Exact fit 2 utxos', function () {
-    const addressCache: AddressCache = {
+    const addressCache: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
         utxos: [{ txid: 'txid1', index: 0, value: 100 }]
@@ -80,7 +80,7 @@ describe(`Pick UTXOs`, function () {
   })
 
   it('Exact fit 3 utxos', function () {
-    const addressCache: AddressCache = {
+    const addressCache: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
         utxos: [{ txid: 'txid1', index: 0, value: 100 }]
@@ -107,7 +107,7 @@ describe(`Pick UTXOs`, function () {
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
   it('Non-exact fit 1 utxo', function () {
-    const addressCache: AddressCache = {
+    const addressCache: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
         utxos: [{ txid: 'txid1', index: 0, value: 100 }]
@@ -131,7 +131,7 @@ describe(`Pick UTXOs`, function () {
   })
 
   it('Non-exact fit 2 utxo', function () {
-    const addressCache: AddressCache = {
+    const addressCache: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
         utxos: [{ txid: 'txid1', index: 0, value: 100 }]

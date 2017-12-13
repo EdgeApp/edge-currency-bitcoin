@@ -70,7 +70,7 @@ export function subscribeHeight (
   }
 }
 
-export type FetchBlockHeaderType = {
+export type StratumBlockHeader = {
   block_height: number,
   version: number,
   prev_block_hash: string,
@@ -88,7 +88,7 @@ export type FetchBlockHeaderType = {
  */
 export function fetchBlockHeader (
   blockNumber: number,
-  onDone: (header: FetchBlockHeaderType) => void,
+  onDone: (header: StratumBlockHeader) => void,
   onFail: OnFailHandler
 ): StratumTask {
   return {
@@ -164,7 +164,7 @@ export function subscribeScriptHash (
   }
 }
 
-export type TxHistoryType = {
+export type StratumHistoryRow = {
   tx_hash: string,
   height: number,
   fee?: number
@@ -178,7 +178,7 @@ export type TxHistoryType = {
  */
 export function fetchScriptHashHistory (
   scriptHash: string,
-  onDone: (arrayTx: Array<TxHistoryType>) => void,
+  onDone: (arrayTx: Array<StratumHistoryRow>) => void,
   onFail: OnFailHandler
 ): StratumTask {
   const method = 'blockchain.scripthash.get_history'
@@ -197,7 +197,7 @@ export function fetchScriptHashHistory (
   }
 }
 
-export type UtxoType = {
+export type StratumUtxo = {
   tx_hash: string,
   tx_pos: number,
   value: number,
@@ -212,7 +212,7 @@ export type UtxoType = {
  */
 export function fetchScriptHashUtxo (
   scriptHash: string,
-  onDone: (arrayTx: Array<UtxoType>) => void,
+  onDone: (arrayTx: Array<StratumUtxo>) => void,
   onFail: OnFailHandler
 ): StratumTask {
   const method = 'blockchain.scripthash.listunspent'
