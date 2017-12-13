@@ -1,8 +1,8 @@
 // @flow
 import { parse } from 'uri-js'
 
-import { fetchVersion } from './stratum-messages.js'
-import type { StratumBlockHeader } from './stratum-messages'
+import { fetchVersion } from './stratumMessages.js'
+import type { StratumBlockHeader } from './stratumMessages.js'
 
 export type OnFailHandler = (error: Error) => void
 export type OnCloseHandler = (

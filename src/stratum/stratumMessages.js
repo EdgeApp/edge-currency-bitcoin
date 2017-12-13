@@ -1,5 +1,5 @@
 // @flow
-import type { OnFailHandler, StratumTask } from './stratum-connection.js'
+import type { OnFailHandler, StratumTask } from './stratumConnection.js'
 import { validateObject } from '../utils/utils.js'
 import {
   arrayOfStringScheme,

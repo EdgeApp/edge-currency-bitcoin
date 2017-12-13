@@ -1,6 +1,6 @@
 // @flow
 import type { AbcSpendTarget } from 'airbitz-core-types'
-import type { UtxoInfo, AddressInfo, AddressInfos } from './engine-state.js'
+import type { UtxoInfo, AddressInfo, AddressInfos } from './engineState.js'
 // $FlowFixMe
 import buffer from 'buffer-hack'
 import bcoin from 'bcoin'

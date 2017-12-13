@@ -10,10 +10,10 @@ import type {
   AbcSpendTarget
 } from 'airbitz-core-types'
 
-import { EngineState } from './engine-state.js'
-import { PluginState } from '../plugin/plugin-state.js'
+import { EngineState } from './engineState.js'
+import { PluginState } from '../plugin/pluginState.js'
 import { KeyManager } from './keyManager'
-import type { EngineStateCallbacks } from './engine-state.js'
+import type { EngineStateCallbacks } from './engineState.js'
 import type { KeyManagerCallbacks } from './keyManager'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'

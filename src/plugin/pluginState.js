@@ -1,7 +1,7 @@
 // @flow
 import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'airbitz-core-types'
 
-import type { EngineState } from '../engine/engine-state.js'
+import type { EngineState } from '../engine/engineState.js'
 
 export interface ServerInfo {
   badMessages: number; // Messages completed with errors

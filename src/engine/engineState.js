@@ -1,12 +1,12 @@
 // @flow
 import type { AbcIo, DiskletFolder } from 'airbitz-core-types'
 
-import type { PluginState } from '../plugin/plugin-state.js'
+import type { PluginState } from '../plugin/pluginState.js'
 import type {
   StratumCallbacks,
   StratumTask
-} from '../stratum/stratum-connection.js'
-import { StratumConnection } from '../stratum/stratum-connection.js'
+} from '../stratum/stratumConnection.js'
+import { StratumConnection } from '../stratum/stratumConnection.js'
 import {
   broadcastTx,
   fetchScriptHashHistory,
@@ -15,12 +15,12 @@ import {
   fetchVersion,
   subscribeHeight,
   subscribeScriptHash
-} from '../stratum/stratum-messages.js'
+} from '../stratum/stratumMessages.js'
 import type {
   StratumBlockHeader,
   StratumHistoryRow,
   StratumUtxo
-} from '../stratum/stratum-messages.js'
+} from '../stratum/stratumMessages.js'
 
 export type UtxoInfo = {
   txid: string, // tx_hash from Stratum
