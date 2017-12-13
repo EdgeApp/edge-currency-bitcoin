@@ -58,7 +58,6 @@ export interface EngineStateCallbacks {
 
 export interface EngineStateOptions {
   callbacks: EngineStateCallbacks;
-  bcoin: any;
   io: any;
   localFolder: any;
   encryptedLocalFolder: any;
@@ -241,7 +240,6 @@ export class EngineState {
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------
-  bcoin: any
   io: AbcIo
   localFolder: DiskletFolder
   encryptedLocalFolder: DiskletFolder
@@ -265,7 +263,6 @@ export class EngineState {
     this.txStates = {}
     this.missingTxs = {}
 
-    this.bcoin = options.bcoin
     this.io = options.io
     this.localFolder = options.localFolder
     this.encryptedLocalFolder = options.encryptedLocalFolder

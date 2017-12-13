@@ -111,7 +111,6 @@ export class CurrencyEngine {
 
     this.engineState = new EngineState({
       callbacks: engineStateCallbacks,
-      bcoin: bcoin,
       io: io,
       localFolder: this.options.walletLocalFolder,
       encryptedLocalFolder: this.options.walletLocalEncryptedFolder,
