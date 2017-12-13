@@ -416,10 +416,7 @@ export class EngineState {
           (txData: string) => {
             console.log(`Stratum ${uri} sent tx ${txid}`)
             this.txStates[txid] = { fetching: false }
-            this.txCache[txid] = txData
-            delete this.missingTxs[txid]
-            this.dirtyTxCache()
-            this.onTxFetched(txid)
+            this.handleTxFetch(txid, txData)
           },
           (e: Error) => {
             this.txStates[txid] = { fetching: false }
@@ -453,43 +450,7 @@ export class EngineState {
                 'Blank stratum hash (logic bug - should never happen)'
               )
             }
-            this.addressCache[address].utxoStratumHash = addressState.hash
-
-            // Process the UTXO list:
-            const utxoList: Array<UtxoInfo> = []
-            for (const utxo of utxos) {
-              utxoList.push({
-                txid: utxo.tx_hash,
-                index: utxo.tx_pos,
-                value: utxo.value
-              })
-
-              // Save to the height cache:
-              if (this.txHeightCache[utxo.tx_hash]) {
-                this.txHeightCache[utxo.tx_hash].height = utxo.height
-              } else {
-                this.txHeightCache[utxo.tx_hash] = {
-                  firstSeen: Date.now(),
-                  height: utxo.height
-                }
-              }
-
-              // Add to the relevant txid list:
-              if (!this.txStates[utxo.tx_hash]) {
-                this.txStates[utxo.tx_hash] = { fetching: false }
-              }
-
-              // Add to the missing tx list:
-              if (!this.txCache[utxo.tx_hash]) {
-                this.missingTxs[utxo.tx_hash] = true
-              }
-            }
-
-            // Save to the address cache:
-            this.addressCache[address].utxos = utxoList
-
-            this.dirtyAddressCache()
-            this.onUtxosUpdated(address)
+            this.handleUtxoFetch(address, addressState.hash, utxos)
           },
           (e: Error) => {
             addressState.fetchingUtxos = false
@@ -543,39 +504,7 @@ export class EngineState {
                 'Blank stratum hash (logic bug - should never happen)'
               )
             }
-            this.addressCache[address].txidStratumHash = addressState.hash
-
-            // Process the UTXO list:
-            const txidList: Array<string> = []
-            for (const row of history) {
-              txidList.push(row.tx_hash)
-
-              // Save to the height cache:
-              if (this.txHeightCache[row.tx_hash]) {
-                this.txHeightCache[row.tx_hash].height = row.height
-              } else {
-                this.txHeightCache[row.tx_hash] = {
-                  firstSeen: Date.now(),
-                  height: row.height
-                }
-              }
-
-              // Add to the relevant txid list:
-              if (!this.txStates[row.tx_hash]) {
-                this.txStates[row.tx_hash] = { fetching: false }
-              }
-
-              // Add to the missing tx list:
-              if (!this.txCache[row.tx_hash]) {
-                this.missingTxs[row.tx_hash] = true
-              }
-            }
-
-            // Save to the address cache:
-            this.addressCache[address].txids = txidList
-            this.dirtyAddressCache()
-
-            this.onTxidsUpdated(address)
+            this.handleHistoryFetch(address, addressState.hash, history)
           },
           (e: Error) => {
             addressState.fetchingTxids = false
@@ -711,6 +640,96 @@ export class EngineState {
 
     // If nobody has it, we can try getting it:
     return true
+  }
+
+  // A server has sent address history data, so update the caches:
+  handleHistoryFetch (
+    scriptHash: string,
+    stateHash: string,
+    history: Array<StratumHistoryRow>
+  ) {
+    // Process the UTXO list:
+    const txidList: Array<string> = []
+    for (const row of history) {
+      txidList.push(row.tx_hash)
+
+      // Save to the height cache:
+      if (this.txHeightCache[row.tx_hash]) {
+        this.txHeightCache[row.tx_hash].height = row.height
+      } else {
+        this.txHeightCache[row.tx_hash] = {
+          firstSeen: Date.now(),
+          height: row.height
+        }
+      }
+
+      // Add to the relevant txid list:
+      if (!this.txStates[row.tx_hash]) {
+        this.txStates[row.tx_hash] = { fetching: false }
+      }
+
+      // Add to the missing tx list:
+      if (!this.txCache[row.tx_hash]) {
+        this.missingTxs[row.tx_hash] = true
+      }
+    }
+
+    // Save to the address cache:
+    this.addressCache[scriptHash].txids = txidList
+    this.addressCache[scriptHash].txidStratumHash = stateHash
+    this.dirtyAddressCache()
+    this.onTxidsUpdated(scriptHash)
+  }
+
+  // A server has sent a transaction, so update the caches:
+  handleTxFetch (txid: string, txData: string) {
+    this.txCache[txid] = txData
+    delete this.missingTxs[txid]
+    this.dirtyTxCache()
+    this.onTxFetched(txid)
+  }
+
+  // A server has sent UTXO data, so update the caches:
+  handleUtxoFetch (
+    scriptHash: string,
+    stateHash: string,
+    utxos: Array<StratumUtxo>
+  ) {
+    // Process the UTXO list:
+    const utxoList: Array<UtxoInfo> = []
+    for (const utxo of utxos) {
+      utxoList.push({
+        txid: utxo.tx_hash,
+        index: utxo.tx_pos,
+        value: utxo.value
+      })
+
+      // Save to the height cache:
+      if (this.txHeightCache[utxo.tx_hash]) {
+        this.txHeightCache[utxo.tx_hash].height = utxo.height
+      } else {
+        this.txHeightCache[utxo.tx_hash] = {
+          firstSeen: Date.now(),
+          height: utxo.height
+        }
+      }
+
+      // Add to the relevant txid list:
+      if (!this.txStates[utxo.tx_hash]) {
+        this.txStates[utxo.tx_hash] = { fetching: false }
+      }
+
+      // Add to the missing tx list:
+      if (!this.txCache[utxo.tx_hash]) {
+        this.missingTxs[utxo.tx_hash] = true
+      }
+    }
+
+    // Save to the address cache:
+    this.addressCache[scriptHash].utxos = utxoList
+    this.addressCache[scriptHash].utxoStratumHash = stateHash
+    this.dirtyAddressCache()
+    this.onUtxosUpdated(scriptHash)
   }
 
   onConnectionFail (uri: string, e: Error, task: string) {
