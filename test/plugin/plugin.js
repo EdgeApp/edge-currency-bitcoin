@@ -165,7 +165,7 @@ for (const fixture of fixtures) {
         fixture['parseUri']['uri address with amount & label'][3]
       )
       assert.equal(
-        parsedUri.metadata.label,
+        parsedUri.metadata.name,
         fixture['parseUri']['uri address with amount & label'][4]
       )
     })
@@ -186,7 +186,7 @@ for (const fixture of fixtures) {
         fixture['parseUri']['uri address with amount & label'][3]
       )
       assert.equal(
-        parsedUri.metadata.label,
+        parsedUri.metadata.name,
         fixture['parseUri']['uri address with amount & label'][4]
       )
       assert.equal(

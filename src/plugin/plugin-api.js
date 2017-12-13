@@ -145,20 +145,18 @@ export class CurrencyPlugin {
       throw new Error('InvalidUriError')
     }
 
-    let address = parsedUri.host || parsedUri.path
-    if (!address) throw new Error('InvalidUriError')
-    address = address.replace('/', '') // Remove any slashes
-    if (!valid(address)) throw new Error('InvalidPublicAddressError')
+    let publicAddress = parsedUri.host || parsedUri.path
+    if (!publicAddress) throw new Error('InvalidUriError')
+    publicAddress = publicAddress.replace('/', '') // Remove any slashes
+    if (!valid(publicAddress)) throw new Error('InvalidPublicAddressError')
 
     const amountStr = getParameterByName('amount', uri)
-
-    const abcParsedUri: AbcParsedUri = {
-      publicAddress: address,
-      metadata: {
-        label: getParameterByName('label', uri),
-        message: getParameterByName('message', uri)
-      }
-    }
+    const metadata = {}
+    const name = getParameterByName('label', uri)
+    const message = getParameterByName('message', uri)
+    if (name) metadata.name = name
+    if (message) metadata.message = message
+    const abcParsedUri: AbcParsedUri = { publicAddress, metadata }
 
     if (amountStr && typeof amountStr === 'string') {
       const denom: any = currencyInfo.denominations.find(
@@ -189,7 +187,7 @@ export class CurrencyPlugin {
     }
     if (obj.metadata) {
       // $FlowFixMe
-      if (obj.metadata.label) queryString += `label=${obj.metadata.label}&`
+      if (obj.metadata.name) queryString += `label=${obj.metadata.name}&`
       if (obj.metadata.message) {
         // $FlowFixMe
         queryString += `message=${obj.metadata.message}&`
