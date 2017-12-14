@@ -252,6 +252,26 @@ export class EngineState {
   saveTx (txid: string, rawTx: string) {
     this.handleTxidFetch(txid, -1)
     this.handleTxFetch(txid, rawTx)
+
+    // Identify any address script hashes we affect:
+    const scriptHashSet = {}
+    for (const input of this.parsedTxs[txid].inputs) {
+      const prevTx = this.parsedTxs[input.txid]
+      if (!prevTx) continue
+      const prevOut = prevTx.outputs[input.index]
+      if (!prevOut) continue
+      scriptHashSet[prevOut.scriptHash] = true
+    }
+    for (const output of this.parsedTxs[txid].outputs) {
+      scriptHashSet[output.scriptHash] = true
+    }
+
+    // Update the affected addresses:
+    for (const scriptHash of Object.keys(scriptHashSet)) {
+      this.addressCache[scriptHash].txids.push(txid)
+      this.refreshAddressInfo(scriptHash)
+    }
+    this.dirtyAddressCache()
   }
 
   connect () {
@@ -774,6 +794,31 @@ export class EngineState {
     // We only include existing stuff:
     const txids = address.txids.filter(txid => this.txCache[txid])
     const utxos = address.utxos.filter(utxo => this.txCache[utxo.txid])
+
+    // We have to search for unconfirmed utxos:
+    const pendingTxids = txids.filter(
+      txid => this.txHeightCache[txid].height < 0
+    )
+
+    // List all spent outpoints:
+    const spends = {}
+    for (const txid of pendingTxids) {
+      const tx = this.parsedTxs[txid]
+      for (const input of tx.inputs) {
+        spends[`${input.txid}:${input.index}`] = true
+      }
+    }
+
+    // Add all possible outputs:
+    for (const txid of pendingTxids) {
+      const tx = this.parsedTxs[txid]
+      for (let i = 0; i < tx.outputs.length; ++i) {
+        const output = tx.outputs[i]
+        if (!spends[`${txid}:${i}`] && output.scriptHash === scriptHash) {
+          utxos.push({ txid, index: i, value: output.value })
+        }
+      }
+    }
 
     this.addressInfos[scriptHash] = { txids, utxos, used, displayAddress, path }
   }
