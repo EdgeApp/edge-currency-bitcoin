@@ -495,6 +495,7 @@ export class CurrencyEngine {
   }
 
   saveTx (abcTransaction: AbcTransaction): Promise<void> {
-    return Promise.resolve() // TODO: Implement this
+    this.engineState.saveTx(abcTransaction.txid, abcTransaction.signedTx)
+    return Promise.resolve()
   }
 }

@@ -246,6 +246,14 @@ export class EngineState {
     })
   }
 
+  /**
+   * Called to complete a spend
+   */
+  saveTx (txid: string, rawTx: string) {
+    this.handleTxidFetch(txid, -1)
+    this.handleTxFetch(txid, rawTx)
+  }
+
   connect () {
     this.pluginState.addEngine(this)
     this.engineStarted = true
