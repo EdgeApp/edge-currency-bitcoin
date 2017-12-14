@@ -90,7 +90,7 @@ export type KeyManagerOptions = {
   gapLimit: number,
   network: string,
   callbacks: KeyManagerCallbacks,
-  addressCache?: AddressInfos
+  addressInfos?: AddressInfos
 }
 
 export class KeyManager {
@@ -102,7 +102,7 @@ export class KeyManager {
   keys: Keys
   onNewAddress: (scriptHash: string, address: string, path: string) => void
   onNewKey: (keys: any) => void
-  addressCache: AddressInfos
+  addressInfos: AddressInfos
   displayAddressMap: DisplayAddressMap
   scriptHashMap: ScriptHashMap
   seed: string
@@ -115,7 +115,7 @@ export class KeyManager {
     gapLimit = GAP_LIMIT,
     network,
     callbacks,
-    addressCache = {}
+    addressInfos = {}
   }: KeyManagerOptions) {
     // Check for any way to init the wallet with either a seed or master keys
     if (
@@ -186,11 +186,11 @@ export class KeyManager {
     const { onNewAddress = nop, onNewKey = nop } = callbacks
     this.onNewAddress = onNewAddress
     this.onNewKey = onNewKey
-    this.addressCache = addressCache
+    this.addressInfos = addressInfos
 
     // Load addresses from Cache
-    for (const scriptHash in this.addressCache) {
-      const address: AddressInfo = this.addressCache[scriptHash]
+    for (const scriptHash in this.addressInfos) {
+      const address: AddressInfo = this.addressInfos[scriptHash]
       const { txids, displayAddress, path } = address
       const pathSuffix = path.split(this.masterPath + '/')[1]
       if (pathSuffix) {
@@ -380,8 +380,8 @@ export class KeyManager {
 
   utxoToPath (prevout: any): Array<number> {
     let scriptHashForUtxo = null
-    for (const scriptHash: string in this.addressCache) {
-      const addressObj: AddressInfo = this.addressCache[scriptHash]
+    for (const scriptHash: string in this.addressInfos) {
+      const addressObj: AddressInfo = this.addressInfos[scriptHash]
       if (!addressObj) throw new Error('Address is not part of this wallet')
       const utxos: Array<UtxoInfo> = addressObj.utxos
 

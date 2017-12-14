@@ -14,7 +14,7 @@ interface BjsUtxo {
 }
 
 export function pickUtxos (
-  addressCache: AddressInfos,
+  addressInfos: AddressInfos,
   // headerCache: HeaderCache,
   amountSatoshi: number,
   useOnlyConfirmed: boolean = true
@@ -23,10 +23,10 @@ export function pickUtxos (
   const utxosConfirmed: Array<BjsUtxo> = []
   const utxosAll: Array<BjsUtxo> = []
   // Loop over all addresses
-  for (const scriptHash in addressCache) {
-    if (addressCache.hasOwnProperty(scriptHash)) {
+  for (const scriptHash in addressInfos) {
+    if (addressInfos.hasOwnProperty(scriptHash)) {
       // Loop over all utxos in an address
-      const addressObj: AddressInfo = addressCache[scriptHash]
+      const addressObj: AddressInfo = addressInfos[scriptHash]
       for (const utxo: UtxoInfo of addressObj.utxos) {
         // TODO: Need to actually find out if this is confirmed
         const confirmed: boolean = true

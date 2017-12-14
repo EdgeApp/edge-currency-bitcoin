@@ -77,6 +77,9 @@ export class EngineState {
   // On-disk address information:
   addressCache: AddressInfos
 
+  // Dervived address information:
+  addressInfos: AddressInfos
+
   // On-disk hex transaction data:
   txCache: { [txid: string]: string }
 
@@ -150,6 +153,7 @@ export class EngineState {
       displayAddress,
       path
     }
+    this.refreshAddressInfo(scriptHash)
 
     this.dirtyAddressCache()
     for (const uri of Object.keys(this.serverStates)) {
@@ -250,6 +254,7 @@ export class EngineState {
 
   constructor (options: EngineStateOptions) {
     this.addressCache = {}
+    this.addressInfos = {}
     this.txCache = {}
     this.txHeightCache = {}
     this.connections = {}
@@ -531,9 +536,11 @@ export class EngineState {
         const address = this.addressCache[scriptHash]
         for (const txid of address.txids) this.handleNewTxid(txid)
         for (const utxo of address.utxos) this.handleNewTxid(utxo.txid)
+        this.refreshAddressInfo(scriptHash)
       }
     } catch (e) {
       this.addressCache = {}
+      this.addressInfos = {}
       this.txHeightCache = {}
     }
 
@@ -640,6 +647,7 @@ export class EngineState {
     // Save to the address cache:
     this.addressCache[scriptHash].txids = txidList
     this.addressCache[scriptHash].txidStratumHash = stateHash
+    this.refreshAddressInfo(scriptHash)
     this.dirtyAddressCache()
     this.onTxidsUpdated(scriptHash)
   }
@@ -700,8 +708,18 @@ export class EngineState {
     // Save to the address cache:
     this.addressCache[scriptHash].utxos = utxoList
     this.addressCache[scriptHash].utxoStratumHash = stateHash
+    this.refreshAddressInfo(scriptHash)
     this.dirtyAddressCache()
     this.onUtxosUpdated(scriptHash)
+  }
+
+  /**
+   * If an entry changes in the address cache,
+   * update the derived info:
+   */
+  refreshAddressInfo (scriptHash: string) {
+    // TODO: Filter and convert the data:
+    this.addressInfos[scriptHash] = this.addressCache[scriptHash]
   }
 
   onConnectionFail (uri: string, e: Error, task: string) {

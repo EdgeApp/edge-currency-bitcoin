@@ -148,7 +148,7 @@ export class CurrencyEngine {
       gapLimit: gapLimit,
       network: this.network,
       callbacks: keyManagerCallbacks,
-      addressCache: this.engineState.addressCache
+      addressInfos: this.engineState.addressInfos
     })
 
     await this.keyManager.load()
@@ -276,10 +276,10 @@ export class CurrencyEngine {
 
   getUTXOs () {
     const utxos: any = []
-    for (const scriptHash in this.engineState.addressCache) {
-      const utxoLength = this.engineState.addressCache[scriptHash].utxos.length
+    for (const scriptHash in this.engineState.addressInfos) {
+      const utxoLength = this.engineState.addressInfos[scriptHash].utxos.length
       for (let i = 0; i < utxoLength; i++) {
-        const utxo = this.engineState.addressCache[scriptHash].utxos[i]
+        const utxo = this.engineState.addressInfos[scriptHash].utxos[i]
         const rawTx = this.engineState.txCache[utxo.txid]
         let height = -1
         if (this.engineState.txHeightCache[utxo.txid]) {
@@ -340,8 +340,8 @@ export class CurrencyEngine {
 
   getBalance (options: any): string {
     let balance = 0
-    for (const scriptHash in this.engineState.addressCache) {
-      const { utxos } = this.engineState.addressCache[scriptHash]
+    for (const scriptHash in this.engineState.addressInfos) {
+      const { utxos } = this.engineState.addressInfos[scriptHash]
       const utxoLength = utxos.length
       for (let i = 0; i < utxoLength; i++) {
         balance += utxos[i].value
@@ -390,11 +390,11 @@ export class CurrencyEngine {
         throw new Error('Wrong formatted address')
       }
     }
-    for (const scriptHash in this.engineState.addressCache) {
+    for (const scriptHash in this.engineState.addressInfos) {
       if (
-        this.engineState.addressCache[scriptHash].displayAddress === address
+        this.engineState.addressInfos[scriptHash].displayAddress === address
       ) {
-        return this.engineState.addressCache[scriptHash].used
+        return this.engineState.addressInfos[scriptHash].used
       }
     }
     return false

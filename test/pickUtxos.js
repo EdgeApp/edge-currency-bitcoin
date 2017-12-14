@@ -29,7 +29,7 @@ const addressObj: AddressInfo = {
 
 describe(`Pick UTXOs`, function () {
   it('Exact fit 1 utxo', function () {
-    const addressCache: AddressInfos = {
+    const addressInfos: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
         utxos: [{ txid: 'txid1', index: 0, value: 100 }]
@@ -48,12 +48,12 @@ describe(`Pick UTXOs`, function () {
       })
     }
     const control = [{ txid: 'txid3', index: 1, value: 400 }]
-    const pickedUtxos = pickUtxos(addressCache, 400, false)
+    const pickedUtxos = pickUtxos(addressInfos, 400, false)
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
 
   it('Exact fit 2 utxos', function () {
-    const addressCache: AddressInfos = {
+    const addressInfos: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
         utxos: [{ txid: 'txid1', index: 0, value: 100 }]
@@ -75,12 +75,12 @@ describe(`Pick UTXOs`, function () {
       { txid: 'txid1', index: 2, value: 600 },
       { txid: 'txid1', index: 0, value: 100 }
     ]
-    const pickedUtxos = pickUtxos(addressCache, 700, false)
+    const pickedUtxos = pickUtxos(addressInfos, 700, false)
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
 
   it('Exact fit 3 utxos', function () {
-    const addressCache: AddressInfos = {
+    const addressInfos: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
         utxos: [{ txid: 'txid1', index: 0, value: 100 }]
@@ -103,11 +103,11 @@ describe(`Pick UTXOs`, function () {
       { txid: 'txid3', index: 1, value: 400 },
       { txid: 'txid2', index: 1, value: 300 }
     ]
-    const pickedUtxos = pickUtxos(addressCache, 1300, false)
+    const pickedUtxos = pickUtxos(addressInfos, 1300, false)
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
   it('Non-exact fit 1 utxo', function () {
-    const addressCache: AddressInfos = {
+    const addressInfos: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
         utxos: [{ txid: 'txid1', index: 0, value: 100 }]
@@ -126,12 +126,12 @@ describe(`Pick UTXOs`, function () {
       })
     }
     const control = [{ txid: 'txid1', index: 2, value: 600 }]
-    const pickedUtxos = pickUtxos(addressCache, 190, false)
+    const pickedUtxos = pickUtxos(addressInfos, 190, false)
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
 
   it('Non-exact fit 2 utxo', function () {
-    const addressCache: AddressInfos = {
+    const addressInfos: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
         utxos: [{ txid: 'txid1', index: 0, value: 100 }]
@@ -153,7 +153,7 @@ describe(`Pick UTXOs`, function () {
       { txid: 'txid1', index: 2, value: 600 },
       { txid: 'txid3', index: 1, value: 400 }
     ]
-    const pickedUtxos = pickUtxos(addressCache, 950, false)
+    const pickedUtxos = pickUtxos(addressInfos, 950, false)
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
 })
