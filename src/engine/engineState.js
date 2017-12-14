@@ -21,6 +21,8 @@ import type {
   StratumHistoryRow,
   StratumUtxo
 } from '../stratum/stratumMessages.js'
+import type { ParsedTx } from './parseTransaction.js'
+import { parseTransaction } from './parseTransaction.js'
 
 export type UtxoInfo = {
   txid: string, // tx_hash from Stratum
@@ -103,6 +105,9 @@ export class EngineState {
       firstSeen: number // Timestamp for unconfirmed stuff
     }
   }
+
+  // Cache of parsed transaction data:
+  parsedTxs: { [txid: string]: ParsedTx }
 
   // True if `startEngine` has been called:
   engineStarted: boolean
@@ -279,6 +284,7 @@ export class EngineState {
     this.scriptHashes = {}
     this.usedAddresses = {}
     this.txCache = {}
+    this.parsedTxs = {}
     this.txHeightCache = {}
     this.connections = {}
     this.serverStates = {}
@@ -551,6 +557,11 @@ export class EngineState {
       // Update the cache:
       this.txCacheTimestamp = Date.now()
       this.txCache = txCacheJson.txs
+
+      // Update the derived information:
+      for (const txid of Object.keys(this.txCache)) {
+        this.parsedTxs[txid] = parseTransaction(this.txCache[txid])
+      }
     } catch (e) {
       this.txCache = {}
     }
@@ -681,6 +692,7 @@ export class EngineState {
   handleTxFetch (txid: string, txData: string) {
     this.txCache[txid] = txData
     delete this.missingTxs[txid]
+    this.parsedTxs[txid] = parseTransaction(txData)
     this.dirtyTxCache()
     this.onTxFetched(txid)
   }
