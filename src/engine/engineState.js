@@ -30,11 +30,7 @@ export type UtxoInfo = {
 
 export type AddressInfo = {
   txids: Array<string>,
-  txidStratumHash: string,
-
   utxos: Array<UtxoInfo>,
-  utxoStratumHash: string,
-
   used: boolean, // Set by `addGapLimitAddress`
   displayAddress: string, // base58 or other wallet-ready format
   path: string // TODO: Define the contents of this member.
@@ -75,7 +71,18 @@ const TIME_LAZINESS = 10000
  */
 export class EngineState {
   // On-disk address information:
-  addressCache: AddressInfos
+  addressCache: {
+    [scriptHash: string]: {
+      txids: Array<string>,
+      txidStratumHash: string,
+
+      utxos: Array<UtxoInfo>,
+      utxoStratumHash: string,
+
+      displayAddress: string, // base58 or other wallet-ready format
+      path: string // TODO: Define the contents of this member.
+    }
+  }
 
   // Dervived address information:
   addressInfos: AddressInfos
@@ -517,7 +524,23 @@ export class EngineState {
   async load () {
     this.io.console.info('Loading wallet engine caches')
 
-    // Load the address and height caches:
+    // Load transaction data cache:
+    try {
+      const txCacheText = await this.localFolder.file('txs.json').getText()
+      const txCacheJson = JSON.parse(txCacheText)
+
+      // TODO: Validate JSON
+      if (!txCacheJson.txs) throw new Error('Missing txs in cache')
+
+      // Update the cache:
+      this.txCacheTimestamp = Date.now()
+      this.txCache = txCacheJson.txs
+    } catch (e) {
+      this.txCache = {}
+    }
+
+    // Load the address and height caches.
+    // Must come after transactions are loaded for proper txid filtering:
     try {
       const cacheText = await this.localFolder.file('addresses.json').getText()
       const cacheJson = JSON.parse(cacheText)
@@ -542,21 +565,6 @@ export class EngineState {
       this.addressCache = {}
       this.addressInfos = {}
       this.txHeightCache = {}
-    }
-
-    // Load transaction data cache:
-    try {
-      const txCacheText = await this.localFolder.file('txs.json').getText()
-      const txCacheJson = JSON.parse(txCacheText)
-
-      // TODO: Validate JSON
-      if (!txCacheJson.txs) throw new Error('Missing txs in cache')
-
-      // Update the cache:
-      this.txCacheTimestamp = Date.now()
-      this.txCache = txCacheJson.txs
-    } catch (e) {
-      this.txCache = {}
     }
 
     return this
@@ -718,8 +726,17 @@ export class EngineState {
    * update the derived info:
    */
   refreshAddressInfo (scriptHash: string) {
-    // TODO: Filter and convert the data:
-    this.addressInfos[scriptHash] = this.addressCache[scriptHash]
+    const address = this.addressCache[scriptHash]
+    const { displayAddress, path } = address
+
+    // It is used if it has transactions:
+    const used = address.txids.length + address.utxos.length !== 0
+
+    // We only include existing stuff:
+    const txids = address.txids.filter(txid => this.txCache[txid])
+    const utxos = address.utxos.filter(utxo => this.txCache[utxo.txid])
+
+    this.addressInfos[scriptHash] = { txids, utxos, used, displayAddress, path }
   }
 
   onConnectionFail (uri: string, e: Error, task: string) {

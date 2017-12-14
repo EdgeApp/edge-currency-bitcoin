@@ -18,10 +18,7 @@ import { pickUtxos } from '../src/engine/pickUtxos.js'
 
 const addressObj: AddressInfo = {
   txids: ['txid1'],
-  txidStratumHash: 'mystratumhash',
-
   utxos: [{ txid: 'txid1', index: 0, value: 100 }],
-  utxoStratumHash: 'txid1',
   used: true,
   displayAddress: 'mydisplayaddress',
   path: 'somepath' // TODO: Define the contents of this member.
