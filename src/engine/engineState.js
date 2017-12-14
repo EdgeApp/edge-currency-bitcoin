@@ -87,6 +87,9 @@ export class EngineState {
   // Dervived address information:
   addressInfos: AddressInfos
 
+  // Maps from display addresses to script hashes:
+  scriptHashes: { [displayAddress: string]: string }
+
   // On-disk hex transaction data:
   txCache: { [txid: string]: string }
 
@@ -160,6 +163,7 @@ export class EngineState {
       displayAddress,
       path
     }
+    this.scriptHashes[displayAddress] = scriptHash
     this.refreshAddressInfo(scriptHash)
 
     this.dirtyAddressCache()
@@ -262,6 +266,7 @@ export class EngineState {
   constructor (options: EngineStateOptions) {
     this.addressCache = {}
     this.addressInfos = {}
+    this.scriptHashes = {}
     this.txCache = {}
     this.txHeightCache = {}
     this.connections = {}
@@ -559,6 +564,7 @@ export class EngineState {
         const address = this.addressCache[scriptHash]
         for (const txid of address.txids) this.handleNewTxid(txid)
         for (const utxo of address.utxos) this.handleNewTxid(utxo.txid)
+        this.scriptHashes[address.displayAddress] = scriptHash
         this.refreshAddressInfo(scriptHash)
       }
     } catch (e) {
