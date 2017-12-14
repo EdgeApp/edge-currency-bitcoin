@@ -77,10 +77,8 @@ export class EngineState {
   // On-disk address information:
   addressCache: AddressInfos
 
-  // On-disk transaction information:
-  txCache: {
-    [txid: string]: string // hex string data
-  }
+  // On-disk hex transaction data:
+  txCache: { [txid: string]: string }
 
   // Transaction height / timestamps:
   txHeightCache: {
@@ -94,9 +92,7 @@ export class EngineState {
   engineStarted: boolean
 
   // Active Stratum connection objects:
-  connections: {
-    [uri: string]: StratumConnection
-  }
+  connections: { [uri: string]: StratumConnection }
 
   // Status of active Stratum connections:
   serverStates: {
@@ -137,9 +133,7 @@ export class EngineState {
   }
 
   // True if somebody is currently fetching a transaction:
-  txStates: {
-    [txid: string]: { fetching: boolean }
-  }
+  fetchingTxs: { [txid: string]: boolean }
 
   // Transactions that are relevant to our addresses, but missing locally:
   missingTxs: { [txid: string]: true }
@@ -260,7 +254,7 @@ export class EngineState {
     this.txHeightCache = {}
     this.connections = {}
     this.serverStates = {}
-    this.txStates = {}
+    this.fetchingTxs = {}
     this.missingTxs = {}
 
     this.io = options.io
@@ -409,17 +403,17 @@ export class EngineState {
 
     // Fetch txids:
     for (const txid of Object.keys(this.missingTxs)) {
-      if (!this.txStates[txid].fetching && this.serverCanGetTx(uri, txid)) {
-        this.txStates[txid] = { fetching: true }
+      if (!this.fetchingTxs[txid] && this.serverCanGetTx(uri, txid)) {
+        this.fetchingTxs[txid] = true
         return fetchTransaction(
           txid,
           (txData: string) => {
             console.log(`Stratum ${uri} sent tx ${txid}`)
-            this.txStates[txid] = { fetching: false }
+            this.fetchingTxs[txid] = false
             this.handleTxFetch(txid, txData)
           },
           (e: Error) => {
-            this.txStates[txid] = { fetching: false }
+            this.fetchingTxs[txid] = false
             if (!serverState.txids[txid]) {
               this.onConnectionFail(uri, e, 'getting transaction')
             } else {
@@ -527,9 +521,17 @@ export class EngineState {
       if (!cacheJson.addresses) throw new Error('Missing addresses in cache')
       if (!cacheJson.heights) throw new Error('Missing heights in cache')
 
+      // Update the cache:
       this.addressCacheTimestamp = Date.now()
       this.addressCache = cacheJson.addresses
       this.txHeightCache = cacheJson.heights
+
+      // Update the derived information:
+      for (const scriptHash of Object.keys(this.addressCache)) {
+        const address = this.addressCache[scriptHash]
+        for (const txid of address.txids) this.handleNewTxid(txid)
+        for (const utxo of address.utxos) this.handleNewTxid(utxo.txid)
+      }
     } catch (e) {
       this.addressCache = {}
       this.txHeightCache = {}
@@ -543,31 +545,11 @@ export class EngineState {
       // TODO: Validate JSON
       if (!txCacheJson.txs) throw new Error('Missing txs in cache')
 
+      // Update the cache:
       this.txCacheTimestamp = Date.now()
       this.txCache = txCacheJson.txs
     } catch (e) {
       this.txCache = {}
-    }
-
-    // Update the derived information:
-    for (const scriptHash of Object.keys(this.addressCache)) {
-      const address = this.addressCache[scriptHash]
-      for (const txid of address.txids) {
-        if (!this.txStates[txid]) {
-          this.txStates[txid] = { fetching: false }
-        }
-        if (!this.txCache[txid]) {
-          this.missingTxs[txid] = true
-        }
-      }
-      for (const utxo of address.utxos) {
-        if (!this.txStates[utxo.txid]) {
-          this.txStates[utxo.txid] = { fetching: false }
-        }
-        if (!this.txCache[utxo.txid]) {
-          this.missingTxs[utxo.txid] = true
-        }
-      }
     }
 
     return this
@@ -648,30 +630,11 @@ export class EngineState {
     stateHash: string,
     history: Array<StratumHistoryRow>
   ) {
-    // Process the UTXO list:
+    // Process the txid list:
     const txidList: Array<string> = []
     for (const row of history) {
       txidList.push(row.tx_hash)
-
-      // Save to the height cache:
-      if (this.txHeightCache[row.tx_hash]) {
-        this.txHeightCache[row.tx_hash].height = row.height
-      } else {
-        this.txHeightCache[row.tx_hash] = {
-          firstSeen: Date.now(),
-          height: row.height
-        }
-      }
-
-      // Add to the relevant txid list:
-      if (!this.txStates[row.tx_hash]) {
-        this.txStates[row.tx_hash] = { fetching: false }
-      }
-
-      // Add to the missing tx list:
-      if (!this.txCache[row.tx_hash]) {
-        this.missingTxs[row.tx_hash] = true
-      }
+      this.handleTxidFetch(row.tx_hash, row.height)
     }
 
     // Save to the address cache:
@@ -689,6 +652,34 @@ export class EngineState {
     this.onTxFetched(txid)
   }
 
+  // A server has told us about a txid, so update the caches:
+  handleTxidFetch (txid: string, height: number) {
+    // Save to the height cache:
+    if (this.txHeightCache[txid]) {
+      this.txHeightCache[txid].height = height
+    } else {
+      this.txHeightCache[txid] = {
+        firstSeen: Date.now(),
+        height
+      }
+    }
+
+    this.handleNewTxid(txid)
+  }
+
+  // Someone has detected a potentially new txid, so update tables:
+  handleNewTxid (txid: string) {
+    // Add to the relevant txid list:
+    if (typeof this.fetchingTxs[txid] !== 'boolean') {
+      this.fetchingTxs[txid] = false
+    }
+
+    // Add to the missing tx list:
+    if (!this.txCache[txid]) {
+      this.missingTxs[txid] = true
+    }
+  }
+
   // A server has sent UTXO data, so update the caches:
   handleUtxoFetch (
     scriptHash: string,
@@ -703,26 +694,7 @@ export class EngineState {
         index: utxo.tx_pos,
         value: utxo.value
       })
-
-      // Save to the height cache:
-      if (this.txHeightCache[utxo.tx_hash]) {
-        this.txHeightCache[utxo.tx_hash].height = utxo.height
-      } else {
-        this.txHeightCache[utxo.tx_hash] = {
-          firstSeen: Date.now(),
-          height: utxo.height
-        }
-      }
-
-      // Add to the relevant txid list:
-      if (!this.txStates[utxo.tx_hash]) {
-        this.txStates[utxo.tx_hash] = { fetching: false }
-      }
-
-      // Add to the missing tx list:
-      if (!this.txCache[utxo.tx_hash]) {
-        this.missingTxs[utxo.tx_hash] = true
-      }
+      this.handleTxidFetch(utxo.tx_hash, utxo.height)
     }
 
     // Save to the address cache:
