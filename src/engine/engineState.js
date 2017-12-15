@@ -44,8 +44,7 @@ export type AddressInfos = {
 
 export interface EngineStateCallbacks {
   // Changes to the address cache (might also affect tx heights):
-  +onUtxosUpdated?: (addressHash: string) => void;
-  +onTxidsUpdated?: (addressHash: string) => void;
+  +onAddressInfoUpdated?: (addressHash: string) => void;
 
   // Changes to the chain height:
   +onHeightUpdated?: (height: number) => void;
@@ -296,10 +295,9 @@ export class EngineState {
   localFolder: DiskletFolder
   encryptedLocalFolder: DiskletFolder
   pluginState: PluginState
+  onAddressInfoUpdated: (addressHash: string) => void
   onHeightUpdated: (height: number) => void
   onTxFetched: (txid: string) => void
-  onTxidsUpdated: (addressHash: string) => void
-  onUtxosUpdated: (addressHash: string) => void
 
   addressCacheDirty: boolean
   addressCacheTimestamp: number
@@ -324,15 +322,13 @@ export class EngineState {
     this.encryptedLocalFolder = options.encryptedLocalFolder
     this.pluginState = options.pluginState
     const {
+      onAddressInfoUpdated = nop,
       onHeightUpdated = nop,
-      onUtxosUpdated = nop,
-      onTxidsUpdated = nop,
       onTxFetched = nop
     } = options.callbacks
+    this.onAddressInfoUpdated = onAddressInfoUpdated
     this.onHeightUpdated = onHeightUpdated
     this.onTxFetched = onTxFetched
-    this.onTxidsUpdated = onTxidsUpdated
-    this.onUtxosUpdated = onUtxosUpdated
 
     this.addressCacheDirty = false
     this.addressCacheTimestamp = Date.now()
@@ -713,7 +709,6 @@ export class EngineState {
     this.addressCache[scriptHash].txidStratumHash = stateHash
     this.refreshAddressInfo(scriptHash)
     this.dirtyAddressCache()
-    this.onTxidsUpdated(scriptHash)
   }
 
   // A server has sent a transaction, so update the caches:
@@ -775,7 +770,6 @@ export class EngineState {
     this.addressCache[scriptHash].utxoStratumHash = stateHash
     this.refreshAddressInfo(scriptHash)
     this.dirtyAddressCache()
-    this.onUtxosUpdated(scriptHash)
   }
 
   /**
@@ -821,6 +815,7 @@ export class EngineState {
     }
 
     this.addressInfos[scriptHash] = { txids, utxos, used, displayAddress, path }
+    this.onAddressInfoUpdated(scriptHash)
   }
 
   onConnectionFail (uri: string, e: Error, task: string) {

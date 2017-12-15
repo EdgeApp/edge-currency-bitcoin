@@ -86,16 +86,13 @@ export class CurrencyEngine {
 
   async load (): Promise<any> {
     const engineStateCallbacks: EngineStateCallbacks = {
-      onUtxosUpdated: (addressHash: string) => {
-        this.keyManager.use(addressHash)
+      onAddressInfoUpdated: (addressHash: string) => {
+        if (this.keyManager) this.keyManager.use(addressHash)
         this.options.callbacks.onBalanceChanged(
           this.currencyInfo.currencyCode,
           this.getBalance()
         )
       },
-      // onTxidsUpdated: (addressHash: string) => {
-      //   this.options.callbacks.onTxidsChanged(height)
-      // },
       onHeightUpdated: (height: number) => {
         this.options.callbacks.onBlockHeightChanged(height)
       },
