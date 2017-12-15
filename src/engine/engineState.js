@@ -252,21 +252,8 @@ export class EngineState {
     this.handleTxidFetch(txid, -1)
     this.handleTxFetch(txid, rawTx)
 
-    // Identify any address script hashes we affect:
-    const scriptHashSet = {}
-    for (const input of this.parsedTxs[txid].inputs) {
-      const prevTx = this.parsedTxs[input.txid]
-      if (!prevTx) continue
-      const prevOut = prevTx.outputs[input.index]
-      if (!prevOut) continue
-      scriptHashSet[prevOut.scriptHash] = true
-    }
-    for (const output of this.parsedTxs[txid].outputs) {
-      scriptHashSet[output.scriptHash] = true
-    }
-
     // Update the affected addresses:
-    for (const scriptHash of Object.keys(scriptHashSet)) {
+    for (const scriptHash of this.findAffectedAddresses(txid)) {
       this.addressCache[scriptHash].txids.push(txid)
       this.refreshAddressInfo(scriptHash)
     }
@@ -716,6 +703,11 @@ export class EngineState {
     this.txCache[txid] = txData
     delete this.missingTxs[txid]
     this.parsedTxs[txid] = parseTransaction(txData)
+
+    for (const scriptHash of this.findAffectedAddresses(txid)) {
+      this.refreshAddressInfo(scriptHash)
+    }
+
     this.dirtyTxCache()
     this.onTxFetched(txid)
   }
@@ -817,6 +809,22 @@ export class EngineState {
 
     this.addressInfos[scriptHash] = { txids, utxos, used, displayAddress, path }
     this.onAddressInfoUpdated(scriptHash)
+  }
+
+  // Finds the script hashes that a transaction touches.
+  findAffectedAddresses (txid: string): Array<string> {
+    const scriptHashSet = {}
+    for (const input of this.parsedTxs[txid].inputs) {
+      const prevTx = this.parsedTxs[input.txid]
+      if (!prevTx) continue
+      const prevOut = prevTx.outputs[input.index]
+      if (!prevOut) continue
+      scriptHashSet[prevOut.scriptHash] = true
+    }
+    for (const output of this.parsedTxs[txid].outputs) {
+      scriptHashSet[output.scriptHash] = true
+    }
+    return Object.keys(scriptHashSet)
   }
 
   onConnectionFail (uri: string, e: Error, task: string) {
