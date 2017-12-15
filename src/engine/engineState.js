@@ -773,7 +773,7 @@ export class EngineState {
     if (!address) return
     const { displayAddress, path } = address
 
-    // It is used if it has transactions:
+    // It is used if it has transactions or if the metadata says so:
     const used =
       this.usedAddresses[scriptHash] ||
       address.txids.length + address.utxos.length !== 0
@@ -782,12 +782,23 @@ export class EngineState {
     const txids = address.txids.filter(txid => this.txCache[txid])
     const utxos = address.utxos.filter(utxo => this.txCache[utxo.txid])
 
-    // We have to search for unconfirmed utxos:
+    // Make a list of unconfirmed transactions for the utxo search:
     const pendingTxids = txids.filter(
       txid => this.txHeightCache[txid].height < 0
     )
 
-    // List all spent outpoints:
+    // Add all our own unconfirmed outpoints to the utxo list:
+    for (const txid of pendingTxids) {
+      const tx = this.parsedTxs[txid]
+      for (let i = 0; i < tx.outputs.length; ++i) {
+        const output = tx.outputs[i]
+        if (output.scriptHash === scriptHash) {
+          utxos.push({ txid, index: i, value: output.value })
+        }
+      }
+    }
+
+    // Make a table of spent outpoints for filtering the UTXO list:
     const spends = {}
     for (const txid of pendingTxids) {
       const tx = this.parsedTxs[txid]
@@ -796,18 +807,14 @@ export class EngineState {
       }
     }
 
-    // Add all possible outputs:
-    for (const txid of pendingTxids) {
-      const tx = this.parsedTxs[txid]
-      for (let i = 0; i < tx.outputs.length; ++i) {
-        const output = tx.outputs[i]
-        if (!spends[`${txid}:${i}`] && output.scriptHash === scriptHash) {
-          utxos.push({ txid, index: i, value: output.value })
-        }
-      }
+    // Assemble the info structure:
+    this.addressInfos[scriptHash] = {
+      txids,
+      utxos: utxos.filter(utxo => !spends[`${utxo.txid}:${utxo.index}`]),
+      used,
+      displayAddress,
+      path
     }
-
-    this.addressInfos[scriptHash] = { txids, utxos, used, displayAddress, path }
     this.onAddressInfoUpdated(scriptHash)
   }
 
