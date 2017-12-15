@@ -778,6 +778,7 @@ export class EngineState {
    */
   refreshAddressInfo (scriptHash: string) {
     const address = this.addressCache[scriptHash]
+    if (!address) return
     const { displayAddress, path } = address
 
     // It is used if it has transactions:
