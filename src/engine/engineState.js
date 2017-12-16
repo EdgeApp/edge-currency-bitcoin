@@ -784,7 +784,7 @@ export class EngineState {
 
     // Make a list of unconfirmed transactions for the utxo search:
     const pendingTxids = txids.filter(
-      txid => this.txHeightCache[txid].height < 0
+      txid => this.txHeightCache[txid].height <= 0
     )
 
     // Add all our own unconfirmed outpoints to the utxo list:
