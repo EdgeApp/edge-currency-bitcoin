@@ -171,102 +171,104 @@ for (const fixture of fixtures) {
           return true
         })
     })
+  })
 
-    describe(`Is Address Used for Wallet type ${WALLET_TYPE} from cache`, function () {
-      it('Checking a wrong formated address', function (done) {
-        try {
-          engine.isAddressUsed('TestErrorWithWrongAddress')
-        } catch (e) {
-          assert(e, 'Should throw')
-          assert.equal(e.message, 'Wrong formatted address')
-          done()
-        }
-      })
-
-      it("Checking an address we don't own", function () {
-        try {
-          assert.equal(
-            engine.isAddressUsed('mnSmvy2q4dFNKQF18EBsrZrS7WEy6CieEE'),
-            false
-          )
-        } catch (e) {
-          assert(e, 'Should throw')
-          assert.equal(e.message, 'Address not found in wallet')
-        }
-      })
-
-      // it('Checking an empty P2WSH address', function (done) {
-      //   assert.equal(engine.isAddressUsed('tb1qng4wvp6chgm6erdc8hcgn7ewpkv8gqlm6m6ja6'), false)
-      //   done()
-      // })
-
-      // it('Checking a non empty P2WSH address', function (done) {
-      //   assert.equal(engine.isAddressUsed('tb1qprslq433fsq8pjdw3tu3x3ynk5f486ngp8lrxu'), true)
-      //   done()
-      // })
-
-      it('Checking an empty P2SH address', function (done) {
-        assert.equal(
-          engine.isAddressUsed('2N9DbpGaQEeLLZgPQP4gc9oKkrFHdsj5Eew'),
-          false
-        )
+  describe(`Is Address Used for Wallet type ${WALLET_TYPE} from cache`, function () {
+    it('Checking a wrong formated address', function (done) {
+      try {
+        engine.isAddressUsed('TestErrorWithWrongAddress')
+      } catch (e) {
+        assert(e, 'Should throw')
+        assert.equal(e.message, 'Wrong formatted address')
         done()
-      })
-
-      it('Checking a non empty P2SH address 1', function (done) {
-        assert.equal(
-          engine.isAddressUsed('2MwLo2ghJeXTgpDccHGcsTbdS9YVfM3K5GG'),
-          true
-        )
-        done()
-      })
-
-      it('Checking a non empty P2SH address 2', function (done) {
-        assert.equal(
-          engine.isAddressUsed('2MxRjw65NxR4DsRj2z1f5xFnKkU5uMRCsoT'),
-          true
-        )
-        done()
-      })
-
-      it('Checking a non empty P2SH address 3', function (done) {
-        assert.equal(
-          engine.isAddressUsed('2MxvxJh44wq17vhzGqFcAsuYsVmdEJKWuFV'),
-          true
-        )
-        done()
-      })
+      }
     })
 
-    describe(`Get Transactions from Wallet type ${WALLET_TYPE}`, function () {
-      it('Should get number of transactions from cache', function (done) {
+    it("Checking an address we don't own", function () {
+      try {
         assert.equal(
-          engine.getNumTransactions(),
+          engine.isAddressUsed('mnSmvy2q4dFNKQF18EBsrZrS7WEy6CieEE'),
+          false
+        )
+      } catch (e) {
+        assert(e, 'Should throw')
+        assert.equal(e.message, 'Address not found in wallet')
+      }
+    })
+
+    // it('Checking an empty P2WSH address', function (done) {
+    //   assert.equal(engine.isAddressUsed('tb1qng4wvp6chgm6erdc8hcgn7ewpkv8gqlm6m6ja6'), false)
+    //   done()
+    // })
+
+    // it('Checking a non empty P2WSH address', function (done) {
+    //   assert.equal(engine.isAddressUsed('tb1qprslq433fsq8pjdw3tu3x3ynk5f486ngp8lrxu'), true)
+    //   done()
+    // })
+
+    it('Checking an empty P2SH address', function (done) {
+      assert.equal(
+        engine.isAddressUsed('2N9DbpGaQEeLLZgPQP4gc9oKkrFHdsj5Eew'),
+        false
+      )
+      done()
+    })
+
+    it('Checking a non empty P2SH address 1', function (done) {
+      assert.equal(
+        engine.isAddressUsed('2MwLo2ghJeXTgpDccHGcsTbdS9YVfM3K5GG'),
+        true
+      )
+      done()
+    })
+
+    it('Checking a non empty P2SH address 2', function (done) {
+      assert.equal(
+        engine.isAddressUsed('2MxRjw65NxR4DsRj2z1f5xFnKkU5uMRCsoT'),
+        true
+      )
+      done()
+    })
+
+    it('Checking a non empty P2SH address 3', function (done) {
+      assert.equal(
+        engine.isAddressUsed('2MxvxJh44wq17vhzGqFcAsuYsVmdEJKWuFV'),
+        true
+      )
+      done()
+    })
+  })
+
+  describe(`Get Transactions from Wallet type ${WALLET_TYPE}`, function () {
+    it('Should get number of transactions from cache', function (done) {
+      assert.equal(
+        engine.getNumTransactions(),
+        TX_AMOUNT,
+        `should have ${TX_AMOUNT} tx from cache`
+      )
+      done()
+    })
+
+    it('Should get transactions from cache', function (done) {
+      engine.getTransactions().then(txs => {
+        assert.equal(
+          txs.length,
           TX_AMOUNT,
           `should have ${TX_AMOUNT} tx from cache`
         )
         done()
       })
-
-      it('Should get transactions from cache', function (done) {
-        engine.getTransactions().then(txs => {
-          assert.equal(
-            txs.length,
-            TX_AMOUNT,
-            `should have ${TX_AMOUNT} tx from cache`
-          )
-          done()
-        })
-      })
-
-      it('Should get transactions from cache with options', function (done) {
-        engine.getTransactions({ startIndex: 1, numEntries: 2 }).then(txs => {
-          assert.equal(txs.length, 2, 'should have 2 tx from cache')
-          done()
-        })
-      })
     })
 
+    it('Should get transactions from cache with options', function (done) {
+      engine.getTransactions({ startIndex: 1, numEntries: 2 }).then(txs => {
+        assert.equal(txs.length, 2, 'should have 2 tx from cache')
+        done()
+      })
+    })
+  })
+
+  describe('Should start engine', function () {
     it('Get BlockHeight', function (done) {
       this.timeout(10000)
       request.get(
