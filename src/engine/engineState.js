@@ -1,12 +1,12 @@
 // @flow
 import type { AbcIo, DiskletFolder } from 'airbitz-core-types'
 
-import type { PluginState } from '../plugin/plugin-state.js'
+import type { PluginState } from '../plugin/pluginState.js'
 import type {
   StratumCallbacks,
   StratumTask
-} from '../stratum/stratum-connection.js'
-import { StratumConnection } from '../stratum/stratum-connection.js'
+} from '../stratum/stratumConnection.js'
+import { StratumConnection } from '../stratum/stratumConnection.js'
 import {
   broadcastTx,
   fetchScriptHashHistory,
@@ -15,35 +15,36 @@ import {
   fetchVersion,
   subscribeHeight,
   subscribeScriptHash
-} from '../stratum/stratum-messages'
-import type { FetchBlockHeaderType } from '../stratum/stratum-messages'
+} from '../stratum/stratumMessages.js'
+import type {
+  StratumBlockHeader,
+  StratumHistoryRow,
+  StratumUtxo
+} from '../stratum/stratumMessages.js'
+import type { ParsedTx } from './parseTransaction.js'
+import { parseTransaction } from './parseTransaction.js'
 
-export type UtxoObj = {
+export type UtxoInfo = {
   txid: string, // tx_hash from Stratum
   index: number, // tx_pos from Stratum
   value: number // Satoshis fit in a number
 }
 
-export type AddressObj = {
+export type AddressInfo = {
   txids: Array<string>,
-  txidStratumHash: string,
-
-  utxos: Array<UtxoObj>,
-  utxoStratumHash: string,
-
+  utxos: Array<UtxoInfo>,
   used: boolean, // Set by `addGapLimitAddress`
   displayAddress: string, // base58 or other wallet-ready format
   path: string // TODO: Define the contents of this member.
 }
 
-export type AddressCache = {
-  [scriptHash: string]: AddressObj
+export type AddressInfos = {
+  [scriptHash: string]: AddressInfo
 }
 
 export interface EngineStateCallbacks {
   // Changes to the address cache (might also affect tx heights):
-  +onUtxosUpdated?: (addressHash: string) => void;
-  +onTxidsUpdated?: (addressHash: string) => void;
+  +onAddressInfoUpdated?: (addressHash: string) => void;
 
   // Changes to the chain height:
   +onHeightUpdated?: (height: number) => void;
@@ -54,7 +55,6 @@ export interface EngineStateCallbacks {
 
 export interface EngineStateOptions {
   callbacks: EngineStateCallbacks;
-  bcoin: any;
   io: any;
   localFolder: any;
   encryptedLocalFolder: any;
@@ -72,12 +72,30 @@ const TIME_LAZINESS = 10000
  */
 export class EngineState {
   // On-disk address information:
-  addressCache: AddressCache
+  addressCache: {
+    [scriptHash: string]: {
+      txids: Array<string>,
+      txidStratumHash: string,
 
-  // On-disk transaction information:
-  txCache: {
-    [txid: string]: string // hex string data
+      utxos: Array<UtxoInfo>,
+      utxoStratumHash: string,
+
+      displayAddress: string, // base58 or other wallet-ready format
+      path: string // TODO: Define the contents of this member.
+    }
   }
+
+  // Dervived address information:
+  addressInfos: AddressInfos
+
+  // Maps from display addresses to script hashes:
+  scriptHashes: { [displayAddress: string]: string }
+
+  // Address usage information sent by the GUI:
+  usedAddresses: { [scriptHash: string]: true }
+
+  // On-disk hex transaction data:
+  txCache: { [txid: string]: string }
 
   // Transaction height / timestamps:
   txHeightCache: {
@@ -87,13 +105,14 @@ export class EngineState {
     }
   }
 
+  // Cache of parsed transaction data:
+  parsedTxs: { [txid: string]: ParsedTx }
+
   // True if `startEngine` has been called:
   engineStarted: boolean
 
   // Active Stratum connection objects:
-  connections: {
-    [uri: string]: StratumConnection
-  }
+  connections: { [uri: string]: StratumConnection }
 
   // Status of active Stratum connections:
   serverStates: {
@@ -134,9 +153,7 @@ export class EngineState {
   }
 
   // True if somebody is currently fetching a transaction:
-  txStates: {
-    [txid: string]: { fetching: boolean }
-  }
+  fetchingTxs: { [txid: string]: boolean }
 
   // Transactions that are relevant to our addresses, but missing locally:
   missingTxs: { [txid: string]: true }
@@ -153,6 +170,8 @@ export class EngineState {
       displayAddress,
       path
     }
+    this.scriptHashes[displayAddress] = scriptHash
+    this.refreshAddressInfo(scriptHash)
 
     this.dirtyAddressCache()
     for (const uri of Object.keys(this.serverStates)) {
@@ -164,6 +183,13 @@ export class EngineState {
         subscribed: false,
         subscribing: false
       }
+    }
+  }
+
+  markAddressesUsed (scriptHashes: Array<string>) {
+    for (const scriptHash of scriptHashes) {
+      this.usedAddresses[scriptHash] = true
+      this.refreshAddressInfo(scriptHash)
     }
   }
 
@@ -219,6 +245,21 @@ export class EngineState {
     })
   }
 
+  /**
+   * Called to complete a spend
+   */
+  saveTx (txid: string, rawTx: string) {
+    this.handleTxidFetch(txid, -1)
+    this.handleTxFetch(txid, rawTx)
+
+    // Update the affected addresses:
+    for (const scriptHash of this.findAffectedAddresses(txid)) {
+      this.addressCache[scriptHash].txids.push(txid)
+      this.refreshAddressInfo(scriptHash)
+    }
+    this.dirtyAddressCache()
+  }
+
   connect () {
     this.pluginState.addEngine(this)
     this.engineStarted = true
@@ -237,15 +278,13 @@ export class EngineState {
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------
-  bcoin: any
   io: AbcIo
   localFolder: DiskletFolder
   encryptedLocalFolder: DiskletFolder
   pluginState: PluginState
+  onAddressInfoUpdated: (addressHash: string) => void
   onHeightUpdated: (height: number) => void
   onTxFetched: (txid: string) => void
-  onTxidsUpdated: (addressHash: string) => void
-  onUtxosUpdated: (addressHash: string) => void
 
   addressCacheDirty: boolean
   addressCacheTimestamp: number
@@ -254,28 +293,29 @@ export class EngineState {
 
   constructor (options: EngineStateOptions) {
     this.addressCache = {}
+    this.addressInfos = {}
+    this.scriptHashes = {}
+    this.usedAddresses = {}
     this.txCache = {}
+    this.parsedTxs = {}
     this.txHeightCache = {}
     this.connections = {}
     this.serverStates = {}
-    this.txStates = {}
+    this.fetchingTxs = {}
     this.missingTxs = {}
 
-    this.bcoin = options.bcoin
     this.io = options.io
     this.localFolder = options.localFolder
     this.encryptedLocalFolder = options.encryptedLocalFolder
     this.pluginState = options.pluginState
     const {
+      onAddressInfoUpdated = nop,
       onHeightUpdated = nop,
-      onUtxosUpdated = nop,
-      onTxidsUpdated = nop,
       onTxFetched = nop
     } = options.callbacks
+    this.onAddressInfoUpdated = onAddressInfoUpdated
     this.onHeightUpdated = onHeightUpdated
     this.onTxFetched = onTxFetched
-    this.onTxidsUpdated = onTxidsUpdated
-    this.onUtxosUpdated = onUtxosUpdated
 
     this.addressCacheDirty = false
     this.addressCacheTimestamp = Date.now()
@@ -335,7 +375,7 @@ export class EngineState {
           return task
         },
 
-        onNotifyHeader: (uri: string, headerInfo: FetchBlockHeaderType) => {
+        onNotifyHeader: (uri: string, headerInfo: StratumBlockHeader) => {
           this.serverStates[uri].height = headerInfo.block_height
           this.pluginState.updateHeight(headerInfo.block_height)
         },
@@ -408,20 +448,17 @@ export class EngineState {
 
     // Fetch txids:
     for (const txid of Object.keys(this.missingTxs)) {
-      if (!this.txStates[txid].fetching && this.serverCanGetTx(uri, txid)) {
-        this.txStates[txid] = { fetching: true }
+      if (!this.fetchingTxs[txid] && this.serverCanGetTx(uri, txid)) {
+        this.fetchingTxs[txid] = true
         return fetchTransaction(
           txid,
           (txData: string) => {
             console.log(`Stratum ${uri} sent tx ${txid}`)
-            this.txStates[txid] = { fetching: false }
-            this.txCache[txid] = txData
-            delete this.missingTxs[txid]
-            this.dirtyTxCache()
-            this.onTxFetched(txid)
+            this.fetchingTxs[txid] = false
+            this.handleTxFetch(txid, txData)
           },
           (e: Error) => {
-            this.txStates[txid] = { fetching: false }
+            this.fetchingTxs[txid] = false
             if (!serverState.txids[txid]) {
               this.onConnectionFail(uri, e, 'getting transaction')
             } else {
@@ -444,14 +481,7 @@ export class EngineState {
         addressState.fetchingUtxos = true
         return fetchScriptHashUtxo(
           address,
-          (
-            utxos: Array<{
-              tx_hash: string,
-              tx_pos: number,
-              value: number,
-              height: number
-            }>
-          ) => {
+          (utxos: Array<StratumUtxo>) => {
             console.log(`Stratum ${uri} sent utxos for ${address}`)
             addressState.fetchingUtxos = false
             if (!addressState.hash) {
@@ -459,43 +489,7 @@ export class EngineState {
                 'Blank stratum hash (logic bug - should never happen)'
               )
             }
-            this.addressCache[address].utxoStratumHash = addressState.hash
-
-            // Process the UTXO list:
-            const utxoList: Array<UtxoObj> = []
-            for (const utxo of utxos) {
-              utxoList.push({
-                txid: utxo.tx_hash,
-                index: utxo.tx_pos,
-                value: utxo.value
-              })
-
-              // Save to the height cache:
-              if (this.txHeightCache[utxo.tx_hash]) {
-                this.txHeightCache[utxo.tx_hash].height = utxo.height
-              } else {
-                this.txHeightCache[utxo.tx_hash] = {
-                  firstSeen: Date.now(),
-                  height: utxo.height
-                }
-              }
-
-              // Add to the relevant txid list:
-              if (!this.txStates[utxo.tx_hash]) {
-                this.txStates[utxo.tx_hash] = { fetching: false }
-              }
-
-              // Add to the missing tx list:
-              if (!this.txCache[utxo.tx_hash]) {
-                this.missingTxs[utxo.tx_hash] = true
-              }
-            }
-
-            // Save to the address cache:
-            this.addressCache[address].utxos = utxoList
-
-            this.dirtyAddressCache()
-            this.onUtxosUpdated(address)
+            this.handleUtxoFetch(address, addressState.hash, utxos)
           },
           (e: Error) => {
             addressState.fetchingUtxos = false
@@ -541,13 +535,7 @@ export class EngineState {
         addressState.fetchingTxids = true
         return fetchScriptHashHistory(
           address,
-          (
-            history: Array<{
-              tx_hash: string,
-              height: number,
-              fee?: number
-            }>
-          ) => {
+          (history: Array<StratumHistoryRow>) => {
             console.log(`Stratum ${uri} sent history for ${address}`)
             addressState.fetchingTxids = false
             if (!addressState.hash) {
@@ -555,39 +543,7 @@ export class EngineState {
                 'Blank stratum hash (logic bug - should never happen)'
               )
             }
-            this.addressCache[address].txidStratumHash = addressState.hash
-
-            // Process the UTXO list:
-            const txidList: Array<string> = []
-            for (const row of history) {
-              txidList.push(row.tx_hash)
-
-              // Save to the height cache:
-              if (this.txHeightCache[row.tx_hash]) {
-                this.txHeightCache[row.tx_hash].height = row.height
-              } else {
-                this.txHeightCache[row.tx_hash] = {
-                  firstSeen: Date.now(),
-                  height: row.height
-                }
-              }
-
-              // Add to the relevant txid list:
-              if (!this.txStates[row.tx_hash]) {
-                this.txStates[row.tx_hash] = { fetching: false }
-              }
-
-              // Add to the missing tx list:
-              if (!this.txCache[row.tx_hash]) {
-                this.missingTxs[row.tx_hash] = true
-              }
-            }
-
-            // Save to the address cache:
-            this.addressCache[address].txids = txidList
-            this.dirtyAddressCache()
-
-            this.onTxidsUpdated(address)
+            this.handleHistoryFetch(address, addressState.hash, history)
           },
           (e: Error) => {
             addressState.fetchingTxids = false
@@ -601,23 +557,6 @@ export class EngineState {
   async load () {
     this.io.console.info('Loading wallet engine caches')
 
-    // Load the address and height caches:
-    try {
-      const cacheText = await this.localFolder.file('addresses.json').getText()
-      const cacheJson = JSON.parse(cacheText)
-
-      // TODO: Validate JSON
-      if (!cacheJson.addresses) throw new Error('Missing addresses in cache')
-      if (!cacheJson.heights) throw new Error('Missing heights in cache')
-
-      this.addressCacheTimestamp = Date.now()
-      this.addressCache = cacheJson.addresses
-      this.txHeightCache = cacheJson.heights
-    } catch (e) {
-      this.addressCache = {}
-      this.txHeightCache = {}
-    }
-
     // Load transaction data cache:
     try {
       const txCacheText = await this.localFolder.file('txs.json').getText()
@@ -626,31 +565,45 @@ export class EngineState {
       // TODO: Validate JSON
       if (!txCacheJson.txs) throw new Error('Missing txs in cache')
 
+      // Update the cache:
       this.txCacheTimestamp = Date.now()
       this.txCache = txCacheJson.txs
+
+      // Update the derived information:
+      for (const txid of Object.keys(this.txCache)) {
+        this.parsedTxs[txid] = parseTransaction(this.txCache[txid])
+      }
     } catch (e) {
       this.txCache = {}
     }
 
-    // Update the derived information:
-    for (const scriptHash of Object.keys(this.addressCache)) {
-      const address = this.addressCache[scriptHash]
-      for (const txid of address.txids) {
-        if (!this.txStates[txid]) {
-          this.txStates[txid] = { fetching: false }
-        }
-        if (!this.txCache[txid]) {
-          this.missingTxs[txid] = true
-        }
+    // Load the address and height caches.
+    // Must come after transactions are loaded for proper txid filtering:
+    try {
+      const cacheText = await this.localFolder.file('addresses.json').getText()
+      const cacheJson = JSON.parse(cacheText)
+
+      // TODO: Validate JSON
+      if (!cacheJson.addresses) throw new Error('Missing addresses in cache')
+      if (!cacheJson.heights) throw new Error('Missing heights in cache')
+
+      // Update the cache:
+      this.addressCacheTimestamp = Date.now()
+      this.addressCache = cacheJson.addresses
+      this.txHeightCache = cacheJson.heights
+
+      // Update the derived information:
+      for (const scriptHash of Object.keys(this.addressCache)) {
+        const address = this.addressCache[scriptHash]
+        for (const txid of address.txids) this.handleNewTxid(txid)
+        for (const utxo of address.utxos) this.handleNewTxid(utxo.txid)
+        this.scriptHashes[address.displayAddress] = scriptHash
+        this.refreshAddressInfo(scriptHash)
       }
-      for (const utxo of address.utxos) {
-        if (!this.txStates[utxo.txid]) {
-          this.txStates[utxo.txid] = { fetching: false }
-        }
-        if (!this.txCache[utxo.txid]) {
-          this.missingTxs[utxo.txid] = true
-        }
-      }
+    } catch (e) {
+      this.addressCache = {}
+      this.addressInfos = {}
+      this.txHeightCache = {}
     }
 
     return this
@@ -723,6 +676,162 @@ export class EngineState {
 
     // If nobody has it, we can try getting it:
     return true
+  }
+
+  // A server has sent address history data, so update the caches:
+  handleHistoryFetch (
+    scriptHash: string,
+    stateHash: string,
+    history: Array<StratumHistoryRow>
+  ) {
+    // Process the txid list:
+    const txidList: Array<string> = []
+    for (const row of history) {
+      txidList.push(row.tx_hash)
+      this.handleTxidFetch(row.tx_hash, row.height)
+    }
+
+    // Save to the address cache:
+    this.addressCache[scriptHash].txids = txidList
+    this.addressCache[scriptHash].txidStratumHash = stateHash
+    this.refreshAddressInfo(scriptHash)
+    this.dirtyAddressCache()
+  }
+
+  // A server has sent a transaction, so update the caches:
+  handleTxFetch (txid: string, txData: string) {
+    this.txCache[txid] = txData
+    delete this.missingTxs[txid]
+    this.parsedTxs[txid] = parseTransaction(txData)
+
+    for (const scriptHash of this.findAffectedAddresses(txid)) {
+      this.refreshAddressInfo(scriptHash)
+    }
+
+    this.dirtyTxCache()
+    this.onTxFetched(txid)
+  }
+
+  // A server has told us about a txid, so update the caches:
+  handleTxidFetch (txid: string, height: number) {
+    // Save to the height cache:
+    if (this.txHeightCache[txid]) {
+      this.txHeightCache[txid].height = height
+    } else {
+      this.txHeightCache[txid] = {
+        firstSeen: Date.now(),
+        height
+      }
+    }
+
+    this.handleNewTxid(txid)
+  }
+
+  // Someone has detected a potentially new txid, so update tables:
+  handleNewTxid (txid: string) {
+    // Add to the relevant txid list:
+    if (typeof this.fetchingTxs[txid] !== 'boolean') {
+      this.fetchingTxs[txid] = false
+    }
+
+    // Add to the missing tx list:
+    if (!this.txCache[txid]) {
+      this.missingTxs[txid] = true
+    }
+  }
+
+  // A server has sent UTXO data, so update the caches:
+  handleUtxoFetch (
+    scriptHash: string,
+    stateHash: string,
+    utxos: Array<StratumUtxo>
+  ) {
+    // Process the UTXO list:
+    const utxoList: Array<UtxoInfo> = []
+    for (const utxo of utxos) {
+      utxoList.push({
+        txid: utxo.tx_hash,
+        index: utxo.tx_pos,
+        value: utxo.value
+      })
+      this.handleTxidFetch(utxo.tx_hash, utxo.height)
+    }
+
+    // Save to the address cache:
+    this.addressCache[scriptHash].utxos = utxoList
+    this.addressCache[scriptHash].utxoStratumHash = stateHash
+    this.refreshAddressInfo(scriptHash)
+    this.dirtyAddressCache()
+  }
+
+  /**
+   * If an entry changes in the address cache,
+   * update the derived info:
+   */
+  refreshAddressInfo (scriptHash: string) {
+    const address = this.addressCache[scriptHash]
+    if (!address) return
+    const { displayAddress, path } = address
+
+    // It is used if it has transactions or if the metadata says so:
+    const used =
+      this.usedAddresses[scriptHash] ||
+      address.txids.length + address.utxos.length !== 0
+
+    // We only include existing stuff:
+    const txids = address.txids.filter(txid => this.txCache[txid])
+    const utxos = address.utxos.filter(utxo => this.txCache[utxo.txid])
+
+    // Make a list of unconfirmed transactions for the utxo search:
+    const pendingTxids = txids.filter(
+      txid => this.txHeightCache[txid].height <= 0
+    )
+
+    // Add all our own unconfirmed outpoints to the utxo list:
+    for (const txid of pendingTxids) {
+      const tx = this.parsedTxs[txid]
+      for (let i = 0; i < tx.outputs.length; ++i) {
+        const output = tx.outputs[i]
+        if (output.scriptHash === scriptHash) {
+          utxos.push({ txid, index: i, value: output.value })
+        }
+      }
+    }
+
+    // Make a table of spent outpoints for filtering the UTXO list:
+    const spends = {}
+    for (const txid of pendingTxids) {
+      const tx = this.parsedTxs[txid]
+      for (const input of tx.inputs) {
+        spends[`${input.txid}:${input.index}`] = true
+      }
+    }
+
+    // Assemble the info structure:
+    this.addressInfos[scriptHash] = {
+      txids,
+      utxos: utxos.filter(utxo => !spends[`${utxo.txid}:${utxo.index}`]),
+      used,
+      displayAddress,
+      path
+    }
+    this.onAddressInfoUpdated(scriptHash)
+  }
+
+  // Finds the script hashes that a transaction touches.
+  findAffectedAddresses (txid: string): Array<string> {
+    const scriptHashSet = {}
+    for (const input of this.parsedTxs[txid].inputs) {
+      const prevTx = this.parsedTxs[input.txid]
+      if (!prevTx) continue
+      const prevOut = prevTx.outputs[input.index]
+      if (!prevOut) continue
+      scriptHashSet[prevOut.scriptHash] = true
+    }
+    for (const output of this.parsedTxs[txid].outputs) {
+      scriptHashSet[output.scriptHash] = true
+    }
+    return Object.keys(scriptHashSet)
   }
 
   onConnectionFail (uri: string, e: Error, task: string) {

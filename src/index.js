@@ -17,7 +17,7 @@ import { dogecoinInfo } from './info/dogecoin.js'
 import { litecoinInfo } from './info/litecoin.js'
 
 // CurrencyPlugin takes a plugin info and creates the plugin
-import { CurrencyPlugin } from './plugin/plugin-api.js'
+import { CurrencyPlugin } from './plugin/currencyPlugin.js'
 
 // Bcoin extender function
 import { bcoinExtender } from './utils/bcoin-extender'

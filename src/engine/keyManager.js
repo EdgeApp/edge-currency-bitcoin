@@ -1,6 +1,6 @@
 // @flow
 import type { AbcSpendTarget } from 'airbitz-core-types'
-import type { UtxoObj, AddressObj, AddressCache } from './engine-state.js'
+import type { UtxoInfo, AddressInfo, AddressInfos } from './engineState.js'
 // $FlowFixMe
 import buffer from 'buffer-hack'
 import bcoin from 'bcoin'
@@ -19,7 +19,6 @@ export type RawTx = string
 export type BlockHeight = number
 
 export type Address = {
-  used: boolean,
   displayAddress: string,
   scriptHash: string,
   index: number,
@@ -62,7 +61,7 @@ export type ScriptHashMap = {
 export type createTxOptions = {
   outputs: Array<AbcSpendTarget>,
   utxos: Array<{
-    utxo: UtxoObj,
+    utxo: UtxoInfo,
     rawTx: RawTx,
     height: BlockHeight
   }>,
@@ -90,7 +89,7 @@ export type KeyManagerOptions = {
   gapLimit: number,
   network: string,
   callbacks: KeyManagerCallbacks,
-  addressCache?: AddressCache
+  addressInfos?: AddressInfos
 }
 
 export class KeyManager {
@@ -102,7 +101,7 @@ export class KeyManager {
   keys: Keys
   onNewAddress: (scriptHash: string, address: string, path: string) => void
   onNewKey: (keys: any) => void
-  addressCache: AddressCache
+  addressInfos: AddressInfos
   displayAddressMap: DisplayAddressMap
   scriptHashMap: ScriptHashMap
   seed: string
@@ -115,7 +114,7 @@ export class KeyManager {
     gapLimit = GAP_LIMIT,
     network,
     callbacks,
-    addressCache = {}
+    addressInfos = {}
   }: KeyManagerOptions) {
     // Check for any way to init the wallet with either a seed or master keys
     if (
@@ -186,19 +185,18 @@ export class KeyManager {
     const { onNewAddress = nop, onNewKey = nop } = callbacks
     this.onNewAddress = onNewAddress
     this.onNewKey = onNewKey
-    this.addressCache = addressCache
+    this.addressInfos = addressInfos
 
     // Load addresses from Cache
-    for (const scriptHash in this.addressCache) {
-      const address: AddressObj = this.addressCache[scriptHash]
-      const { txids, displayAddress, path } = address
+    for (const scriptHash in this.addressInfos) {
+      const address: AddressInfo = this.addressInfos[scriptHash]
+      const { displayAddress, path } = address
       const pathSuffix = path.split(this.masterPath + '/')[1]
       if (pathSuffix) {
         let [branch, index] = pathSuffix.split('/')
         branch = parseInt(branch)
         index = parseInt(index)
-        const used = txids && txids.length > 0
-        const address = { used, displayAddress, scriptHash, index, branch }
+        const address = { displayAddress, scriptHash, index, branch }
         this.displayAddressMap[displayAddress] = address
         this.scriptHashMap[scriptHash] = address
         if (branch === 0) {
@@ -237,18 +235,6 @@ export class KeyManager {
   getChangeAddress (): string {
     if (this.bip === 'bip32') return this.getReceiveAddress()
     return this.getNextAvailable(this.keys.change.children)
-  }
-
-  async use (scriptHash: string) {
-    const keyToUse: ?Address = this.scriptHashMap[scriptHash]
-    if (keyToUse) keyToUse.used = true
-    await this.setLookAhead()
-  }
-
-  async unuse (scriptHash: string) {
-    const keyToUnsue: ?Address = this.scriptHashMap[scriptHash]
-    if (keyToUnsue) keyToUnsue.used = false
-    await this.setLookAhead()
   }
 
   async createTX ({
@@ -380,13 +366,13 @@ export class KeyManager {
 
   utxoToPath (prevout: any): Array<number> {
     let scriptHashForUtxo = null
-    for (const scriptHash: string in this.addressCache) {
-      const addressObj: AddressObj = this.addressCache[scriptHash]
+    for (const scriptHash: string in this.addressInfos) {
+      const addressObj: AddressInfo = this.addressInfos[scriptHash]
       if (!addressObj) throw new Error('Address is not part of this wallet')
-      const utxos: Array<UtxoObj> = addressObj.utxos
+      const utxos: Array<UtxoInfo> = addressObj.utxos
 
       if (
-        utxos.find((utxo: UtxoObj) => {
+        utxos.find((utxo: UtxoInfo) => {
           return utxo.txid === prevout.rhash() && prevout.index === utxo.index
         })
       ) {
@@ -405,7 +391,11 @@ export class KeyManager {
   getNextAvailable (addresses: Array<Address>): string {
     let key = null
     for (let i = 0; i < addresses.length; i++) {
-      if (!addresses[i].used) {
+      const scriptHash = addresses[i].scriptHash
+      if (
+        this.addressInfos[scriptHash] &&
+        !this.addressInfos[scriptHash].used
+      ) {
         key = addresses[i]
         break
       }
@@ -467,7 +457,12 @@ export class KeyManager {
       newPubKey = pubKey.derive(childLen)
     } else {
       for (let i = 0; i < childLen; i++) {
-        if (children[i].used && childLen - i <= this.gapLimit) {
+        let used = false
+        const scriptHash = children[i].scriptHash
+        if (scriptHash && this.addressInfos[scriptHash]) {
+          used = this.addressInfos[scriptHash].used
+        }
+        if (used && childLen - i <= this.gapLimit) {
           newPubKey = pubKey.derive(childLen)
           break
         }
@@ -489,14 +484,12 @@ export class KeyManager {
       key.network = bcoin.network.get(this.network)
       const displayAddress = key.getAddress('base58')
       const scriptHash = await this.addressToScriptHash(displayAddress)
-      const used = false
       this.onNewAddress(
         scriptHash,
         displayAddress,
         `${this.masterPath}/${branch}/${index}`
       )
       const address = {
-        used,
         displayAddress,
         scriptHash,
         index,

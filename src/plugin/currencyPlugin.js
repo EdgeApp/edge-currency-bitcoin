@@ -15,8 +15,8 @@ import { bns } from 'biggystring'
 // $FlowFixMe
 import buffer from 'buffer-hack'
 import { parse, serialize } from 'uri-js'
-import { CurrencyEngine } from '../engine/engine-api.js'
-import { PluginState } from './plugin-state.js'
+import { CurrencyEngine } from '../engine/currencyEngine.js'
+import { PluginState } from './pluginState.js'
 
 // $FlowFixMe
 const { Buffer } = buffer

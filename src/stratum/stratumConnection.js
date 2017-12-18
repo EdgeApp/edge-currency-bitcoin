@@ -1,8 +1,8 @@
 // @flow
 import { parse } from 'uri-js'
 
-import { fetchVersion } from './stratum-messages.js'
-import type { FetchBlockHeaderType } from './stratum-messages'
+import { fetchVersion } from './stratumMessages.js'
+import type { StratumBlockHeader } from './stratumMessages.js'
 
 export type OnFailHandler = (error: Error) => void
 export type OnCloseHandler = (
@@ -33,7 +33,7 @@ export interface StratumCallbacks {
   +onClose?: OnCloseHandler;
   +onQueueSpace?: (uri: string) => StratumTask | void;
 
-  onNotifyHeader?: (uri: string, headerInfo: FetchBlockHeaderType) => void;
+  onNotifyHeader?: (uri: string, headerInfo: StratumBlockHeader) => void;
   +onNotifyScriptHash?: (uri: string, scriptHash: string, hash: string) => void;
 }
 
@@ -164,7 +164,7 @@ export class StratumConnection {
   onClose: OnCloseHandler
   onOpen: (uri: string) => void
   onQueueSpace: (uri: string) => StratumTask | void
-  onNotifyHeader: (uri: string, headerInfo: FetchBlockHeaderType) => void
+  onNotifyHeader: (uri: string, headerInfo: StratumBlockHeader) => void
   onNotifyScriptHash: (uri: string, scriptHash: string, hash: string) => void
 
   // Message queue:

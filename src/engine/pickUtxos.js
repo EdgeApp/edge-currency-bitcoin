@@ -3,7 +3,7 @@
  * @flow
  */
 
-import type { AddressCache, AddressObj, UtxoObj } from './engine-state.js'
+import type { AddressInfos, AddressInfo, UtxoInfo } from './engineState.js'
 // import type { HeaderCache } from './pluginState.js'
 import coinselect from 'coinselect'
 
@@ -14,7 +14,7 @@ interface BjsUtxo {
 }
 
 export function pickUtxos (
-  addressCache: AddressCache,
+  addressInfos: AddressInfos,
   // headerCache: HeaderCache,
   amountSatoshi: number,
   useOnlyConfirmed: boolean = true
@@ -23,11 +23,11 @@ export function pickUtxos (
   const utxosConfirmed: Array<BjsUtxo> = []
   const utxosAll: Array<BjsUtxo> = []
   // Loop over all addresses
-  for (const scriptHash in addressCache) {
-    if (addressCache.hasOwnProperty(scriptHash)) {
+  for (const scriptHash in addressInfos) {
+    if (addressInfos.hasOwnProperty(scriptHash)) {
       // Loop over all utxos in an address
-      const addressObj: AddressObj = addressCache[scriptHash]
-      for (const utxo: UtxoObj of addressObj.utxos) {
+      const addressObj: AddressInfo = addressInfos[scriptHash]
+      for (const utxo: UtxoInfo of addressObj.utxos) {
         // TODO: Need to actually find out if this is confirmed
         const confirmed: boolean = true
         const bjsUtxo: BjsUtxo = utxoAbcToBjs(utxo)
@@ -45,7 +45,7 @@ export function pickUtxos (
       value: amountSatoshi
     }
   ]
-  let out: Array<UtxoObj> = []
+  let out: Array<UtxoInfo> = []
 
   // Try unconfirmed funds first
   let selectObj = coinselect(utxosConfirmed, targets, 0)
@@ -60,8 +60,8 @@ export function pickUtxos (
   return out
 }
 
-function arrayUtxoBjsToAbc (bjsUtxos: Array<BjsUtxo>): Array<UtxoObj> {
-  const utxos: Array<UtxoObj> = []
+function arrayUtxoBjsToAbc (bjsUtxos: Array<BjsUtxo>): Array<UtxoInfo> {
+  const utxos: Array<UtxoInfo> = []
   for (const bjsUtxo of bjsUtxos) {
     utxos.push(utxoBjsToAbc(bjsUtxo))
   }
@@ -69,7 +69,7 @@ function arrayUtxoBjsToAbc (bjsUtxos: Array<BjsUtxo>): Array<UtxoObj> {
 }
 
 function utxoBjsToAbc (bjsUtxo: BjsUtxo) {
-  const utxoObj: UtxoObj = {
+  const utxoObj: UtxoInfo = {
     txid: bjsUtxo.txId,
     index: bjsUtxo.vout,
     value: bjsUtxo.value
@@ -77,7 +77,7 @@ function utxoBjsToAbc (bjsUtxo: BjsUtxo) {
   return utxoObj
 }
 
-function utxoAbcToBjs (utxo: UtxoObj): BjsUtxo {
+function utxoAbcToBjs (utxo: UtxoInfo): BjsUtxo {
   const bjsUtxo: BjsUtxo = {
     txId: utxo.txid,
     vout: utxo.index,

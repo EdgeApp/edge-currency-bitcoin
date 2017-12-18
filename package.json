@@ -1,6 +1,6 @@
 {
   "name": "edge-currency-bitcoin",
-  "version": "2.1.9",
+  "version": "2.2.0",
   "description": "Edge Bitcoin currency plugin",
   "homepage": "https://edgesecure.co",
   "license": "SEE LICENSE IN LICENSE",
@@ -30,11 +30,10 @@
     "lint": "eslint '*.js' 'src/**/*.js' 'test/**/*.js' && npm run flow",
     "prepare": "npm run build",
     "security": "nsp check",
-    "pretest": "npm run build:test",
-    "test": "npm run lint && npm run coverage && npm run report",
-    "updot": "updot",
-    "coverage": "nyc mocha --require source-map-support/register build/tests.cjs.js",
-    "report": "nyc report --reporter=html"
+    "pretest": "npm run build:test && npm run lint",
+    "test": "nyc mocha --require source-map-support/register build/tests.cjs.js",
+    "posttest": "nyc report --reporter=html",
+    "updot": "updot"
   },
   "dependencies": {
     "airbitz-core-types": "git+https://github.com/Airbitz/airbitz-core-types.git",

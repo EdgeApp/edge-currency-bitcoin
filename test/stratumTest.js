@@ -4,8 +4,8 @@ import { describe, it } from 'mocha'
 import net from 'net'
 import tls from 'tls'
 
-import type { StratumCallbacks } from '../src/stratum/stratum-connection.js'
-import { StratumConnection } from '../src/stratum/stratum-connection.js'
+import type { StratumCallbacks } from '../src/stratum/stratumConnection.js'
+import { StratumConnection } from '../src/stratum/stratumConnection.js'
 import {
   fetchVersion,
   subscribeHeight,
@@ -14,10 +14,10 @@ import {
   subscribeScriptHash,
   fetchScriptHashHistory,
   fetchScriptHashUtxo,
-  type TxHistoryType,
-  type FetchBlockHeaderType
-} from '../src/stratum/stratum-messages.js'
-import type { UtxoType } from '../src/stratum/stratum-messages'
+  type StratumHistoryRow,
+  type StratumBlockHeader
+} from '../src/stratum/stratumMessages.js'
+import type { StratumUtxo } from '../src/stratum/stratumMessages.js'
 
 // const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
 const ELECTRUM_SERVER = 'electrum://electrum-bu-az-wusa2.airbitz.co:50001'
@@ -91,7 +91,7 @@ describe('StratumConnection', function () {
   it('fetchBlockHeader', function (done) {
     const task = fetchBlockHeader(
       400000,
-      (data: FetchBlockHeaderType) => {
+      (data: StratumBlockHeader) => {
         connection.close()
         expect(data.block_height).to.equal(400000)
         expect(data.prev_block_hash).to.equal(
@@ -189,7 +189,7 @@ describe('StratumConnection', function () {
   it('fetchScriptHashHistory', function (done) {
     const task = fetchScriptHashHistory(
       '187b07664e7f1c6a26911530652b24376c1a8d1ae734d7c9fa925e7f117b077d',
-      (data: Array<TxHistoryType>) => {
+      (data: Array<StratumHistoryRow>) => {
         connection.close()
         assert.equal(data.length > 0, true)
         assert.equal(
@@ -227,7 +227,7 @@ describe('StratumConnection', function () {
   it('fetchScriptHashUtxo', function (done) {
     const task = fetchScriptHashUtxo(
       '187b07664e7f1c6a26911530652b24376c1a8d1ae734d7c9fa925e7f117b077d',
-      (data: Array<UtxoType>) => {
+      (data: Array<StratumUtxo>) => {
         connection.close()
         assert.equal(data.length > 0, true)
         assert.equal(

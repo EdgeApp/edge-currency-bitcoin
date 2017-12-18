@@ -10,10 +10,10 @@ import type {
   AbcSpendTarget
 } from 'airbitz-core-types'
 
-import { EngineState } from './engine-state.js'
-import { PluginState } from '../plugin/plugin-state.js'
+import { EngineState } from './engineState.js'
+import { PluginState } from '../plugin/pluginState.js'
 import { KeyManager } from './keyManager'
-import type { EngineStateCallbacks } from './engine-state.js'
+import type { EngineStateCallbacks } from './engineState.js'
 import type { KeyManagerCallbacks } from './keyManager'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
@@ -86,16 +86,13 @@ export class CurrencyEngine {
 
   async load (): Promise<any> {
     const engineStateCallbacks: EngineStateCallbacks = {
-      onUtxosUpdated: (addressHash: string) => {
-        this.keyManager.use(addressHash)
+      onAddressInfoUpdated: (addressHash: string) => {
+        if (this.keyManager) this.keyManager.setLookAhead()
         this.options.callbacks.onBalanceChanged(
           this.currencyInfo.currencyCode,
           this.getBalance()
         )
       },
-      // onTxidsUpdated: (addressHash: string) => {
-      //   this.options.callbacks.onTxidsChanged(height)
-      // },
       onHeightUpdated: (height: number) => {
         this.options.callbacks.onBlockHeightChanged(height)
       },
@@ -111,7 +108,6 @@ export class CurrencyEngine {
 
     this.engineState = new EngineState({
       callbacks: engineStateCallbacks,
-      bcoin: bcoin,
       io: io,
       localFolder: this.options.walletLocalFolder,
       encryptedLocalFolder: this.options.walletLocalEncryptedFolder,
@@ -149,7 +145,7 @@ export class CurrencyEngine {
       gapLimit: gapLimit,
       network: this.network,
       callbacks: keyManagerCallbacks,
-      addressCache: this.engineState.addressCache
+      addressInfos: this.engineState.addressInfos
     })
 
     await this.keyManager.load()
@@ -277,10 +273,10 @@ export class CurrencyEngine {
 
   getUTXOs () {
     const utxos: any = []
-    for (const scriptHash in this.engineState.addressCache) {
-      const utxoLength = this.engineState.addressCache[scriptHash].utxos.length
+    for (const scriptHash in this.engineState.addressInfos) {
+      const utxoLength = this.engineState.addressInfos[scriptHash].utxos.length
       for (let i = 0; i < utxoLength; i++) {
-        const utxo = this.engineState.addressCache[scriptHash].utxos[i]
+        const utxo = this.engineState.addressInfos[scriptHash].utxos[i]
         const rawTx = this.engineState.txCache[utxo.txid]
         let height = -1
         if (this.engineState.txHeightCache[utxo.txid]) {
@@ -341,8 +337,8 @@ export class CurrencyEngine {
 
   getBalance (options: any): string {
     let balance = 0
-    for (const scriptHash in this.engineState.addressCache) {
-      const { utxos } = this.engineState.addressCache[scriptHash]
+    for (const scriptHash in this.engineState.addressInfos) {
+      const { utxos } = this.engineState.addressInfos[scriptHash]
       const utxoLength = utxos.length
       for (let i = 0; i < utxoLength; i++) {
         balance += utxos[i].value
@@ -378,7 +374,12 @@ export class CurrencyEngine {
   }
 
   addGapLimitAddresses (addresses: Array<string>, options: any): void {
-    // TODO: Implement this
+    const scriptHashes = addresses.map(
+      displayAddress => this.engineState.scriptHashes[displayAddress]
+    )
+
+    this.engineState.markAddressesUsed(scriptHashes)
+    if (this.keyManager) this.keyManager.setLookAhead()
   }
 
   isAddressUsed (address: string, options: any): boolean {
@@ -391,11 +392,11 @@ export class CurrencyEngine {
         throw new Error('Wrong formatted address')
       }
     }
-    for (const scriptHash in this.engineState.addressCache) {
+    for (const scriptHash in this.engineState.addressInfos) {
       if (
-        this.engineState.addressCache[scriptHash].displayAddress === address
+        this.engineState.addressInfos[scriptHash].displayAddress === address
       ) {
-        return this.engineState.addressCache[scriptHash].used
+        return this.engineState.addressInfos[scriptHash].used
       }
     }
     return false
@@ -444,9 +445,7 @@ export class CurrencyEngine {
       const address = resultedTransaction.outputs[i]
         .getAddress()
         .toString(this.network)
-      if (
-        address &&
-        this.keyManager.displayAddressMap[address]) {
+      if (address && this.keyManager.displayAddressMap[address]) {
         ourReceiveAddresses.push(address)
       }
     }
@@ -492,6 +491,7 @@ export class CurrencyEngine {
   }
 
   saveTx (abcTransaction: AbcTransaction): Promise<void> {
-    return Promise.resolve() // TODO: Implement this
+    this.engineState.saveTx(abcTransaction.txid, abcTransaction.signedTx)
+    return Promise.resolve()
   }
 }
