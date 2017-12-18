@@ -87,7 +87,7 @@ export class CurrencyEngine {
   async load (): Promise<any> {
     const engineStateCallbacks: EngineStateCallbacks = {
       onAddressInfoUpdated: (addressHash: string) => {
-        if (this.keyManager) this.keyManager.use(addressHash)
+        if (this.keyManager) this.keyManager.setLookAhead()
         this.options.callbacks.onBalanceChanged(
           this.currencyInfo.currencyCode,
           this.getBalance()
@@ -379,8 +379,7 @@ export class CurrencyEngine {
     )
 
     this.engineState.markAddressesUsed(scriptHashes)
-    for (const scriptHash of scriptHashes) this.keyManager.use(scriptHash)
-    this.keyManager.setLookAhead()
+    if (this.keyManager) this.keyManager.setLookAhead()
   }
 
   isAddressUsed (address: string, options: any): boolean {

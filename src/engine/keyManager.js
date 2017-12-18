@@ -19,7 +19,6 @@ export type RawTx = string
 export type BlockHeight = number
 
 export type Address = {
-  used: boolean,
   displayAddress: string,
   scriptHash: string,
   index: number,
@@ -191,13 +190,13 @@ export class KeyManager {
     // Load addresses from Cache
     for (const scriptHash in this.addressInfos) {
       const address: AddressInfo = this.addressInfos[scriptHash]
-      const { displayAddress, path, used } = address
+      const { displayAddress, path } = address
       const pathSuffix = path.split(this.masterPath + '/')[1]
       if (pathSuffix) {
         let [branch, index] = pathSuffix.split('/')
         branch = parseInt(branch)
         index = parseInt(index)
-        const address = { used, displayAddress, scriptHash, index, branch }
+        const address = { displayAddress, scriptHash, index, branch }
         this.displayAddressMap[displayAddress] = address
         this.scriptHashMap[scriptHash] = address
         if (branch === 0) {
@@ -236,18 +235,6 @@ export class KeyManager {
   getChangeAddress (): string {
     if (this.bip === 'bip32') return this.getReceiveAddress()
     return this.getNextAvailable(this.keys.change.children)
-  }
-
-  async use (scriptHash: string) {
-    const keyToUse: ?Address = this.scriptHashMap[scriptHash]
-    if (keyToUse) keyToUse.used = true
-    await this.setLookAhead()
-  }
-
-  async unuse (scriptHash: string) {
-    const keyToUnsue: ?Address = this.scriptHashMap[scriptHash]
-    if (keyToUnsue) keyToUnsue.used = false
-    await this.setLookAhead()
   }
 
   async createTX ({
@@ -404,7 +391,11 @@ export class KeyManager {
   getNextAvailable (addresses: Array<Address>): string {
     let key = null
     for (let i = 0; i < addresses.length; i++) {
-      if (!addresses[i].used) {
+      const scriptHash = addresses[i].scriptHash
+      if (
+        this.addressInfos[scriptHash] &&
+        !this.addressInfos[scriptHash].used
+      ) {
         key = addresses[i]
         break
       }
@@ -466,7 +457,12 @@ export class KeyManager {
       newPubKey = pubKey.derive(childLen)
     } else {
       for (let i = 0; i < childLen; i++) {
-        if (children[i].used && childLen - i <= this.gapLimit) {
+        let used = false
+        const scriptHash = children[i].scriptHash
+        if (scriptHash && this.addressInfos[scriptHash]) {
+          used = this.addressInfos[scriptHash].used
+        }
+        if (used && childLen - i <= this.gapLimit) {
           newPubKey = pubKey.derive(childLen)
           break
         }
@@ -488,14 +484,12 @@ export class KeyManager {
       key.network = bcoin.network.get(this.network)
       const displayAddress = key.getAddress('base58')
       const scriptHash = await this.addressToScriptHash(displayAddress)
-      const used = false
       this.onNewAddress(
         scriptHash,
         displayAddress,
         `${this.masterPath}/${branch}/${index}`
       )
       const address = {
-        used,
         displayAddress,
         scriptHash,
         index,
