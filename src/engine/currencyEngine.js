@@ -480,14 +480,9 @@ export class CurrencyEngine {
   }
 
   async broadcastTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
-    try {
-      const txid = await this.engineState.broadcastTx(abcTransaction.signedTx)
-      abcTransaction.txid = txid
-      return abcTransaction
-    } catch (e) {
-      console.log('error broadcasting tx', e)
-      return abcTransaction
-    }
+    const txid = await this.engineState.broadcastTx(abcTransaction.signedTx)
+    abcTransaction.txid = txid
+    return abcTransaction
   }
 
   saveTx (abcTransaction: AbcTransaction): Promise<void> {
