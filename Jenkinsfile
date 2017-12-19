@@ -11,21 +11,12 @@ node {
         sh "npm i"
       }
 
-      stage ("Lint Module") {
-        sh "npm run lint"
-      }
-
-
       stage ("Module Security Check") {
         sh "npm run security"
       }
 
       stage ("Test Module") {
         sh "npm test"
-      }
-
-      stage ("Coverage") {
-        sh "npm run cover"
         publishHTML (target: [
           allowMissing: false,
           alwaysLinkToLastBuild: false,
