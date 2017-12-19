@@ -1,6 +1,8 @@
 node {
   try {
-    deleteDir()
+    stage ("Set Clean Environment") {
+      deleteDir()    
+    }
 
     stage ("checkout") {
       checkout scm
