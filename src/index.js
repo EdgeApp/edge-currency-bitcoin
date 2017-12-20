@@ -20,20 +20,7 @@ import { litecoinInfo } from './info/litecoin.js'
 import { CurrencyPlugin } from './plugin/currencyPlugin.js'
 
 // Bcoin extender function
-import { bcoinExtender } from './utils/bcoin-extender'
-
-const pluginsInfo = [
-  bitcoinInfo,
-  bitcoinTestnetInfo,
-  bitcoincashInfo,
-  bitcoincashTestnetInfo,
-  dashInfo,
-  dogecoinInfo,
-  litecoinInfo
-]
-
-// Extend bcoin to support all coins we have info for
-bcoinExtender(bcoin, pluginsInfo)
+import { bcoinExtender } from './utils/bcoinExtender'
 
 /**
  * Makes a core plugin factory, given the currencyInfo for that coin.
@@ -47,6 +34,13 @@ function makePluginFactory (
 
     makePlugin (options: AbcCorePluginOptions): Promise<AbcCurrencyPlugin> {
       const plugin = new CurrencyPlugin(options, currencyInfo)
+      // Extend bcoin to support this plugin currency info
+      // and faster crypto if possible
+      let secp256k1 = null
+      if (options.io && options.io.secp256k1) {
+        secp256k1 = options.io.secp256k1
+      }
+      bcoinExtender(bcoin, currencyInfo, secp256k1)
       return plugin.state.load().then(() => plugin)
     }
   }
