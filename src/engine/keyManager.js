@@ -400,8 +400,9 @@ export class KeyManager {
         break
       }
     }
-    if (!key) return ''
-    return key.displayAddress
+    return key
+      ? key.displayAddress
+      : addresses[addresses.length - 1].displayAddress
   }
 
   async getPrivateFromSeed (seed: string) {
