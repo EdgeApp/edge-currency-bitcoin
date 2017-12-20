@@ -225,7 +225,7 @@ export class KeyManager {
       this.keys.master.pubKey = this.keys.master.privKey.toPublic()
       this.saveKeysToCache()
     }
-    await this.setLookAhead()
+    await this.setLookAhead(true)
   }
 
   getReceiveAddress (): string {
@@ -434,33 +434,44 @@ export class KeyManager {
     }
   }
 
-  async setLookAhead () {
+  async setLookAhead (closeGaps: boolean = false) {
     if (this.bip !== 'bip32') {
-      const newKey = await this.deriveNewKeys(this.keys.change, 1)
-      if (newKey) await this.setLookAhead()
+      await this.deriveNewKeys(this.keys.change, 1, closeGaps)
     }
-    const newKey = await this.deriveNewKeys(this.keys.receive, 0)
-    if (newKey) await this.setLookAhead()
+    await this.deriveNewKeys(this.keys.receive, 0, closeGaps)
   }
 
-  async deriveNewKeys (keyRing: KeyRing, branch: number) {
+  async deriveNewKeys (keyRing: KeyRing, branch: number, closeGaps: boolean) {
     const { children } = keyRing
-    const childLen = children.length
-    if (childLen < this.gapLimit) {
-      return this.deriveAddress(keyRing, branch, childLen)
-    } else {
-      for (let i = 0; i < childLen; i++) {
-        let used = false
-        const scriptHash = children[i].scriptHash
-        if (scriptHash && this.addressInfos[scriptHash]) {
-          used = this.addressInfos[scriptHash].used
-        }
-        if (used && childLen - i <= this.gapLimit) {
-          return this.deriveAddress(keyRing, branch, childLen)
+
+    // If the chain might have gaps, fill those in:
+    if (closeGaps) {
+      let index = 0
+      const length = children.length
+      for (let i = 0; i < length; ++i, ++index) {
+        while (index < children[i].index) {
+          this.deriveAddress(keyRing, branch, index++)
         }
       }
+
+      // New addresses get appended, so sort them back into position:
+      children.sort((a, b) => a.index - b.index)
     }
-    return null
+
+    // Find the last used address:
+    let lastUsed =
+      children.length < this.gapLimit ? 0 : children.length - this.gapLimit
+    for (let i = lastUsed; i < children.length; ++i) {
+      const scriptHash = children[i].scriptHash
+      if (this.addressInfos[scriptHash] && this.addressInfos[scriptHash].used) {
+        lastUsed = i
+      }
+    }
+
+    // If the last used address is too close to the end, generate some more:
+    while (lastUsed + this.gapLimit < children.length) {
+      this.deriveAddress(keyRing, branch, children.length)
+    }
   }
 
   /**
