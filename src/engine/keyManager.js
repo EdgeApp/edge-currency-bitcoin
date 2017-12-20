@@ -444,17 +444,10 @@ export class KeyManager {
   }
 
   async deriveNewKeys (keyRing: KeyRing, branch: number) {
-    let newPubKey = null
-    let { pubKey } = keyRing
     const { children } = keyRing
     const childLen = children.length
-    if (!pubKey) {
-      keyRing.pubKey = this.keys.master.pubKey.derive(branch)
-      pubKey = keyRing.pubKey
-      this.saveKeysToCache()
-    }
     if (childLen < this.gapLimit) {
-      newPubKey = pubKey.derive(childLen)
+      return this.deriveAddress(keyRing, branch, childLen)
     } else {
       for (let i = 0; i < childLen; i++) {
         let used = false
@@ -463,43 +456,54 @@ export class KeyManager {
           used = this.addressInfos[scriptHash].used
         }
         if (used && childLen - i <= this.gapLimit) {
-          newPubKey = pubKey.derive(childLen)
-          break
+          return this.deriveAddress(keyRing, branch, childLen)
         }
       }
     }
-    if (newPubKey) {
-      const index = childLen
-      let nested = false
-      let witness = false
-      if (this.bip === 'bip49') {
-        nested = true
-        witness = true
-      }
-      const key = bcoin.primitives.KeyRing.fromOptions({
-        publicKey: newPubKey,
-        nested,
-        witness
-      })
-      key.network = bcoin.network.get(this.network)
-      const displayAddress = key.getAddress('base58')
-      const scriptHash = await this.addressToScriptHash(displayAddress)
-      this.onNewAddress(
-        scriptHash,
-        displayAddress,
-        `${this.masterPath}/${branch}/${index}`
-      )
-      const address = {
-        displayAddress,
-        scriptHash,
-        index,
-        branch
-      }
-      children.push(address)
-      this.displayAddressMap[displayAddress] = address
-      this.scriptHashMap[scriptHash] = address
+    return null
+  }
+
+  /**
+   * Derives an address at the specified branch and index,
+   * and adds it to the state.
+   * @param keyRing The KeyRing corresponding to the selected branch.
+   */
+  async deriveAddress (keyRing: KeyRing, branch: number, index: number) {
+    if (!keyRing.pubKey) {
+      keyRing.pubKey = this.keys.master.pubKey.derive(branch)
+      this.saveKeysToCache()
     }
-    return newPubKey
+    const publicKey = keyRing.pubKey.derive(index)
+
+    let nested = false
+    let witness = false
+    if (this.bip === 'bip49') {
+      nested = true
+      witness = true
+    }
+    const key = bcoin.primitives.KeyRing.fromOptions({
+      publicKey,
+      nested,
+      witness
+    })
+    key.network = bcoin.network.get(this.network)
+    const displayAddress = key.getAddress('base58')
+    const scriptHash = await this.addressToScriptHash(displayAddress)
+    this.onNewAddress(
+      scriptHash,
+      displayAddress,
+      `${this.masterPath}/${branch}/${index}`
+    )
+    const address = {
+      displayAddress,
+      scriptHash,
+      index,
+      branch
+    }
+    keyRing.children.push(address)
+    this.displayAddressMap[displayAddress] = address
+    this.scriptHashMap[scriptHash] = address
+    return publicKey
   }
 
   async addressToScriptHash (address: string) {
