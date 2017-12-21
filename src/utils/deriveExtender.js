@@ -1,7 +1,7 @@
 import assert from 'assert'
 
 export const patchDerivePublic = function (bcoin, secp256k1) {
-  const publicKey = bcoin.hd.HDPublicKey.prototype
+  const publicKey = bcoin.hd.PublicKey.prototype
   publicKey.derive = async function (index, hardened) {
     assert(typeof index === 'number')
 
@@ -35,7 +35,13 @@ export const patchDerivePublic = function (bcoin, secp256k1) {
 
     let key
     try {
-      key = await secp256k1.publicKeyTweakAdd(this.publicKey, left, true)
+      const result = secp256k1.publicKeyTweakAdd(this.publicKey, left, true)
+      if (typeof result.then === 'function') {
+        key = await Promise.resolve(result)
+        key = Buffer.from(key)
+      } else {
+        key = result
+      }
     } catch (e) {
       return this.derive(index + 1)
     }
@@ -60,7 +66,7 @@ export const patchDerivePublic = function (bcoin, secp256k1) {
 }
 
 export const patchDerivePrivate = function (bcoin, secp256k1) {
-  const privateKey = bcoin.hd.HDPrivateKey.prototype
+  const privateKey = bcoin.hd.PrivateKey.prototype
   privateKey.derive = async function (index, hardened) {
     assert(typeof index === 'number')
 
@@ -101,7 +107,13 @@ export const patchDerivePrivate = function (bcoin, secp256k1) {
 
     let key
     try {
-      key = await secp256k1.privateKeyTweakAdd(this.privateKey, left)
+      const result = secp256k1.privateKeyTweakAdd(this.privateKey, left)
+      if (typeof result.then === 'function') {
+        key = await Promise.resolve(result)
+        key = Buffer.from(key)
+      } else {
+        key = result
+      }
     } catch (e) {
       return this.derive(index + 1)
     }
@@ -118,7 +130,13 @@ export const patchDerivePrivate = function (bcoin, secp256k1) {
     child.childIndex = index
     child.chainCode = right
     child.privateKey = key
-    child.publicKey = await secp256k1.publicKeyCreate(key, true)
+    const result = secp256k1.publicKeyCreate(key, true)
+    if (typeof result.then === 'function') {
+      child.publicKey = await Promise.resolve(result)
+      child.publicKey = Buffer.from(child.publicKey)
+    } else {
+      child.publicKey = result
+    }
 
     bcoin.hd.common.cache.set(id, child)
 
@@ -127,14 +145,19 @@ export const patchDerivePrivate = function (bcoin, secp256k1) {
 }
 
 export const patchDerivePath = function (bcoin) {
-  const privateKey = bcoin.hd.HDPrivateKey.prototype
+  const privateKey = bcoin.hd.PrivateKey.prototype
   privateKey.derivePath = async function (path) {
     const indexes = bcoin.hd.common.parsePath(path, true)
 
     let key = this
 
     for (const index of indexes) {
-      key = await key.derive(index)
+      const result = key.derive(index)
+      if (typeof result.then === 'function') {
+        key = await Promise.resolve(result)
+      } else {
+        key = result
+      }
     }
 
     return key
