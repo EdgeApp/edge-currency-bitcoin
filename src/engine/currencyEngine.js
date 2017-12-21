@@ -476,6 +476,7 @@ export class CurrencyEngine {
     abcTransaction.signedTx = abcTransaction.otherParams.bcoinTx
       .toRaw()
       .toString('hex')
+    abcTransaction.txid = abcTransaction.otherParams.bcoinTx.rhash()
     return abcTransaction
   }
 
