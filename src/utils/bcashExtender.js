@@ -1,8 +1,6 @@
-// @flow
-import type { AbcCurrencyInfo } from 'airbitz-core-types'
 // import bcashaddress from './bcashaddress.js'
 
-const patchBachAddress = bcoin => {
+export const patchBcashAddress = bcoin => {
   const addressProto = bcoin.primitives.Address.prototype
   const toBase58 = addressProto.toBase58
   addressProto.toBase58 = function (network) {
@@ -18,7 +16,7 @@ const patchBachAddress = bcoin => {
   }
 }
 
-const patchBcashTX = bcoin => {
+export const patchBcashTX = bcoin => {
   const txProto = bcoin.primitives.TX.prototype
   const signature = txProto.signature
   txProto.signature = function (index, prev, value, key, type, version) {
@@ -30,27 +28,5 @@ const patchBcashTX = bcoin => {
       version = 1
     }
     return signature.call(this, index, prev, value, key, type, version)
-  }
-}
-
-export const bcoinExtender = (
-  bcoin: any,
-  pluginsInfo: Array<AbcCurrencyInfo>
-) => {
-  let bcashPatch = false
-  for (const { defaultSettings: { network } } of pluginsInfo) {
-    const type = network.type
-    bcoin.networks.types.push(type)
-    for (const param in bcoin.networks.main) {
-      if (!network[param]) {
-        network[param] = bcoin.networks.main[param]
-      }
-    }
-    bcoin.networks[type] = network
-    if (!bcashPatch && type && type.includes('bitcoincash')) {
-      patchBachAddress(bcoin)
-      patchBcashTX(bcoin)
-      bcashPatch = true
-    }
   }
 }

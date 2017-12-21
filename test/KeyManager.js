@@ -1,5 +1,11 @@
 // @flow
 
+// Coins Plugin Info
+import { bitcoinInfo } from '../src/info/bitcoin.js'
+import bcoin from 'bcoin'
+// Bcoin extender function
+import { bcoinExtender } from '../src/utils/bcoinExtender'
+
 import { describe, it } from 'mocha'
 import { assert } from 'chai'
 import { KeyManager } from '../src/engine/keyManager.js'
@@ -7,6 +13,7 @@ import type { KeyManagerCallbacks } from '../src/engine/keyManager.js'
 
 const network = 'bitcoin'
 const gapLimit = 10
+bcoinExtender(bcoin, bitcoinInfo)
 
 const keyManagerCallbacks: KeyManagerCallbacks = {
   onNewAddress: (scriptHash: string, address: string, path: string) => {
