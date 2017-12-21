@@ -346,10 +346,11 @@ export class StratumConnection {
       if (message.startTime + this.timeout < now) {
         try {
           message.task.onFail(new Error('Timeout'))
-          ++this.badMessages
         } catch (e) {
           console.error(e)
         }
+        delete this.pendingMessages[id]
+        ++this.badMessages
       }
     }
 
@@ -393,7 +394,8 @@ export class StratumConnection {
     }
 
     const now = Date.now() - TIMER_SLACK
-    this.timer = setTimeout(() => this.onTimer, nextWakeup - now)
+    const delay = nextWakeup < now ? 0 : nextWakeup - now
+    this.timer = setTimeout(() => this.onTimer(), delay)
   }
 
   transmitMessage (id: number, task: StratumTask) {
