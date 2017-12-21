@@ -1,7 +1,7 @@
 // @flow
 import type { AbcCurrencyInfo } from 'airbitz-core-types'
-import { patchBachAddress, patchBcashTX } from './bcashExtender.js'
 import { derivePublic, derivePrivate } from './deriveExtender.js'
+import { patchBcashAddress, patchBcashTX } from './bcashExtender.js'
 
 let cryptoReplaced = false
 
@@ -22,7 +22,7 @@ export const bcoinExtender = (
     bcoin.networks[type] = network
   }
   if (type && type.includes('bitcoincash')) {
-    patchBachAddress(bcoin)
+    patchBcashAddress(bcoin)
     patchBcashTX(bcoin)
   }
   if (!cryptoReplaced && secp256k1) {

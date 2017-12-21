@@ -1,6 +1,6 @@
 // import bcashaddress from './bcashaddress.js'
 
-export const patchBachAddress = bcoin => {
+export const patchBcashAddress = bcoin => {
   const addressProto = bcoin.primitives.Address.prototype
   const toBase58 = addressProto.toBase58
   addressProto.toBase58 = function (network) {
