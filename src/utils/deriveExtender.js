@@ -1,6 +1,6 @@
 import assert from 'assert'
 
-export const derivePublic = function (bcoin, secp256k1) {
+export const patchDerivePublic = function (bcoin, secp256k1) {
   const publicKey = bcoin.hd.HDPublicKey.prototype
   publicKey.derive = async function (index, hardened) {
     assert(typeof index === 'number')
@@ -59,9 +59,9 @@ export const derivePublic = function (bcoin, secp256k1) {
   }
 }
 
-export const derivePrivate = function (bcoin, secp256k1) {
-  const publicKey = bcoin.hd.HDPublicKey.prototype
-  publicKey.derive = async function (index, hardened) {
+export const patchDerivePrivate = function (bcoin, secp256k1) {
+  const privateKey = bcoin.hd.HDPrivateKey.prototype
+  privateKey.derive = async function (index, hardened) {
     assert(typeof index === 'number')
 
     if ((index >>> 0) !== index) {
@@ -123,5 +123,20 @@ export const derivePrivate = function (bcoin, secp256k1) {
     bcoin.hd.common.cache.set(id, child)
 
     return child
+  }
+}
+
+export const patchDerivePath = function (bcoin) {
+  const privateKey = bcoin.hd.HDPrivateKey.prototype
+  privateKey.derivePath = async function (path) {
+    const indexes = bcoin.hd.common.parsePath(path, true)
+
+    let key = this
+
+    for (const index of indexes) {
+      key = await key.derive(index)
+    }
+
+    return key
   }
 }

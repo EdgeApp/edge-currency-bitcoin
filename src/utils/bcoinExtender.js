@@ -1,7 +1,7 @@
 // @flow
 import type { AbcCurrencyInfo } from 'airbitz-core-types'
-import { derivePublic, derivePrivate } from './deriveExtender.js'
 import { patchBcashAddress, patchBcashTX } from './bcashExtender.js'
+import { patchDerivePublic, patchDerivePrivate, patchDerivePath } from './deriveExtender.js'
 
 let cryptoReplaced = false
 
@@ -26,8 +26,9 @@ export const bcoinExtender = (
     patchBcashTX(bcoin)
   }
   if (!cryptoReplaced && secp256k1) {
-    derivePublic(bcoin, secp256k1)
-    derivePrivate(bcoin, secp256k1)
+    patchDerivePublic(bcoin, secp256k1)
+    patchDerivePrivate(bcoin, secp256k1)
+    patchDerivePath(bcoin)
     cryptoReplaced = true
   }
 }
