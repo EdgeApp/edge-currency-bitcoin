@@ -469,8 +469,8 @@ export class KeyManager {
     }
 
     // If the last used address is too close to the end, generate some more:
-    while (lastUsed + this.gapLimit < children.length) {
-      this.deriveAddress(keyRing, branch, children.length)
+    while (lastUsed + this.gapLimit > children.length) {
+      await this.deriveAddress(keyRing, branch, children.length)
     }
   }
 
