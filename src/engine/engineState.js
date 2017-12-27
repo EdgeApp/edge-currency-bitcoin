@@ -21,7 +21,6 @@ import type {
   StratumHistoryRow,
   StratumUtxo
 } from '../stratum/stratumMessages.js'
-import type { ParsedTx } from './parseTransaction.js'
 import { parseTransaction } from './parseTransaction.js'
 
 export type UtxoInfo = {
@@ -106,7 +105,7 @@ export class EngineState {
   }
 
   // Cache of parsed transaction data:
-  parsedTxs: { [txid: string]: ParsedTx }
+  parsedTxs: { [txid: string]: any }
 
   // True if `startEngine` has been called:
   engineStarted: boolean
@@ -571,7 +570,7 @@ export class EngineState {
 
       // Update the derived information:
       for (const txid of Object.keys(this.txCache)) {
-        this.parsedTxs[txid] = parseTransaction(this.txCache[txid])
+        this.parsedTxs[txid] = await parseTransaction(this.txCache[txid])
       }
     } catch (e) {
       this.txCache = {}
@@ -700,16 +699,17 @@ export class EngineState {
 
   // A server has sent a transaction, so update the caches:
   handleTxFetch (txid: string, txData: string) {
-    this.txCache[txid] = txData
-    delete this.missingTxs[txid]
-    this.parsedTxs[txid] = parseTransaction(txData)
+    parseTransaction(txData).then(parsedTx => {
+      this.txCache[txid] = txData
+      delete this.missingTxs[txid]
+      this.parsedTxs[txid] = parsedTx
+      for (const scriptHash of this.findAffectedAddresses(txid)) {
+        this.refreshAddressInfo(scriptHash)
+      }
 
-    for (const scriptHash of this.findAffectedAddresses(txid)) {
-      this.refreshAddressInfo(scriptHash)
-    }
-
-    this.dirtyTxCache()
-    this.onTxFetched(txid)
+      this.dirtyTxCache()
+      this.onTxFetched(txid)
+    })
   }
 
   // A server has told us about a txid, so update the caches:
@@ -803,7 +803,7 @@ export class EngineState {
     for (const txid of pendingTxids) {
       const tx = this.parsedTxs[txid]
       for (const input of tx.inputs) {
-        spends[`${input.txid}:${input.index}`] = true
+        spends[`${input.prevout.rhash()}:${input.prevout.index}`] = true
       }
     }
 
@@ -822,9 +822,9 @@ export class EngineState {
   findAffectedAddresses (txid: string): Array<string> {
     const scriptHashSet = {}
     for (const input of this.parsedTxs[txid].inputs) {
-      const prevTx = this.parsedTxs[input.txid]
+      const prevTx = this.parsedTxs[input.prevout.rhash()]
       if (!prevTx) continue
-      const prevOut = prevTx.outputs[input.index]
+      const prevOut = prevTx.outputs[input.prevout.index]
       if (!prevOut) continue
       scriptHashSet[prevOut.scriptHash] = true
     }
