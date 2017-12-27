@@ -714,9 +714,18 @@ export class EngineState {
 
   // A server has told us about a txid, so update the caches:
   handleTxidFetch (txid: string, height: number) {
+    height = height || -1
     // Save to the height cache:
     if (this.txHeightCache[txid]) {
+      const prevHeight = this.txHeightCache[txid].height
       this.txHeightCache[txid].height = height
+      if (
+        this.parsedTxs[txid] &&
+        (prevHeight === -1 || !prevHeight) &&
+        height !== -1
+      ) {
+        this.onTxFetched(txid)
+      }
     } else {
       this.txHeightCache[txid] = {
         firstSeen: Date.now(),
