@@ -456,7 +456,7 @@ export class KeyManager {
       const length = children.length
       for (let i = 0; i < length; ++i, ++index) {
         while (index < children[i].index) {
-          this.deriveAddress(keyRing, branch, index++)
+          await this.deriveAddress(keyRing, branch, index++)
         }
       }
       if (children.length > length) {
