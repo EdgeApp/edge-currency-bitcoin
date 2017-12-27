@@ -290,8 +290,8 @@ export class KeyManager {
       }
     }
 
-    const coins = utxos.map(({ utxo, rawTx, height }) => {
-      const bcoinTX = bcoin.primitives.TX.fromRaw(rawTx, 'hex')
+    const coins = utxos.map(({ utxo, height }) => {
+      const bcoinTX = this.txInfos[utxo.txid]
       return bcoin.primitives.Coin.fromTX(bcoinTX, utxo.index, height)
     })
 

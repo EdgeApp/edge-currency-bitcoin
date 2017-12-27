@@ -156,10 +156,7 @@ export class CurrencyEngine {
     if (!this.engineState.txCache[txid]) {
       throw new Error('Transaction not found')
     }
-    const bcoinTransaction = bcoin.primitives.TX.fromRaw(
-      this.engineState.txCache[txid],
-      'hex'
-    )
+    const bcoinTransaction = this.engineState.parsedTxs[txid]
     const bcoinJSON = bcoinTransaction.getJSON(this.network)
     const ourReceiveAddresses = []
     let nativeAmount = 0
@@ -183,9 +180,8 @@ export class CurrencyEngine {
       const input = bcoinJSON.inputs[i]
       if (input.prevout) {
         const { hash, index } = input.prevout
-        const rawTX = this.engineState.txCache[hash]
-        if (rawTX) {
-          const prevoutBcoinTX = bcoin.primitives.TX.fromRaw(rawTX, 'hex')
+        if (this.engineState.txCache[hash]) {
+          const prevoutBcoinTX = this.engineState.parsedTxs[hash]
           const { value, address } = prevoutBcoinTX.getJSON(
             this.network
           ).outputs[index]
@@ -278,14 +274,11 @@ export class CurrencyEngine {
       const utxoLength = this.engineState.addressInfos[scriptHash].utxos.length
       for (let i = 0; i < utxoLength; i++) {
         const utxo = this.engineState.addressInfos[scriptHash].utxos[i]
-        const rawTx = this.engineState.txCache[utxo.txid]
         let height = -1
         if (this.engineState.txHeightCache[utxo.txid]) {
           height = this.engineState.txHeightCache[utxo.txid].height
         }
-        if (rawTx) {
-          utxos.push({ utxo, rawTx, height })
-        }
+        utxos.push({ utxo, height })
       }
     }
     return utxos
