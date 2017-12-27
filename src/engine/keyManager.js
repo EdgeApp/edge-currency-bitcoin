@@ -459,9 +459,10 @@ export class KeyManager {
           this.deriveAddress(keyRing, branch, index++)
         }
       }
-
-      // New addresses get appended, so sort them back into position:
-      children.sort((a, b) => a.index - b.index)
+      if (children.length > length) {
+        // New addresses get appended, so sort them back into position:
+        children.sort((a, b) => a.index - b.index)
+      }
     }
 
     // Find the last used address:
