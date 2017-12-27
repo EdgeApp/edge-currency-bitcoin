@@ -64,6 +64,7 @@ export type createTxOptions = {
   height: BlockHeight,
   rate: number,
   maxFee: number,
+  subtractFee?: boolean,
   setRBF?: boolean,
   RBFraw?: RawTx,
   CPFP?: Txid,
@@ -251,6 +252,7 @@ export class KeyManager {
     height,
     rate,
     maxFee,
+    subtractFee = false,
     setRBF = false,
     RBFraw = '',
     CPFP = '',
@@ -264,7 +266,6 @@ export class KeyManager {
 
     // If it's not a CPFP transaction it has to have outputs
     const mtx = new bcoin.primitives.MTX()
-    let subtractFee = false
     // Add the outputs
     for (const spendTarget of outputs) {
       const value = parseInt(spendTarget.nativeAmount)
@@ -300,8 +301,7 @@ export class KeyManager {
     })
 
     await mtx.fund(coins, {
-      selection: 'age',
-      round: false,
+      selection: 'value',
       changeAddress: this.getChangeAddress(),
       subtractFee: subtractFee,
       height: height,
