@@ -157,10 +157,30 @@ export class CurrencyEngine {
   }
 
   getTransaction (txid: string): AbcTransaction {
-    if (!this.engineState.txCache[txid]) {
+    const { height = -1, firstSeen = Date.now() } =
+      this.engineState.txHeightCache[txid] || {}
+    let date = firstSeen
+    // If confirmed, we will try and take the timestamp as the date
+    if (height && height !== -1) {
+      const blockHeight = this.pluginState.headerCache[height.toString()]
+      if (blockHeight) {
+        date = blockHeight.timestamp
+      }
+    }
+    // If already exists, try and update the height and return
+    if (this.transactionCache[txid]) {
+      const abcTransaction = this.transactionCache[txid]
+      if (height !== abcTransaction.blockHeight) {
+        abcTransaction.blockHeight = height
+        abcTransaction.date = date
+      }
+      return abcTransaction
+    }
+    // Get pased bcoin tx from engine
+    const bcoinTransaction = this.engineState.parsedTxs[txid]
+    if (!bcoinTransaction) {
       throw new Error('Transaction not found')
     }
-    const bcoinTransaction = this.engineState.parsedTxs[txid]
     const bcoinJSON = bcoinTransaction.getJSON(this.network)
     const ourReceiveAddresses = []
     let nativeAmount = 0
@@ -184,8 +204,8 @@ export class CurrencyEngine {
       const input = bcoinJSON.inputs[i]
       if (input.prevout) {
         const { hash, index } = input.prevout
-        if (this.engineState.txCache[hash]) {
-          const prevoutBcoinTX = this.engineState.parsedTxs[hash]
+        const prevoutBcoinTX = this.engineState.parsedTxs[hash]
+        if (prevoutBcoinTX) {
           const { value, address } = prevoutBcoinTX.getJSON(
             this.network
           ).outputs[index]
@@ -194,16 +214,6 @@ export class CurrencyEngine {
             nativeAmount -= value
           }
         }
-      }
-    }
-
-    const { height = -1, firstSeen = Date.now() } =
-      this.engineState.txHeightCache[txid] || {}
-    let date = firstSeen
-    if (height && height !== -1) {
-      const blockHeight = this.pluginState.headerCache[height.toString()]
-      if (blockHeight) {
-        date = blockHeight.timestamp
       }
     }
 
