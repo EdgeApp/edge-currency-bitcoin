@@ -145,7 +145,8 @@ export class CurrencyEngine {
       gapLimit: gapLimit,
       network: this.network,
       callbacks: keyManagerCallbacks,
-      addressInfos: this.engineState.addressInfos
+      addressInfos: this.engineState.addressInfos,
+      txInfos: this.engineState.parsedTxs
     })
 
     await this.keyManager.load()

@@ -89,22 +89,23 @@ export type KeyManagerOptions = {
   gapLimit: number,
   network: string,
   callbacks: KeyManagerCallbacks,
-  addressInfos?: AddressInfos
+  addressInfos?: AddressInfos,
+  txInfos?: { [txid: string]: any }
 }
 
 export class KeyManager {
-  bip: string
   masterPath: string
   currencyName: string
-  network: string
-  gapLimit: number
+  displayAddressMap: DisplayAddressMap
+  bip: string
   keys: Keys
+  seed: string
+  gapLimit: number
+  network: string
   onNewAddress: (scriptHash: string, address: string, path: string) => void
   onNewKey: (keys: any) => void
   addressInfos: AddressInfos
-  displayAddressMap: DisplayAddressMap
-  scriptHashMap: ScriptHashMap
-  seed: string
+  txInfos: { [txid: string]: any }
 
   constructor ({
     account = 0,
@@ -114,7 +115,8 @@ export class KeyManager {
     gapLimit = GAP_LIMIT,
     network,
     callbacks,
-    addressInfos = {}
+    addressInfos = {},
+    txInfos = {}
   }: KeyManagerOptions) {
     // Check for any way to init the wallet with either a seed or master keys
     if (
@@ -186,6 +188,7 @@ export class KeyManager {
     this.onNewAddress = onNewAddress
     this.onNewKey = onNewKey
     this.addressInfos = addressInfos
+    this.txInfos = txInfos
 
     // Load addresses from Cache
     for (const scriptHash in this.addressInfos) {
