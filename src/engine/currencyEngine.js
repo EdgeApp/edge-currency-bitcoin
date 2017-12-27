@@ -361,11 +361,14 @@ export class CurrencyEngine {
   }
 
   async getTransactions (options: any): Promise<Array<AbcTransaction>> {
-    const rawTxs = this.engineState.txCache
     const abcTransactions = []
-    for (const txid in rawTxs) {
-      const abcTransaction = this.getTransaction(txid)
-      abcTransactions.push(abcTransaction)
+    for (const txid in this.engineState.parsedTxs) {
+      try {
+        const abcTransaction = this.getTransaction(txid)
+        abcTransactions.push(abcTransaction)
+      } catch (e) {
+        console.log(e)
+      }
     }
 
     const startIndex = (options && options.startIndex) || 0
