@@ -289,6 +289,17 @@ for (const fixture of fixtures) {
     })
   })
 
+  describe(`Get Wallet Keys for Wallet type ${WALLET_TYPE}`, function () {
+    it('get private key', function (done) {
+      engine.getDisplayPrivateSeed()
+      done()
+    })
+    it('get public key', function (done) {
+      engine.getDisplayPublicSeed()
+      done()
+    })
+  })
+
   // describe(`Is Address Used for Wallet type ${WALLET_TYPE} from network`, function () {
   //   it('Checking a non empty P2WSH address', function (done) {
   //     setTimeout(() => {

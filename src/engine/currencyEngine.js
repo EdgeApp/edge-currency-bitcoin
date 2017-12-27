@@ -490,4 +490,18 @@ export class CurrencyEngine {
     this.engineState.saveTx(abcTransaction.txid, abcTransaction.signedTx)
     return Promise.resolve()
   }
+
+  getDisplayPrivateSeed () {
+    if (this.walletInfo.keys && this.walletInfo.keys[`${this.network}Key`]) {
+      return this.walletInfo.keys[`${this.network}Key`]
+    }
+    return null
+  }
+
+  getDisplayPublicSeed () {
+    if (this.walletInfo.keys && this.walletInfo.keys[`${this.network}Xpub`]) {
+      return this.walletInfo.keys[`${this.network}Xpub`]
+    }
+    return null
+  }
 }
