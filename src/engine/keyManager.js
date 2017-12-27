@@ -54,10 +54,6 @@ export type DisplayAddressMap = {
   [displayAddress: string]: Address
 }
 
-export type ScriptHashMap = {
-  [scriptHash: string]: Address
-}
-
 export type createTxOptions = {
   outputs: Array<AbcSpendTarget>,
   utxos: Array<{
@@ -146,7 +142,6 @@ export class KeyManager {
     }
     // Creating empty maps
     this.displayAddressMap = {}
-    this.scriptHashMap = {}
     // Try to load as many pubKey/privKey as possible from the cache
     for (const branch in rawKeys) {
       if (rawKeys[branch].xpriv) {
@@ -201,7 +196,6 @@ export class KeyManager {
         index = parseInt(index)
         const address = { displayAddress, scriptHash, index, branch }
         this.displayAddressMap[displayAddress] = address
-        this.scriptHashMap[scriptHash] = address
         if (branch === 0) {
           this.keys.receive.children.push(address)
         } else {
@@ -537,7 +531,6 @@ export class KeyManager {
     }
     keyRing.children.push(address)
     this.displayAddressMap[displayAddress] = address
-    this.scriptHashMap[scriptHash] = address
     return publicKey
   }
 
