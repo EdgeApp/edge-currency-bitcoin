@@ -4,7 +4,7 @@ import type { UtxoInfo, AddressInfo, AddressInfos } from './engineState.js'
 // $FlowFixMe
 import buffer from 'buffer-hack'
 import bcoin from 'bcoin'
-import { sizeVarint, hash256, reverseBufferToHex } from '../utils/utils.js'
+import { hash256, reverseBufferToHex } from '../utils/utils.js'
 
 // $FlowFixMe
 const { Buffer } = buffer
@@ -571,16 +571,16 @@ export class KeyManager {
       }
     }
 
+    // P2PKH
     if (this.bip !== 'bip49') {
-      // P2PKH
+      // varint script size
+      size += 1
       // OP_PUSHDATA0 [signature]
       size += 1 + 73
       // OP_PUSHDATA0 [key]
       size += 1 + 33
-      // size of input script.
-      size += sizeVarint(size)
     }
 
-    return size
+    return size || -1
   }
 }

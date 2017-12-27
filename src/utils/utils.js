@@ -18,13 +18,6 @@ export function validateObject (object: any, schema: any) {
   return result && result.errors && result.errors.length === 0
 }
 
-export function sizeVarint (num: number) {
-  if (num < 0xfd) return 1
-  if (num <= 0xffff) return 3
-  if (num <= 0xffffffff) return 5
-  return 9
-}
-
 export async function hash256 (hex: any) {
   return Promise.resolve(
     crypto
