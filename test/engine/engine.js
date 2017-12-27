@@ -4,7 +4,7 @@ import EventEmitter from 'events'
 import { makeFakeIos } from 'airbitz-core-js'
 import type { AbcSpendInfo } from 'airbitz-core-types'
 import { assert } from 'chai'
-import { after, before, describe, it } from 'mocha'
+import { before, describe, it } from 'mocha'
 import fetch from 'node-fetch'
 import request from 'request'
 
@@ -555,8 +555,10 @@ for (const fixture of fixtures) {
         .makeSpend(templateSpend)
         .catch(e => assert.equal(e.message, 'InsufficientFundsError'))
     })
+  })
 
-    after('Stop the engine', function (done) {
+  describe(`Stop Engine for Wallet type ${WALLET_TYPE}`, function () {
+    it('Stop the engine', function (done) {
       console.log('kill engine')
       engine.killEngine().then(done)
     })
