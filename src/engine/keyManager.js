@@ -4,7 +4,7 @@ import type { UtxoInfo, AddressInfo, AddressInfos } from './engineState.js'
 // $FlowFixMe
 import buffer from 'buffer-hack'
 import bcoin from 'bcoin'
-import crypto from 'crypto'
+import { sizeVarint, hash256, reverseBufferToHex } from '../utils/utils.js'
 
 // $FlowFixMe
 const { Buffer } = buffer
@@ -553,13 +553,8 @@ export class KeyManager {
 
   async addressToScriptHash (address: string) {
     const scriptRaw = bcoin.script.fromAddress(address).toRaw()
-    const scriptHashRaw = await this.hash256(scriptRaw)
-    // $FlowFixMe
-    const scriptHash = scriptHashRaw
-      .toString('hex')
-      .match(/../g)
-      .reverse()
-      .join('')
+    const scriptHashRaw = await hash256(scriptRaw)
+    const scriptHash = reverseBufferToHex(scriptHashRaw)
     return scriptHash
   }
 
@@ -588,34 +583,9 @@ export class KeyManager {
       // OP_PUSHDATA0 [key]
       size += 1 + 33
       // size of input script.
-      size += this.sizeVarint(size)
+      size += sizeVarint(size)
     }
 
     return size
-  }
-
-  sizeVarint (num: number) {
-    if (num < 0xfd) return 1
-    if (num <= 0xffff) return 3
-    if (num <= 0xffffffff) return 5
-    return 9
-  }
-
-  async hash160 (hex: any) {
-    return Promise.resolve(
-      crypto
-        .createHash('ripemd160')
-        .update(await this.hash256(hex))
-        .digest()
-    )
-  }
-
-  async hash256 (hex: any) {
-    return Promise.resolve(
-      crypto
-        .createHash('sha256')
-        .update(hex)
-        .digest()
-    )
   }
 }
