@@ -386,27 +386,17 @@ export class KeyManager {
   // ////////////////////////////////////////////// //
 
   utxoToPath (prevout: any): Array<number> {
-    let scriptHashForUtxo = null
-    for (const scriptHash: string in this.addressInfos) {
-      const addressObj: AddressInfo = this.addressInfos[scriptHash]
-      if (!addressObj) throw new Error('Address is not part of this wallet')
-      const utxos: Array<UtxoInfo> = addressObj.utxos
-
-      if (
-        utxos.find((utxo: UtxoInfo) => {
-          return utxo.txid === prevout.rhash() && prevout.index === utxo.index
-        })
-      ) {
-        scriptHashForUtxo = scriptHash
-        break
-      }
-    }
-    let address: ?Address = null
-    if (scriptHashForUtxo) {
-      address = this.scriptHashMap[scriptHashForUtxo]
-    }
+    const parsedTx = this.txInfos[prevout.rhash()]
+    if (!parsedTx) throw new Error('UTXO not synced yet')
+    const output = parsedTx.outputs[prevout.index]
+    if (!output) throw new Error('Corrupt UTXO or output list')
+    const scriptHash = output.scriptHash
+    const address = this.addressInfos[scriptHash]
     if (!address) throw new Error('Address is not part of this wallet')
-    return [address.branch, address.index]
+    const path = address.path
+    const pathSuffix = path.split(this.masterPath + '/')[1]
+    const [branch, index] = pathSuffix.split('/')
+    return [parseInt(branch), parseInt(index)]
   }
 
   getNextAvailable (addresses: Array<Address>): string {
