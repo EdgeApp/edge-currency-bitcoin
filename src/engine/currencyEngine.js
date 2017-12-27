@@ -43,6 +43,9 @@ export class CurrencyEngine {
   feeUpdateInterval: number
   feeTimer: any
   fees: BitcoinFees
+  transactionCache: {
+    [txid: string]: AbcTransaction
+  }
 
   // ------------------------------------------------------------------------
   // Private API
@@ -82,6 +85,7 @@ export class CurrencyEngine {
       lastUpdated: 0,
       fees: []
     }
+    this.transactionCache = {}
   }
 
   async load (): Promise<any> {
@@ -215,6 +219,7 @@ export class CurrencyEngine {
       networkFee: fee.toString(),
       signedTx: this.engineState.txCache[txid]
     }
+    this.transactionCache[txid] = abcTransaction
     return abcTransaction
   }
 
