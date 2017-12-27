@@ -92,6 +92,7 @@ export type KeyManagerOptions = {
 export class KeyManager {
   masterPath: string
   currencyName: string
+  writeLock: any
   displayAddressMap: DisplayAddressMap
   bip: string
   keys: Keys
@@ -140,6 +141,9 @@ export class KeyManager {
         children: []
       }
     }
+    // Create Locks
+    this.writeLock = new bcoin.utils.Lock()
+
     // Creating empty maps
     this.displayAddressMap = {}
     // Try to load as many pubKey/privKey as possible from the cache
@@ -441,10 +445,17 @@ export class KeyManager {
   }
 
   async setLookAhead (closeGaps: boolean = false) {
-    if (this.bip !== 'bip32') {
-      await this.deriveNewKeys(this.keys.change, 1, closeGaps)
+    const unlock = await this.writeLock.lock()
+    try {
+      if (this.bip !== 'bip32') {
+        await this.deriveNewKeys(this.keys.change, 1, closeGaps)
+      }
+      await this.deriveNewKeys(this.keys.receive, 0, closeGaps)
+    } catch (e) {
+      console.log(e)
+    } finally {
+      unlock()
     }
-    await this.deriveNewKeys(this.keys.receive, 0, closeGaps)
   }
 
   async deriveNewKeys (keyRing: KeyRing, branch: number, closeGaps: boolean) {
