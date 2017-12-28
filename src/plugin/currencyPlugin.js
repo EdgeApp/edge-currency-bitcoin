@@ -107,6 +107,7 @@ export class CurrencyPlugin {
     const walletType = walletInfo.keys[`${this.network}Key`]
     if (!walletType) throw new Error('InvalidKeyName')
     const mnemonic = bcoin.hd.Mnemonic.fromPhrase(walletType)
+    // TODO: Allow fromMnemonic to be async. API needs to change -paulvp
     const privKey = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
     return {
       [`${this.network}Key`]: walletInfo.keys[`${this.network}Key`],
