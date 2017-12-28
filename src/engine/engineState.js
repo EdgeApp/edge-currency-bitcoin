@@ -570,7 +570,7 @@ export class EngineState {
 
       // Update the derived information:
       for (const txid of Object.keys(this.txCache)) {
-        this.parsedTxs[txid] = await parseTransaction(this.txCache[txid])
+        this.parsedTxs[txid] = parseTransaction(this.txCache[txid])
       }
     } catch (e) {
       this.txCache = {}
@@ -699,17 +699,14 @@ export class EngineState {
 
   // A server has sent a transaction, so update the caches:
   handleTxFetch (txid: string, txData: string) {
-    parseTransaction(txData).then(parsedTx => {
-      this.txCache[txid] = txData
-      delete this.missingTxs[txid]
-      this.parsedTxs[txid] = parsedTx
-      for (const scriptHash of this.findAffectedAddresses(txid)) {
-        this.refreshAddressInfo(scriptHash)
-      }
-
-      this.dirtyTxCache()
-      this.onTxFetched(txid)
-    })
+    this.txCache[txid] = txData
+    delete this.missingTxs[txid]
+    this.parsedTxs[txid] = parseTransaction(txData)
+    for (const scriptHash of this.findAffectedAddresses(txid)) {
+      this.refreshAddressInfo(scriptHash)
+    }
+    this.dirtyTxCache()
+    this.onTxFetched(txid)
   }
 
   // A server has told us about a txid, so update the caches:

@@ -19,12 +19,14 @@ export function validateObject (object: any, schema: any) {
 }
 
 export async function hash256 (hex: any) {
-  return Promise.resolve(
-    crypto
-      .createHash('sha256')
-      .update(hex)
-      .digest()
-  )
+  return Promise.resolve(hash256(hex))
+}
+
+export function hash256Sync (hex: any) {
+  return crypto
+    .createHash('sha256')
+    .update(hex)
+    .digest()
 }
 
 export async function hash160 (hex: any) {
