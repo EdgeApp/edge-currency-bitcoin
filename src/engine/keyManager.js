@@ -50,10 +50,6 @@ export type RawKeys = {
   change?: RawKeyRing
 }
 
-export type DisplayAddressMap = {
-  [displayAddress: string]: Address
-}
-
 export type createTxOptions = {
   outputs: Array<AbcSpendTarget>,
   utxos: Array<{
@@ -94,7 +90,6 @@ export class KeyManager {
   masterPath: string
   currencyName: string
   writeLock: any
-  displayAddressMap: DisplayAddressMap
   bip: string
   keys: Keys
   seed: string
@@ -145,8 +140,6 @@ export class KeyManager {
     // Create Locks
     this.writeLock = new bcoin.utils.Lock()
 
-    // Creating empty maps
-    this.displayAddressMap = {}
     // Try to load as many pubKey/privKey as possible from the cache
     for (const branch in rawKeys) {
       if (rawKeys[branch].xpriv) {
@@ -200,7 +193,6 @@ export class KeyManager {
         branch = parseInt(branch)
         index = parseInt(index)
         const address = { displayAddress, scriptHash, index, branch }
-        this.displayAddressMap[displayAddress] = address
         if (branch === 0) {
           this.keys.receive.children.push(address)
         } else {
@@ -542,7 +534,6 @@ export class KeyManager {
       branch
     }
     keyRing.children.push(address)
-    this.displayAddressMap[displayAddress] = address
     return publicKey
   }
 

@@ -192,7 +192,7 @@ export class CurrencyEngine {
     for (let i = 0; i < outputsLength; i++) {
       const { address, value } = bcoinJSON.outputs[i]
       totalOutputAmount += value
-      if (this.keyManager.displayAddressMap[address]) {
+      if (this.engineState.scriptHashes[address]) {
         nativeAmount += value
         ourReceiveAddresses.push(address)
       }
@@ -210,7 +210,7 @@ export class CurrencyEngine {
             this.network
           ).outputs[index]
           totalInputAmount += value
-          if (this.keyManager.displayAddressMap[address]) {
+          if (this.engineState.scriptHashes[address]) {
             nativeAmount -= value
           }
         }
@@ -441,7 +441,7 @@ export class CurrencyEngine {
       (s, spendTarget: AbcSpendTarget) => {
         if (
           spendTarget.publicAddress &&
-          this.keyManager.displayAddressMap[spendTarget.publicAddress]
+          this.engineState.scriptHashes[spendTarget.publicAddress]
         ) {
           return s
         } else return s - parseInt(spendTarget.nativeAmount)
@@ -454,7 +454,7 @@ export class CurrencyEngine {
       const address = resultedTransaction.outputs[i]
         .getAddress()
         .toString(this.network)
-      if (address && this.keyManager.displayAddressMap[address]) {
+      if (address && this.engineState.scriptHashes[address]) {
         ourReceiveAddresses.push(address)
       }
     }
