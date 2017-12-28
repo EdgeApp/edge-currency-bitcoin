@@ -99,7 +99,7 @@ export class CurrencyPlugin {
     }
   }
 
-  derivePublicKey (walletInfo: AbcWalletInfo) {
+  async derivePublicKey (walletInfo: AbcWalletInfo) {
     if (!~this.currencyInfo.walletTypes.indexOf(walletInfo.type)) {
       throw new Error('InvalidWalletType')
     }
@@ -108,10 +108,16 @@ export class CurrencyPlugin {
     if (!walletType) throw new Error('InvalidKeyName')
     const mnemonic = bcoin.hd.Mnemonic.fromPhrase(walletType)
     // TODO: Allow fromMnemonic to be async. API needs to change -paulvp
-    const privKey = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
+    let privateKey
+    const result = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
+    if (typeof result.then === 'function') {
+      privateKey = await Promise.resolve(result)
+    } else {
+      privateKey = result
+    }
     return {
       [`${this.network}Key`]: walletInfo.keys[`${this.network}Key`],
-      [`${this.network}Xpub`]: privKey.xpubkey()
+      [`${this.network}Xpub`]: privateKey.xpubkey()
     }
   }
 

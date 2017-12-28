@@ -80,23 +80,25 @@ for (const fixture of fixtures) {
       })
     })
 
-    it('Valid private key', function () {
-      keys = plugin.derivePublicKey({
+    it('Valid private key', function (done) {
+      plugin.derivePublicKey({
         type: WALLET_TYPE,
         keys: { [keyName]: keys[keyName] }
-      })
-      assert.equal(keys[xpubName], fixture['xpub'])
-    })
-
-    it('Invalid key name', function () {
-      assert.throws(() => {
-        plugin.derivePublicKey(fixture['Invalid key name'])
+      }).then(keys => {
+        assert.equal(keys[xpubName], fixture['xpub'])
+        done()
       })
     })
 
-    it('Invalid wallet type', function () {
-      assert.throws(() => {
-        plugin.derivePublicKey(fixture['Invalid wallet type'])
+    it('Invalid key name', function (done) {
+      plugin.derivePublicKey(fixture['Invalid key name']).catch(e => {
+        done()
+      })
+    })
+
+    it('Invalid wallet type', function (done) {
+      plugin.derivePublicKey(fixture['Invalid wallet type']).catch(e => {
+        done()
       })
     })
   })
