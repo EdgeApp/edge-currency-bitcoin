@@ -54,8 +54,8 @@ for (const fixture of fixtures) {
   }
 
   describe(`Engine Creation Errors for Wallet type ${WALLET_TYPE}`, function () {
-    before('Plugin', function () {
-      return CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
+    before('Plugin', function (done) {
+      CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
         assert.equal(
           currencyPlugin.currencyInfo.currencyCode,
           fixture['Test Currency code']
@@ -64,7 +64,10 @@ for (const fixture of fixtures) {
         // Hack for now until we change all the dummy data to represent the new derivation path
         plugin.currencyInfo.defaultSettings.network.keyPrefix.coinType = 0
         keys = plugin.createPrivateKey(WALLET_TYPE)
-        keys = plugin.derivePublicKey({ type: WALLET_TYPE, keys })
+        plugin.derivePublicKey({ type: WALLET_TYPE, keys }).then(result => {
+          keys = result
+          done()
+        })
       })
     })
 

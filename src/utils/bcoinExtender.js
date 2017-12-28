@@ -1,14 +1,15 @@
 // @flow
 import type { AbcCurrencyInfo } from 'airbitz-core-types'
 import { patchBcashAddress, patchBcashTX } from './bcashExtender.js'
-import { patchDerivePublic, patchDerivePrivate, patchDerivePath } from './deriveExtender.js'
+import { patchDerivePublic, patchDerivePrivate, patchDerivePath, patchPrivateFromMnemonic } from './deriveExtender.js'
 
 let cryptoReplaced = false
 
 export const bcoinExtender = (
   bcoin: any,
   pluginsInfo: AbcCurrencyInfo,
-  secp256k1?: any = null
+  secp256k1?: any = null,
+  pbkdf2?: any = null
 ) => {
   const network = pluginsInfo.defaultSettings.network
   const type = network.type
@@ -25,10 +26,16 @@ export const bcoinExtender = (
     patchBcashAddress(bcoin)
     patchBcashTX(bcoin)
   }
-  if (!cryptoReplaced && secp256k1) {
-    patchDerivePublic(bcoin, secp256k1)
-    patchDerivePrivate(bcoin, secp256k1)
-    patchDerivePath(bcoin)
-    cryptoReplaced = true
+  if (!cryptoReplaced) {
+    if (secp256k1) {
+      patchDerivePublic(bcoin, secp256k1)
+      patchDerivePrivate(bcoin, secp256k1)
+      patchDerivePath(bcoin)
+      cryptoReplaced = true
+    }
+    if (pbkdf2) {
+      patchPrivateFromMnemonic(bcoin, pbkdf2)
+      cryptoReplaced = true
+    }
   }
 }

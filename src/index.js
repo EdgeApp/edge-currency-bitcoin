@@ -37,10 +37,15 @@ function makePluginFactory (
       // Extend bcoin to support this plugin currency info
       // and faster crypto if possible
       let secp256k1 = null
+      let pbkdf2 = null
       if (options.io && options.io.secp256k1) {
         secp256k1 = options.io.secp256k1
       }
-      bcoinExtender(bcoin, currencyInfo, secp256k1)
+      if (options.io && options.io.pbkdf2) {
+        pbkdf2 = options.io.pbkdf2
+      }
+
+      bcoinExtender(bcoin, currencyInfo, secp256k1, pbkdf2)
       return plugin.state.load().then(() => plugin)
     }
   }

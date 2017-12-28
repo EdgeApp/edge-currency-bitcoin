@@ -163,3 +163,19 @@ export const patchDerivePath = function (bcoin) {
     return key
   }
 }
+
+export const patchPrivateFromMnemonic = function (bcoin, pbkdf2) {
+  const privateKey = bcoin.hd.PrivateKey.prototype
+  privateKey.fromMnemonic = async function (mnemonic, network) {
+    const passphrase = mnemonic.passphrase
+    const phrase = (mnemonic.getPhrase()).normalize('NFKD')
+    const passwd = ('mnemonic' + passphrase).normalize('NFKD')
+
+    let derived = await pbkdf2.deriveAsync(
+      Buffer.from(phrase, 'utf8'),
+      Buffer.from(passwd, 'utf8'),
+      2048, 64, 'sha512')
+    derived = Buffer.from(derived)
+    return this.fromSeed(derived, network)
+  }
+}

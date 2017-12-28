@@ -410,7 +410,12 @@ export class KeyManager {
     let privateKey
     try {
       const mnemonic = bcoin.hd.Mnemonic.fromPhrase(seed)
-      privateKey = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
+      const result = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
+      if (typeof result.then === 'function') {
+        privateKey = await Promise.resolve(result)
+      } else {
+        privateKey = result
+      }
     } catch (e) {
       const keyBuffer = Buffer.from(seed, 'base64')
       privateKey = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
