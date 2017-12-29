@@ -1,4 +1,5 @@
 import assert from 'assert'
+import { nfkd } from 'unorm'
 
 export const patchDerivePublic = function (bcoin, secp256k1) {
   const publicKey = bcoin.hd.PublicKey.prototype
@@ -168,8 +169,9 @@ export const patchPrivateFromMnemonic = function (bcoin, pbkdf2) {
   const privateKey = bcoin.hd.PrivateKey.prototype
   privateKey.fromMnemonic = async function (mnemonic, network) {
     const passphrase = mnemonic.passphrase
-    const phrase = (mnemonic.getPhrase()).normalize('NFKD')
-    const passwd = ('mnemonic' + passphrase).normalize('NFKD')
+
+    const phrase = nfkd(mnemonic.getPhrase())
+    const passwd = nfkd('mnemonic' + passphrase)
 
     let derived = await pbkdf2.deriveAsync(
       Buffer.from(phrase, 'utf8'),
