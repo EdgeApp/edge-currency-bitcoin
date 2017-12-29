@@ -19,7 +19,7 @@ export function validateObject (object: any, schema: any) {
 }
 
 export async function hash256 (hex: any) {
-  return Promise.resolve(hash256(hex))
+  return Promise.resolve(hash256Sync(hex))
 }
 
 export function hash256Sync (hex: any) {
