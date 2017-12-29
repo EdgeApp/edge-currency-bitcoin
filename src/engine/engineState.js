@@ -835,7 +835,9 @@ export class EngineState {
       scriptHashSet[prevOut.scriptHash] = true
     }
     for (const output of this.parsedTxs[txid].outputs) {
-      scriptHashSet[output.scriptHash] = true
+      if (this.addressCache[output.scriptHash]) {
+        scriptHashSet[output.scriptHash] = true
+      }
     }
     return Object.keys(scriptHashSet)
   }
