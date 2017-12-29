@@ -120,13 +120,6 @@ export class CurrencyEngine {
 
     await this.engineState.load()
 
-    const cachedTXs = await this.getTransactions()
-    this.options.callbacks.onTransactionsChanged(cachedTXs)
-    this.options.callbacks.onBalanceChanged(
-      this.currencyInfo.currencyCode,
-      this.getBalance()
-    )
-
     const keyManagerCallbacks: KeyManagerCallbacks = {
       onNewAddress: (scriptHash: string, address: string, path: string) => {
         return this.engineState.addAddress(scriptHash, address, path)
@@ -314,6 +307,12 @@ export class CurrencyEngine {
   }
 
   async startEngine (): Promise<void> {
+    const cachedTXs = await this.getTransactions()
+    this.options.callbacks.onTransactionsChanged(cachedTXs)
+    this.options.callbacks.onBalanceChanged(
+      this.currencyInfo.currencyCode,
+      this.getBalance()
+    )
     await this.updateFeeTable()
     return this.engineState.connect()
   }
