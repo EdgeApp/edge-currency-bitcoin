@@ -3,6 +3,26 @@
  * @flow
  */
 
+export const InfoServerFeesSchema = {
+  'type': 'object',
+  'properties': {
+    'lowFee': { 'type': 'string' },
+    'standardFeeLow': { 'type': 'string' },
+    'standardFeeHigh': { 'type': 'string' },
+    'standardFeeLowAmount': { 'type': 'string' },
+    'standardFeeHighAmount': { 'type': 'string' },
+    'highFee': { 'type': 'string' }
+  },
+  'required': [
+    'lowFee',
+    'standardFeeLow',
+    'standardFeeHigh',
+    'standardFeeLowAmount',
+    'standardFeeHighAmount',
+    'highFee'
+  ]
+}
+
 export const EarnComFeesSchema = {
   type: 'object',
   properties: {

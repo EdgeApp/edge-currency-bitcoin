@@ -16,12 +16,14 @@ import { KeyManager } from './keyManager'
 import type { EngineStateCallbacks } from './engineState.js'
 import type { KeyManagerCallbacks } from './keyManager'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
+import { validateObject } from '../utils/utils.js'
+import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import bcoin from 'bcoin'
 
 const BYTES_TO_KB = 1000
 const MILI_TO_SEC = 1000
-
+const INFO_SERVER = 'https://info1.edgesecure.co:8444/v1'
 /**
  * The core currency plugin.
  * Provides information about the currency,
@@ -33,7 +35,7 @@ export class CurrencyEngine {
   keyManager: KeyManager
   engineState: EngineState
   pluginState: PluginState
-  options: AbcCurrencyEngineOptions
+  abcCurrencyEngineOptions: AbcCurrencyEngineOptions
   network: string
   rawTransactionFees: {
     lastUpdated: number,
@@ -63,7 +65,7 @@ export class CurrencyEngine {
     this.walletInfo = walletInfo
     this.currencyInfo = currencyInfo
     this.pluginState = pluginState
-    this.options = options
+    this.abcCurrencyEngineOptions = options
     this.network = this.currencyInfo.defaultSettings.network.type
     this.feeInfoServer = this.currencyInfo.defaultSettings.feeInfoServer
     this.feeUpdateInterval = this.currencyInfo.defaultSettings.feeUpdateInterval
@@ -92,29 +94,29 @@ export class CurrencyEngine {
     const engineStateCallbacks: EngineStateCallbacks = {
       onAddressInfoUpdated: (addressHash: string) => {
         if (this.keyManager) this.keyManager.setLookAhead()
-        this.options.callbacks.onBalanceChanged(
+        this.abcCurrencyEngineOptions.callbacks.onBalanceChanged(
           this.currencyInfo.currencyCode,
           this.getBalance()
         )
       },
       onHeightUpdated: (height: number) => {
-        this.options.callbacks.onBlockHeightChanged(height)
+        this.abcCurrencyEngineOptions.callbacks.onBlockHeightChanged(height)
       },
       onTxFetched: (txid: string) => {
         const abcTransaction = this.getTransaction(txid)
-        this.options.callbacks.onTransactionsChanged([abcTransaction])
+        this.abcCurrencyEngineOptions.callbacks.onTransactionsChanged([abcTransaction])
       }
     }
     const gapLimit = this.currencyInfo.defaultSettings.gapLimit
-    const io = this.options.optionalSettings
-      ? this.options.optionalSettings.io
+    const io = this.abcCurrencyEngineOptions.optionalSettings
+      ? this.abcCurrencyEngineOptions.optionalSettings.io
       : null
 
     this.engineState = new EngineState({
       callbacks: engineStateCallbacks,
       io: io,
-      localFolder: this.options.walletLocalFolder,
-      encryptedLocalFolder: this.options.walletLocalEncryptedFolder,
+      localFolder: this.abcCurrencyEngineOptions.walletLocalFolder,
+      encryptedLocalFolder: this.abcCurrencyEngineOptions.walletLocalEncryptedFolder,
       pluginState: this.pluginState
     })
 
@@ -234,14 +236,38 @@ export class CurrencyEngine {
   }
 
   async updateFeeTable () {
+    try {
+      if (this.rawTransactionFees.lastUpdated) throw new Error('Already has fees')
+      const url = `${INFO_SERVER}/networkFees/${this.currencyInfo.currencyCode}`
+      if (
+        !this.abcCurrencyEngineOptions.optionalSettings ||
+        !this.abcCurrencyEngineOptions.optionalSettings.io ||
+        !this.abcCurrencyEngineOptions.optionalSettings.io.fetch
+      ) {
+        throw new Error('No io/fetch object')
+      }
+      const feesResponse = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(url)
+      const feesJson = await feesResponse.json()
+      if (validateObject(feesJson, InfoServerFeesSchema)) {
+        this.fees = feesJson
+      } else {
+        throw new Error('Fetched invalid networkFees')
+      }
+    } catch (err) {
+      console.log(err)
+    }
+    await this.updateFeeTableLoop()
+  }
+
+  async updateFeeTableLoop () {
     if (
-      this.options.optionalSettings &&
-      this.options.optionalSettings.io &&
+      this.abcCurrencyEngineOptions.optionalSettings &&
+      this.abcCurrencyEngineOptions.optionalSettings.io &&
       this.feeInfoServer !== '' &&
       this.rawTransactionFees.lastUpdated < Date.now() - this.feeUpdateInterval
     ) {
       try {
-        const results = await this.options.optionalSettings.io.fetch(
+        const results = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
           this.feeInfoServer
         )
         if (results.status !== 200) {
@@ -255,7 +281,7 @@ export class CurrencyEngine {
         console.log('Error while trying to update fee table', e)
       } finally {
         this.feeTimer = setTimeout(() => {
-          this.updateFeeTable()
+          this.updateFeeTableLoop()
         }, this.feeUpdateInterval)
       }
     }
@@ -308,8 +334,8 @@ export class CurrencyEngine {
 
   async startEngine (): Promise<void> {
     const cachedTXs = await this.getTransactions()
-    this.options.callbacks.onTransactionsChanged(cachedTXs)
-    this.options.callbacks.onBalanceChanged(
+    this.abcCurrencyEngineOptions.callbacks.onTransactionsChanged(cachedTXs)
+    this.abcCurrencyEngineOptions.callbacks.onBalanceChanged(
       this.currencyInfo.currencyCode,
       this.getBalance()
     )
