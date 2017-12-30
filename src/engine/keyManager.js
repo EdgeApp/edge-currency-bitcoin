@@ -229,6 +229,13 @@ export class KeyManager {
     await this.setLookAhead(true)
   }
 
+  async reload () {
+    for (const branch in this.keys) {
+      this.keys[branch].children = []
+    }
+    await this.load()
+  }
+
   getReceiveAddress (): string {
     return this.getNextAvailable(this.keys.receive.children)
   }
