@@ -795,7 +795,10 @@ export class EngineState {
       }
     }
     // Add to the missing headers list:
-    if (!this.pluginState.headerCache[`${height}`]) {
+    if (
+      height > 0 &&
+      !this.pluginState.headerCache[`${height}`]
+    ) {
       this.missingHeaders[`${height}`] = true
     }
 
