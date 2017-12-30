@@ -348,6 +348,15 @@ export class CurrencyEngine {
     return this.engineState.disconnect()
   }
 
+  async resyncBlockchain (): Promise<void> {
+    this.transactionCache = {}
+    this.engineState.disconnect()
+    await this.engineState.clearCache()
+    await this.pluginState.clearCache()
+    await this.keyManager.reload()
+    this.engineState.connect()
+  }
+
   getBlockHeight (): number {
     return this.pluginState.height
   }
