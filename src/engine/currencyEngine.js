@@ -514,8 +514,16 @@ export class CurrencyEngine {
   }
 
   async broadcastTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
+    if (!abcTransaction.otherParams.bcoinTx) {
+      abcTransaction.otherParams.bcoinTx = bcoin.primitives.TX.fromRaw(abcTransaction.signedTx, 'hex')
+    }
+    for (const output of abcTransaction.otherParams.bcoinTx.outputs) {
+      if (output.value <= 0 || output.value === '0') {
+        throw new Error('Wrong spend amount')
+      }
+    }
     const txid = await this.engineState.broadcastTx(abcTransaction.signedTx)
-    abcTransaction.txid = txid
+    if (!abcTransaction.txid) abcTransaction.txid = txid
     return abcTransaction
   }
 
