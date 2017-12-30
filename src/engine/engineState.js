@@ -14,7 +14,8 @@ import {
   fetchTransaction,
   fetchVersion,
   subscribeHeight,
-  subscribeScriptHash
+  subscribeScriptHash,
+  fetchBlockHeader
 } from '../stratum/stratumMessages.js'
 import type {
   StratumBlockHeader,
@@ -147,7 +148,13 @@ export class EngineState {
       // Servers that know about txids are eligible to fetch those txs.
       // If no server knows about a txid, anybody can try fetching it,
       // but there is no penalty for failing:
-      txids: { [txid: string]: true }
+      txids: { [txid: string]: true },
+
+      // All block headers this server knows about (from subscribes or whatever):
+      // Servers that know about headers are eligible to fetch those headers.
+      // If no server knows about a height, anybody can try fetching it,
+      // but there is no penalty for failing:
+      headers: { [height: string]: true }
     }
   }
 
@@ -156,6 +163,12 @@ export class EngineState {
 
   // Transactions that are relevant to our addresses, but missing locally:
   missingTxs: { [txid: string]: true }
+
+  // True if somebody is currently fetching a transaction:
+  fetchingHeaders: { [height: string]: boolean }
+
+  // Headres that are relevant to our transactions, but missing locally:
+  missingHeaders: { [height: string]: true }
 
   addAddress (scriptHash: string, displayAddress: string, path: string) {
     if (this.addressCache[scriptHash]) return
@@ -302,6 +315,8 @@ export class EngineState {
     this.serverStates = {}
     this.fetchingTxs = {}
     this.missingTxs = {}
+    this.fetchingHeaders = {}
+    this.missingHeaders = {}
 
     this.io = options.io
     this.localFolder = options.localFolder
@@ -393,7 +408,8 @@ export class EngineState {
         height: void 0,
         version: void 0,
         addresses: {},
-        txids: new Set()
+        txids: new Set(),
+        headers: new Set()
       }
       this.populateServerAddresses(uri)
       this.connections[uri].open()
@@ -443,6 +459,29 @@ export class EngineState {
     if (serverState.version < '1.1') {
       this.connections[uri].close()
       return
+    }
+
+    // Fetch Headers:
+    for (const height of Object.keys(this.missingHeaders)) {
+      if (!this.fetchingHeaders[height] && this.serverCanGetHeader(uri, height)) {
+        this.fetchingHeaders[height] = true
+        return fetchBlockHeader(
+          parseInt(height),
+          (header: any) => {
+            console.log(`Stratum ${uri} sent header for block number ${height}`)
+            this.fetchingHeaders[height] = false
+            this.handleHeaderFetch(height, header)
+          },
+          (e: Error) => {
+            this.fetchingHeaders[height] = false
+            if (!serverState.headers[height]) {
+              this.onConnectionFail(uri, e, `getting header for block number ${height}`)
+            } else {
+              // TODO: Don't penalize the server score either.
+            }
+          }
+        )
+      }
     }
 
     // Fetch txids:
@@ -677,6 +716,32 @@ export class EngineState {
     return true
   }
 
+  serverCanGetHeader (uri: string, height: string) {
+    // If we have it, we can get it:
+    if (this.serverStates[uri].headers[height]) return true
+
+    // If somebody else has it, let them get it:
+    for (const uri of Object.keys(this.connections)) {
+      if (this.serverStates[uri].headers[height]) return false
+    }
+
+    // If nobody has it, we can try getting it:
+    return true
+  }
+
+  // A server has sent a header, so update the cache and txs:
+  handleHeaderFetch (height: string, header: any) {
+    if (!this.pluginState.headerCache[height]) {
+      this.pluginState.headerCache[height] = header
+      const affectedTXIDS = this.findAffectedTransactions(height)
+      for (const txid of affectedTXIDS) {
+        this.onTxFetched(txid)
+      }
+      this.pluginState.dirtyHeaderCache()
+    }
+    delete this.missingHeaders[height]
+  }
+
   // A server has sent address history data, so update the caches:
   handleHistoryFetch (
     scriptHash: string,
@@ -728,6 +793,10 @@ export class EngineState {
         firstSeen: Date.now(),
         height
       }
+    }
+    // Add to the missing headers list:
+    if (!this.pluginState.headerCache[`${height}`]) {
+      this.missingHeaders[`${height}`] = true
     }
 
     this.handleNewTxid(txid)
@@ -840,6 +909,16 @@ export class EngineState {
       }
     }
     return Object.keys(scriptHashSet)
+  }
+
+  // Finds the txids that a are in a block.
+  findAffectedTransactions (height: string): Array<string> {
+    const txids = []
+    for (const txid in this.txHeightCache) {
+      const tx = this.txHeightCache[txid]
+      if (`${tx.height}` === height) txids.push(txid)
+    }
+    return txids
   }
 
   onConnectionFail (uri: string, e: Error, task: string) {
