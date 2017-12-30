@@ -164,7 +164,7 @@ export class CurrencyEngine {
     let date = firstSeen
     // If confirmed, we will try and take the timestamp as the date
     if (height && height !== -1) {
-      const blockHeight = this.pluginState.headerCache[height.toString()]
+      const blockHeight = this.pluginState.headerCache[`${height}`]
       if (blockHeight) {
         date = blockHeight.timestamp
       }
@@ -225,8 +225,8 @@ export class CurrencyEngine {
       txid: txid,
       date: date,
       blockHeight: height,
-      nativeAmount: nativeAmount.toString(),
-      networkFee: fee.toString(),
+      nativeAmount: `${nativeAmount}`,
+      networkFee: `${fee}`,
       signedTx: this.engineState.txCache[txid]
     }
     this.transactionCache[txid] = abcTransaction
@@ -377,7 +377,7 @@ export class CurrencyEngine {
         balance += utxos[i].value
       }
     }
-    return balance.toString()
+    return `${balance}`
   }
 
   getNumTransactions (options: any): number {
@@ -494,10 +494,8 @@ export class CurrencyEngine {
       txid: '',
       date: 0,
       blockHeight: 0,
-      nativeAmount: (
-        sumOfTx - parseInt(resultedTransaction.getFee())
-      ).toString(),
-      networkFee: resultedTransaction.getFee().toString(),
+      nativeAmount: `${sumOfTx - parseInt(resultedTransaction.getFee())}`,
+      networkFee: `${resultedTransaction.getFee()}`,
       signedTx: ''
     }
     return abcTransaction
