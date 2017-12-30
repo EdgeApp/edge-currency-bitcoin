@@ -647,6 +647,24 @@ export class EngineState {
     return this
   }
 
+  async clearCache () {
+    this.addressCache = {}
+    this.addressInfos = {}
+    this.scriptHashes = {}
+    this.usedAddresses = {}
+    this.txCache = {}
+    this.parsedTxs = {}
+    this.txHeightCache = {}
+    this.connections = {}
+    this.serverStates = {}
+    this.fetchingTxs = {}
+    this.missingTxs = {}
+    this.fetchingHeaders = {}
+    this.missingHeaders = {}
+    await this.saveAddressCache()
+    await this.saveTxCache()
+  }
+
   saveAddressCache () {
     const json = JSON.stringify({
       addresses: this.addressCache,
