@@ -153,6 +153,13 @@ export class PluginState {
     return this
   }
 
+  async clearCache () {
+    this.headerCache = {}
+    this.serverCache = {}
+    await this.saveHeaderCache()
+    await this.saveServerCache()
+  }
+
   saveHeaderCache () {
     this.io.console.info('Saving header cache')
     return this.folder
