@@ -174,6 +174,8 @@ export class CurrencyEngine {
       const abcTransaction = this.transactionCache[txid]
       if (height !== abcTransaction.blockHeight) {
         abcTransaction.blockHeight = height
+      }
+      if (date !== abcTransaction.date) {
         abcTransaction.date = date
       }
       return abcTransaction
