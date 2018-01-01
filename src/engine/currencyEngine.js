@@ -194,7 +194,7 @@ export class CurrencyEngine {
     // Process tx outputs
     const outputsLength = bcoinTransaction.outputs.length
     for (let i = 0; i < outputsLength; i++) {
-      const { address, value } = bcoinTransaction.outputs[i].toJSON(this.network)
+      const { address, value } = bcoinTransaction.outputs[i].getJSON(this.network)
       totalOutputAmount += value
       if (this.engineState.scriptHashes[address]) {
         nativeAmount += value
