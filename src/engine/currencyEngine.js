@@ -45,9 +45,6 @@ export class CurrencyEngine {
   feeUpdateInterval: number
   feeTimer: any
   fees: BitcoinFees
-  transactionCache: {
-    [txid: string]: AbcTransaction
-  }
 
   // ------------------------------------------------------------------------
   // Private API
@@ -87,7 +84,6 @@ export class CurrencyEngine {
       lastUpdated: 0,
       fees: []
     }
-    this.transactionCache = {}
   }
 
   async load (): Promise<any> {
@@ -169,17 +165,6 @@ export class CurrencyEngine {
         date = blockHeight.timestamp
       }
     }
-    // If already exists, try and update the height and return
-    if (this.transactionCache[txid]) {
-      const abcTransaction = this.transactionCache[txid]
-      if (height !== abcTransaction.blockHeight) {
-        abcTransaction.blockHeight = height
-      }
-      if (date !== abcTransaction.date) {
-        abcTransaction.date = date
-      }
-      return abcTransaction
-    }
     // Get pased bcoin tx from engine
     const bcoinTransaction = this.engineState.parsedTxs[txid]
     if (!bcoinTransaction) {
@@ -243,7 +228,6 @@ export class CurrencyEngine {
       networkFee: `${fee}`,
       signedTx: this.engineState.txCache[txid]
     }
-    this.transactionCache[txid] = abcTransaction
     return abcTransaction
   }
 
@@ -361,7 +345,6 @@ export class CurrencyEngine {
   }
 
   async resyncBlockchain (): Promise<void> {
-    this.transactionCache = {}
     await this.killEngine()
     await this.engineState.clearCache()
     await this.pluginState.clearCache()
