@@ -190,11 +190,16 @@ export class CurrencyEngine {
     let nativeAmount = 0
     let totalOutputAmount = 0
     let totalInputAmount = 0
+    let address = ''
+    let value = 0
+    let output = null
 
     // Process tx outputs
     const outputsLength = bcoinTransaction.outputs.length
     for (let i = 0; i < outputsLength; i++) {
-      const { address, value } = bcoinTransaction.outputs[i].getJSON(this.network)
+      output = bcoinTransaction.outputs[i].getJSON(this.network)
+      value = output.value
+      address = output.address
       totalOutputAmount += value
       if (this.engineState.scriptHashes[address]) {
         nativeAmount += value
@@ -202,15 +207,22 @@ export class CurrencyEngine {
       }
     }
 
+    let input = null
+    let prevoutBcoinTX = null
+    let index = 0
+    let hash = ''
     // Process tx inputs
     const inputsLength = bcoinTransaction.inputs.length
     for (let i = 0; i < inputsLength; i++) {
-      const input = bcoinTransaction.inputs[i]
+      input = bcoinTransaction.inputs[i]
       if (input.prevout) {
-        const { hash, index } = input.prevout
-        const prevoutBcoinTX = this.engineState.parsedTxs[hash]
+        hash = input.prevout.rhash()
+        index = input.prevout.index
+        prevoutBcoinTX = this.engineState.parsedTxs[hash]
         if (prevoutBcoinTX) {
-          const { value, address } = prevoutBcoinTX.outputs[index].getJSON(this.network)
+          output = prevoutBcoinTX.outputs[index].getJSON(this.network)
+          value = output.value
+          address = output.address
           totalInputAmount += value
           if (this.engineState.scriptHashes[address]) {
             nativeAmount -= value
