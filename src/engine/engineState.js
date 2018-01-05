@@ -212,7 +212,7 @@ export class EngineState {
     try {
       const json = JSON.stringify({ keys: keys })
       await this.encryptedLocalFolder.file('keys.json').setText(json)
-      this.io.console.info('Saved keys cache')
+      console.log('Saved keys cache')
     } catch (e) {
       console.error('Error saving Keys', e)
     }
@@ -356,15 +356,13 @@ export class EngineState {
     const servers = this.pluginState
       .sortStratumServers(this.io.Socket != null, this.io.TLSSocket != null)
       .filter(uri => !this.connections[uri])
+    console.log(`Refilling Servers, top 5 servers are: ${servers.slice(0, 5)}`)
     while (Object.keys(this.connections).length < 5) {
       const uri = servers[i++]
       if (!uri) break
 
       const callbacks: StratumCallbacks = {
-        onOpen: (uri: string) => {
-          console.log(`Connected to ${uri}`)
-        },
-
+        onOpen: (uri: string) => console.log(`Connected to ${uri}`),
         onClose: (
           uri: string,
           badMessages: number,
@@ -381,23 +379,18 @@ export class EngineState {
             goodMessages,
             latency
           )
-          if (this.engineStarted) this.refillServers()
-          if (this.addressCacheDirty) {
-            this.saveAddressCache().catch(e =>
-              console.error('saveAddressCache', e.message)
-            )
-          }
-          if (this.txCacheDirty) {
-            this.saveTxCache().catch(e =>
-              console.error('saveTxCache', e.message)
-            )
-          }
+          this.engineStarted && this.refillServers()
+          this.addressCacheDirty && this.saveAddressCache()
+          this.txCacheDirty && this.saveTxCache()
         },
 
         onQueueSpace: uri => {
-          // const start = Date.now()
+          const start = Date.now()
           const task = this.pickNextTask(uri)
-          // console.log(`bench: Picked task in ${Date.now() - start}ms`)
+          const taskMessage = task
+            ? `${task.method} with params: ${task.params.toString()}`
+            : 'No task Has been Picked'
+          console.log(`Picked task: ${taskMessage}, for uri ${uri}, in: - ${Date.now() - start}ms`)
           return task
         },
 
@@ -510,7 +503,7 @@ export class EngineState {
           (e: Error) => {
             this.fetchingTxs[txid] = false
             if (!serverState.txids[txid]) {
-              this.onConnectionFail(uri, e, 'getting transaction')
+              this.onConnectionFail(uri, e, `getting transaction ${txid}`)
             } else {
               // TODO: Don't penalize the server score either.
             }
@@ -543,7 +536,7 @@ export class EngineState {
           },
           (e: Error) => {
             addressState.fetchingUtxos = false
-            this.onConnectionFail(uri, e, 'fetching utxos')
+            this.onConnectionFail(uri, e, `fetching utxos for ${address}`)
           }
         )
       }
@@ -567,7 +560,7 @@ export class EngineState {
           },
           (e: Error) => {
             addressState.subscribing = false
-            this.onConnectionFail(uri, e, 'subscribing to address')
+            this.onConnectionFail(uri, e, `subscribing to address ${address}`)
           }
         )
       }
@@ -597,7 +590,7 @@ export class EngineState {
           },
           (e: Error) => {
             addressState.fetchingTxids = false
-            this.onConnectionFail(uri, e, 'getting history')
+            this.onConnectionFail(uri, e, `getting history for address ${address}`)
           }
         )
       }
@@ -605,7 +598,7 @@ export class EngineState {
   }
 
   async load () {
-    this.io.console.info('Loading wallet engine caches')
+    console.log('Loading wallet engine caches')
 
     // Load transaction data cache:
     try {
