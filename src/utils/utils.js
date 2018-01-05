@@ -11,7 +11,7 @@ export function validateObject (object: any, schema: any) {
   try {
     result = validate(object, schema)
   } catch (e) {
-    console.error(e)
+    console.log(e)
     return false
   }
 
