@@ -148,7 +148,7 @@ export class PluginState {
     }
 
     // Fetch stratum servers in the background:
-    this.fetchStratumServers().catch(e => this.io.console.error(e))
+    this.fetchStratumServers()
 
     return this
   }
@@ -156,73 +156,82 @@ export class PluginState {
   async clearCache () {
     this.headerCache = {}
     this.serverCache = {}
+    this.serverCacheDirty = true
+    this.headerCacheDirty = true
     await this.saveHeaderCache()
     await this.saveServerCache()
   }
 
-  saveHeaderCache () {
-    this.io.console.info('Saving header cache')
-    return this.folder
-      .file('headers.json')
-      .setText(
-        JSON.stringify({
-          height: this.height,
-          headers: this.headerCache
+  saveHeaderCache (): Promise<void> {
+    if (this.headerCacheDirty) {
+      return this.folder
+        .file('headers.json')
+        .setText(
+          JSON.stringify({
+            height: this.height,
+            headers: this.headerCache
+          })
+        )
+        .then(() => {
+          console.log('Saved header cache')
+          this.headerCacheDirty = false
+          this.headerCacheTimestamp = Date.now()
         })
-      )
-      .then(() => {
-        this.headerCacheDirty = false
-        this.headerCacheTimestamp = Date.now()
-      })
+        .catch(e => console.error(e))
+    }
+    return Promise.resolve()
   }
 
-  saveServerCache () {
-    this.io.console.info('Saving server cache')
-    return this.folder
-      .file('servers.json')
-      .setText(
-        JSON.stringify({
-          servers: this.serverCache
+  saveServerCache (): Promise<void> {
+    if (this.serverCacheDirty) {
+      return this.folder
+        .file('servers.json')
+        .setText(
+          JSON.stringify({
+            servers: this.serverCache
+          })
+        )
+        .then(() => {
+          console.log('Saved server cache')
+          this.serverCacheDirty = false
+          this.serverCacheTimestamp = Date.now()
         })
-      )
-      .then(() => {
-        this.serverCacheDirty = false
-        this.serverCacheTimestamp = Date.now()
-      })
+        .catch(e => console.error(e))
+    }
+    return Promise.resolve()
   }
 
   dirtyHeaderCache () {
     this.headerCacheDirty = true
     if (this.headerCacheTimestamp + TIME_LAZINESS < Date.now()) {
-      this.saveHeaderCache().catch(e => console.error(e))
+      this.saveHeaderCache()
     }
   }
 
   dirtyServerCache () {
     this.serverCacheDirty = true
     if (this.serverCacheTimestamp + TIME_LAZINESS < Date.now()) {
-      this.saveServerCache().catch(e => console.error(e))
+      this.saveServerCache()
     }
   }
 
   fetchStratumServers (): Promise<void> {
     const { io } = this
     if (this.infoServerUris === '') return Promise.resolve()
-    io.console.info(`GET ${this.infoServerUris}`)
+    console.log(`GET ${this.infoServerUris}`)
     return io
       .fetch(this.infoServerUris)
       .then(result => {
         if (!result.ok) {
-          io.console.error(
+          console.log(
             `Fetching ${this.infoServerUris} failed with ${result.status}`
           )
           throw new Error('Cannot fetch stratum server list')
         }
         return result.json()
       })
-      .then(json => {
-        this.insertServers(json)
-      })
+      .then(json => this.insertServers(json))
+      .catch(e => console.log(e))
   }
 
   insertServers (serverArray: Array<string>) {
@@ -258,10 +267,10 @@ export class PluginState {
     this.serverCache[uri].latency = latency
     this.dirtyServerCache()
     if (this.headerCacheDirty) {
-      this.saveHeaderCache().catch(e => console.error(e))
+      this.saveHeaderCache()
     }
     if (this.serverCacheDirty) {
-      this.saveServerCache().catch(e => console.error(e))
+      this.saveServerCache()
     }
   }
 

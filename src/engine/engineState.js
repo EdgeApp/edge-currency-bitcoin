@@ -170,6 +170,9 @@ export class EngineState {
   // Headres that are relevant to our transactions, but missing locally:
   missingHeaders: { [height: string]: true }
 
+  // Timer for caching
+  cacheTimer: number
+
   addAddress (scriptHash: string, displayAddress: string, path: string) {
     if (this.addressCache[scriptHash]) return
 
@@ -276,11 +279,20 @@ export class EngineState {
     this.pluginState.addEngine(this)
     this.engineStarted = true
     this.refillServers()
+    this.cacheTimer = setInterval(() => {
+      this.saveAddressCache()
+      this.saveTxCache()
+      if (this.pluginState) {
+        this.pluginState.saveHeaderCache()
+        this.pluginState.saveServerCache()
+      }
+    }, TIME_LAZINESS)
   }
 
   disconnect () {
     this.pluginState.removeEngine(this)
     this.engineStarted = false
+    clearInterval(this.cacheTimer)
     for (const uri of Object.keys(this.connections)) {
       this.connections[uri].close()
       delete this.connections[uri]
@@ -661,50 +673,60 @@ export class EngineState {
     this.missingTxs = {}
     this.fetchingHeaders = {}
     this.missingHeaders = {}
+    this.txCacheDirty = true
+    this.addressCacheDirty = true
     await this.saveAddressCache()
     await this.saveTxCache()
   }
 
-  saveAddressCache () {
-    const json = JSON.stringify({
-      addresses: this.addressCache,
-      heights: this.txHeightCache
-    })
-
-    this.io.console.info('Saving address cache')
-    return this.localFolder
-      .file('addresses.json')
-      .setText(json)
-      .then(() => {
-        this.addressCacheDirty = false
-        this.addressCacheTimestamp = Date.now()
+  saveAddressCache (): Promise<void> {
+    if (this.txCacheDirty) {
+      const json = JSON.stringify({
+        addresses: this.addressCache,
+        heights: this.txHeightCache
       })
+
+      return this.localFolder
+        .file('addresses.json')
+        .setText(json)
+        .then(() => {
+          console.log('Saved address cache')
+          this.addressCacheDirty = false
+          this.addressCacheTimestamp = Date.now()
+        })
+        .catch(e => console.error('saveAddressCache', e.message))
+    }
+    return Promise.resolve()
   }
 
-  saveTxCache () {
-    const json = JSON.stringify({ txs: this.txCache })
+  saveTxCache (): Promise<void> {
+    if (this.addressCacheDirty) {
+      const json = JSON.stringify({ txs: this.txCache })
 
-    this.io.console.info('Saving tx cache')
-    return this.localFolder
-      .file('txs.json')
-      .setText(json)
-      .then(() => {
-        this.txCacheDirty = false
-        this.txCacheTimestamp = Date.now()
-      })
+      return this.localFolder
+        .file('txs.json')
+        .setText(json)
+        .then(() => {
+          console.log('Saved tx cache')
+          this.txCacheDirty = false
+          this.txCacheTimestamp = Date.now()
+        })
+        .catch(e => console.error('saveTxCache', e.message))
+    }
+    return Promise.resolve()
   }
 
   dirtyAddressCache () {
     this.addressCacheDirty = true
     if (this.addressCacheTimestamp + TIME_LAZINESS < Date.now()) {
-      this.saveAddressCache().catch(e => console.error(e))
+      this.saveAddressCache()
     }
   }
 
   dirtyTxCache () {
     this.txCacheDirty = true
     if (this.txCacheTimestamp + TIME_LAZINESS < Date.now()) {
-      this.saveTxCache().catch(e => console.error(e))
+      this.saveTxCache()
     }
   }
 
