@@ -31,6 +31,7 @@ const INFO_SERVER = 'https://info1.edgesecure.co:8444/v1'
  */
 export class CurrencyEngine {
   walletInfo: AbcWalletInfo
+  walletId: string
   currencyInfo: AbcCurrencyInfo
   keyManager: KeyManager
   engineState: EngineState
@@ -60,6 +61,7 @@ export class CurrencyEngine {
     const test: AbcCurrencyEngine = this
 
     this.walletInfo = walletInfo
+    this.walletId = walletInfo.id ? `${walletInfo.id} - ` : ''
     this.currencyInfo = currencyInfo
     this.pluginState = pluginState
     this.abcCurrencyEngineOptions = options
@@ -113,7 +115,8 @@ export class CurrencyEngine {
       io: io,
       localFolder: this.abcCurrencyEngineOptions.walletLocalFolder,
       encryptedLocalFolder: this.abcCurrencyEngineOptions.walletLocalEncryptedFolder,
-      pluginState: this.pluginState
+      pluginState: this.pluginState,
+      log: (...args) => this.log(...args)
     })
 
     await this.engineState.load()
@@ -250,7 +253,7 @@ export class CurrencyEngine {
         throw new Error('Fetched invalid networkFees')
       }
     } catch (err) {
-      console.log(err)
+      this.log(err)
     }
     await this.updateFeeTableLoop()
   }
@@ -274,7 +277,7 @@ export class CurrencyEngine {
         this.rawTransactionFees.fees = fees
         this.fees = calcFeesFromEarnCom(this.fees, { fees })
       } catch (e) {
-        console.log('Error while trying to update fee table', e)
+        this.log('Error while trying to update fee table', e)
       } finally {
         this.feeTimer = setTimeout(() => {
           this.updateFeeTableLoop()
@@ -321,6 +324,21 @@ export class CurrencyEngine {
     return utxos
   }
 
+  log (...text: Array<any>) {
+    text[0] = `${this.walletId}${text[0]}`
+    console.log(...text)
+  }
+
+  logAbcTransaction (abcTransaction: AbcTransaction) {
+    let log = '------------------ Broadcasting Transaction ------------------\n'
+    log += `Transaction id: ${abcTransaction.txid}\n`
+    log += `Our Receiving addresses are: ${abcTransaction.ourReceiveAddresses.toString()}\n`
+    log += 'Transaction details:\n'
+    const jsonObj = abcTransaction.otherParams.bcoinTx.getJSON(this.network)
+    log += JSON.stringify(jsonObj, null, 2) + '\n'
+    log += '------------------------------------------------------------------'
+    this.log(log)
+  }
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
@@ -514,6 +532,7 @@ export class CurrencyEngine {
       .toRaw()
       .toString('hex')
     abcTransaction.txid = abcTransaction.otherParams.bcoinTx.rhash()
+    this.logAbcTransaction(abcTransaction)
     return abcTransaction
   }
 
@@ -521,11 +540,7 @@ export class CurrencyEngine {
     if (!abcTransaction.otherParams.bcoinTx) {
       abcTransaction.otherParams.bcoinTx = bcoin.primitives.TX.fromRaw(abcTransaction.signedTx, 'hex')
     }
-    console.log('------------------ Broadcasting ------------------')
-    console.log(`Transaction id: ${abcTransaction.txid}`)
-    console.log(`Our Receiving addresses are: ${abcTransaction.ourReceiveAddresses.toString()}`)
-    console.log('Transaction details:', abcTransaction.otherParams.bcoinTx.getJSON(this.network))
-    console.log('--------------------------------------------------')
+    this.logAbcTransaction(abcTransaction)
     for (const output of abcTransaction.otherParams.bcoinTx.outputs) {
       if (output.value <= 0 || output.value === '0') {
         throw new Error('Wrong spend amount')
@@ -537,11 +552,7 @@ export class CurrencyEngine {
   }
 
   saveTx (abcTransaction: AbcTransaction): Promise<void> {
-    console.log('------------------ Saving ------------------')
-    console.log(`Transaction id: ${abcTransaction.txid}`)
-    console.log(`Our Receiving addresses are: ${abcTransaction.ourReceiveAddresses.toString()}`)
-    console.log('Transaction details:', abcTransaction.otherParams.bcoinTx.getJSON(this.network))
-    console.log('--------------------------------------------')
+    this.logAbcTransaction(abcTransaction)
     this.engineState.saveTx(abcTransaction.txid, abcTransaction.signedTx)
     return Promise.resolve()
   }

@@ -59,6 +59,7 @@ export interface EngineStateOptions {
   localFolder: any;
   encryptedLocalFolder: any;
   pluginState: PluginState;
+  log?: Function;
 }
 
 function nop () {}
@@ -170,9 +171,6 @@ export class EngineState {
   // Headres that are relevant to our transactions, but missing locally:
   missingHeaders: { [height: string]: true }
 
-  // Timer for caching
-  cacheTimer: number
-
   addAddress (scriptHash: string, displayAddress: string, path: string) {
     if (this.addressCache[scriptHash]) return
 
@@ -212,9 +210,9 @@ export class EngineState {
     try {
       const json = JSON.stringify({ keys: keys })
       await this.encryptedLocalFolder.file('keys.json').setText(json)
-      console.log('Saved keys cache')
+      this.log('Saved keys cache')
     } catch (e) {
-      console.error('Error saving Keys', e)
+      this.log('Error saving Keys', e)
     }
   }
 
@@ -227,7 +225,7 @@ export class EngineState {
       // TODO: Validate JSON
       return keysCacheJson.keys
     } catch (e) {
-      console.log(e)
+      this.log(e)
       return {}
     }
   }
@@ -314,6 +312,8 @@ export class EngineState {
   addressCacheTimestamp: number
   txCacheDirty: boolean
   txCacheTimestamp: number
+  cacheTimer: number
+  log: Function
 
   constructor (options: EngineStateOptions) {
     this.addressCache = {}
@@ -329,7 +329,7 @@ export class EngineState {
     this.missingTxs = {}
     this.fetchingHeaders = {}
     this.missingHeaders = {}
-
+    this.log = options.log || console.log
     this.io = options.io
     this.localFolder = options.localFolder
     this.encryptedLocalFolder = options.encryptedLocalFolder
@@ -356,13 +356,13 @@ export class EngineState {
     const servers = this.pluginState
       .sortStratumServers(this.io.Socket != null, this.io.TLSSocket != null)
       .filter(uri => !this.connections[uri])
-    console.log(`Refilling Servers, top 5 servers are: ${servers.slice(0, 5)}`)
+    this.log(`Refilling Servers, top 5 servers are: ${servers.slice(0, 5)}`)
     while (Object.keys(this.connections).length < 5) {
       const uri = servers[i++]
       if (!uri) break
 
       const callbacks: StratumCallbacks = {
-        onOpen: (uri: string) => console.log(`Connected to ${uri}`),
+        onOpen: (uri: string) => this.log(`Connected to ${uri}`),
         onClose: (
           uri: string,
           badMessages: number,
@@ -370,7 +370,7 @@ export class EngineState {
           latency: number,
           error?: Error
         ) => {
-          console.log(`Disconnected from ${uri}`)
+          this.log(`Disconnected from ${uri}`)
           delete this.connections[uri]
           this.pluginState.serverDisconnected(
             uri,
@@ -390,7 +390,7 @@ export class EngineState {
           const taskMessage = task
             ? `${task.method} with params: ${task.params.toString()}`
             : 'No task Has been Picked'
-          console.log(`Picked task: ${taskMessage}, for uri ${uri}, in: - ${Date.now() - start}ms`)
+          this.log(`Picked task: ${taskMessage}, for uri ${uri}, in: - ${Date.now() - start}ms`)
           return task
         },
 
@@ -429,7 +429,7 @@ export class EngineState {
       serverState.fetchingVersion = true
       return fetchVersion(
         (version: string) => {
-          console.log(`Stratum ${uri} sent version ${version}`)
+          this.log(`Stratum ${uri} sent version ${version}`)
           serverState.fetchingVersion = false
           serverState.version = version
         },
@@ -445,7 +445,7 @@ export class EngineState {
       serverState.fetchingHeight = true
       return subscribeHeight(
         (height: number) => {
-          console.log(`Stratum ${uri} sent height ${height}`)
+          this.log(`Stratum ${uri} sent height ${height}`)
           serverState.fetchingHeight = false
           serverState.height = height
           this.pluginState.updateHeight(height)
@@ -473,7 +473,7 @@ export class EngineState {
         return fetchBlockHeader(
           parseInt(height),
           (header: any) => {
-            console.log(`Stratum ${uri} sent header for block number ${height}`)
+            this.log(`Stratum ${uri} sent header for block number ${height}`)
             this.fetchingHeaders[height] = false
             this.handleHeaderFetch(height, header)
           },
@@ -496,7 +496,7 @@ export class EngineState {
         return fetchTransaction(
           txid,
           (txData: string) => {
-            console.log(`Stratum ${uri} sent tx ${txid}`)
+            this.log(`Stratum ${uri} sent tx ${txid}`)
             this.fetchingTxs[txid] = false
             this.handleTxFetch(txid, txData)
           },
@@ -525,7 +525,7 @@ export class EngineState {
         return fetchScriptHashUtxo(
           address,
           (utxos: Array<StratumUtxo>) => {
-            console.log(`Stratum ${uri} sent utxos for ${address}`)
+            this.log(`Stratum ${uri} sent utxos for ${address}`)
             addressState.fetchingUtxos = false
             if (!addressState.hash) {
               throw new Error(
@@ -550,7 +550,7 @@ export class EngineState {
         return subscribeScriptHash(
           address,
           (hash: string | null) => {
-            console.log(
+            this.log(
               `Stratum ${uri} subscribed to ${address} at ${hash || 'null'}`
             )
             addressState.subscribing = false
@@ -579,7 +579,7 @@ export class EngineState {
         return fetchScriptHashHistory(
           address,
           (history: Array<StratumHistoryRow>) => {
-            console.log(`Stratum ${uri} sent history for ${address}`)
+            this.log(`Stratum ${uri} sent history for ${address}`)
             addressState.fetchingTxids = false
             if (!addressState.hash) {
               throw new Error(
@@ -598,7 +598,7 @@ export class EngineState {
   }
 
   async load () {
-    console.log('Loading wallet engine caches')
+    this.log('Loading wallet engine caches')
 
     // Load transaction data cache:
     try {
@@ -683,11 +683,11 @@ export class EngineState {
         .file('addresses.json')
         .setText(json)
         .then(() => {
-          console.log('Saved address cache')
+          this.log('Saved address cache')
           this.addressCacheDirty = false
           this.addressCacheTimestamp = Date.now()
         })
-        .catch(e => console.error('saveAddressCache', e.message))
+        .catch(e => this.log('saveAddressCache', e.message))
     }
     return Promise.resolve()
   }
@@ -700,11 +700,11 @@ export class EngineState {
         .file('txs.json')
         .setText(json)
         .then(() => {
-          console.log('Saved tx cache')
+          this.log('Saved tx cache')
           this.txCacheDirty = false
           this.txCacheTimestamp = Date.now()
         })
-        .catch(e => console.error('saveTxCache', e.message))
+        .catch(e => this.log('saveTxCache', e.message))
     }
     return Promise.resolve()
   }
@@ -958,9 +958,7 @@ export class EngineState {
   }
 
   onConnectionFail (uri: string, e: Error, task: string) {
-    console.info(
-      `Stratum ${uri} failed with message "${e.message}" while ${task}`
-    )
+    this.log(`Stratum ${uri} failed with message "${e.message}" while ${task}`)
     if (this.connections[uri]) {
       this.connections[uri].close()
     }
