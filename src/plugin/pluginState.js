@@ -101,6 +101,7 @@ export class PluginState {
   headerCacheTimestamp: number
   serverCacheDirty: boolean
   serverCacheTimestamp: number
+  pluginName: string
 
   constructor (io: AbcIo, currencyInfo: AbcCurrencyInfo) {
     this.height = 0
@@ -116,7 +117,7 @@ export class PluginState {
 
     this.engines = []
     this.folder = io.folder.folder('plugins').folder(currencyInfo.pluginName)
-
+    this.pluginName = currencyInfo.pluginName
     this.headerCacheDirty = false
     this.headerCacheTimestamp = Date.now()
     this.serverCacheDirty = false
@@ -173,11 +174,11 @@ export class PluginState {
           })
         )
         .then(() => {
-          console.log('Saved header cache')
+          this.log('Saved header cache')
           this.headerCacheDirty = false
           this.headerCacheTimestamp = Date.now()
         })
-        .catch(e => console.error(e))
+        .catch(e => this.log(e))
     }
     return Promise.resolve()
   }
@@ -192,11 +193,11 @@ export class PluginState {
           })
         )
         .then(() => {
-          console.log('Saved server cache')
+          this.log('Saved server cache')
           this.serverCacheDirty = false
           this.serverCacheTimestamp = Date.now()
         })
-        .catch(e => console.error(e))
+        .catch(e => this.log(e))
     }
     return Promise.resolve()
   }
@@ -218,12 +219,12 @@ export class PluginState {
   fetchStratumServers (): Promise<void> {
     const { io } = this
     if (this.infoServerUris === '') return Promise.resolve()
-    console.log(`GET ${this.infoServerUris}`)
+    this.log(`GET ${this.infoServerUris}`)
     return io
       .fetch(this.infoServerUris)
       .then(result => {
         if (!result.ok) {
-          console.log(
+          this.log(
             `Fetching ${this.infoServerUris} failed with ${result.status}`
           )
           throw new Error('Cannot fetch stratum server list')
@@ -231,7 +232,7 @@ export class PluginState {
         return result.json()
       })
       .then(json => this.insertServers(json))
-      .catch(e => console.log(e))
+      .catch(e => this.log(e))
   }
 
   insertServers (serverArray: Array<string>) {
@@ -284,5 +285,10 @@ export class PluginState {
         engine.onHeightUpdated(height)
       }
     }
+  }
+
+  log (...text: Array<any>) {
+    text[0] = `${this.pluginName} - ${text[0]}`
+    console.log(...text)
   }
 }
