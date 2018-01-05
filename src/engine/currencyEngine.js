@@ -29,7 +29,7 @@ const INFO_SERVER = 'https://info1.edgesecure.co:8444/v1'
  * Provides information about the currency,
  * as well as generic (non-wallet) functionality.
  */
-export class CurrencyEngine {
+export class CurrencyEngine implements AbcCurrencyEngine {
   walletInfo: AbcWalletInfo
   walletId: string
   currencyInfo: AbcCurrencyInfo
