@@ -521,6 +521,11 @@ export class CurrencyEngine {
     if (!abcTransaction.otherParams.bcoinTx) {
       abcTransaction.otherParams.bcoinTx = bcoin.primitives.TX.fromRaw(abcTransaction.signedTx, 'hex')
     }
+    console.log('------------------ Broadcasting ------------------')
+    console.log(`Transaction id: ${abcTransaction.txid}`)
+    console.log(`Our Receiving addresses are: ${abcTransaction.ourReceiveAddresses.toString()}`)
+    console.log('Transaction details:', abcTransaction.otherParams.bcoinTx.getJSON(this.network))
+    console.log('--------------------------------------------------')
     for (const output of abcTransaction.otherParams.bcoinTx.outputs) {
       if (output.value <= 0 || output.value === '0') {
         throw new Error('Wrong spend amount')
@@ -532,6 +537,11 @@ export class CurrencyEngine {
   }
 
   saveTx (abcTransaction: AbcTransaction): Promise<void> {
+    console.log('------------------ Saving ------------------')
+    console.log(`Transaction id: ${abcTransaction.txid}`)
+    console.log(`Our Receiving addresses are: ${abcTransaction.ourReceiveAddresses.toString()}`)
+    console.log('Transaction details:', abcTransaction.otherParams.bcoinTx.getJSON(this.network))
+    console.log('--------------------------------------------')
     this.engineState.saveTx(abcTransaction.txid, abcTransaction.signedTx)
     return Promise.resolve()
   }
