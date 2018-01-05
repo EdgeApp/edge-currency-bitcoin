@@ -533,7 +533,6 @@ export class CurrencyEngine {
       .toRaw()
       .toString('hex')
     abcTransaction.txid = abcTransaction.otherParams.bcoinTx.rhash()
-    this.logAbcTransaction(abcTransaction)
     return abcTransaction
   }
 
