@@ -353,7 +353,7 @@ for (const fixture of fixtures) {
     })
 
     it('Should build transaction with low fee', function () {
-      // $FlowFixMde
+      // $FlowFixMe
       const templateSpend: AbcSpendInfo = {
         networkFeeOption: 'low',
         metadata: {
@@ -563,6 +563,7 @@ for (const fixture of fixtures) {
   describe(`Stop Engine for Wallet type ${WALLET_TYPE}`, function () {
     it('Stop the engine', function (done) {
       console.log('kill engine')
+      engine.dumpData()
       engine.killEngine().then(done)
     })
   })
