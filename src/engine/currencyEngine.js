@@ -7,7 +7,8 @@ import type {
   AbcSpendInfo,
   AbcTransaction,
   AbcCurrencyInfo,
-  AbcSpendTarget
+  AbcSpendTarget,
+  AbcDataDump
 } from 'airbitz-core-types'
 
 import { EngineState } from './engineState.js'
@@ -557,34 +558,30 @@ export class CurrencyEngine implements AbcCurrencyEngine {
     return Promise.resolve()
   }
 
-  getDisplayPrivateSeed () {
+  getDisplayPrivateSeed (): string | null {
     if (this.walletInfo.keys && this.walletInfo.keys[`${this.network}Key`]) {
       return this.walletInfo.keys[`${this.network}Key`]
     }
     return null
   }
 
-  getDisplayPublicSeed () {
+  getDisplayPublicSeed (): string | null {
     if (this.walletInfo.keys && this.walletInfo.keys[`${this.network}Xpub`]) {
       return this.walletInfo.keys[`${this.network}Xpub`]
     }
     return null
   }
 
-  dumpData () {
-    let dataDump = ''
-    dataDump += '--------------------- Wallet Data Dump ----------------------\n'
-    dataDump += `Wallet ID: ${this.walletId}\n`
-    dataDump += `Wallet Type: ${this.walletInfo.type}\n`
-    dataDump += `Plugin Type: ${this.currencyInfo.pluginName}\n`
-    dataDump += '------------------------- Data -------------------------\n'
-    const parseJSON = (cache, obj) => {
-      try {
-        let t = `-------------------- ${obj}.${cache} ---------------------\n`
-        // $FlowFixMe
-        t += `${JSON.stringify(this[obj][cache], null, 2)}\n`
-        dataDump += t
-      } catch (e) {}
+  dumpData (): AbcDataDump {
+    const dataDump: AbcDataDump = {
+      walletId: this.walletId.split(' - ')[0],
+      walletType: this.walletInfo.type,
+      pluginType: this.currencyInfo.pluginName,
+      data: {}
+    }
+    const add = (cache, obj) => {
+      // $FlowFixMe
+      dataDump.data[`${obj}.${cache}`] = this[obj][cache]
     }
 
     const engineCache = [
@@ -594,10 +591,9 @@ export class CurrencyEngine implements AbcCurrencyEngine {
     ]
     const pluginCache = [ 'headerCache', 'serverCache' ]
 
-    engineCache.forEach(c => parseJSON(c, 'engineState'))
-    pluginCache.forEach(c => parseJSON(c, 'pluginState'))
+    engineCache.forEach(c => add(c, 'engineState'))
+    pluginCache.forEach(c => add(c, 'pluginState'))
 
-    dataDump += '------------------ End of Wallet Data Dump ------------------\n\n'
     return dataDump
   }
 }
