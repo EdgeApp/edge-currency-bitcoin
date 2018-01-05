@@ -54,8 +54,9 @@ function nop () {}
 export class StratumConnection {
   uri: string
   connected: boolean
+  log: Function
 
-  constructor (uri: string, options: StratumOptions) {
+  constructor (uri: string, options: StratumOptions, log: ?Function) {
     const { callbacks = {}, io, queueSize = 10, timeout = 30 } = options
     const {
       onOpen = nop,
@@ -65,6 +66,7 @@ export class StratumConnection {
       onNotifyScriptHash = nop
     } = callbacks
 
+    this.log = log || console.log
     this.io = io
     this.onClose = onClose
     this.onOpen = onOpen
@@ -295,14 +297,14 @@ export class StratumConnection {
           // TODO: Validate
           this.onNotifyHeader(this.uri, json.params[0])
         } catch (e) {
-          console.error(e)
+          this.log(e)
         }
       } else if (json.method === 'blockchain.scripthash.subscribe') {
         try {
           // TODO: Validate
           this.onNotifyScriptHash(this.uri, json.params[0], json.params[1])
         } catch (e) {
-          console.error(e)
+          this.log(e)
         }
       } else if (/subscribe$/.test(json.method)) {
         // It's some other kind of subscription.
@@ -333,7 +335,7 @@ export class StratumConnection {
         try {
           message.task.onFail(new Error('Timeout'))
         } catch (e) {
-          console.error(e)
+          this.log(e)
         }
         delete this.pendingMessages[id]
         ++this.badMessages
@@ -353,7 +355,7 @@ export class StratumConnection {
         e
       )
     } catch (e) {
-      console.error(e)
+      this.log(e)
     }
   }
 
@@ -363,7 +365,7 @@ export class StratumConnection {
       try {
         message.task.onFail(e)
       } catch (e) {
-        console.error(e)
+        this.log(e)
       }
     }
     this.pendingMessages = {}

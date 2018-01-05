@@ -408,7 +408,7 @@ export class EngineState {
         }
       }
 
-      this.connections[uri] = new StratumConnection(uri, { callbacks, io })
+      this.connections[uri] = new StratumConnection(uri, { callbacks, io }, this.log)
       this.serverStates[uri] = {
         fetchingHeight: false,
         fetchingVersion: false,
