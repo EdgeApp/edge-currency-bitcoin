@@ -41,13 +41,6 @@ export function calcFeesFromEarnCom (
 
   const earnComFees: EarnComFees = earnComFeesJson
   for (const fee of earnComFees.fees) {
-    // const p = `minFee:${fee.minFee},maxFee:${fee.maxFee},minDelay:${
-    //   fee.minDelay
-    // },maxDelay:${fee.maxDelay},minMinutes:${fee.minMinutes},maxMinutes:${
-    //   fee.maxMinutes
-    // }`
-    // console.log(p)
-
     // If this is a zero fee estimate, then skip
     if (fee.maxFee === 0 || fee.minFee === 0) {
       continue

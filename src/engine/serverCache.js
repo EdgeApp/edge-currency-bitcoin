@@ -181,7 +181,6 @@ export class ServerCache {
     serverInfos.sort((a: ServerInfo, b: ServerInfo) => {
       return b.serverScore - a.serverScore
     })
-    // console.log('1:', serverInfos)
 
     //
     // Take the top 50% of servers that have
@@ -222,7 +221,6 @@ export class ServerCache {
     })
     topServerInfos = topServerInfos.concat(serverInfos.slice(serverEnd))
 
-    // console.log('2:', topServerInfos)
     const servers = []
     let numServers = 0
     let numNewServers = 0
@@ -246,7 +244,6 @@ export class ServerCache {
         }
       }
     }
-    // console.log('3:', servers)
 
     // If this list does not have a new server in it, try to add one as we always want to give new
     // servers a try.
@@ -259,7 +256,7 @@ export class ServerCache {
         }
       }
     }
-    // console.log('4:', servers)
+
     return servers
   }
 }

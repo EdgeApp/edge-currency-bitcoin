@@ -290,34 +290,22 @@ export class StratumConnection {
           message.task.onFail(e)
           ++this.badMessages
         }
-        // console.log(
-        //   `bench: Handled reply ${message.task.method} in ${Date.now() -
-        //     start}ms`
-        // )
       } else if (json.method === 'blockchain.headers.subscribe') {
-        console.log(`${this.uri} notified header`)
         try {
           // TODO: Validate
+          console.log(`${this.uri} notified header ${json.params[0]}`)
           this.onNotifyHeader(this.uri, json.params[0])
         } catch (e) {
           console.error(e)
         }
-        // console.log(
-        //   `bench: Handled notification ${json.method} in ${Date.now() -
-        //     start}ms`
-        // )
       } else if (json.method === 'blockchain.scripthash.subscribe') {
-        console.log(`${this.uri} notified scripthash change`)
         try {
           // TODO: Validate
+          console.log(`${this.uri} notified scripthash ${json.params[0]} change`)
           this.onNotifyScriptHash(this.uri, json.params[0], json.params[1])
         } catch (e) {
           console.error(e)
         }
-        // console.log(
-        //   `bench: Handled notification ${json.method} in ${Date.now() -
-        //     start}ms`
-        // )
       } else if (/subscribe$/.test(json.method)) {
         // It's some other kind of subscription.
       } else {
