@@ -570,4 +570,34 @@ export class CurrencyEngine {
     }
     return null
   }
+
+  dumpData () {
+    let dataDump = ''
+    dataDump += '--------------------- Wallet Data Dump ----------------------\n'
+    dataDump += `Wallet ID: ${this.walletId}\n`
+    dataDump += `Wallet Type: ${this.walletInfo.type}\n`
+    dataDump += `Plugin Type: ${this.currencyInfo.pluginName}\n`
+    dataDump += '------------------------- Data -------------------------\n'
+    const parseJSON = (cache, obj) => {
+      try {
+        let t = `-------------------- ${obj}.${cache} ---------------------\n`
+        // $FlowFixMe
+        t += `${JSON.stringify(this[obj][cache], null, 2)}\n`
+        dataDump += t
+      } catch (e) {}
+    }
+
+    const engineCache = [
+      'addressCache', 'addressInfos', 'scriptHashes', 'usedAddresses',
+      'txCache', 'txHeightCache', 'missingHeaders', 'serverStates',
+      'fetchingTxs', 'missingTxs', 'fetchingHeaders'
+    ]
+    const pluginCache = [ 'headerCache', 'serverCache' ]
+
+    engineCache.forEach(c => parseJSON(c, 'engineState'))
+    pluginCache.forEach(c => parseJSON(c, 'pluginState'))
+
+    dataDump += '------------------ End of Wallet Data Dump ------------------\n\n'
+    return dataDump
+  }
 }
