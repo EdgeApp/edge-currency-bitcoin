@@ -395,11 +395,13 @@ export class EngineState {
         },
 
         onNotifyHeader: (uri: string, headerInfo: StratumBlockHeader) => {
+          this.log(`Stratum ${uri} notified header ${headerInfo.block_height}`)
           this.serverStates[uri].height = headerInfo.block_height
           this.pluginState.updateHeight(headerInfo.block_height)
         },
 
         onNotifyScriptHash: (uri: string, scriptHash: string, hash: string) => {
+          this.log(`Stratum ${uri} notified scripthash ${scriptHash} change`)
           const addressState = this.serverStates[uri].addresses[scriptHash]
           addressState.hash = hash
           addressState.lastUpdate = Date.now()

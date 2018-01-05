@@ -293,7 +293,6 @@ export class StratumConnection {
       } else if (json.method === 'blockchain.headers.subscribe') {
         try {
           // TODO: Validate
-          console.log(`${this.uri} notified header ${json.params[0]}`)
           this.onNotifyHeader(this.uri, json.params[0])
         } catch (e) {
           console.error(e)
@@ -301,7 +300,6 @@ export class StratumConnection {
       } else if (json.method === 'blockchain.scripthash.subscribe') {
         try {
           // TODO: Validate
-          console.log(`${this.uri} notified scripthash ${json.params[0]} change`)
           this.onNotifyScriptHash(this.uri, json.params[0], json.params[1])
         } catch (e) {
           console.error(e)
