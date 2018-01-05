@@ -125,7 +125,7 @@ for (const fixture of fixtures) {
     it('Make Engine', function () {
       return plugin
         .makeEngine(
-          { type: WALLET_TYPE, keys },
+          { type: WALLET_TYPE, keys, id: '1' },
           {
             callbacks,
             walletLocalFolder: walletLocalFolder.folder(DATA_STORE_FOLDER),
@@ -561,9 +561,16 @@ for (const fixture of fixtures) {
   })
 
   describe(`Stop Engine for Wallet type ${WALLET_TYPE}`, function () {
+    it('dump the wallet data', function (done) {
+      const dataDump = engine.dumpData()
+      assert(dataDump.walletId === '1', 'walletId')
+      assert(dataDump.walletType === 'wallet:bitcoin-bip49-testnet', 'walletType')
+      assert(dataDump.pluginType === 'bitcointestnet', 'pluginType')
+      done()
+    })
+
     it('Stop the engine', function (done) {
       console.log('kill engine')
-      engine.dumpData()
       engine.killEngine().then(done)
     })
   })
