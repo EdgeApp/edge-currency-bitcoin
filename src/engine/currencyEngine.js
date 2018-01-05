@@ -86,6 +86,7 @@ export class CurrencyEngine {
       lastUpdated: 0,
       fees: []
     }
+    this.log(`Created Wallet Type ${this.walletInfo.type} for Currency Plugin ${this.currencyInfo.pluginName} `)
   }
 
   async load (): Promise<any> {

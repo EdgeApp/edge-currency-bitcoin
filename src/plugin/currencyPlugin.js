@@ -68,7 +68,7 @@ export class CurrencyPlugin {
     this.currencyInfo = currencyInfo
     this.network = this.currencyInfo.defaultSettings.network.type
     this.pluginName = this.currencyInfo.pluginName
-
+    console.log(`Creating Currency Plugin for ${this.pluginName}`)
     // Private API:
     this.io = options.io
     this.state = new PluginState(this.io, currencyInfo)
