@@ -637,6 +637,14 @@ export class EngineState {
       this.addressCache = cacheJson.addresses
       this.txHeightCache = cacheJson.heights
 
+      // Fillup the missing headers to fetch
+      for (const txid in this.txHeightCache) {
+        const height = this.txHeightCache[txid].height
+        if (!this.pluginState.headerCache[`${height}`]) {
+          this.missingHeaders[`${height}`] = true
+        }
+      }
+
       // Update the derived information:
       for (const scriptHash of Object.keys(this.addressCache)) {
         const address = this.addressCache[scriptHash]
