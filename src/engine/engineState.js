@@ -815,6 +815,17 @@ export class EngineState {
     }
     this.dirtyTxCache()
     this.onTxFetched(txid)
+    for (const parsedTxid in this.parsedTxs) {
+      const tx = this.parsedTxs[parsedTxid]
+      for (const input of tx.inputs) {
+        if (input.prevout) {
+          const hash = input.prevout.rhash()
+          if (hash === txid && this.parsedTxs[hash]) {
+            this.onTxFetched(parsedTxid)
+          }
+        }
+      }
+    }
   }
 
   // A server has told us about a txid, so update the caches:
