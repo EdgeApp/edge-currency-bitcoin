@@ -93,11 +93,13 @@ export class CurrencyEngine implements AbcCurrencyEngine {
   async load (): Promise<any> {
     const engineStateCallbacks: EngineStateCallbacks = {
       onAddressInfoUpdated: (addressHash: string) => {
-        if (this.keyManager) this.keyManager.setLookAhead()
-        this.abcCurrencyEngineOptions.callbacks.onBalanceChanged(
-          this.currencyInfo.currencyCode,
-          this.getBalance()
-        )
+        if (this.keyManager) {
+          this.keyManager.setLookAhead()
+          this.abcCurrencyEngineOptions.callbacks.onBalanceChanged(
+            this.currencyInfo.currencyCode,
+            this.getBalance()
+          )
+        }
       },
       onHeightUpdated: (height: number) => {
         this.abcCurrencyEngineOptions.callbacks.onBlockHeightChanged(height)
