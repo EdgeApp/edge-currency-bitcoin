@@ -778,7 +778,7 @@ export class EngineState {
       this.pluginState.headerCache[height] = header
       const affectedTXIDS = this.findAffectedTransactions(height)
       for (const txid of affectedTXIDS) {
-        this.onTxFetched(txid)
+        if (this.parsedTxs[txid]) this.onTxFetched(txid)
       }
       this.pluginState.dirtyHeaderCache()
     }
