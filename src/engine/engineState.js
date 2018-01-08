@@ -683,7 +683,7 @@ export class EngineState {
   }
 
   saveAddressCache (): Promise<void> {
-    if (this.txCacheDirty) {
+    if (this.addressCacheDirty) {
       const json = JSON.stringify({
         addresses: this.addressCache,
         heights: this.txHeightCache
@@ -703,7 +703,7 @@ export class EngineState {
   }
 
   saveTxCache (): Promise<void> {
-    if (this.addressCacheDirty) {
+    if (this.txCacheDirty) {
       const json = JSON.stringify({ txs: this.txCache })
 
       return this.localFolder
