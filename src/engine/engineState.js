@@ -435,7 +435,7 @@ export class EngineState {
       serverState.fetchingVersion = true
       return fetchVersion(
         (version: string) => {
-          this.log(`Stratum ${uri} sent version ${version}`)
+          this.log(`Stratum ${uri} received version ${version}`)
           serverState.fetchingVersion = false
           serverState.version = version
         },
@@ -451,7 +451,7 @@ export class EngineState {
       serverState.fetchingHeight = true
       return subscribeHeight(
         (height: number) => {
-          this.log(`Stratum ${uri} sent height ${height}`)
+          this.log(`Stratum ${uri} received height ${height}`)
           serverState.fetchingHeight = false
           serverState.height = height
           this.pluginState.updateHeight(height)
@@ -479,7 +479,7 @@ export class EngineState {
         return fetchBlockHeader(
           parseInt(height),
           (header: any) => {
-            this.log(`Stratum ${uri} sent header for block number ${height}`)
+            this.log(`Stratum ${uri} received header for block number ${height}`)
             this.fetchingHeaders[height] = false
             this.handleHeaderFetch(height, header)
           },
@@ -585,7 +585,7 @@ export class EngineState {
         return fetchScriptHashHistory(
           address,
           (history: Array<StratumHistoryRow>) => {
-            this.log(`Stratum ${uri} sent history for ${address}`)
+            this.log(`Stratum ${uri} received history for ${address}`)
             addressState.fetchingTxids = false
             if (!addressState.hash) {
               throw new Error(
