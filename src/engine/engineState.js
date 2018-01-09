@@ -950,6 +950,18 @@ export class EngineState {
 
     const balance = utxosWithUnconfirmed.reduce((s, utxo) => utxo.value + s, 0)
 
+    let addressStateChanged = true
+    if (this.addressInfos[scriptHash]) {
+      const oldAddressInfo = this.addressInfos[scriptHash]
+      if (
+        balance === oldAddressInfo.balance &&
+        used === oldAddressInfo.used &&
+        txids.length === oldAddressInfo.txids.length &&
+        utxos.length === oldAddressInfo.utxos.length
+      ) {
+        addressStateChanged = false
+      }
+    }
 
     // Assemble the info structure:
     this.addressInfos[scriptHash] = {
@@ -960,7 +972,8 @@ export class EngineState {
       path,
       balance
     }
-    this.onAddressInfoUpdated(scriptHash)
+
+    addressStateChanged && this.onAddressInfoUpdated(scriptHash)
   }
 
   // Finds the script hashes that a transaction touches.
