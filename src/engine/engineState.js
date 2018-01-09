@@ -44,8 +44,11 @@ export type AddressInfos = {
 }
 
 export interface EngineStateCallbacks {
-  // Changes to the address cache (might also affect tx heights):
-  +onAddressInfoUpdated?: (addressHash: string) => void;
+  // Changes to an address UTXO set:
+  +onBalanceChanged?: () => void;
+
+  // Changes to an address 'use' state:
+  +onAddressUsed?: () => void;
 
   // Changes to the chain height:
   +onHeightUpdated?: (height: number) => void;
@@ -309,7 +312,8 @@ export class EngineState {
   localFolder: DiskletFolder
   encryptedLocalFolder: DiskletFolder
   pluginState: PluginState
-  onAddressInfoUpdated: (addressHash: string) => void
+  onBalanceChanged: () => void
+  onAddressUsed: () => void
   onHeightUpdated: (height: number) => void
   onTxFetched: (txid: string) => void
 
@@ -340,11 +344,13 @@ export class EngineState {
     this.encryptedLocalFolder = options.encryptedLocalFolder
     this.pluginState = options.pluginState
     const {
-      onAddressInfoUpdated = nop,
+      onBalanceChanged = nop,
+      onAddressUsed = nop,
       onHeightUpdated = nop,
       onTxFetched = nop
     } = options.callbacks
-    this.onAddressInfoUpdated = onAddressInfoUpdated
+    this.onBalanceChanged = onBalanceChanged
+    this.onAddressUsed = onAddressUsed
     this.onHeightUpdated = onHeightUpdated
     this.onTxFetched = onTxFetched
 
@@ -953,17 +959,11 @@ export class EngineState {
 
     const balance = utxosWithUnconfirmed.reduce((s, utxo) => utxo.value + s, 0)
 
-    let addressStateChanged = true
+    let prevBalance = 0
+    let prevUsed = false
     if (this.addressInfos[scriptHash]) {
-      const oldAddressInfo = this.addressInfos[scriptHash]
-      if (
-        balance === oldAddressInfo.balance &&
-        used === oldAddressInfo.used &&
-        txids.length === oldAddressInfo.txids.length &&
-        utxos.length === oldAddressInfo.utxos.length
-      ) {
-        addressStateChanged = false
-      }
+      prevBalance = this.addressInfos[scriptHash].balance
+      prevUsed = this.addressInfos[scriptHash].used
     }
 
     // Assemble the info structure:
@@ -976,7 +976,8 @@ export class EngineState {
       balance
     }
 
-    addressStateChanged && this.onAddressInfoUpdated(scriptHash)
+    if (prevBalance !== balance) this.onBalanceChanged()
+    if (prevUsed !== used) this.onAddressUsed()
   }
 
   findAffectedAddressesforInputs (txid: string): Array<string> {
