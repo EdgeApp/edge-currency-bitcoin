@@ -35,7 +35,8 @@ export type AddressInfo = {
   utxos: Array<UtxoInfo>,
   used: boolean, // Set by `addGapLimitAddress`
   displayAddress: string, // base58 or other wallet-ready format
-  path: string // TODO: Define the contents of this member.
+  path: string, // TODO: Define the contents of this member.
+  balance: number
 }
 
 export type AddressInfos = {
@@ -943,13 +944,21 @@ export class EngineState {
       }
     }
 
+    const utxosWithUnconfirmed = utxos.filter(utxo =>
+      !spends[`${utxo.txid}:${utxo.index}`]
+    )
+
+    const balance = utxosWithUnconfirmed.reduce((s, utxo) => utxo.value + s, 0)
+
+
     // Assemble the info structure:
     this.addressInfos[scriptHash] = {
       txids,
-      utxos: utxos.filter(utxo => !spends[`${utxo.txid}:${utxo.index}`]),
+      utxos: utxosWithUnconfirmed,
       used,
       displayAddress,
-      path
+      path,
+      balance
     }
     this.onAddressInfoUpdated(scriptHash)
   }
