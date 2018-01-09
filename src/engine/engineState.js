@@ -976,22 +976,32 @@ export class EngineState {
     addressStateChanged && this.onAddressInfoUpdated(scriptHash)
   }
 
-  // Finds the script hashes that a transaction touches.
-  findAffectedAddresses (txid: string): Array<string> {
-    const scriptHashSet = {}
+  findAffectedAddressesforInputs (txid: string): Array<string> {
+    const scriptHashSet = []
     for (const input of this.parsedTxs[txid].inputs) {
       const prevTx = this.parsedTxs[input.prevout.rhash()]
       if (!prevTx) continue
       const prevOut = prevTx.outputs[input.prevout.index]
       if (!prevOut) continue
-      scriptHashSet[prevOut.scriptHash] = true
+      scriptHashSet.push(prevOut.scriptHash)
     }
+    return scriptHashSet
+  }
+
+  findAffectedAddressesforOutput (txid: string): Array<string> {
+    const scriptHashSet = []
     for (const output of this.parsedTxs[txid].outputs) {
       if (this.addressCache[output.scriptHash]) {
-        scriptHashSet[output.scriptHash] = true
+        scriptHashSet.push(output.scriptHash)
       }
     }
-    return Object.keys(scriptHashSet)
+    return scriptHashSet
+  }
+
+  findAffectedAddresses (txid: string): Array<string> {
+    const inputs = this.findAffectedAddressesforInputs(txid)
+    const outputs = this.findAffectedAddressesforOutput(txid)
+    return inputs.concat(outputs)
   }
 
   // Finds the txids that a are in a block.
