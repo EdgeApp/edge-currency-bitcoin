@@ -239,6 +239,7 @@ export class EngineState {
       const task = broadcastTx(
         rawTx,
         (txid: string) => {
+          this.log(`Stratum broadcasted transaction ${txid}`)
           // We resolve if any server succeeds:
           if (!resolved) {
             resolved = true
@@ -247,7 +248,10 @@ export class EngineState {
         },
         (e: Error) => {
           // We fail if every server failed:
-          if (++bad === uris.length) reject(e)
+          if (++bad === uris.length) {
+            this.log(`Stratum failed to broadcast transaction: ${rawTx}\n With error`, e)
+            reject(e)
+          }
         }
       )
 
@@ -498,7 +502,7 @@ export class EngineState {
         return fetchTransaction(
           txid,
           (txData: string) => {
-            this.log(`Stratum ${uri} sent tx ${txid}`)
+            this.log(`Stratum ${uri} received tx ${txid}`)
             this.fetchingTxs[txid] = false
             this.handleTxFetch(txid, txData)
           },
@@ -527,7 +531,7 @@ export class EngineState {
         return fetchScriptHashUtxo(
           address,
           (utxos: Array<StratumUtxo>) => {
-            this.log(`Stratum ${uri} sent utxos for ${address}`)
+            this.log(`Stratum ${uri} received utxos for ${address}`)
             addressState.fetchingUtxos = false
             if (!addressState.hash) {
               throw new Error(
