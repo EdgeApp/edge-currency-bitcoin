@@ -333,8 +333,8 @@ export class CurrencyEngine implements AbcCurrencyEngine {
     console.log(...text)
   }
 
-  logAbcTransaction (abcTransaction: AbcTransaction) {
-    let log = '------------------ Broadcasting Transaction ------------------\n'
+  logAbcTransaction (abcTransaction: AbcTransaction, action: string) {
+    let log = `------------------ ${action} Transaction ------------------\n`
     log += `Transaction id: ${abcTransaction.txid}\n`
     log += `Our Receiving addresses are: ${abcTransaction.ourReceiveAddresses.toString()}\n`
     log += 'Transaction details:\n'
@@ -530,6 +530,7 @@ export class CurrencyEngine implements AbcCurrencyEngine {
   }
 
   async signTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
+    this.logAbcTransaction(abcTransaction, 'Signing')
     await this.keyManager.sign(abcTransaction.otherParams.bcoinTx)
     abcTransaction.date = Date.now() / MILI_TO_SEC
     abcTransaction.signedTx = abcTransaction.otherParams.bcoinTx
@@ -543,7 +544,7 @@ export class CurrencyEngine implements AbcCurrencyEngine {
     if (!abcTransaction.otherParams.bcoinTx) {
       abcTransaction.otherParams.bcoinTx = bcoin.primitives.TX.fromRaw(abcTransaction.signedTx, 'hex')
     }
-    this.logAbcTransaction(abcTransaction)
+    this.logAbcTransaction(abcTransaction, 'Broadcasting')
     for (const output of abcTransaction.otherParams.bcoinTx.outputs) {
       if (output.value <= 0 || output.value === '0') {
         throw new Error('Wrong spend amount')
@@ -555,7 +556,7 @@ export class CurrencyEngine implements AbcCurrencyEngine {
   }
 
   saveTx (abcTransaction: AbcTransaction): Promise<void> {
-    this.logAbcTransaction(abcTransaction)
+    this.logAbcTransaction(abcTransaction, 'Saving')
     this.engineState.saveTx(abcTransaction.txid, abcTransaction.signedTx)
     return Promise.resolve()
   }
