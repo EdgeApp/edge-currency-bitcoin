@@ -815,18 +815,21 @@ export class EngineState {
     this.txCache[txid] = txData
     delete this.missingTxs[txid]
     this.parsedTxs[txid] = parseTransaction(txData)
-    for (const scriptHash of this.findAffectedAddresses(txid)) {
+    for (const scriptHash of this.findAffectedAddressesforInputs(txid)) {
       this.refreshAddressInfo(scriptHash)
     }
     this.dirtyTxCache()
     this.onTxFetched(txid)
-    for (const parsedTxid in this.parsedTxs) {
-      const tx = this.parsedTxs[parsedTxid]
-      for (const input of tx.inputs) {
-        if (input.prevout) {
-          const hash = input.prevout.rhash()
-          if (hash === txid && this.parsedTxs[hash]) {
-            this.onTxFetched(parsedTxid)
+    for (const scriptHash of this.findAffectedAddressesforOutput(txid)) {
+      this.refreshAddressInfo(scriptHash)
+      for (const parsedTxid of this.addressInfos[scriptHash].txids) {
+        const tx = this.parsedTxs[parsedTxid]
+        for (const input of tx.inputs) {
+          if (input.prevout) {
+            const hash = input.prevout.rhash()
+            if (hash === txid && this.parsedTxs[hash]) {
+              this.onTxFetched(parsedTxid)
+            }
           }
         }
       }
