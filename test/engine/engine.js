@@ -40,7 +40,7 @@ for (const fixture of fixtures) {
       emitter.emit('onAddressesCheck', progressRatio)
     },
     onBalanceChanged (currencyCode, balance) {
-      // console.log('onBalanceChange:', currencyCode, balance)
+      console.log('onBalanceChange:', currencyCode, balance)
       emitter.emit('onBalanceChange', currencyCode, balance)
     },
     onBlockHeightChanged (height) {

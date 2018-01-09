@@ -397,15 +397,12 @@ export class CurrencyEngine implements AbcCurrencyEngine {
   }
 
   getBalance (options: any): string {
-    let balance = 0
+    let totalBalance = 0
     for (const scriptHash in this.engineState.addressInfos) {
-      const { utxos } = this.engineState.addressInfos[scriptHash]
-      const utxoLength = utxos.length
-      for (let i = 0; i < utxoLength; i++) {
-        balance += utxos[i].value
-      }
+      const { balance } = this.engineState.addressInfos[scriptHash]
+      totalBalance += balance
     }
-    return `${balance}`
+    return `${totalBalance}`
   }
 
   getNumTransactions (options: any): number {

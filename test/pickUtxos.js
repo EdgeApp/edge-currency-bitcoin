@@ -20,6 +20,7 @@ const addressObj: AddressInfo = {
   txids: ['txid1'],
   utxos: [{ txid: 'txid1', index: 0, value: 100 }],
   used: true,
+  balance: 100,
   displayAddress: 'mydisplayaddress',
   path: 'somepath' // TODO: Define the contents of this member.
 }

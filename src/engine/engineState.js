@@ -35,7 +35,8 @@ export type AddressInfo = {
   utxos: Array<UtxoInfo>,
   used: boolean, // Set by `addGapLimitAddress`
   displayAddress: string, // base58 or other wallet-ready format
-  path: string // TODO: Define the contents of this member.
+  path: string, // TODO: Define the contents of this member.
+  balance: number
 }
 
 export type AddressInfos = {
@@ -814,18 +815,21 @@ export class EngineState {
     this.txCache[txid] = txData
     delete this.missingTxs[txid]
     this.parsedTxs[txid] = parseTransaction(txData)
-    for (const scriptHash of this.findAffectedAddresses(txid)) {
+    for (const scriptHash of this.findAffectedAddressesforInputs(txid)) {
       this.refreshAddressInfo(scriptHash)
     }
     this.dirtyTxCache()
     this.onTxFetched(txid)
-    for (const parsedTxid in this.parsedTxs) {
-      const tx = this.parsedTxs[parsedTxid]
-      for (const input of tx.inputs) {
-        if (input.prevout) {
-          const hash = input.prevout.rhash()
-          if (hash === txid && this.parsedTxs[hash]) {
-            this.onTxFetched(parsedTxid)
+    for (const scriptHash of this.findAffectedAddressesforOutput(txid)) {
+      this.refreshAddressInfo(scriptHash)
+      for (const parsedTxid of this.addressInfos[scriptHash].txids) {
+        const tx = this.parsedTxs[parsedTxid]
+        for (const input of tx.inputs) {
+          if (input.prevout) {
+            const hash = input.prevout.rhash()
+            if (hash === txid && this.parsedTxs[hash]) {
+              this.onTxFetched(parsedTxid)
+            }
           }
         }
       }
@@ -943,33 +947,64 @@ export class EngineState {
       }
     }
 
+    const utxosWithUnconfirmed = utxos.filter(utxo =>
+      !spends[`${utxo.txid}:${utxo.index}`]
+    )
+
+    const balance = utxosWithUnconfirmed.reduce((s, utxo) => utxo.value + s, 0)
+
+    let addressStateChanged = true
+    if (this.addressInfos[scriptHash]) {
+      const oldAddressInfo = this.addressInfos[scriptHash]
+      if (
+        balance === oldAddressInfo.balance &&
+        used === oldAddressInfo.used &&
+        txids.length === oldAddressInfo.txids.length &&
+        utxos.length === oldAddressInfo.utxos.length
+      ) {
+        addressStateChanged = false
+      }
+    }
+
     // Assemble the info structure:
     this.addressInfos[scriptHash] = {
       txids,
-      utxos: utxos.filter(utxo => !spends[`${utxo.txid}:${utxo.index}`]),
+      utxos: utxosWithUnconfirmed,
       used,
       displayAddress,
-      path
+      path,
+      balance
     }
-    this.onAddressInfoUpdated(scriptHash)
+
+    addressStateChanged && this.onAddressInfoUpdated(scriptHash)
   }
 
-  // Finds the script hashes that a transaction touches.
-  findAffectedAddresses (txid: string): Array<string> {
-    const scriptHashSet = {}
+  findAffectedAddressesforInputs (txid: string): Array<string> {
+    const scriptHashSet = []
     for (const input of this.parsedTxs[txid].inputs) {
       const prevTx = this.parsedTxs[input.prevout.rhash()]
       if (!prevTx) continue
       const prevOut = prevTx.outputs[input.prevout.index]
       if (!prevOut) continue
-      scriptHashSet[prevOut.scriptHash] = true
+      scriptHashSet.push(prevOut.scriptHash)
     }
+    return scriptHashSet
+  }
+
+  findAffectedAddressesforOutput (txid: string): Array<string> {
+    const scriptHashSet = []
     for (const output of this.parsedTxs[txid].outputs) {
       if (this.addressCache[output.scriptHash]) {
-        scriptHashSet[output.scriptHash] = true
+        scriptHashSet.push(output.scriptHash)
       }
     }
-    return Object.keys(scriptHashSet)
+    return scriptHashSet
+  }
+
+  findAffectedAddresses (txid: string): Array<string> {
+    const inputs = this.findAffectedAddressesforInputs(txid)
+    const outputs = this.findAffectedAddressesforOutput(txid)
+    return inputs.concat(outputs)
   }
 
   // Finds the txids that a are in a block.
