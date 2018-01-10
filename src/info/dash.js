@@ -6,7 +6,10 @@ export const dashInfo: AbcCurrencyInfo = {
   currencyCode: 'DASH',
   currencyName: 'Dash',
   pluginName: 'dash',
-  denominations: [{ name: 'DASH', multiplier: '100000000', symbol: 'D' }],
+  denominations: [
+    { name: 'DASH', multiplier: '100000000', symbol: 'D' },
+    { name: 'mDASH', multiplier: '100000', symbol: 'mD' }
+  ],
   walletTypes: ['wallet:dash-bip44'],
 
   // Configuration options:
