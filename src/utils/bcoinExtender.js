@@ -1,7 +1,12 @@
 // @flow
 import type { AbcCurrencyInfo } from 'airbitz-core-types'
 import { patchBcashAddress, patchBcashTX } from './bcashExtender.js'
-import { patchDerivePublic, patchDerivePrivate, patchDerivePath, patchPrivateFromMnemonic } from './deriveExtender.js'
+import {
+  patchDerivePublic,
+  patchDerivePrivate,
+  patchDerivePath,
+  patchPrivateFromMnemonic
+} from './deriveExtender.js'
 
 let cryptoReplaced = false
 

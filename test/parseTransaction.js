@@ -33,11 +33,19 @@ describe('parseTransaction', function () {
       ]
     }
     const parsedData = parseTransaction(txData)
-    expect(parsedData.inputs[0].prevout.rhash()).to.equal(expected.inputs[0].txid)
-    expect(parsedData.inputs[0].prevout.index).to.equal(expected.inputs[0].index)
-    expect(parsedData.outputs[0].scriptHash).to.equal(expected.outputs[0].scriptHash)
+    expect(parsedData.inputs[0].prevout.rhash()).to.equal(
+      expected.inputs[0].txid
+    )
+    expect(parsedData.inputs[0].prevout.index).to.equal(
+      expected.inputs[0].index
+    )
+    expect(parsedData.outputs[0].scriptHash).to.equal(
+      expected.outputs[0].scriptHash
+    )
     expect(parsedData.outputs[0].value).to.equal(expected.outputs[0].value)
-    expect(parsedData.outputs[1].scriptHash).to.equal(expected.outputs[1].scriptHash)
+    expect(parsedData.outputs[1].scriptHash).to.equal(
+      expected.outputs[1].scriptHash
+    )
     expect(parsedData.outputs[1].value).to.equal(expected.outputs[1].value)
   })
 
@@ -63,9 +71,15 @@ describe('parseTransaction', function () {
       ]
     }
     const parsedData = parseTransaction(txData)
-    expect(parsedData.inputs[0].prevout.rhash()).to.equal(expected.inputs[0].txid)
-    expect(parsedData.inputs[0].prevout.index).to.equal(expected.inputs[0].index)
-    expect(parsedData.outputs[0].scriptHash).to.equal(expected.outputs[0].scriptHash)
+    expect(parsedData.inputs[0].prevout.rhash()).to.equal(
+      expected.inputs[0].txid
+    )
+    expect(parsedData.inputs[0].prevout.index).to.equal(
+      expected.inputs[0].index
+    )
+    expect(parsedData.outputs[0].scriptHash).to.equal(
+      expected.outputs[0].scriptHash
+    )
     expect(parsedData.outputs[0].value).to.equal(expected.outputs[0].value)
   })
 })

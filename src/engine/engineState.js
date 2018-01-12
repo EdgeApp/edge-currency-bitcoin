@@ -253,7 +253,10 @@ export class EngineState {
         (e: Error) => {
           // We fail if every server failed:
           if (++bad === uris.length) {
-            this.log(`Stratum failed to broadcast transaction: ${rawTx}\n With error`, e)
+            this.log(
+              `Stratum failed to broadcast transaction: ${rawTx}\n With error`,
+              e
+            )
             reject(e)
           }
         }
@@ -401,7 +404,10 @@ export class EngineState {
           const taskMessage = task
             ? `${task.method} with params: ${task.params.toString()}`
             : 'No task Has been Picked'
-          this.log(`Picked task: ${taskMessage}, for uri ${uri}, in: - ${Date.now() - start}ms`)
+          this.log(
+            `Picked task: ${taskMessage}, for uri ${uri}, in: - ${Date.now() -
+              start}ms`
+          )
           return task
         },
 
@@ -419,7 +425,11 @@ export class EngineState {
         }
       }
 
-      this.connections[uri] = new StratumConnection(uri, { callbacks, io }, this.log)
+      this.connections[uri] = new StratumConnection(
+        uri,
+        { callbacks, io },
+        this.log
+      )
       this.serverStates[uri] = {
         fetchingHeight: false,
         fetchingVersion: false,
@@ -481,19 +491,28 @@ export class EngineState {
 
     // Fetch Headers:
     for (const height of Object.keys(this.missingHeaders)) {
-      if (!this.fetchingHeaders[height] && this.serverCanGetHeader(uri, height)) {
+      if (
+        !this.fetchingHeaders[height] &&
+        this.serverCanGetHeader(uri, height)
+      ) {
         this.fetchingHeaders[height] = true
         return fetchBlockHeader(
           parseInt(height),
           (header: any) => {
-            this.log(`Stratum ${uri} received header for block number ${height}`)
+            this.log(
+              `Stratum ${uri} received header for block number ${height}`
+            )
             this.fetchingHeaders[height] = false
             this.handleHeaderFetch(height, header)
           },
           (e: Error) => {
             this.fetchingHeaders[height] = false
             if (!serverState.headers[height]) {
-              this.onConnectionFail(uri, e, `getting header for block number ${height}`)
+              this.onConnectionFail(
+                uri,
+                e,
+                `getting header for block number ${height}`
+              )
             } else {
               // TODO: Don't penalize the server score either.
             }
@@ -603,7 +622,11 @@ export class EngineState {
           },
           (e: Error) => {
             addressState.fetchingTxids = false
-            this.onConnectionFail(uri, e, `getting history for address ${address}`)
+            this.onConnectionFail(
+              uri,
+              e,
+              `getting history for address ${address}`
+            )
           }
         )
       }
@@ -863,10 +886,7 @@ export class EngineState {
       }
     }
     // Add to the missing headers list:
-    if (
-      height > 0 &&
-      !this.pluginState.headerCache[`${height}`]
-    ) {
+    if (height > 0 && !this.pluginState.headerCache[`${height}`]) {
       this.missingHeaders[`${height}`] = true
     }
 
@@ -953,8 +973,8 @@ export class EngineState {
       }
     }
 
-    const utxosWithUnconfirmed = utxos.filter(utxo =>
-      !spends[`${utxo.txid}:${utxo.index}`]
+    const utxosWithUnconfirmed = utxos.filter(
+      utxo => !spends[`${utxo.txid}:${utxo.index}`]
     )
 
     const balance = utxosWithUnconfirmed.reduce((s, utxo) => utxo.value + s, 0)

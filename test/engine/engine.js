@@ -176,7 +176,9 @@ for (const fixture of fixtures) {
     })
   })
 
-  describe(`Is Address Used for Wallet type ${WALLET_TYPE} from cache`, function () {
+  describe(`Is Address Used for Wallet type ${
+    WALLET_TYPE
+  } from cache`, function () {
     it('Checking a wrong formated address', function (done) {
       try {
         engine.isAddressUsed('TestErrorWithWrongAddress')
@@ -320,7 +322,9 @@ for (const fixture of fixtures) {
   // })
 
   describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
-    it('Should provide a non used BTC address when no options are provided', function (done) {
+    it('Should provide a non used BTC address when no options are provided', function (
+      done
+    ) {
       setTimeout(() => {
         const address = engine.getFreshAddress()
         request.get(
@@ -564,7 +568,10 @@ for (const fixture of fixtures) {
     it('dump the wallet data', function (done) {
       const dataDump = engine.dumpData()
       assert(dataDump.walletId === '1', 'walletId')
-      assert(dataDump.walletType === 'wallet:bitcoin-bip49-testnet', 'walletType')
+      assert(
+        dataDump.walletType === 'wallet:bitcoin-bip49-testnet',
+        'walletType'
+      )
       assert(dataDump.pluginType === 'bitcointestnet', 'pluginType')
       done()
     })

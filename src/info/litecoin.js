@@ -12,8 +12,8 @@ export const litecoinInfo: AbcCurrencyInfo = {
   ],
   walletTypes: ['wallet:litecoin-bip49', 'wallet:litecoin-bip44'],
   formats: {
-    'bip49': 'wallet:litecoin-bip49',
-    'bip44': 'wallet:litecoin-bip44'
+    bip49: 'wallet:litecoin-bip49',
+    bip44: 'wallet:litecoin-bip44'
   },
   // Configuration options:
   defaultSettings: {

@@ -6,11 +6,11 @@ export const patchDerivePublic = function (bcoin, secp256k1) {
   publicKey.derive = async function (index, hardened) {
     assert(typeof index === 'number')
 
-    if ((index >>> 0) !== index) {
+    if (index >>> 0 !== index) {
       throw new Error('Index out of range.')
     }
 
-    if ((index & bcoin.hd.common.HARDENED) || hardened) {
+    if (index & bcoin.hd.common.HARDENED || hardened) {
       throw new Error('Cannot derive hardened.')
     }
 
@@ -71,7 +71,7 @@ export const patchDerivePrivate = function (bcoin, secp256k1) {
   privateKey.derive = async function (index, hardened) {
     assert(typeof index === 'number')
 
-    if ((index >>> 0) !== index) {
+    if (index >>> 0 !== index) {
       throw new Error('Index out of range.')
     }
 
@@ -176,7 +176,10 @@ export const patchPrivateFromMnemonic = function (bcoin, pbkdf2) {
     let derived = await pbkdf2.deriveAsync(
       Buffer.from(phrase, 'utf8'),
       Buffer.from(passwd, 'utf8'),
-      2048, 64, 'sha512')
+      2048,
+      64,
+      'sha512'
+    )
     derived = Buffer.from(derived)
     return this.fromSeed(derived, network)
   }

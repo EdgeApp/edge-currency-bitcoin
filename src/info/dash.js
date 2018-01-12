@@ -12,7 +12,7 @@ export const dashInfo: AbcCurrencyInfo = {
   ],
   walletTypes: ['wallet:dash-bip44'],
   formats: {
-    'bip44': 'wallet:dash-bip44'
+    bip44: 'wallet:dash-bip44'
   },
 
   // Configuration options:

@@ -87,7 +87,11 @@ export class CurrencyEngine implements AbcCurrencyEngine {
       lastUpdated: 0,
       fees: []
     }
-    this.log(`Created Wallet Type ${this.walletInfo.type} for Currency Plugin ${this.currencyInfo.pluginName} `)
+    this.log(
+      `Created Wallet Type ${this.walletInfo.type} for Currency Plugin ${
+        this.currencyInfo.pluginName
+      } `
+    )
   }
 
   async load (): Promise<any> {
@@ -97,7 +101,9 @@ export class CurrencyEngine implements AbcCurrencyEngine {
       },
       onTxFetched: (txid: string) => {
         const abcTransaction = this.getTransaction(txid)
-        this.abcCurrencyEngineOptions.callbacks.onTransactionsChanged([abcTransaction])
+        this.abcCurrencyEngineOptions.callbacks.onTransactionsChanged([
+          abcTransaction
+        ])
       }
     }
     const gapLimit = this.currencyInfo.defaultSettings.gapLimit
@@ -109,7 +115,8 @@ export class CurrencyEngine implements AbcCurrencyEngine {
       callbacks: engineStateCallbacks,
       io: io,
       localFolder: this.abcCurrencyEngineOptions.walletLocalFolder,
-      encryptedLocalFolder: this.abcCurrencyEngineOptions.walletLocalEncryptedFolder,
+      encryptedLocalFolder: this.abcCurrencyEngineOptions
+        .walletLocalEncryptedFolder,
       pluginState: this.pluginState,
       log: (...args) => this.log(...args)
     })
@@ -253,7 +260,9 @@ export class CurrencyEngine implements AbcCurrencyEngine {
 
   async updateFeeTable () {
     try {
-      if (this.rawTransactionFees.lastUpdated) throw new Error('Already has fees')
+      if (this.rawTransactionFees.lastUpdated) {
+        throw new Error('Already has fees')
+      }
       const url = `${INFO_SERVER}/networkFees/${this.currencyInfo.currencyCode}`
       if (
         !this.abcCurrencyEngineOptions.optionalSettings ||
@@ -262,7 +271,9 @@ export class CurrencyEngine implements AbcCurrencyEngine {
       ) {
         throw new Error('No io/fetch object')
       }
-      const feesResponse = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(url)
+      const feesResponse = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
+        url
+      )
       const feesJson = await feesResponse.json()
       if (validateObject(feesJson, InfoServerFeesSchema)) {
         this.fees = feesJson
@@ -552,7 +563,10 @@ export class CurrencyEngine implements AbcCurrencyEngine {
 
   async broadcastTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
     if (!abcTransaction.otherParams.bcoinTx) {
-      abcTransaction.otherParams.bcoinTx = bcoin.primitives.TX.fromRaw(abcTransaction.signedTx, 'hex')
+      abcTransaction.otherParams.bcoinTx = bcoin.primitives.TX.fromRaw(
+        abcTransaction.signedTx,
+        'hex'
+      )
     }
     this.logAbcTransaction(abcTransaction, 'Broadcasting')
     for (const output of abcTransaction.otherParams.bcoinTx.outputs) {
@@ -598,11 +612,19 @@ export class CurrencyEngine implements AbcCurrencyEngine {
     }
 
     const engineCache = [
-      'addressCache', 'addressInfos', 'scriptHashes', 'usedAddresses',
-      'txCache', 'txHeightCache', 'missingHeaders', 'serverStates',
-      'fetchingTxs', 'missingTxs', 'fetchingHeaders'
+      'addressCache',
+      'addressInfos',
+      'scriptHashes',
+      'usedAddresses',
+      'txCache',
+      'txHeightCache',
+      'missingHeaders',
+      'serverStates',
+      'fetchingTxs',
+      'missingTxs',
+      'fetchingHeaders'
     ]
-    const pluginCache = [ 'headerCache', 'serverCache' ]
+    const pluginCache = ['headerCache', 'serverCache']
 
     engineCache.forEach(c => add(c, 'engineState'))
     pluginCache.forEach(c => add(c, 'pluginState'))

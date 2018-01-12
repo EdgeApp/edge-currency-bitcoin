@@ -81,13 +81,15 @@ for (const fixture of fixtures) {
     })
 
     it('Valid private key', function (done) {
-      plugin.derivePublicKey({
-        type: WALLET_TYPE,
-        keys: { [keyName]: keys[keyName] }
-      }).then(keys => {
-        assert.equal(keys[xpubName], fixture['xpub'])
-        done()
-      })
+      plugin
+        .derivePublicKey({
+          type: WALLET_TYPE,
+          keys: { [keyName]: keys[keyName] }
+        })
+        .then(keys => {
+          assert.equal(keys[xpubName], fixture['xpub'])
+          done()
+        })
     })
 
     it('Invalid key name', function (done) {

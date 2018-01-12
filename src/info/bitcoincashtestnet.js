@@ -16,8 +16,8 @@ export const bitcoincashTestnetInfo: AbcCurrencyInfo = {
     'wallet:bitcoincash-testnet'
   ],
   formats: {
-    'bip44': 'wallet:bitcoincash-bip44',
-    'bip32': 'wallet:bitcoincash'
+    bip44: 'wallet:bitcoincash-bip44',
+    bip32: 'wallet:bitcoincash'
   },
 
   // Configuration options:

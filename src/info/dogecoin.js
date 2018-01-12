@@ -9,7 +9,7 @@ export const dogecoinInfo: AbcCurrencyInfo = {
   denominations: [{ name: 'DOGE', multiplier: '100000000', symbol: 'Ð' }],
   walletTypes: ['wallet:dogecoin-bip44'],
   formats: {
-    'bip44': 'wallet:dogecoin-bip44'
+    bip44: 'wallet:dogecoin-bip44'
   },
   // Configuration options:
   defaultSettings: {

@@ -4,16 +4,16 @@
  */
 
 export const InfoServerFeesSchema = {
-  'type': 'object',
-  'properties': {
-    'lowFee': { 'type': 'string' },
-    'standardFeeLow': { 'type': 'string' },
-    'standardFeeHigh': { 'type': 'string' },
-    'standardFeeLowAmount': { 'type': 'string' },
-    'standardFeeHighAmount': { 'type': 'string' },
-    'highFee': { 'type': 'string' }
+  type: 'object',
+  properties: {
+    lowFee: { type: 'string' },
+    standardFeeLow: { type: 'string' },
+    standardFeeHigh: { type: 'string' },
+    standardFeeLowAmount: { type: 'string' },
+    standardFeeHighAmount: { type: 'string' },
+    highFee: { type: 'string' }
   },
-  'required': [
+  required: [
     'lowFee',
     'standardFeeLow',
     'standardFeeHigh',
