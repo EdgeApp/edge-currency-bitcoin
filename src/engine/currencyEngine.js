@@ -133,15 +133,26 @@ export class CurrencyEngine implements AbcCurrencyEngine {
       }
     }
     let seed = ''
-    if (this.walletInfo.keys && this.walletInfo.keys[`${this.network}Key`]) {
-      seed = this.walletInfo.keys[`${this.network}Key`]
+    let bip = ''
+    let coinType = -1
+    if (this.walletInfo.keys) {
+      if (this.walletInfo.keys[`${this.network}Key`]) {
+        seed = this.walletInfo.keys[`${this.network}Key`]
+      }
+      if (typeof this.walletInfo.format === 'string') {
+        bip = this.walletInfo.format
+      }
+      if (typeof this.walletInfo.coinType === 'number') {
+        coinType = this.walletInfo.coinType
+      }
     }
-    const bip = this.walletInfo.type.split('-')[1]
+    bip = bip === '' ? this.walletInfo.type.split('-')[1] : bip
 
     this.keyManager = new KeyManager({
       seed: seed,
       rawKeys: rawKeys,
       bip: bip,
+      coinType: coinType,
       gapLimit: gapLimit,
       network: this.network,
       callbacks: keyManagerCallbacks,
