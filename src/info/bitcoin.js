@@ -16,6 +16,7 @@ export const bitcoinInfo: AbcCurrencyInfo = {
     'wallet:bitcoin-bip44',
     'wallet:bitcoin'
   ],
+  formats: ['bip49', 'bip44', 'bip32'],
 
   // Configuration options:
   defaultSettings: {

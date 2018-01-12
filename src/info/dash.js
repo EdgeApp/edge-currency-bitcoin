@@ -11,6 +11,7 @@ export const dashInfo: AbcCurrencyInfo = {
     { name: 'mDASH', multiplier: '100000', symbol: 'mD' }
   ],
   walletTypes: ['wallet:dash-bip44'],
+  formats: ['bip44'],
 
   // Configuration options:
   defaultSettings: {

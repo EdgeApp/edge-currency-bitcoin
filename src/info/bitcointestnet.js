@@ -16,6 +16,7 @@ export const bitcoinTestnetInfo: AbcCurrencyInfo = {
     'wallet:bitcoin-bip44-testnet',
     'wallet:bitcoin-testnet'
   ],
+  formats: ['bip49', 'bip44', 'bip32'],
 
   // Configuration options:
   defaultSettings: {
