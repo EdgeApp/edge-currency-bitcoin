@@ -12,7 +12,10 @@ export const bitcoincashInfo: AbcCurrencyInfo = {
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
   walletTypes: ['wallet:bitcoincash-bip44', 'wallet:bitcoincash'],
-  formats: ['bip44', 'bip32'],
+  formats: {
+    'bip44': 'wallet:bitcoincash-bip44',
+    'bip32': 'wallet:bitcoincash'
+  },
   // Configuration options:
   defaultSettings: {
     network: {
