@@ -12,13 +12,9 @@ export const bitcoincashTestnetInfo: AbcCurrencyInfo = {
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
   walletTypes: [
-    'wallet:bitcoincash-bip44-testnet',
-    'wallet:bitcoincash-testnet'
+    'wallet:bitcoincash-testnet',
+    'wallet:bitcoincash-bip44-testnet'
   ],
-  formats: {
-    bip44: 'wallet:bitcoincash-bip44',
-    bip32: 'wallet:bitcoincash'
-  },
 
   // Configuration options:
   defaultSettings: {

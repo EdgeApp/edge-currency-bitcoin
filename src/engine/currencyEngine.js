@@ -146,11 +146,11 @@ export class CurrencyEngine implements AbcCurrencyEngine {
       if (this.walletInfo.keys[`${this.network}Key`]) {
         seed = this.walletInfo.keys[`${this.network}Key`]
       }
-      if (typeof this.walletInfo.format === 'string') {
-        bip = this.walletInfo.format
+      if (typeof this.walletInfo.keys.format === 'string') {
+        bip = this.walletInfo.keys.format
       }
-      if (typeof this.walletInfo.coinType === 'number') {
-        coinType = this.walletInfo.coinType
+      if (typeof this.walletInfo.keys.coinType === 'number') {
+        coinType = this.walletInfo.keys.coinType
       }
     }
     bip = bip === '' ? this.walletInfo.type.split('-')[1] : bip
