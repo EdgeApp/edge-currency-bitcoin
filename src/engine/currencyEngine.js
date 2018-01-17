@@ -20,6 +20,7 @@ import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import { validateObject } from '../utils/utils.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
+import { toLegacyFormat } from '../utils/addressFormat/addressFormatIndex.js'
 import bcoin from 'bcoin'
 
 const BYTES_TO_KB = 1000
@@ -465,9 +466,7 @@ export class CurrencyEngine implements AbcCurrencyEngine {
   }
 
   isAddressUsed (address: string, options: any): boolean {
-    if (bcoin.primitives.Address.toLegacyFormat) {
-      address = bcoin.primitives.Address.toLegacyFormat(address)
-    }
+    address = toLegacyFormat(address)
     try {
       bcoin.primitives.Address.fromBase58(address)
     } catch (e) {

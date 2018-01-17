@@ -16,6 +16,7 @@ import { bns } from 'biggystring'
 import buffer from 'buffer-hack'
 import { parse, serialize } from 'uri-js'
 import { CurrencyEngine } from '../engine/currencyEngine.js'
+import { toLegacyFormat } from '../utils/addressFormat/addressFormatIndex.js'
 import { PluginState } from './pluginState.js'
 
 // $FlowFixMe
@@ -61,9 +62,7 @@ export class CurrencyPlugin {
   }
 
   valid (address: string) {
-    if (bcoin.primitives.Address.toLegacyFormat) {
-      address = bcoin.primitives.Address.toLegacyFormat(address)
-    }
+    address = toLegacyFormat(address)
     try {
       bcoin.primitives.Address.fromBase58(address)
       return true

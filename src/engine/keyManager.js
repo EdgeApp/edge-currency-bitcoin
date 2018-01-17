@@ -5,6 +5,7 @@ import type { UtxoInfo, AddressInfo, AddressInfos } from './engineState.js'
 import buffer from 'buffer-hack'
 import bcoin from 'bcoin'
 import { hash256, reverseBufferToHex } from '../utils/utils.js'
+import { toLegacyFormat, toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 
 // $FlowFixMe
 const { Buffer } = buffer
@@ -99,8 +100,6 @@ export class KeyManager {
   onNewKey: (keys: any) => void
   addressInfos: AddressInfos
   txInfos: { [txid: string]: any }
-  toLegacyFormat: (address: string, network?: string) => string
-  toNewFormat: (address: string, network?: string) => string
 
   constructor ({
     account = 0,
@@ -120,14 +119,6 @@ export class KeyManager {
       (!rawKeys.master || (!rawKeys.master.xpriv && !rawKeys.master.xpub))
     ) {
       throw new Error('Missing Master Key')
-    }
-    this.toLegacyFormat = (address) => address
-    this.toNewFormat = (address) => address
-    if (typeof bcoin.primitives.Address.toLegacyFormat === 'function') {
-      this.toLegacyFormat = bcoin.primitives.Address.toLegacyFormat
-    }
-    if (typeof bcoin.primitives.Address.toNewFormat === 'function') {
-      this.toNewFormat = bcoin.primitives.Address.toNewFormat
     }
     this.seed = seed
     // Create KeyRing templates
@@ -205,7 +196,7 @@ export class KeyManager {
         let [branch, index] = pathSuffix.split('/')
         branch = parseInt(branch)
         index = parseInt(index)
-        const displayAddress = this.toNewFormat(addressObj.displayAddress, this.network)
+        const displayAddress = toNewFormat(addressObj.displayAddress, this.network)
         const address = { displayAddress, scriptHash, index, branch }
         if (branch === 0) {
           this.keys.receive.children.push(address)
@@ -288,13 +279,13 @@ export class KeyManager {
       }
       const value = parseInt(spendTarget.nativeAmount)
       // $FlowFixMe
-      const legacyAddress = this.toLegacyFormat(spendTarget.publicAddress, this.network)
+      const legacyAddress = toLegacyFormat(spendTarget.publicAddress)
       const script = bcoin.script.fromAddress(legacyAddress)
       mtx.addOutput(script, value)
     }
 
     // Get the Change Address
-    const changeAddress = this.toLegacyFormat(this.getChangeAddress(), this.network)
+    const changeAddress = toLegacyFormat(this.getChangeAddress())
 
     if (CPFP) {
       utxos = utxos.filter(({ utxo }) => utxo.txid === CPFP)
@@ -557,7 +548,7 @@ export class KeyManager {
     key.network = bcoin.network.get(this.network)
     let displayAddress = key.getAddress('base58')
     const scriptHash = await this.addressToScriptHash(displayAddress)
-    displayAddress = this.toNewFormat(displayAddress, this.network)
+    displayAddress = toNewFormat(displayAddress, this.network)
     this.onNewAddress(
       scriptHash,
       displayAddress,
