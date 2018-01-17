@@ -5,10 +5,10 @@ import type { UtxoInfo, AddressInfo, AddressInfos } from './engineState.js'
 import buffer from 'buffer-hack'
 import bcoin from 'bcoin'
 import { hash256, reverseBufferToHex } from '../utils/utils.js'
+import { toLegacyFormat, toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 
 // $FlowFixMe
 const { Buffer } = buffer
-
 const GAP_LIMIT = 10
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
 const nop = () => {}
@@ -189,13 +189,14 @@ export class KeyManager {
 
     // Load addresses from Cache
     for (const scriptHash in this.addressInfos) {
-      const address: AddressInfo = this.addressInfos[scriptHash]
-      const { displayAddress, path } = address
+      const addressObj: AddressInfo = this.addressInfos[scriptHash]
+      const path = addressObj.path
       const pathSuffix = path.split(this.masterPath + '/')[1]
       if (pathSuffix) {
         let [branch, index] = pathSuffix.split('/')
         branch = parseInt(branch)
         index = parseInt(index)
+        const displayAddress = toNewFormat(addressObj.displayAddress, this.network)
         const address = { displayAddress, scriptHash, index, branch }
         if (branch === 0) {
           this.keys.receive.children.push(address)
@@ -271,10 +272,20 @@ export class KeyManager {
     const mtx = new bcoin.primitives.MTX()
     // Add the outputs
     for (const spendTarget of outputs) {
+      if (!spendTarget.publicAddress || !spendTarget.nativeAmount) continue
+      if (typeof spendTarget.publicAddress !== 'string') {
+        // $FlowFixMe
+        spendTarget.publicAddress = spendTarget.publicAddress.toString()
+      }
       const value = parseInt(spendTarget.nativeAmount)
-      const script = bcoin.script.fromAddress(spendTarget.publicAddress)
+      // $FlowFixMe
+      const legacyAddress = toLegacyFormat(spendTarget.publicAddress, this.network)
+      const script = bcoin.script.fromAddress(legacyAddress)
       mtx.addOutput(script, value)
     }
+
+    // Get the Change Address
+    const changeAddress = toLegacyFormat(this.getChangeAddress(), this.network)
 
     if (CPFP) {
       utxos = utxos.filter(({ utxo }) => utxo.txid === CPFP)
@@ -291,9 +302,8 @@ export class KeyManager {
         // and substracting the fee from the total output value
         const value = utxos.reduce((s, { utxo }) => s + utxo.value, 0)
         subtractFee = true
-        // CPFP transactions will add a change address as a single output
-        const addressForOutput = this.getChangeAddress()
-        const script = bcoin.script.fromAddress(addressForOutput)
+        // CPFP transactions will add the change address as a single output
+        const script = bcoin.script.fromAddress(changeAddress)
         mtx.addOutput(script, value)
       }
     }
@@ -305,7 +315,7 @@ export class KeyManager {
 
     await mtx.fund(coins, {
       selection: 'value',
-      changeAddress: this.getChangeAddress(),
+      changeAddress: changeAddress,
       subtractFee: subtractFee,
       height: height,
       rate: rate,
@@ -536,8 +546,9 @@ export class KeyManager {
       witness
     })
     key.network = bcoin.network.get(this.network)
-    const displayAddress = key.getAddress('base58')
+    let displayAddress = key.getAddress('base58')
     const scriptHash = await this.addressToScriptHash(displayAddress)
+    displayAddress = toNewFormat(displayAddress, this.network)
     this.onNewAddress(
       scriptHash,
       displayAddress,

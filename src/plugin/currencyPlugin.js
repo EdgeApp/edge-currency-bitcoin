@@ -16,7 +16,9 @@ import { bns } from 'biggystring'
 import buffer from 'buffer-hack'
 import { parse, serialize } from 'uri-js'
 import { CurrencyEngine } from '../engine/currencyEngine.js'
+import * as base32 from '../utils/base32'
 import { PluginState } from './pluginState.js'
+import { toLegacyFormat } from '../utils/addressFormat/addressFormatIndex.js'
 
 // $FlowFixMe
 const { Buffer } = buffer
@@ -28,20 +30,6 @@ const getParameterByName = (param: string, url: string) => {
   if (!results) return null
   if (!results[2]) return ''
   return decodeURIComponent(results[2].replace(/\+/g, ' '))
-}
-
-const valid = address => {
-  try {
-    bcoin.primitives.Address.fromBase58(address)
-    return true
-  } catch (e) {
-    try {
-      bcoin.primitives.Address.fromBech32(address)
-      return true
-    } catch (e) {
-      return false
-    }
-  }
 }
 
 /**
@@ -75,6 +63,7 @@ export class CurrencyPlugin {
   }
 
   valid (address: string) {
+    address = toLegacyFormat(address, this.network)
     try {
       bcoin.primitives.Address.fromBase58(address)
       return true
@@ -83,7 +72,12 @@ export class CurrencyPlugin {
         bcoin.primitives.Address.fromBech32(address)
         return true
       } catch (e) {
-        return false
+        try {
+          base32.decode(address)
+          return true
+        } catch (e) {
+          return false
+        }
       }
     }
   }
@@ -155,7 +149,7 @@ export class CurrencyPlugin {
     let publicAddress = parsedUri.host || parsedUri.path
     if (!publicAddress) throw new Error('InvalidUriError')
     publicAddress = publicAddress.replace('/', '') // Remove any slashes
-    if (!valid(publicAddress)) throw new Error('InvalidPublicAddressError')
+    if (!this.valid(publicAddress)) throw new Error('InvalidPublicAddressError')
 
     const amountStr = getParameterByName('amount', uri)
     const metadata = {}
@@ -178,7 +172,7 @@ export class CurrencyPlugin {
   }
 
   encodeUri (obj: AbcEncodeUri): string {
-    if (!obj.publicAddress || !valid(obj.publicAddress)) {
+    if (!obj.publicAddress || !this.valid(obj.publicAddress)) {
       throw new Error('InvalidPublicAddressError')
     }
     if (!obj.nativeAmount && !obj.metadata) return obj.publicAddress
