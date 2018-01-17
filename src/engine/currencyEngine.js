@@ -465,6 +465,9 @@ export class CurrencyEngine implements AbcCurrencyEngine {
   }
 
   isAddressUsed (address: string, options: any): boolean {
+    if (bcoin.primitives.Address.toLegacyFormat) {
+      address = bcoin.primitives.Address.toLegacyFormat(address)
+    }
     try {
       bcoin.primitives.Address.fromBase58(address)
     } catch (e) {
