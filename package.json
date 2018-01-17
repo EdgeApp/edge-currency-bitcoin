@@ -40,6 +40,8 @@
     "airbitz-core-types": "git+https://github.com/Airbitz/airbitz-core-types.git",
     "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
     "biggystring": "^3.0.0",
+    "bitcore-lib": "^0.15.0",
+    "bitcore-lib-cash": "^0.16.1",
     "buffer": "^5.0.8",
     "coinselect": "^3.1.11",
     "jsonschema": "^1.2.0",

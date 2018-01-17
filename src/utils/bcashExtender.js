@@ -1,20 +1,5 @@
-// import bcashaddress from './bcashaddress.js'
-
-export const patchBcashAddress = bcoin => {
-  const addressProto = bcoin.primitives.Address.prototype
-  const toBase58 = addressProto.toBase58
-  addressProto.toBase58 = function (network) {
-    // if (network && network.includes('bitcoincash')) {
-    //   const version = this.version
-    //   const hash = this.hash
-    //   network = bcoin.network.get(network)
-    //   const prefix = network.newAddressFormat.prefix
-
-    //   return bcashaddress.encode(prefix, version, hash)
-    // }
-    return toBase58.call(this, network)
-  }
-}
+import * as bitcoreCash from 'bitcore-lib-cash'
+import * as bitcore from 'bitcore-lib'
 
 export const patchBcashTX = bcoin => {
   const txProto = bcoin.primitives.TX.prototype
@@ -28,5 +13,25 @@ export const patchBcashTX = bcoin => {
       version = 1
     }
     return signature.call(this, index, prev, value, key, type, version)
+  }
+}
+
+export const toLegacyFormat = bcoin => {
+  bcoin.primitives.Address.toLegacyFormat = (address, network) => {
+    if (typeof address !== 'string' || !address.includes('bicoincash')) return address
+    const origAddress = bitcoreCash.Address(address)
+    const origObj = origAddress.toObject()
+    const resultAddress = bitcore.Address.fromObject(origObj).toString()
+    return resultAddress
+  }
+}
+
+export const toNewFormat = bcoin => {
+  bcoin.primitives.Address.toNewFormat = (address, network) => {
+    if (typeof network !== 'string' || !network.includes('bitcoincash')) return address
+    if (address.includes('bitcoincash')) return address
+    const origAddress = bitcore.Address(address)
+    const origObj = origAddress.toObject()
+    return bitcoreCash.Address.fromObject(origObj).toCashAddress()
   }
 }
