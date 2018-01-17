@@ -8,7 +8,6 @@ import { hash256, reverseBufferToHex } from '../utils/utils.js'
 
 // $FlowFixMe
 const { Buffer } = buffer
-
 const GAP_LIMIT = 10
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
 const nop = () => {}
@@ -100,6 +99,8 @@ export class KeyManager {
   onNewKey: (keys: any) => void
   addressInfos: AddressInfos
   txInfos: { [txid: string]: any }
+  toLegacyFormat: (address: string, network?: string) => string
+  toNewFormat: (address: string, network?: string) => string
 
   constructor ({
     account = 0,
@@ -119,6 +120,14 @@ export class KeyManager {
       (!rawKeys.master || (!rawKeys.master.xpriv && !rawKeys.master.xpub))
     ) {
       throw new Error('Missing Master Key')
+    }
+    this.toLegacyFormat = (address) => address
+    this.toNewFormat = (address) => address
+    if (typeof bcoin.primitives.Address.toLegacyFormat === 'function') {
+      this.toLegacyFormat = bcoin.primitives.Address.toLegacyFormat
+    }
+    if (typeof bcoin.primitives.Address.toNewFormat === 'function') {
+      this.toNewFormat = bcoin.primitives.Address.toNewFormat
     }
     this.seed = seed
     // Create KeyRing templates
