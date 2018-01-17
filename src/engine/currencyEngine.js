@@ -20,7 +20,7 @@ import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import { validateObject } from '../utils/utils.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
-import { toLegacyFormat } from '../utils/addressFormat/addressFormatIndex.js'
+import { toLegacyFormat, toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 import bcoin from 'bcoin'
 
 const BYTES_TO_KB = 1000
@@ -212,7 +212,7 @@ export class CurrencyEngine implements AbcCurrencyEngine {
     for (let i = 0; i < outputsLength; i++) {
       output = bcoinTransaction.outputs[i].getJSON(this.network)
       value = output.value
-      address = output.address
+      address = toNewFormat(output.address, this.network)
       totalOutputAmount += value
       if (this.engineState.scriptHashes[address]) {
         nativeAmount += value
@@ -235,7 +235,7 @@ export class CurrencyEngine implements AbcCurrencyEngine {
         if (prevoutBcoinTX) {
           output = prevoutBcoinTX.outputs[index].getJSON(this.network)
           value = output.value
-          address = output.address
+          address = toNewFormat(output.address, this.network)
           totalInputAmount += value
           if (this.engineState.scriptHashes[address]) {
             nativeAmount -= value
@@ -526,9 +526,10 @@ export class CurrencyEngine implements AbcCurrencyEngine {
 
     const ourReceiveAddresses = []
     for (const i in resultedTransaction.outputs) {
-      const address = resultedTransaction.outputs[i]
+      let address = resultedTransaction.outputs[i]
         .getAddress()
         .toString(this.network)
+      address = toNewFormat(address, this.network)
       if (address && this.engineState.scriptHashes[address]) {
         ourReceiveAddresses.push(address)
       }
