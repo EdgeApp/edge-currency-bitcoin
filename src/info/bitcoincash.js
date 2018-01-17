@@ -38,7 +38,8 @@ export const bitcoincashInfo: AbcCurrencyInfo = {
         scripthash: 0x05,
         witnesspubkeyhash: null,
         witnessscripthash: null,
-        prefix: 'bitcoincash'
+        prefix: 'bitcoincash',
+        prefixArray: [ 2, 9, 20, 3, 15, 9, 14, 3, 1, 19, 8 ]
       }
     },
     gapLimit: 10,
