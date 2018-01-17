@@ -16,8 +16,9 @@ import { bns } from 'biggystring'
 import buffer from 'buffer-hack'
 import { parse, serialize } from 'uri-js'
 import { CurrencyEngine } from '../engine/currencyEngine.js'
-import { toLegacyFormat } from '../utils/addressFormat/addressFormatIndex.js'
+import * as base32 from '../utils/base32'
 import { PluginState } from './pluginState.js'
+import { toLegacyFormat } from '../utils/addressFormat/addressFormatIndex.js'
 
 // $FlowFixMe
 const { Buffer } = buffer
@@ -62,7 +63,7 @@ export class CurrencyPlugin {
   }
 
   valid (address: string) {
-    address = toLegacyFormat(address)
+    address = toLegacyFormat(address, this.network)
     try {
       bcoin.primitives.Address.fromBase58(address)
       return true
@@ -71,7 +72,12 @@ export class CurrencyPlugin {
         bcoin.primitives.Address.fromBech32(address)
         return true
       } catch (e) {
-        return false
+        try {
+          base32.decode(address)
+          return true
+        } catch (e) {
+          return false
+        }
       }
     }
   }
