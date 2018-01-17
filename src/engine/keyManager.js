@@ -279,13 +279,13 @@ export class KeyManager {
       }
       const value = parseInt(spendTarget.nativeAmount)
       // $FlowFixMe
-      const legacyAddress = toLegacyFormat(spendTarget.publicAddress)
+      const legacyAddress = toLegacyFormat(spendTarget.publicAddress, this.network)
       const script = bcoin.script.fromAddress(legacyAddress)
       mtx.addOutput(script, value)
     }
 
     // Get the Change Address
-    const changeAddress = toLegacyFormat(this.getChangeAddress())
+    const changeAddress = toLegacyFormat(this.getChangeAddress(), this.network)
 
     if (CPFP) {
       utxos = utxos.filter(({ utxo }) => utxo.txid === CPFP)
