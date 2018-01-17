@@ -63,7 +63,15 @@ const convertBits = (data: any, from: number, to: number, strict?: boolean) => {
   return result
 }
 
-export const toCashAddress = (hashBuffer: any, type: string, prefix: string, prefixArray: Array<number>) => {
+const prefixToArray = prefix => {
+  const result = []
+  for (let i = 0; i < prefix.length; i++) {
+    result.push(prefix.charCodeAt(i) & 31)
+  }
+  return result
+}
+
+export const toCashAddress = (hashBuffer: any, type: string, prefix: string) => {
   function checksumToArray (checksum) {
     const result = []
     const N31 = new BN(31)
@@ -109,7 +117,7 @@ export const toCashAddress = (hashBuffer: any, type: string, prefix: string, pre
   }
 
   const eight0 = [0, 0, 0, 0, 0, 0, 0, 0]
-  const prefixData = prefixArray.concat([0])
+  const prefixData = prefixToArray(prefix).concat([0])
   const versionByte = getTypeBits(type) + getHashSizeBits(hashBuffer)
   const arr = Array.prototype.slice.call(hashBuffer, 0)
   const payloadData = convertBits([versionByte].concat(arr), 8, 5)

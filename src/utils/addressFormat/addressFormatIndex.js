@@ -37,8 +37,7 @@ export const toNewFormat = (address: string, network: string): string => {
   const newAddress = toCashAddress(
     addressObj.hash,
     type,
-    newAddressFormat.prefix,
-    newAddressFormat.prefixArray
+    newAddressFormat.prefix
   )
   return newAddress
 }
