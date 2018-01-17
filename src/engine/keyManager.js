@@ -198,13 +198,14 @@ export class KeyManager {
 
     // Load addresses from Cache
     for (const scriptHash in this.addressInfos) {
-      const address: AddressInfo = this.addressInfos[scriptHash]
-      const { displayAddress, path } = address
+      const addressObj: AddressInfo = this.addressInfos[scriptHash]
+      const path = addressObj.path
       const pathSuffix = path.split(this.masterPath + '/')[1]
       if (pathSuffix) {
         let [branch, index] = pathSuffix.split('/')
         branch = parseInt(branch)
         index = parseInt(index)
+        const displayAddress = this.toNewFormat(addressObj.displayAddress, this.network)
         const address = { displayAddress, scriptHash, index, branch }
         if (branch === 0) {
           this.keys.receive.children.push(address)
