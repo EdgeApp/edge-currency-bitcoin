@@ -29,6 +29,7 @@ describe(`Key Manager for BitcoinCash`, function () {
   it('creates new key manager', function () {
     keyManager = new KeyManager({
       walletType: 'wallet:bitcoincash-bip44',
+      bip: 'bip44',
       rawKeys: {
         master: {
           xpub:
@@ -44,8 +45,8 @@ describe(`Key Manager for BitcoinCash`, function () {
     keyManager.load().then(() => {
       assert.equal(keyManager.keys.receive.children.length, 10)
       assert(keyManager.keys.receive.pubKey)
-      assert.equal(keyManager.keys.change.children.length, 0)
-      assert(!keyManager.keys.change.pubKey)
+      assert.equal(keyManager.keys.change.children.length, 10)
+      assert(keyManager.keys.change.pubKey)
     })
   })
 })
