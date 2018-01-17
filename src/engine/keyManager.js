@@ -271,10 +271,20 @@ export class KeyManager {
     const mtx = new bcoin.primitives.MTX()
     // Add the outputs
     for (const spendTarget of outputs) {
+      if (!spendTarget.publicAddress || !spendTarget.nativeAmount) continue
+      if (typeof spendTarget.publicAddress !== 'string') {
+        // $FlowFixMe
+        spendTarget.publicAddress = spendTarget.publicAddress.toString()
+      }
       const value = parseInt(spendTarget.nativeAmount)
-      const script = bcoin.script.fromAddress(spendTarget.publicAddress)
+      // $FlowFixMe
+      const legacyAddress = this.toLegacyFormat(spendTarget.publicAddress, this.network)
+      const script = bcoin.script.fromAddress(legacyAddress)
       mtx.addOutput(script, value)
     }
+
+    // Get the Change Address
+    const changeAddress = this.toLegacyFormat(this.getChangeAddress(), this.network)
 
     if (CPFP) {
       utxos = utxos.filter(({ utxo }) => utxo.txid === CPFP)
@@ -291,9 +301,8 @@ export class KeyManager {
         // and substracting the fee from the total output value
         const value = utxos.reduce((s, { utxo }) => s + utxo.value, 0)
         subtractFee = true
-        // CPFP transactions will add a change address as a single output
-        const addressForOutput = this.getChangeAddress()
-        const script = bcoin.script.fromAddress(addressForOutput)
+        // CPFP transactions will add the change address as a single output
+        const script = bcoin.script.fromAddress(changeAddress)
         mtx.addOutput(script, value)
       }
     }
@@ -305,7 +314,7 @@ export class KeyManager {
 
     await mtx.fund(coins, {
       selection: 'value',
-      changeAddress: this.getChangeAddress(),
+      changeAddress: changeAddress,
       subtractFee: subtractFee,
       height: height,
       rate: rate,
