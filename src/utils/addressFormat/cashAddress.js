@@ -1,7 +1,7 @@
 // @flow
 
 import BN from './bn'
-import { encode, decode } from './base32'
+import { encode, decode } from '../base32'
 import bcoin from 'bcoin'
 
 // $FlowFixMe
