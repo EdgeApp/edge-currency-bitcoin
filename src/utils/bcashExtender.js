@@ -1,6 +1,3 @@
-import * as bitcoreCash from 'bitcore-lib-cash'
-import * as bitcore from 'bitcore-lib'
-
 export const patchBcashTX = bcoin => {
   const txProto = bcoin.primitives.TX.prototype
   const signature = txProto.signature
@@ -13,25 +10,5 @@ export const patchBcashTX = bcoin => {
       version = 1
     }
     return signature.call(this, index, prev, value, key, type, version)
-  }
-}
-
-export const toLegacyFormat = bcoin => {
-  bcoin.primitives.Address.toLegacyFormat = (address, network) => {
-    if (typeof address !== 'string' || !address.includes('bicoincash')) return address
-    const origAddress = bitcoreCash.Address(address)
-    const origObj = origAddress.toObject()
-    const resultAddress = bitcore.Address.fromObject(origObj).toString()
-    return resultAddress
-  }
-}
-
-export const toNewFormat = bcoin => {
-  bcoin.primitives.Address.toNewFormat = (address, network) => {
-    if (typeof network !== 'string' || !network.includes('bitcoincash')) return address
-    if (address.includes('bitcoincash')) return address
-    const origAddress = bitcore.Address(address)
-    const origObj = origAddress.toObject()
-    return bitcoreCash.Address.fromObject(origObj).toCashAddress()
   }
 }

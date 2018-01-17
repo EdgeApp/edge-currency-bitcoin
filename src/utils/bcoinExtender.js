@@ -1,6 +1,6 @@
 // @flow
 import type { AbcCurrencyInfo } from 'airbitz-core-types'
-import { patchBcashTX, toNewFormat, toLegacyFormat } from './bcashExtender.js'
+import { patchBcashTX } from './bcashExtender.js'
 import {
   patchDerivePublic,
   patchDerivePrivate,
@@ -30,8 +30,6 @@ export const bcoinExtender = (
   }
   if (!patchedForCash && type && type.includes('bitcoincash')) {
     patchBcashTX(bcoin)
-    toLegacyFormat(bcoin)
-    toNewFormat(bcoin)
     patchedForCash = true
   }
   if (!cryptoReplaced) {
