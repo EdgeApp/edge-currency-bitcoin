@@ -4,7 +4,7 @@ import type { AbcCurrencyInfo } from 'airbitz-core-types'
 export const bitcoincashTestnetInfo: AbcCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BCH',
-  currencyName: 'BitcoinCash',
+  currencyName: 'BitcoinCashTestnet',
   pluginName: 'bitcoincashtestnet',
   denominations: [
     { name: 'BCH', multiplier: '100000000', symbol: '₿' },
@@ -12,8 +12,8 @@ export const bitcoincashTestnetInfo: AbcCurrencyInfo = {
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
   walletTypes: [
-    'wallet:bitcoincash-testnet',
-    'wallet:bitcoincash-bip44-testnet'
+    'wallet:bitcoincash-bip44-testnet',
+    'wallet:bitcoincash-testnet'
   ],
 
   // Configuration options:
