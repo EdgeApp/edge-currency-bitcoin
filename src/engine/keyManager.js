@@ -555,8 +555,9 @@ export class KeyManager {
       witness
     })
     key.network = bcoin.network.get(this.network)
-    const displayAddress = key.getAddress('base58')
+    let displayAddress = key.getAddress('base58')
     const scriptHash = await this.addressToScriptHash(displayAddress)
+    displayAddress = this.toNewFormat(displayAddress, this.network)
     this.onNewAddress(
       scriptHash,
       displayAddress,
