@@ -30,20 +30,6 @@ const getParameterByName = (param: string, url: string) => {
   return decodeURIComponent(results[2].replace(/\+/g, ' '))
 }
 
-const valid = address => {
-  try {
-    bcoin.primitives.Address.fromBase58(address)
-    return true
-  } catch (e) {
-    try {
-      bcoin.primitives.Address.fromBech32(address)
-      return true
-    } catch (e) {
-      return false
-    }
-  }
-}
-
 /**
  * The core currency plugin.
  * Provides information about the currency,
@@ -75,6 +61,9 @@ export class CurrencyPlugin {
   }
 
   valid (address: string) {
+    if (bcoin.primitives.Address.toLegacyFormat) {
+      address = bcoin.primitives.Address.toLegacyFormat(address)
+    }
     try {
       bcoin.primitives.Address.fromBase58(address)
       return true
@@ -155,7 +144,7 @@ export class CurrencyPlugin {
     let publicAddress = parsedUri.host || parsedUri.path
     if (!publicAddress) throw new Error('InvalidUriError')
     publicAddress = publicAddress.replace('/', '') // Remove any slashes
-    if (!valid(publicAddress)) throw new Error('InvalidPublicAddressError')
+    if (!this.valid(publicAddress)) throw new Error('InvalidPublicAddressError')
 
     const amountStr = getParameterByName('amount', uri)
     const metadata = {}
@@ -178,7 +167,7 @@ export class CurrencyPlugin {
   }
 
   encodeUri (obj: AbcEncodeUri): string {
-    if (!obj.publicAddress || !valid(obj.publicAddress)) {
+    if (!obj.publicAddress || !this.valid(obj.publicAddress)) {
       throw new Error('InvalidPublicAddressError')
     }
     if (!obj.nativeAmount && !obj.metadata) return obj.publicAddress
