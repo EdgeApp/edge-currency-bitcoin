@@ -2,8 +2,15 @@
 
 import bcoin from 'bcoin'
 import { toCashAddress, cashAddressToHash } from './cashAddress'
+import * as base32 from '../base32'
 
 export const toLegacyFormat = (address: string, network?: string): string => {
+  if (network && network.includes('bitcoincash') && !address.includes('bitcoincash:')) {
+    try {
+      base32.decode(address)
+      address = `bitcoincash:${address}`
+    } catch (e) {}
+  }
   if (typeof address !== 'string' || !address.includes('bitcoincash')) return address
   // Convert the Address string into hash, network and type
   const addressInfo = cashAddressToHash(address)
