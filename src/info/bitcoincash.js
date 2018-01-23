@@ -41,6 +41,7 @@ export const bitcoincashInfo: AbcCurrencyInfo = {
         prefix: 'bitcoincash'
       }
     },
+    customFeeSettings: ['satPerByte'],
     gapLimit: 10,
     maxFee: 1000000,
     defaultFee: 10000,

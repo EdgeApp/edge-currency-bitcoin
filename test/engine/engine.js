@@ -505,7 +505,7 @@ for (const fixture of fixtures) {
     it('Should build transaction with custom fee', function () {
       const templateSpend: AbcSpendInfo = {
         networkFeeOption: 'custom',
-        customNetworkFee: '1000',
+        customNetworkFee: { 'satPerByte': '1000' },
         metadata: {
           name: 'Transfer to College Fund',
           category: 'Transfer:Wallet:College Fund'

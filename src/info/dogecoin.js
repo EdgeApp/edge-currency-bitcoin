@@ -30,6 +30,7 @@ export const dogecoinInfo: AbcCurrencyInfo = {
         bech32: 'lc'
       }
     },
+    customFeeSettings: ['satPerByte'],
     gapLimit: 25,
     maxFee: 1000000,
     feeUpdateInterval: 10000,

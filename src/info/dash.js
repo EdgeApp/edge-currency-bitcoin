@@ -33,6 +33,7 @@ export const dashInfo: AbcCurrencyInfo = {
         bech32: null
       }
     },
+    customFeeSettings: ['satPerByte'],
     gapLimit: 10,
     maxFee: 100000,
     defaultFee: 10000,

@@ -104,8 +104,8 @@ describe(`Mining Fees`, function () {
     const result = calcMinerFeePerByte(
       nativeAmount,
       feeOption,
-      customFee,
-      bitcoinFees
+      bitcoinFees,
+      customFee
     )
     assert.equal(result, '300')
   })
@@ -124,8 +124,8 @@ describe(`Mining Fees`, function () {
     const result = calcMinerFeePerByte(
       nativeAmount,
       feeOption,
-      customFee,
-      bitcoinFees
+      bitcoinFees,
+      customFee
     )
     assert.equal(result, '50')
   })
@@ -144,8 +144,8 @@ describe(`Mining Fees`, function () {
     const result = calcMinerFeePerByte(
       nativeAmount,
       feeOption,
-      customFee,
-      bitcoinFees
+      bitcoinFees,
+      customFee
     )
     assert.equal(result, '75')
   })
@@ -164,8 +164,8 @@ describe(`Mining Fees`, function () {
     const result = calcMinerFeePerByte(
       nativeAmount,
       feeOption,
-      customFee,
-      bitcoinFees
+      bitcoinFees,
+      customFee
     )
     assert.equal(result, '10')
   })
@@ -184,8 +184,8 @@ describe(`Mining Fees`, function () {
     const result = calcMinerFeePerByte(
       nativeAmount,
       feeOption,
-      customFee,
-      bitcoinFees
+      bitcoinFees,
+      customFee
     )
     assert.equal(result, '350')
   })
@@ -204,8 +204,8 @@ describe(`Mining Fees`, function () {
     const result = calcMinerFeePerByte(
       nativeAmount,
       feeOption,
-      customFee,
-      bitcoinFees
+      bitcoinFees,
+      customFee
     )
     assert.equal(result, '15')
   })

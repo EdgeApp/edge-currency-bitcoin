@@ -38,6 +38,7 @@ export const bitcoinInfo: AbcCurrencyInfo = {
         bech32: 'bc'
       }
     },
+    customFeeSettings: ['satPerByte'],
     gapLimit: 10,
     maxFee: 1000000,
     defaultFee: 1000,

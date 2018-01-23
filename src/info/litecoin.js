@@ -37,6 +37,7 @@ export const litecoinInfo: AbcCurrencyInfo = {
         bech32: 'lc'
       }
     },
+    customFeeSettings: ['satPerByte'],
     gapLimit: 10,
     maxFee: 1000000,
     defaultFee: 50000,

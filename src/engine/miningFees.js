@@ -151,10 +151,11 @@ export function calcFeesFromEarnCom (
 export function calcMinerFeePerByte (
   nativeAmount: string,
   feeOption: string,
-  customFee: string,
-  bitcoinFees: BitcoinFees
+  bitcoinFees: BitcoinFees,
+  customFee: string = '0'
 ): string {
-  let satoshiPerByteFee: string = customFee
+  if (feeOption === ES_FEE_CUSTOM && customFee !== '0') return customFee
+  let satoshiPerByteFee: string = '0'
   switch (feeOption) {
     case ES_FEE_LOW:
       satoshiPerByteFee = bitcoinFees.lowFee
@@ -193,10 +194,8 @@ export function calcMinerFeePerByte (
     case ES_FEE_HIGH:
       satoshiPerByteFee = bitcoinFees.highFee
       break
-    case ES_FEE_CUSTOM:
-      break
     default:
-      throw new Error('Invalid networkFeeOption:' + feeOption)
+      throw new Error(`Invalid networkFeeOption: ${feeOption}, And/Or customFee: ${customFee}`)
   }
   return satoshiPerByteFee
 }

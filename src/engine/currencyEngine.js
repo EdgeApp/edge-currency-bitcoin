@@ -319,11 +319,13 @@ export class CurrencyEngine implements AbcCurrencyEngine {
   getRate ({
     spendTargets,
     networkFeeOption = 'standard',
-    customNetworkFee = ''
+    customNetworkFee = {}
   }: AbcSpendInfo): number {
-    if (networkFeeOption === 'custom' && customNetworkFee !== '') {
+    const customFeeSetting = this.currencyInfo.defaultSettings.customFeeSettings[0]
+    const customFeeAmount = customNetworkFee[customFeeSetting] || '0'
+    if (networkFeeOption === 'custom' && customFeeAmount !== '0') {
       // customNetworkFee is in sat/Bytes in need to be converted to sat/KB
-      return parseInt(customNetworkFee) * BYTES_TO_KB
+      return parseInt(customFeeAmount) * BYTES_TO_KB
     } else {
       const amountForTx = spendTargets
         .reduce((s, { nativeAmount }) => s + parseInt(nativeAmount), 0)
@@ -331,8 +333,8 @@ export class CurrencyEngine implements AbcCurrencyEngine {
       const rate = calcMinerFeePerByte(
         amountForTx,
         networkFeeOption,
-        customNetworkFee,
-        this.fees
+        this.fees,
+        customFeeAmount
       )
       return parseInt(rate) * BYTES_TO_KB
     }

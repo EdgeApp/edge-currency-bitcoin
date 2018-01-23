@@ -44,6 +44,7 @@ export const bitcoincashTestnetInfo: AbcCurrencyInfo = {
         prefix: 'bchtest'
       }
     },
+    customFeeSettings: ['satPerByte'],
     gapLimit: 10,
     maxFee: 1000000,
     defaultFee: 10000,

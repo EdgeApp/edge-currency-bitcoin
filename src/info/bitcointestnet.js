@@ -38,6 +38,7 @@ export const bitcoinTestnetInfo: AbcCurrencyInfo = {
         bech32: 'tb'
       }
     },
+    customFeeSettings: ['satPerByte'],
     gapLimit: 10,
     maxFee: 1000000,
     defaultFee: 1000,
