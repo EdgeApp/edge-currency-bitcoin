@@ -597,7 +597,15 @@ export class CurrencyEngine implements AbcCurrencyEngine {
 
   getDisplayPrivateSeed (): string | null {
     if (this.walletInfo.keys && this.walletInfo.keys[`${this.network}Key`]) {
-      return this.walletInfo.keys[`${this.network}Key`]
+      const privateKey = this.walletInfo.keys[`${this.network}Key`]
+      if (this.keyManager.bip !== 'bip32') return privateKey
+      try {
+        const keyBuffer = Buffer.from(privateKey, 'base64')
+        return keyBuffer.toString('hex')
+      } catch (e) {
+        console.log(e)
+        return null
+      }
     }
     return null
   }
