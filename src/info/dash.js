@@ -39,7 +39,7 @@ export const dashInfo: AbcCurrencyInfo = {
     defaultFee: 10000,
     feeUpdateInterval: 60000,
     feeInfoServer: '',
-    infoServer: '',
+    infoServer: 'https://info1.edgesecure.co:8444/v1/electrumServers/DASH',
     simpleFeeSettings: {
       highFee: '300',
       lowFee: '100',
