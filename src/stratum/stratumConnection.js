@@ -204,6 +204,7 @@ export class StratumConnection {
       ? new Error('Stratum TCP socket error')
       : new Error('Connection closed')
     if (connected) this.callOnClose(e)
+    else setTimeout(() => this.onClose(this.uri, 0, 0, -1), KEEPALIVE_MS)
     clearTimeout(this.timer)
     this.failPendingMessages(e)
   }
