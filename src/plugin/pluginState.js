@@ -230,10 +230,10 @@ export class PluginState {
           serverList = await result.json()
         }
       }
-      this.insertServers(serverList)
     } catch (e) {
-      throw e
+      console.log(e)
     }
+    this.insertServers(serverList)
   }
 
   insertServers (serverArray: Array<string>) {
