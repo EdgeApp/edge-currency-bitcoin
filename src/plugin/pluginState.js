@@ -145,7 +145,7 @@ export class PluginState {
       this.serverCacheTimestamp = Date.now()
       this.serverCache = serverCacheJson.servers
     } catch (e) {
-      this.insertServers(this.defaultServers)
+      console.log(e)
     }
 
     // Fetch stratum servers in the background:
@@ -217,23 +217,23 @@ export class PluginState {
     }
   }
 
-  fetchStratumServers (): Promise<void> {
+  async fetchStratumServers (): Promise<void> {
     const { io } = this
-    if (this.infoServerUris === '') return Promise.resolve()
     this.log(`GET ${this.infoServerUris}`)
-    return io
-      .fetch(this.infoServerUris)
-      .then(result => {
+    let serverList = this.defaultServers
+    try {
+      if (this.infoServerUris !== '') {
+        const result = await io.fetch(this.infoServerUris)
         if (!result.ok) {
-          this.log(
-            `Fetching ${this.infoServerUris} failed with ${result.status}`
-          )
-          throw new Error('Cannot fetch stratum server list')
+          this.log(`Fetching ${this.infoServerUris} failed with ${result.status}`)
+        } else {
+          serverList = await result.json()
         }
-        return result.json()
-      })
-      .then(json => this.insertServers(json))
-      .catch(e => this.log(e))
+      }
+      this.insertServers(serverList)
+    } catch (e) {
+      throw e
+    }
   }
 
   insertServers (serverArray: Array<string>) {
