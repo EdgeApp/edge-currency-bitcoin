@@ -161,6 +161,7 @@ export class PluginState {
     this.headerCacheDirty = true
     await this.saveHeaderCache()
     await this.saveServerCache()
+    await this.fetchStratumServers()
   }
 
   saveHeaderCache (): Promise<void> {
