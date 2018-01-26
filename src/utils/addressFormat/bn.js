@@ -19,12 +19,16 @@ BN.One = new BN(1)
 BN.Minus1 = new BN(-1)
 
 BN.fromNumber = function (n) {
-  if (typeof n !== 'number') throw new Error(`InvalidArgument: ${n} not a number`)
+  if (typeof n !== 'number') {
+    throw new Error(`InvalidArgument: ${n} not a number`)
+  }
   return new BN(n)
 }
 
 BN.fromString = function (str, base) {
-  if (typeof str !== 'string') throw new Error(`InvalidArgument: ${str} not a string`)
+  if (typeof str !== 'string') {
+    throw new Error(`InvalidArgument: ${str} not a string`)
+  }
   return new BN(str, base)
 }
 
@@ -109,7 +113,7 @@ BN.prototype.toSMBigEndian = function () {
     }
   }
 
-  if (buf.length === 1 & buf[0] === 0) {
+  if ((buf.length === 1) & (buf[0] === 0)) {
     buf = Buffer.from([])
   }
   return buf
@@ -135,7 +139,9 @@ BN.prototype.toSM = function (opts) {
  */
 BN.fromScriptNumBuffer = function (buf, fRequireMinimal, size) {
   const nMaxNumSize = size || 4
-  if (buf.length > nMaxNumSize) throw new Error('InvalidArgument: script number overflow')
+  if (buf.length > nMaxNumSize) {
+    throw new Error('InvalidArgument: script number overflow')
+  }
   if (fRequireMinimal && buf.length > 0) {
     // Check that the number is encoded with the minimum possible
     // number of bytes.

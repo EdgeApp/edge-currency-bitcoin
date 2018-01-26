@@ -225,7 +225,9 @@ export class PluginState {
       if (this.infoServerUris !== '') {
         const result = await io.fetch(this.infoServerUris)
         if (!result.ok) {
-          this.log(`Fetching ${this.infoServerUris} failed with ${result.status}`)
+          this.log(
+            `Fetching ${this.infoServerUris} failed with ${result.status}`
+          )
         } else {
           serverList = await result.json()
         }

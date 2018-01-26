@@ -195,7 +195,9 @@ export function calcMinerFeePerByte (
       satoshiPerByteFee = bitcoinFees.highFee
       break
     default:
-      throw new Error(`Invalid networkFeeOption: ${feeOption}, And/Or customFee: ${customFee}`)
+      throw new Error(
+        `Invalid networkFeeOption: ${feeOption}, And/Or customFee: ${customFee}`
+      )
   }
   return satoshiPerByteFee
 }
