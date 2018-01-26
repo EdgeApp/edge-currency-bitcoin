@@ -1,5 +1,5 @@
 // @flow
-import type { AbcIo, DiskletFolder } from 'airbitz-core-types'
+import type { AbcIo, DiskletFolder } from 'edge-login'
 
 import type { PluginState } from '../plugin/pluginState.js'
 import type {

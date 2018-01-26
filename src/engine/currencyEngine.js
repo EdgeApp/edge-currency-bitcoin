@@ -9,7 +9,7 @@ import type {
   AbcCurrencyInfo,
   AbcSpendTarget,
   AbcDataDump
-} from 'airbitz-core-types'
+} from 'edge-login'
 
 import { EngineState } from './engineState.js'
 import { PluginState } from '../plugin/pluginState.js'
@@ -35,7 +35,7 @@ const INFO_SERVER = 'https://info1.edgesecure.co:8444/v1'
  * Provides information about the currency,
  * as well as generic (non-wallet) functionality.
  */
-export class CurrencyEngine implements AbcCurrencyEngine {
+export class CurrencyEngine {
   walletInfo: AbcWalletInfo
   walletId: string
   currencyInfo: AbcCurrencyInfo

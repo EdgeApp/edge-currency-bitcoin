@@ -3,7 +3,7 @@
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-Implements Bitcoin send/receive functionality per the spec for currency plugins for [edge-core-js](https://github.com/Airbitz/edge-core-js)
+Implements Bitcoin send/receive functionality per the spec for currency plugins for [edge-login](https://github.com/Airbitz/edge-login)
 
 ## Installing
 
@@ -15,10 +15,10 @@ npm i git+ssh://git@github.com/Airbitz/airbitz-currency-bitcoin.git -s
 import { bitcoinCurrencyPluginFactory } from `edge-currency-bitcoin`
 ```
 
-Now you can pass `bitcoinCurrencyPluginFactory` to `edge-core-js`.
+Now you can pass `bitcoinCurrencyPluginFactory` to `edge-login`.
 
 ```js
-const context = makeReactNativeContext({
+const context = makeEdgeContext({
   apiKey: YOUR_API_KEY,
   plugins: [ bitcoinCurrencyPluginFactory ]
 })

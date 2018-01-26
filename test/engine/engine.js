@@ -1,8 +1,8 @@
 // @flow
 import EventEmitter from 'events'
 
-import { makeFakeIos } from 'airbitz-core-js'
-import type { AbcSpendInfo } from 'airbitz-core-types'
+import { makeFakeIos } from 'edge-login'
+import type { AbcSpendInfo } from 'edge-login'
 import { assert } from 'chai'
 import { before, describe, it } from 'mocha'
 import fetch from 'node-fetch'

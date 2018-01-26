@@ -1,5 +1,5 @@
 // @flow
-import type { AbcCurrencyInfo } from 'airbitz-core-types'
+import type { AbcCurrencyInfo } from 'edge-login'
 import { patchBcashTX } from './bcashExtender.js'
 import {
   patchDerivePublic,

@@ -1,15 +1,11 @@
 // @flow
-import {
-  destroyAllContexts,
-  makeFakeContexts,
-  makeFakeIos
-} from 'airbitz-core-js'
+import { destroyAllContexts, makeFakeContexts, makeFakeIos } from 'edge-login'
 import type {
   AbcAccount,
   AbcCurrencyPlugin,
   AbcCurrencyPluginCallbacks,
   AbcTransaction
-} from 'airbitz-core-types'
+} from 'edge-login'
 import { expect } from 'chai'
 import { makeMemoryFolder } from 'disklet'
 import { afterEach, describe, it } from 'mocha'

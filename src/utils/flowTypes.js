@@ -3,7 +3,7 @@
  * @flow
  */
 
-// import type { AbcTransaction } from 'airbitz-core-types'
+// import type { AbcTransaction } from 'edge-login'
 // import { txLibInfo } from './currencyInfoETH.js'
 // export const DATA_STORE_FOLDER = 'txEngineFolder'
 // export const DATA_STORE_FILE = 'walletLocalData.json'

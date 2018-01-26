@@ -1,5 +1,5 @@
 // @flow
-import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'airbitz-core-types'
+import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'edge-login'
 
 import type { EngineState } from '../engine/engineState.js'
 
