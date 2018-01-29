@@ -236,7 +236,13 @@ export class EngineState {
 
   broadcastTx (rawTx: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const uris = Object.keys(this.connections)
+      const uris = Object.keys(this.connections).filter(uri =>
+        this.connections[uri].connected
+      )
+      // If we have no connections then error
+      if (!uris || !uris.length) {
+        reject(new Error('No available connections\nCheck your internet signal'))
+      }
       let resolved = false
       let bad = 0
 

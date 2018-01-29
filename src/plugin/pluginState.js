@@ -232,10 +232,10 @@ export class PluginState {
           serverList = await result.json()
         }
       }
-      this.insertServers(serverList)
     } catch (e) {
-      throw e
+      console.log(e)
     }
+    this.insertServers(serverList)
   }
 
   insertServers (serverArray: Array<string>) {
@@ -268,7 +268,7 @@ export class PluginState {
     this.serverCache[uri].badMessages += badMessages
     this.serverCache[uri].disconnects += disconnected ? 1 : 0
     this.serverCache[uri].goodMessages += goodMessages
-    this.serverCache[uri].latency = latency
+    if (latency > 0) this.serverCache[uri].latency = latency
     this.dirtyServerCache()
     if (this.headerCacheDirty) {
       this.saveHeaderCache()

@@ -2,7 +2,7 @@
 import type { OnFailHandler, StratumTask } from './stratumConnection.js'
 import { validateObject } from '../utils/utils.js'
 import {
-  arrayOfStringScheme,
+  electrumVersionSchema,
   electrumFetchHeaderSchema,
   electrumSubscribeHeadersSchema,
   electrumFetchHistorySchema,
@@ -11,31 +11,36 @@ import {
   electrumFetchUtxoSchema
 } from '../utils/jsonSchemas.js'
 
+const taskTemplate = (
+  method: string,
+  parseReply: (reply: any) => any,
+  params: Array<string>,
+  onDone: (result: any) => void,
+  onFail: OnFailHandler
+) => {
+  return {
+    method,
+    onFail,
+    params: Array.isArray(params) ? params : [params],
+    onDone: (reply: any) => onDone(parseReply(reply))
+  }
+}
+
 /**
  * Creates a server version query message.
  */
-export function fetchVersion (
-  onDone: (version: string) => void,
-  onFail: OnFailHandler
-) {
-  return {
-    method: 'server.version',
-    params: ['1.1', '1.1'],
-    onDone (reply: any) {
-      let ver = 0
-      const valid = validateObject(reply, arrayOfStringScheme)
-      if (valid && reply.length === 2) {
-        ver = parseFloat(reply[1])
-      } else {
-        throw new Error(`Bad Stratum version reply ${reply}`)
+export function fetchVersion (...taskOptions: Array<any>) {
+  return taskTemplate(
+    'server.version',
+    (reply: any) => {
+      if (validateObject(reply.map(parseFloat), electrumVersionSchema)) {
+        return reply[1].toString()
       }
-      if (ver < 1.1) {
-        throw new Error('Stratum version too low' + ver.toString())
-      }
-      onDone(ver.toString())
+      throw new Error(`Bad Stratum version reply ${reply}`)
     },
-    onFail
-  }
+    ['1.1', '1.1'],
+    ...taskOptions
+  )
 }
 
 /**
@@ -43,31 +48,21 @@ export function fetchVersion (
  * @param {*} onDone Called for every height update.
  * @param {*} onFail Called if the subscription fails.
  */
-export function subscribeHeight (
-  onDone: (height: number) => void,
-  onFail: OnFailHandler
-): StratumTask {
-  const method = 'blockchain.headers.subscribe'
-  return {
-    method,
-    params: [],
-    onDone (reply: any) {
-      let height = 0
-      const validSubscribeHeader = validateObject(
-        reply,
-        electrumSubscribeHeadersSchema
-      )
-      if (validSubscribeHeader && reply.params.length === 1) {
-        height = reply.params[0].block_height
-      } else if (validateObject(reply, electrumHeaderSchema)) {
-        height = reply.block_height
-      } else {
-        throw new Error(`Bad Stratum height reply ${reply}`)
+export function subscribeHeight (...taskOptions: Array<any>): StratumTask {
+  return taskTemplate(
+    'blockchain.headers.subscribe',
+    (reply: any) => {
+      if (validateObject(reply, electrumSubscribeHeadersSchema)) {
+        return reply.params[0].block_height
       }
-      onDone(height)
+      if (validateObject(reply, electrumHeaderSchema)) {
+        return reply.block_height
+      }
+      throw new Error(`Bad Stratum height reply ${reply}`)
     },
-    onFail
-  }
+    [],
+    ...taskOptions
+  )
 }
 
 export type StratumBlockHeader = {
@@ -86,23 +81,17 @@ export type StratumBlockHeader = {
  * @param {*} onDone Called when block header data is available.
  * @param {*} onFail Called if the request fails.
  */
-export function fetchBlockHeader (
-  blockNumber: number,
-  onDone: (header: StratumBlockHeader) => void,
-  onFail: OnFailHandler
-): StratumTask {
-  return {
-    method: 'blockchain.block.get_header',
-    params: [blockNumber],
-    onDone (reply: any) {
-      const valid = validateObject(reply, electrumFetchHeaderSchema)
-      if (!valid) {
-        throw new Error(`Bad Stratum get_header reply ${reply}`)
+export function fetchBlockHeader (...taskOptions: Array<any>): StratumTask {
+  return taskTemplate(
+    'blockchain.block.get_header',
+    (reply: any) => {
+      if (validateObject(reply, electrumFetchHeaderSchema)) {
+        return reply
       }
-      onDone(reply)
+      throw new Error(`Bad Stratum get_header reply ${reply}`)
     },
-    onFail
-  }
+    ...taskOptions
+  )
 }
 
 /**
@@ -111,22 +100,17 @@ export function fetchBlockHeader (
  * @param {*} onDone Called when block header data is available.
  * @param {*} onFail Called if the request fails.
  */
-export function fetchTransaction (
-  txid: string,
-  onDone: (txData: string) => void,
-  onFail: OnFailHandler
-): StratumTask {
-  return {
-    method: 'blockchain.transaction.get',
-    params: [txid],
-    onDone (reply: any) {
-      if (typeof reply !== 'string') {
-        throw new Error(`Bad Stratum transaction.get reply ${reply}`)
+export function fetchTransaction (...taskOptions: Array<any>): StratumTask {
+  return taskTemplate(
+    'blockchain.transaction.get',
+    (reply: any) => {
+      if (typeof reply === 'string') {
+        return reply
       }
-      onDone(reply)
+      throw new Error(`Bad Stratum transaction.get reply ${reply}`)
     },
-    onFail
-  }
+    ...taskOptions
+  )
 }
 
 /**
@@ -135,33 +119,23 @@ export function fetchTransaction (
  * @param {*} onDone Called each time the script hash's hash changes.
  * @param {*} onFail Called if the request fails.
  */
-export function subscribeScriptHash (
-  scriptHash: string,
-  onDone: (hash: string | null) => void,
-  onFail: OnFailHandler
-): StratumTask {
-  const method = 'blockchain.scripthash.subscribe'
-  return {
-    method,
-    params: [scriptHash],
-    onDone (reply: any) {
-      let hash: string | null = null
+export function subscribeScriptHash (...taskOptions: Array<any>): StratumTask {
+  return taskTemplate(
+    'blockchain.scripthash.subscribe',
+    (reply: any) => {
       if (reply === null) {
-        hash = null
-      } else if (typeof reply === 'string') {
-        hash = reply
-      } else if (
-        validateObject(reply, electrumSubscribeScriptHashSchema) &&
-        reply.method === method
-      ) {
-        hash = reply.params[1]
-      } else {
-        throw new Error(`Bad Stratum scripthash.subscribe reply ${reply}`)
+        return null
       }
-      onDone(hash)
+      if (typeof reply === 'string') {
+        return reply
+      }
+      if (validateObject(reply, electrumSubscribeScriptHashSchema)) {
+        return reply.params[1]
+      }
+      throw new Error(`Bad Stratum scripthash.subscribe reply ${reply}`)
     },
-    onFail
-  }
+    ...taskOptions
+  )
 }
 
 export type StratumHistoryRow = {
@@ -176,25 +150,18 @@ export type StratumHistoryRow = {
  * @param {*} onDone Called when block header data is available.
  * @param {*} onFail Called if the request fails.
  */
-export function fetchScriptHashHistory (
-  scriptHash: string,
-  onDone: (arrayTx: Array<StratumHistoryRow>) => void,
-  onFail: OnFailHandler
-): StratumTask {
-  const method = 'blockchain.scripthash.get_history'
-  return {
-    method,
-    params: [scriptHash],
-    onDone (reply: any) {
-      if (reply !== null) {
-        if (!validateObject(reply, electrumFetchHistorySchema)) {
-          throw new Error(`Bad Stratum scripthash.get_history reply ${reply}`)
-        }
+export function fetchScriptHashHistory (...taskOptions: Array<any>): StratumTask {
+  return taskTemplate(
+    'blockchain.scripthash.get_history',
+    (reply: any) => {
+      if (reply === null) return reply
+      if (validateObject(reply, electrumFetchHistorySchema)) {
+        return reply
       }
-      onDone(reply)
+      throw new Error(`Bad Stratum scripthash.get_history reply ${reply}`)
     },
-    onFail
-  }
+    ...taskOptions
+  )
 }
 
 export type StratumUtxo = {
@@ -210,60 +177,41 @@ export type StratumUtxo = {
  * @param {*} onDone Called when block header data is available.
  * @param {*} onFail Called if the request fails.
  */
-export function fetchScriptHashUtxo (
-  scriptHash: string,
-  onDone: (arrayTx: Array<StratumUtxo>) => void,
-  onFail: OnFailHandler
-): StratumTask {
-  const method = 'blockchain.scripthash.listunspent'
-  return {
-    method,
-    params: [scriptHash],
-    onDone (reply: any) {
-      const valid = validateObject(reply, electrumFetchUtxoSchema)
-      if (!valid) {
-        throw new Error(`Bad Stratum scripthash.listunspent reply ${reply}`)
+export function fetchScriptHashUtxo (...taskOptions: Array<any>): StratumTask {
+  return taskTemplate(
+    'blockchain.scripthash.listunspent',
+    (reply: any) => {
+      if (validateObject(reply, electrumFetchUtxoSchema)) {
+        return reply
       }
-      onDone(reply)
+      throw new Error(`Bad Stratum scripthash.listunspent reply ${reply}`)
     },
-    onFail
-  }
+    ...taskOptions
+  )
 }
 
-export function broadcastTx (
-  rawTx: string,
-  onDone: (txid: string) => void,
-  onFail: OnFailHandler
-): StratumTask {
-  const method = 'blockchain.transaction.broadcast'
-  return {
-    method,
-    params: [rawTx],
-    onDone (reply: any) {
+export function broadcastTx (...taskOptions: Array<any>): StratumTask {
+  return taskTemplate(
+    'blockchain.transaction.broadcast',
+    (reply: any) => {
       if (typeof reply !== 'string') {
-        throw new Error(`transaction.broadcast error. reply ${reply}`)
+        return reply
       }
-      onDone(reply)
+      throw new Error(`transaction.broadcast error. reply ${reply}`)
     },
-    onFail
-  }
+    ...taskOptions
+  )
 }
 
-export function fetchEstimateFee (
-  blocksToBeIncludedIn: string,
-  onDone: (fee: number) => void,
-  onFail: OnFailHandler
-): StratumTask {
-  const method = 'blockchain.estimatefee'
-  return {
-    method,
-    params: [blocksToBeIncludedIn],
-    onDone (reply: any) {
-      if (reply === null || reply === undefined) {
-        throw new Error(`blockchain.estimatefee error. reply ${reply}`)
+export function fetchEstimateFee (...taskOptions: Array<any>): StratumTask {
+  return taskTemplate(
+    'blockchain.estimatefee',
+    (reply: any) => {
+      if (reply != null) {
+        return parseInt(reply)
       }
-      onDone(parseInt(reply))
+      throw new Error(`blockchain.estimatefee error. reply ${reply}`)
     },
-    onFail
-  }
+    ...taskOptions
+  )
 }
