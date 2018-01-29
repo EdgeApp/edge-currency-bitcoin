@@ -75,13 +75,26 @@ export const electrumHeaderSchema = {
   required: ['block_height', 'timestamp']
 }
 
+export const protocolVersion = {
+  'type': 'number',
+  'minimum': 1.1,
+  'maximum': 1.1
+}
+
+export const electrumVersionSchema = {
+  type: 'array',
+  'items': [{ type: 'any' }, protocolVersion]
+}
+
 export const electrumSubscribeHeadersSchema = {
   type: 'object',
   properties: {
     method: { type: 'string' },
     params: {
       type: 'array',
-      items: electrumHeaderSchema
+      items: electrumHeaderSchema,
+      minItems: 1,
+      maxItems: 1
     }
   },
   required: ['method', 'params']
@@ -90,7 +103,9 @@ export const electrumSubscribeHeadersSchema = {
 export const electrumSubscribeScriptHashSchema = {
   type: 'object',
   properties: {
-    method: { type: 'string' },
+    method: {
+      const: 'blockchain.scripthash.subscribe'
+    },
     params: arrayOfStringScheme
   },
   required: ['method', 'params']
