@@ -76,6 +76,8 @@ export class StratumConnection {
     this.queueSize = queueSize
     this.timeout = 1000 * timeout
     this.uri = uri
+    this.badMessages = 0
+    this.goodMessages = 0
 
     // Message queue:
     this.nextId = 0
@@ -110,19 +112,6 @@ export class StratumConnection {
     })
     this.socket = socket
     this.needsDisconnect = false
-  }
-
-  /**
-   * Shuts down the underlying TCP connection.
-   */
-  close () {
-    if (this.connected) {
-      this.connected = false
-      this.callOnClose()
-      if (this.socket) this.socket.end()
-    } else {
-      this.needsDisconnect = true
-    }
   }
 
   /**
@@ -195,18 +184,21 @@ export class StratumConnection {
    * Called when the socket disconnects for any reason.
    */
   onSocketClose (hadError: boolean) {
-    const connected = this.connected
-    this.connected = false
     this.socket = void 0
     this.needsDisconnect = false
-
     const e: Error = hadError
       ? new Error('Stratum TCP socket error')
       : new Error('Connection closed')
-    if (connected) this.callOnClose(e)
-    else setTimeout(() => this.onClose(this.uri, 0, 0, -1), KEEPALIVE_MS)
-    clearTimeout(this.timer)
-    this.failPendingMessages(e)
+    for (const id of Object.keys(this.pendingMessages)) {
+      const message = this.pendingMessages[id]
+      try {
+        message.task.onFail(e)
+      } catch (e) {
+        this.log(e)
+      }
+    }
+    this.pendingMessages = {}
+    this.close(e)
   }
 
   /**
@@ -230,7 +222,7 @@ export class StratumConnection {
     try {
       this.onOpen(this.uri)
     } catch (e) {
-      this.onFail(e)
+      this.close(e)
     }
 
     // Launch pending messages:
@@ -253,19 +245,6 @@ export class StratumConnection {
       this.onMessage(parts[i])
     }
     this.partialMessage = parts[parts.length - 1]
-  }
-
-  /**
-   * Called in response to protocol errors (JSON parsing, etc.).
-   */
-  onFail (e: Error) {
-    if (this.connected) {
-      this.connected = false
-      this.callOnClose(e)
-      if (this.socket) this.socket.end()
-    } else {
-      this.needsDisconnect = true
-    }
   }
 
   /**
@@ -313,7 +292,7 @@ export class StratumConnection {
         throw new Error(`Bad Stratum reply ${messageJson}`)
       }
     } catch (e) {
-      this.onFail(e)
+      this.close(e)
     }
     this.wakeup()
   }
@@ -326,7 +305,7 @@ export class StratumConnection {
 
     if (this.lastKeepalive + KEEPALIVE_MS < now) {
       this.submitTask(
-        fetchVersion((version: string) => {}, (e: Error) => this.onFail(e))
+        fetchVersion((version: string) => {}, (e: Error) => this.close(e))
       )
     }
 
@@ -342,34 +321,30 @@ export class StratumConnection {
         ++this.badMessages
       }
     }
-
     this.setupTimer()
   }
 
-  callOnClose (e?: Error) {
-    try {
-      this.onClose(
-        this.uri,
-        this.badMessages,
-        this.goodMessages,
-        this.totalLatency / this.totalMessages,
-        e
-      )
-    } catch (e) {
-      this.log(e)
-    }
-  }
-
-  failPendingMessages (e: Error) {
-    for (const id of Object.keys(this.pendingMessages)) {
-      const message = this.pendingMessages[id]
+  /**
+   * Call whenever we want to close the connection for any reason
+   */
+  close (e?: Error) {
+    const connected = this.connected
+    this.connected = false
+    if (this.timer) clearTimeout(this.timer)
+    if (connected) {
       try {
-        message.task.onFail(e)
+        let latency = -1
+        if (this.totalLatency && this.totalMessages) {
+          latency = this.totalLatency / this.totalMessages
+        }
+        this.onClose(this.uri, this.badMessages, this.goodMessages, latency, e)
       } catch (e) {
         this.log(e)
       }
+      if (this.socket) this.socket.end()
+    } else {
+      this.needsDisconnect = true
     }
-    this.pendingMessages = {}
   }
 
   setupTimer () {
