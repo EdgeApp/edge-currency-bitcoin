@@ -16,38 +16,38 @@ const CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l'
  * Inverted index mapping each symbol into its index within the charset.
  */
 const CHARSET_INVERSE_INDEX = {
-  'q': 0,
-  'p': 1,
-  'z': 2,
-  'r': 3,
-  'y': 4,
+  q: 0,
+  p: 1,
+  z: 2,
+  r: 3,
+  y: 4,
   '9': 5,
-  'x': 6,
+  x: 6,
   '8': 7,
-  'g': 8,
-  'f': 9,
+  g: 8,
+  f: 9,
   '2': 10,
-  't': 11,
-  'v': 12,
-  'd': 13,
-  'w': 14,
+  t: 11,
+  v: 12,
+  d: 13,
+  w: 14,
   '0': 15,
-  's': 16,
+  s: 16,
   '3': 17,
-  'j': 18,
-  'n': 19,
+  j: 18,
+  n: 19,
   '5': 20,
   '4': 21,
-  'k': 22,
-  'h': 23,
-  'c': 24,
-  'e': 25,
+  k: 22,
+  h: 23,
+  c: 24,
+  e: 25,
   '6': 26,
-  'm': 27,
-  'u': 28,
-  'a': 29,
+  m: 27,
+  u: 28,
+  a: 29,
   '7': 30,
-  'l': 31
+  l: 31
 }
 
 /***
@@ -56,7 +56,9 @@ const CHARSET_INVERSE_INDEX = {
  * @param {Array} data Array of integers between 0 and 31 inclusive.
  */
 export const encode = (data: any) => {
-  if (!(data instanceof Array)) throw new Error('InvalidArgument: Must be an Array')
+  if (!(data instanceof Array)) {
+    throw new Error('InvalidArgument: Must be an Array')
+  }
   let base32 = ''
   for (let i = 0; i < data.length; i++) {
     const value = data[i]
@@ -69,14 +71,18 @@ export const encode = (data: any) => {
 /***
  * Decodes the given base32-encoded string into an array of 5-bit integers.
  *
- * @param {string} base32 
+ * @param {string} base32
  */
 export const decode = (base32: string) => {
-  if (!(typeof base32 === 'string')) throw new Error(`InvalidArgument: Must be a string`)
+  if (!(typeof base32 === 'string')) {
+    throw new Error(`InvalidArgument: Must be a string`)
+  }
   const data = []
   for (let i = 0; i < base32.length; i++) {
     const value = base32[i]
-    if (!(value in CHARSET_INVERSE_INDEX)) throw new Error(`InvalidArgument: ${value} not in CHARSET_INVERSE_INDEX`)
+    if (!(value in CHARSET_INVERSE_INDEX)) {
+      throw new Error(`InvalidArgument: ${value} not in CHARSET_INVERSE_INDEX`)
+    }
     data.push(CHARSET_INVERSE_INDEX[value])
   }
   return data

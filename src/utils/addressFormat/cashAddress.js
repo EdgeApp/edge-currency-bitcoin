@@ -42,7 +42,7 @@ const convertBits = (data: any, from: number, to: number, strict?: boolean) => {
   const mask = (1 << to) - 1
   for (let i = 0; i < data.length; i++) {
     const value = data[i]
-    if (value < 0 || (value >> from) !== 0) {
+    if (value < 0 || value >> from !== 0) {
       throw new Error(`InvalidArgument in function convertBits: ${value}`)
     }
 
@@ -57,8 +57,10 @@ const convertBits = (data: any, from: number, to: number, strict?: boolean) => {
     if (bits > 0) {
       result.push((accumulator << (to - bits)) & mask)
     }
-  } else if (bits >= from || ((accumulator << (to - bits)) & mask)) {
-    throw new Error('InvalidState: Conversion requires padding but strict mode was used')
+  } else if (bits >= from || (accumulator << (to - bits)) & mask) {
+    throw new Error(
+      'InvalidState: Conversion requires padding but strict mode was used'
+    )
   }
   return result
 }
@@ -71,7 +73,11 @@ const prefixToArray = prefix => {
   return result
 }
 
-export const toCashAddress = (hashBuffer: any, type: string, prefix: string) => {
+export const toCashAddress = (
+  hashBuffer: any,
+  type: string,
+  prefix: string
+) => {
   function checksumToArray (checksum) {
     const result = []
     const N31 = new BN(31)
@@ -234,7 +240,10 @@ export const cashAddressToHash = (address: string) => {
   let network = {}
   for (const networkType in bcoin.networks) {
     const networkObj = bcoin.networks[networkType]
-    if (networkObj.newAddressFormat && networkObj.newAddressFormat.prefix === prefix) {
+    if (
+      networkObj.newAddressFormat &&
+      networkObj.newAddressFormat.prefix === prefix
+    ) {
       network = networkObj.type
     }
   }

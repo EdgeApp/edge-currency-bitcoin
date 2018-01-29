@@ -1,11 +1,14 @@
 // @flow
-import type { AbcSpendTarget } from 'airbitz-core-types'
+import type { AbcSpendTarget } from 'edge-login'
 import type { UtxoInfo, AddressInfo, AddressInfos } from './engineState.js'
 // $FlowFixMe
 import buffer from 'buffer-hack'
 import bcoin from 'bcoin'
 import { hash256, reverseBufferToHex } from '../utils/utils.js'
-import { toLegacyFormat, toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
+import {
+  toLegacyFormat,
+  toNewFormat
+} from '../utils/addressFormat/addressFormatIndex.js'
 
 // $FlowFixMe
 const { Buffer } = buffer
@@ -196,7 +199,10 @@ export class KeyManager {
         let [branch, index] = pathSuffix.split('/')
         branch = parseInt(branch)
         index = parseInt(index)
-        const displayAddress = toNewFormat(addressObj.displayAddress, this.network)
+        const displayAddress = toNewFormat(
+          addressObj.displayAddress,
+          this.network
+        )
         const address = { displayAddress, scriptHash, index, branch }
         if (branch === 0) {
           this.keys.receive.children.push(address)
@@ -278,8 +284,11 @@ export class KeyManager {
         spendTarget.publicAddress = spendTarget.publicAddress.toString()
       }
       const value = parseInt(spendTarget.nativeAmount)
-      // $FlowFixMe
-      const legacyAddress = toLegacyFormat(spendTarget.publicAddress, this.network)
+      const legacyAddress = toLegacyFormat(
+        // $FlowFixMe
+        spendTarget.publicAddress,
+        this.network
+      )
       const script = bcoin.script.fromAddress(legacyAddress)
       mtx.addOutput(script, value)
     }

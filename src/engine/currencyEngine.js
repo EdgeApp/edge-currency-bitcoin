@@ -9,7 +9,7 @@ import type {
   AbcCurrencyInfo,
   AbcSpendTarget,
   AbcDataDump
-} from 'airbitz-core-types'
+} from 'edge-login'
 
 import { EngineState } from './engineState.js'
 import { PluginState } from '../plugin/pluginState.js'
@@ -20,7 +20,10 @@ import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import { validateObject } from '../utils/utils.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
-import { toLegacyFormat, toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
+import {
+  toLegacyFormat,
+  toNewFormat
+} from '../utils/addressFormat/addressFormatIndex.js'
 import * as base32 from '../utils/base32'
 import bcoin from 'bcoin'
 
@@ -32,7 +35,7 @@ const INFO_SERVER = 'https://info1.edgesecure.co:8444/v1'
  * Provides information about the currency,
  * as well as generic (non-wallet) functionality.
  */
-export class CurrencyEngine implements AbcCurrencyEngine {
+export class CurrencyEngine {
   walletInfo: AbcWalletInfo
   walletId: string
   currencyInfo: AbcCurrencyInfo
@@ -321,7 +324,8 @@ export class CurrencyEngine implements AbcCurrencyEngine {
     networkFeeOption = 'standard',
     customNetworkFee = {}
   }: AbcSpendInfo): number {
-    const customFeeSetting = this.currencyInfo.defaultSettings.customFeeSettings[0]
+    const customFeeSetting = this.currencyInfo.defaultSettings
+      .customFeeSettings[0]
     const customFeeAmount = customNetworkFee[customFeeSetting] || '0'
     if (networkFeeOption === 'custom' && customFeeAmount !== '0') {
       // customNetworkFee is in sat/Bytes in need to be converted to sat/KB

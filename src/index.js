@@ -4,7 +4,7 @@ import type {
   AbcCurrencyInfo,
   AbcCurrencyPlugin,
   AbcCurrencyPluginFactory
-} from 'airbitz-core-types'
+} from 'edge-login'
 import bcoin from 'bcoin'
 
 // Coins Plugin Info

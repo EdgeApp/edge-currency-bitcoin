@@ -1,6 +1,6 @@
 {
   "name": "edge-currency-bitcoin",
-  "version": "2.12.5",
+  "version": "2.13.0",
   "description": "Edge Bitcoin currency plugin",
   "homepage": "https://edgesecure.co",
   "license": "SEE LICENSE IN LICENSE",
@@ -37,18 +37,17 @@
     "updot": "updot"
   },
   "dependencies": {
-    "airbitz-core-types": "git+https://github.com/Airbitz/airbitz-core-types.git",
     "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
     "biggystring": "^3.0.0",
     "bn.js": "^4.11.8",
     "buffer": "^5.0.8",
     "coinselect": "^3.1.11",
+    "edge-login": "^0.5.0",
     "jsonschema": "^1.2.0",
     "unorm": "^1.4.1",
     "uri-js": "^3.0.2"
   },
   "devDependencies": {
-    "airbitz-core-js": "git+https://github.com/Airbitz/airbitz-core-js.git#develop",
     "babel-core": "^6.26.0",
     "babel-eslint": "^7.2.3",
     "babel-plugin-transform-flow-strip-types": "^6.22.0",

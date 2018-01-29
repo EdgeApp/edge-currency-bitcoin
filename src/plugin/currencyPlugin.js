@@ -9,7 +9,7 @@ import type {
   AbcIo,
   AbcParsedUri,
   AbcWalletInfo
-} from 'airbitz-core-types'
+} from 'edge-login'
 import bcoin from 'bcoin'
 import { bns } from 'biggystring'
 // $FlowFixMe
