@@ -56,11 +56,6 @@ export const EarnComFeesSchema = {
   required: ['fees']
 }
 
-export const arrayOfStringScheme = {
-  type: 'array',
-  items: { type: 'string' }
-}
-
 export const electrumHeaderSchema = {
   type: 'object',
   properties: {
@@ -76,14 +71,14 @@ export const electrumHeaderSchema = {
 }
 
 export const protocolVersion = {
-  'type': 'number',
-  'minimum': 1.1,
-  'maximum': 1.1
+  type: 'number',
+  minimum: 1.1,
+  maximum: 1.1
 }
 
 export const electrumVersionSchema = {
   type: 'array',
-  'items': [{ type: 'any' }, protocolVersion]
+  items: [{ type: 'any' }, protocolVersion]
 }
 
 export const electrumSubscribeHeadersSchema = {
@@ -106,7 +101,10 @@ export const electrumSubscribeScriptHashSchema = {
     method: {
       const: 'blockchain.scripthash.subscribe'
     },
-    params: arrayOfStringScheme
+    params: {
+      type: 'array',
+      items: { type: 'string' }
+    }
   },
   required: ['method', 'params']
 }
