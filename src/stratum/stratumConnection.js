@@ -184,6 +184,8 @@ export class StratumConnection {
    * Called when the socket disconnects for any reason.
    */
   onSocketClose (hadError: boolean) {
+    clearTimeout(this.timer)
+    this.connected = false
     this.socket = void 0
     this.needsDisconnect = false
     const e: Error = hadError
@@ -198,7 +200,15 @@ export class StratumConnection {
       }
     }
     this.pendingMessages = {}
-    this.close(e)
+    let latency = KEEPALIVE_MS
+    if (this.totalLatency && this.totalMessages) {
+      latency = this.totalLatency / this.totalMessages
+    }
+    try {
+      this.onClose(this.uri, this.badMessages, this.goodMessages, latency, hadError)
+    } catch (e) {
+      this.log(e)
+    }
   }
 
   /**
@@ -328,23 +338,10 @@ export class StratumConnection {
    * Call whenever we want to close the connection for any reason
    */
   close (e?: Error) {
-    const connected = this.connected
     this.connected = false
-    if (this.timer) clearTimeout(this.timer)
-    if (connected) {
-      try {
-        let latency = -1
-        if (this.totalLatency && this.totalMessages) {
-          latency = this.totalLatency / this.totalMessages
-        }
-        this.onClose(this.uri, this.badMessages, this.goodMessages, latency, e)
-      } catch (e) {
-        this.log(e)
-      }
-      if (this.socket) this.socket.end()
-    } else {
-      this.needsDisconnect = true
-    }
+    clearTimeout(this.timer)
+    if (!this.connected) this.needsDisconnect = true
+    if (this.socket) this.socket.destroy(e)
   }
 
   setupTimer () {
