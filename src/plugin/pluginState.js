@@ -19,10 +19,14 @@ const TIME_LAZINESS = 10000
  */
 function scoreServer (info: ServerInfo) {
   // We can adjust the weights here,
-  // such as making disconnects worth more or less message failures:
-  const failures = info.badMessages + 2 * info.disconnects
-  const successes = info.goodMessages
-  return info.latency * failures / (failures + successes)
+  // such as making disconnects worth more or less message failures.
+  // We give every server 1 failure and 1 success to start:
+  const failures = 1 + info.badMessages + 2 * info.disconnects
+  const successes = 1 + info.goodMessages
+  // If a server has zero latency, treat that like 1 second:
+  const latency = info.latency || 1000
+
+  return latency * failures / (failures + successes)
 }
 
 /**
