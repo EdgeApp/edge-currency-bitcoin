@@ -104,6 +104,7 @@ export class StratumConnection {
         : new this.io.Socket()
     socket.setEncoding('utf8')
     socket.on('close', (hadError: boolean) => this.onSocketClose(hadError))
+    socket.on('error', (e: Error) => this.log(e))
     socket.on('connect', () => this.onSocketConnect(socket))
     socket.on('data', (data: string) => this.onSocketData(data))
     socket.connect({
