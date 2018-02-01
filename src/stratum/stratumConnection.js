@@ -201,7 +201,7 @@ export class StratumConnection {
       }
     }
     this.pendingMessages = {}
-    let latency = KEEPALIVE_MS
+    let latency = 0
     if (this.totalLatency && this.totalMessages) {
       latency = this.totalLatency / this.totalMessages
     }
