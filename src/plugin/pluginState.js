@@ -1,6 +1,5 @@
 // @flow
 import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'edge-login'
-
 import type { EngineState } from '../engine/engineState.js'
 
 export interface ServerInfo {
@@ -11,7 +10,7 @@ export interface ServerInfo {
   version: string; // Server version
 }
 
-const TIME_LAZINESS = 10000
+export const TIME_LAZINESS = 10000
 
 /**
  * Returns the average failure rate times the latency.

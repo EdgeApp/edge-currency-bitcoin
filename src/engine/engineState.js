@@ -1,12 +1,13 @@
 // @flow
 import type { AbcIo, DiskletFolder } from 'edge-login'
 
-import type { PluginState } from '../plugin/pluginState.js'
+import { type PluginState, TIME_LAZINESS } from '../plugin/pluginState.js'
+// import { scoreServer2 } from '../plugin/pluginState.js'
 import type {
   StratumCallbacks,
   StratumTask
 } from '../stratum/stratumConnection.js'
-import { StratumConnection } from '../stratum/stratumConnection.js'
+import { StratumConnection, KEEPALIVE_MS } from '../stratum/stratumConnection.js'
 import {
   broadcastTx,
   fetchScriptHashHistory,
@@ -67,8 +68,6 @@ export interface EngineStateOptions {
 }
 
 function nop () {}
-
-const TIME_LAZINESS = 10000
 
 /**
  * This object holds the current state of the wallet engine.
@@ -308,7 +307,9 @@ export class EngineState {
     this.pluginState.removeEngine(this)
     this.engineStarted = false
     clearInterval(this.cacheTimer)
+    clearTimeout(this.reconnectTimer)
     for (const uri of Object.keys(this.connections)) {
+      console.log('engineState.js - disconnect - uri', uri)
       this.connections[uri].close()
       delete this.connections[uri]
     }
@@ -331,6 +332,7 @@ export class EngineState {
   txCacheDirty: boolean
   txCacheTimestamp: number
   cacheTimer: number
+  reconnectTimer: number
   log: Function
 
   constructor (options: EngineStateOptions) {
@@ -388,18 +390,20 @@ export class EngineState {
           badMessages: number,
           goodMessages: number,
           latency: number,
-          error?: Error
+          hadError: boolean
         ) => {
-          this.log(`Disconnected from ${uri}`)
           delete this.connections[uri]
           this.pluginState.serverDisconnected(
             uri,
             badMessages,
-            error != null,
+            hadError,
             goodMessages,
             latency
           )
-          this.engineStarted && this.refillServers()
+          if (this.engineStarted) {
+            this.reconnectTimer = setTimeout(() => this.refillServers(),
+              goodMessages ? 0 : KEEPALIVE_MS)
+          }
           this.addressCacheDirty && this.saveAddressCache()
           this.txCacheDirty && this.saveTxCache()
         },
@@ -491,7 +495,7 @@ export class EngineState {
     // TODO: Check block headers to ensure we are on the right chain.
     if (!serverState.version) return
     if (serverState.version < '1.1') {
-      this.connections[uri].close()
+      this.connections[uri].close(new Error('Server protocol version is too old'))
       return
     }
 
@@ -1047,7 +1051,7 @@ export class EngineState {
   onConnectionFail (uri: string, e: Error, task: string) {
     this.log(`Stratum ${uri} failed with message "${e.message}" while ${task}`)
     if (this.connections[uri]) {
-      this.connections[uri].close()
+      this.connections[uri].close(e)
     }
   }
 

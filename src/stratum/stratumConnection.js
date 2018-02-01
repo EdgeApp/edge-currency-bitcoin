@@ -10,12 +10,12 @@ export type OnCloseHandler = (
   badMessages: number,
   goodMessages: number,
   latency: number,
-  error?: Error
+  hadError: boolean
 ) => void
 
 // Timing can vary a little in either direction for fewer wakeups:
-const TIMER_SLACK = 500
-const KEEPALIVE_MS = 60000
+export const TIMER_SLACK = 500
+export const KEEPALIVE_MS = 60000
 
 /**
  * This is a private type used by the Stratum connection.
