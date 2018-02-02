@@ -59,3 +59,27 @@ export const toNewFormat = (address: string, network: string): string => {
   )
   return newAddress
 }
+
+export const validAddress = (address: string, network: string) => {
+  if (network.includes('bitcoincash')) {
+    try {
+      address = bitcoincashLegacy(address, network)
+    } catch (e) {
+      return false
+    }
+  }
+  try {
+    const prefix = bcoin.primitives.Address.fromBase58(address).getPrefix()
+    const { pubkeyhash, scripthash } = bcoin.networks[network].addressPrefix
+    if (prefix !== pubkeyhash && prefix !== scripthash) return false
+  } catch (e) {
+    try {
+      const hrp = bcoin.utils.bech32.decode(address).hrp
+      const { bech32 } = bcoin.networks[network].addressPrefix
+      if (hrp !== bech32) return false
+    } catch (e) {
+      return false
+    }
+  }
+  return true
+}
