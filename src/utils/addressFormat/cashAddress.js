@@ -237,21 +237,10 @@ export const cashAddressToHash = (address: string) => {
   }
 
   const type = getType(versionByte)
-  let network = {}
-  for (const networkType in bcoin.networks) {
-    const networkObj = bcoin.networks[networkType]
-    if (
-      networkObj.newAddressFormat &&
-      networkObj.newAddressFormat.prefix === prefix
-    ) {
-      network = networkObj.type
-    }
-  }
 
   const info = {}
 
   info.hashBuffer = Buffer.from(hash)
-  info.network = network
   info.type = type
   return info
 }
