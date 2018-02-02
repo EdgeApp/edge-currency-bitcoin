@@ -22,9 +22,9 @@ import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import {
   toLegacyFormat,
-  toNewFormat
+  toNewFormat,
+  validAddress
 } from '../utils/addressFormat/addressFormatIndex.js'
-import * as base32 from '../utils/base32'
 import bcoin from 'bcoin'
 
 const BYTES_TO_KB = 1000
@@ -459,8 +459,9 @@ export class CurrencyEngine {
   }
 
   getFreshAddress (options: any): AbcFreshAddress {
-    const abcAddress = { publicAddress: this.keyManager.getReceiveAddress() }
-    return abcAddress
+    const publicAddress = this.keyManager.getReceiveAddress()
+    const legacyAddress = toLegacyFormat(publicAddress, this.network)
+    return { publicAddress, legacyAddress }
   }
 
   addGapLimitAddresses (addresses: Array<string>, options: any): void {
@@ -473,19 +474,8 @@ export class CurrencyEngine {
   }
 
   isAddressUsed (address: string, options: any): boolean {
-    address = toLegacyFormat(address, this.network)
-    try {
-      bcoin.primitives.Address.fromBase58(address)
-    } catch (e) {
-      try {
-        bcoin.primitives.Address.fromBech32(address)
-      } catch (e) {
-        try {
-          base32.decode(address)
-        } catch (e) {
-          throw new Error('Wrong formatted address')
-        }
-      }
+    if (!validAddress(address, this.network)) {
+      throw new Error('Wrong formatted address')
     }
     for (const scriptHash in this.engineState.addressInfos) {
       if (

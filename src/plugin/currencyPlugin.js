@@ -16,9 +16,8 @@ import { bns } from 'biggystring'
 import buffer from 'buffer-hack'
 import { parse, serialize } from 'uri-js'
 import { CurrencyEngine } from '../engine/currencyEngine.js'
-import * as base32 from '../utils/base32'
 import { PluginState } from './pluginState.js'
-import { toLegacyFormat } from '../utils/addressFormat/addressFormatIndex.js'
+import { validAddress } from '../utils/addressFormat/addressFormatIndex.js'
 
 // $FlowFixMe
 const { Buffer } = buffer
@@ -60,26 +59,6 @@ export class CurrencyPlugin {
     // Private API:
     this.io = options.io
     this.state = new PluginState(this.io, currencyInfo)
-  }
-
-  valid (address: string) {
-    address = toLegacyFormat(address, this.network)
-    try {
-      bcoin.primitives.Address.fromBase58(address)
-      return true
-    } catch (e) {
-      try {
-        bcoin.primitives.Address.fromBech32(address)
-        return true
-      } catch (e) {
-        try {
-          base32.decode(address)
-          return true
-        } catch (e) {
-          return false
-        }
-      }
-    }
   }
 
   // ------------------------------------------------------------------------
@@ -149,7 +128,7 @@ export class CurrencyPlugin {
     let publicAddress = parsedUri.host || parsedUri.path
     if (!publicAddress) throw new Error('InvalidUriError')
     publicAddress = publicAddress.replace('/', '') // Remove any slashes
-    if (!this.valid(publicAddress)) throw new Error('InvalidPublicAddressError')
+    if (!validAddress(publicAddress, this.network)) throw new Error('InvalidPublicAddressError')
 
     const amountStr = getParameterByName('amount', uri)
     const metadata = {}
@@ -172,7 +151,7 @@ export class CurrencyPlugin {
   }
 
   encodeUri (obj: AbcEncodeUri): string {
-    if (!obj.publicAddress || !this.valid(obj.publicAddress)) {
+    if (!obj.publicAddress || !validAddress(obj.publicAddress, this.network)) {
       throw new Error('InvalidPublicAddressError')
     }
     if (!obj.nativeAmount && !obj.metadata) return obj.publicAddress
