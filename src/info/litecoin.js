@@ -31,7 +31,8 @@ export const litecoinInfo: AbcCurrencyInfo = {
       },
       addressPrefix: {
         pubkeyhash: 0x30,
-        scripthash: 0x05,
+        scripthash: 0x32,
+        legacy: 0x05,
         witnesspubkeyhash: 0x06,
         witnessscripthash: 0x0a,
         bech32: 'lc'
