@@ -4,39 +4,62 @@ import bcoin from 'bcoin'
 import { toCashAddress, cashAddressToHash } from './cashAddress'
 import * as base32 from '../base32'
 
-export const toLegacyFormat = (address: string, network?: string): string => {
-  if (
-    network &&
-    network.includes('bitcoincash') &&
-    !address.includes('bitcoincash:')
-  ) {
+const bitcoincashLegacy = (address, network) => {
+  if (!address.includes(`${network}:`)) {
     try {
       base32.decode(address)
       address = `bitcoincash:${address}`
     } catch (e) {}
   }
-  if (typeof address !== 'string' || !address.includes('bitcoincash')) {
-    return address
+  if (typeof address !== 'string' || !address.includes(`${network}`)) {
+    throw new Error('Unknown Address type')
   }
   // Convert the Address string into hash, network and type
   const addressInfo = cashAddressToHash(address)
   const { hashBuffer, type } = addressInfo
-  if (typeof network !== 'string' && typeof addressInfo.network === 'string') {
-    network = addressInfo.network
+  switch (type) {
+    case 'pubkeyhash':
+      return bcoin.primitives.Address.fromPubkeyhash(
+        hashBuffer,
+        network
+      ).toBase58()
+    case 'scripthash':
+      return bcoin.primitives.Address.fromScripthash(
+        hashBuffer,
+        network
+      ).toBase58()
+    default:
+      throw new Error('Unknown Address type')
   }
-  if (!network) throw new Error('Unknown Network')
-  if (type === 'pubkeyhash') {
-    return bcoin.primitives.Address.fromPubkeyhash(
-      hashBuffer,
-      network
-    ).toBase58()
-  } else if (type === 'scripthash') {
-    return bcoin.primitives.Address.fromScripthash(
-      hashBuffer,
-      network
-    ).toBase58()
-  } else {
-    throw new Error('Unknown Address type')
+}
+
+const toBase58 = (address, network) => {
+  const prefix = bcoin.networks[network].addressPrefix.legacy
+  const bw = new bcoin.utils.StaticWriter(address.getSize())
+  bw.writeU8(prefix)
+  if (address.version !== -1) {
+    bw.writeU8(address.version)
+    bw.writeU8(0)
+  }
+  bw.writeBytes(address.hash)
+  bw.writeChecksum()
+  return bcoin.utils.base58.encode(bw.render())
+}
+
+export const toLegacyFormat = (address: string, network: string): string => {
+  switch (network) {
+    case 'bitcoincash':
+      return bitcoincashLegacy(address, network)
+    case 'bitcoincashtestnet':
+      return bitcoincashLegacy(address, network)
+    case 'litecoin':
+      const prefix = bcoin.primitives.Address.fromBase58(address).getPrefix()
+      if (prefix === bcoin.networks[network].addressPrefix.pubkeyhash) {
+        return address
+      }
+      return toBase58(bcoin.primitives.Address.fromBase58(address), network)
+    default:
+      return address
   }
 }
 
