@@ -106,3 +106,17 @@ export const validAddress = (address: string, network: string) => {
   }
   return true
 }
+
+export const sanitizeAddress = (address: string, network: string) => {
+  if (network.includes('bitcoincash') && address.includes(':')) {
+    return address.split(':')[1]
+  }
+  return address
+}
+
+export const dirtyAddress = (address: string, network: string) => {
+  if (network.includes('bitcoincash') && !address.includes(':')) {
+    return `${network}:${address}`
+  }
+  return address
+}
