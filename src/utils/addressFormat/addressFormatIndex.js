@@ -86,6 +86,10 @@ export const toNewFormat = (address: string, network: string): string => {
 export const validAddress = (address: string, network: string) => {
   if (network.includes('bitcoincash')) {
     try {
+      if (!address.includes(`${network}`)) {
+        base32.decode(address)
+        address = `bitcoincash:${address}`
+      }
       address = bitcoincashLegacy(address, network)
     } catch (e) {
       return false
