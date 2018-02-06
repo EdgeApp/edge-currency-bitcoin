@@ -5,14 +5,13 @@ import { toCashAddress, cashAddressToHash } from './cashAddress'
 import * as base32 from '../base32'
 
 const bitcoincashLegacy = (address, network) => {
-  if (!address.includes(`${network}:`)) {
-    try {
-      base32.decode(address)
-      address = `bitcoincash:${address}`
-    } catch (e) {}
-  }
   if (typeof address !== 'string' || !address.includes(`${network}`)) {
-    throw new Error('Unknown Address type')
+    try {
+      bcoin.primitives.Address.fromBase58(address)
+      return address
+    } catch (e) {
+      address = `bitcoincash:${address}`
+    }
   }
   // Convert the Address string into hash, network and type
   const addressInfo = cashAddressToHash(address)
