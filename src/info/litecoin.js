@@ -11,9 +11,9 @@ export const litecoinInfo: AbcCurrencyInfo = {
     { name: 'mLTC', multiplier: '100000', symbol: 'mŁ' }
   ],
   walletTypes: [
-    'wallet:litecoin',
+    'wallet:litecoin-bip49',
     'wallet:litecoin-bip44',
-    'wallet:litecoin-bip49'
+    'wallet:litecoin'
   ],
 
   // Configuration options:

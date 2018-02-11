@@ -11,7 +11,7 @@ export const bitcoincashInfo: AbcCurrencyInfo = {
     { name: 'mBCH', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-  walletTypes: ['wallet:bitcoincash', 'wallet:bitcoincash-bip44'],
+  walletTypes: ['wallet:bitcoincash-bip44', 'wallet:bitcoincash'],
 
   // Configuration options:
   defaultSettings: {
