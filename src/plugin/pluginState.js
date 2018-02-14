@@ -280,7 +280,7 @@ export class PluginState {
     this.serverCache[uri].goodMessages += goodMessages
     this.serverCache[uri].disconnects += disconnects
     if (latency > 0) {
-      this.serverCache[uri].latency += (this.serverCache[uri].latency + latency) / 2
+      this.serverCache[uri].latency = (this.serverCache[uri].latency + latency) / 2
     }
     this.dirtyServerCache()
   }
