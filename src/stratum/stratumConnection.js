@@ -50,7 +50,7 @@ export class StratumConnection {
   log: Function
 
   constructor (uri: string, options: StratumOptions, log: ?Function) {
-    const { callbacks = {}, io, queueSize = 10, timeout = 15 } = options
+    const { callbacks = {}, io, queueSize = 10, timeout = 30 } = options
     const {
       onOpen = nop,
       onClose = nop,
