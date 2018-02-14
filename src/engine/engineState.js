@@ -398,8 +398,8 @@ export class EngineState {
         onGoodMessage: (uri: string, latency: number) => {
           this.pluginState.updateServerInfo({ uri, latency, goodMessages: 1 })
         },
-        onBadMessage: (uri: string, latency: number) => {
-          this.pluginState.updateServerInfo({ uri, latency, badMessages: 1 })
+        onBadMessage: (uri: string) => {
+          this.pluginState.updateServerInfo({ uri, badMessages: 1 })
         },
         onQueueSpace: uri => {
           const start = Date.now()

@@ -25,7 +25,7 @@ export interface StratumCallbacks {
   +onClose?: (uri: string, hadError: boolean) => void;
   +onQueueSpace?: (uri: string) => StratumTask | void;
   +onGoodMessage?: (uri: string, latency: number) => void;
-  +onBadMessage?: (uri: string, latency: number) => void;
+  +onBadMessage?: (uri: string) => void;
   onNotifyHeader?: (uri: string, headerInfo: StratumBlockHeader) => void;
   +onNotifyScriptHash?: (uri: string, scriptHash: string, hash: string) => void;
 }
@@ -152,7 +152,7 @@ export class StratumConnection {
   onOpen: (uri: string) => void
   onQueueSpace: (uri: string) => StratumTask | void
   onGoodMessage: (uri: string, latency: number) => void;
-  onBadMessage: (uri: string, latency: number) => void;
+  onBadMessage: (uri: string) => void;
   onNotifyHeader: (uri: string, headerInfo: StratumBlockHeader) => void
   onNotifyScriptHash: (uri: string, scriptHash: string, hash: string) => void
 
@@ -187,7 +187,7 @@ export class StratumConnection {
       const message = this.pendingMessages[id]
       try {
         message.task.onFail(e)
-        this.onBadMessage(this.uri, Date.now() - message.startTime)
+        this.onBadMessage(this.uri)
       } catch (e) {
         this.log(e)
       }
@@ -257,13 +257,12 @@ export class StratumConnection {
           throw new Error(`Bad Stratum id in ${messageJson}`)
         }
         delete this.pendingMessages[id]
-        const latency = Date.now() - message.startTime
         try {
           message.task.onDone(json.result)
-          this.onGoodMessage(this.uri, latency)
+          this.onGoodMessage(this.uri, Date.now() - message.startTime)
         } catch (e) {
           message.task.onFail(e)
-          this.onBadMessage(this.uri, latency)
+          this.onBadMessage(this.uri)
         }
       } else if (json.method === 'blockchain.headers.subscribe') {
         try {
@@ -311,7 +310,7 @@ export class StratumConnection {
           this.log(e)
         }
         delete this.pendingMessages[id]
-        this.onBadMessage(this.uri, Date.now() - message.startTime)
+        this.onBadMessage(this.uri)
       }
     }
     this.setupTimer()
