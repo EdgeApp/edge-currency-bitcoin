@@ -30,10 +30,8 @@ function scoreServer (info: ServerInfo) {
   // We give every server 1 failure and 1 success to start:
   const failures = 1 + info.badMessages + 2 * info.disconnects
   const successes = 1 + info.goodMessages
-  // If a server has zero latency, treat that like 1 second:
-  const latency = info.latency || 1000
 
-  return latency * failures / (failures + successes)
+  return failures / (failures + successes)
 }
 
 /**
@@ -80,7 +78,10 @@ export class PluginState {
         if (blacklistA !== blacklistB) {
           return blacklistA ? 1 : -1
         }
-        return scoreServer(infoA) - scoreServer(infoB)
+        const scoreA = scoreServer(infoA)
+        const scoreB = scoreServer(infoB)
+        if (scoreA !== scoreB) return scoreA - scoreB
+        return infoB.latency - infoA.latency
       })
   }
 
