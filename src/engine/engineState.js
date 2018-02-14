@@ -298,7 +298,7 @@ export class EngineState {
       this.saveTxCache()
       if (this.pluginState) {
         this.pluginState.saveHeaderCache()
-        this.pluginState.saveServerCache()
+        this.pluginState.serverCache.serverCacheSave()
       }
     }, TIME_LAZINESS)
   }
@@ -375,16 +375,32 @@ export class EngineState {
     const { io } = this
 
     let i = 0
-    const servers = this.pluginState
-      .sortStratumServers(this.io.Socket != null, this.io.TLSSocket != null)
-      .filter(uri => !this.connections[uri])
-    this.log(`Refilling Servers, top 5 servers are: ${servers.slice(0, 5)}`)
-    while (Object.keys(this.connections).length < 5) {
+    const servers = this.pluginState.serverCache.getServers(8)
+    this.log(`Refilling Servers, top 8 servers are:`, servers)
+    while (Object.keys(this.connections).length < 3) {
       const uri = servers[i++]
-      if (!uri) break
+      if (!uri) {
+        this.reconnectTimer = setTimeout(() => this.refillServers(), 1000)
+        break
+      }
+      if (/^electrums:/.test(uri)) {
+        this.pluginState.serverCache.serverScoreDown(uri, 100)
+        continue
+      }
+
+      if (!this.io.Socket && /^electrum:/.test(uri)) {
+        this.pluginState.serverCache.serverScoreDown(uri, 100)
+        continue
+      }
+
+      if (this.connections[uri]) {
+        continue
+      }
 
       const callbacks: StratumCallbacks = {
-        onOpen: (uri: string) => this.log(`Connected to ${uri}`),
+        onOpen: (uri: string) => {
+          this.log(`Connected to ${uri}`)
+        },
         onClose: (
           uri: string,
           badMessages: number,
@@ -393,13 +409,11 @@ export class EngineState {
           hadError: boolean
         ) => {
           delete this.connections[uri]
-          this.pluginState.serverDisconnected(
-            uri,
-            badMessages,
-            hadError,
-            goodMessages,
-            latency
-          )
+
+          if (hadError) {
+            this.pluginState.serverCache.serverScoreDown(uri)
+          }
+
           if (this.engineStarted) {
             this.reconnectTimer = setTimeout(() => this.refillServers(),
               goodMessages ? 0 : KEEPALIVE_MS)
@@ -460,11 +474,13 @@ export class EngineState {
     // Check the version if we haven't done that already:
     if (serverState.version === void 0 && !serverState.fetchingVersion) {
       serverState.fetchingVersion = true
+      const queryTime = Date.now()
       return fetchVersion(
         (version: string) => {
           this.log(`Stratum ${uri} received version ${version}`)
           serverState.fetchingVersion = false
           serverState.version = version
+          this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
         },
         (e: Error) => {
           serverState.fetchingVersion = false
@@ -476,12 +492,14 @@ export class EngineState {
     // Subscribe to height if this has never happened:
     if (serverState.height === void 0 && !serverState.fetchingHeight) {
       serverState.fetchingHeight = true
+      const queryTime = Date.now()
       return subscribeHeight(
         (height: number) => {
           this.log(`Stratum ${uri} received height ${height}`)
           serverState.fetchingHeight = false
           serverState.height = height
           this.pluginState.updateHeight(height)
+          this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
         },
         (e: Error) => {
           serverState.fetchingHeight = false
@@ -496,6 +514,7 @@ export class EngineState {
     if (!serverState.version) return
     if (serverState.version < '1.1') {
       this.connections[uri].close(new Error('Server protocol version is too old'))
+      this.pluginState.serverCache.serverScoreDown(uri, 100)
       return
     }
 
@@ -506,6 +525,7 @@ export class EngineState {
         this.serverCanGetHeader(uri, height)
       ) {
         this.fetchingHeaders[height] = true
+        const queryTime = Date.now()
         return fetchBlockHeader(
           parseInt(height),
           (header: any) => {
@@ -513,6 +533,7 @@ export class EngineState {
               `Stratum ${uri} received header for block number ${height}`
             )
             this.fetchingHeaders[height] = false
+            this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
             this.handleHeaderFetch(height, header)
           },
           (e: Error) => {
@@ -535,10 +556,12 @@ export class EngineState {
     for (const txid of Object.keys(this.missingTxs)) {
       if (!this.fetchingTxs[txid] && this.serverCanGetTx(uri, txid)) {
         this.fetchingTxs[txid] = true
+        const queryTime = Date.now()
         return fetchTransaction(
           txid,
           (txData: string) => {
             this.log(`Stratum ${uri} received tx ${txid}`)
+            this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
             this.fetchingTxs[txid] = false
             this.handleTxFetch(txid, txData)
           },
@@ -564,6 +587,7 @@ export class EngineState {
         this.findBestServer(address) === uri
       ) {
         addressState.fetchingUtxos = true
+        const queryTime = Date.now()
         return fetchScriptHashUtxo(
           address,
           (utxos: Array<StratumUtxo>) => {
@@ -574,7 +598,8 @@ export class EngineState {
                 'Blank stratum hash (logic bug - should never happen)'
               )
             }
-            this.handleUtxoFetch(address, addressState.hash, utxos)
+            this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
+            this.handleUtxoFetch(address, addressState.hash || '', utxos)
           },
           (e: Error) => {
             addressState.fetchingUtxos = false
@@ -589,12 +614,14 @@ export class EngineState {
       const addressState = serverState.addresses[address]
       if (!addressState.subscribed && !addressState.subscribing) {
         addressState.subscribing = true
+        const queryTime = Date.now()
         return subscribeScriptHash(
           address,
           (hash: string | null) => {
             this.log(
               `Stratum ${uri} subscribed to ${address} at ${hash || 'null'}`
             )
+            this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
             addressState.subscribing = false
             addressState.subscribed = true
             addressState.hash = hash
@@ -618,6 +645,7 @@ export class EngineState {
         this.findBestServer(address) === uri
       ) {
         addressState.fetchingTxids = true
+        const queryTime = Date.now()
         return fetchScriptHashHistory(
           address,
           (history: Array<StratumHistoryRow>) => {
@@ -628,7 +656,8 @@ export class EngineState {
                 'Blank stratum hash (logic bug - should never happen)'
               )
             }
-            this.handleHistoryFetch(address, addressState.hash, history)
+            this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
+            this.handleHistoryFetch(address, addressState.hash || '', history)
           },
           (e: Error) => {
             addressState.fetchingTxids = false

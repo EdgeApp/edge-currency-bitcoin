@@ -1,32 +1,9 @@
 // @flow
 import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'edge-login'
 import type { EngineState } from '../engine/engineState.js'
-
-export interface ServerInfo {
-  badMessages: number; // Messages completed with errors
-  disconnects: number; // Unwanted socket disconnects
-  goodMessages: number; // Messages completed successfully
-  latency: number; // Average ms per reply
-  version: string; // Server version
-}
+import { ServerCache } from '../engine/serverCache.js'
 
 export const TIME_LAZINESS = 10000
-
-/**
- * Returns the average failure rate times the latency.
- * Lower scores are better.
- */
-function scoreServer (info: ServerInfo) {
-  // We can adjust the weights here,
-  // such as making disconnects worth more or less message failures.
-  // We give every server 1 failure and 1 success to start:
-  const failures = 1 + info.badMessages + 2 * info.disconnects
-  const successes = 1 + info.goodMessages
-  // If a server has zero latency, treat that like 1 second:
-  const latency = info.latency || 1000
-
-  return latency * failures / (failures + successes)
-}
 
 /**
  * This object holds the plugin-wide per-currency caches.
@@ -47,34 +24,7 @@ export class PluginState {
   }
 
   // On-disk server information:
-  serverCache: {
-    [uri: string]: ServerInfo
-  }
-
-  /**
-   * Returns an array of Stratum servers, sorted by reliability.
-   */
-  sortStratumServers (hasTcp: boolean, hasTls: boolean) {
-    return Object.keys(this.serverCache)
-      .filter(uri => {
-        return (
-          (hasTcp && /^electrum:/.test(uri)) ||
-          (hasTls && /^electrums:/.test(uri))
-        )
-      })
-      .sort((a, b) => {
-        const infoA = this.serverCache[a]
-        const infoB = this.serverCache[b]
-        const blacklistA = infoA.version < '1.0.0'
-        const blacklistB = infoB.version < '1.0.0'
-
-        // If one is outdated, it is automatically worse:
-        if (blacklistA !== blacklistB) {
-          return blacklistA ? 1 : -1
-        }
-        return scoreServer(infoA) - scoreServer(infoB)
-      })
-  }
+  serverCache: ServerCache
 
   /**
    * Begins notifying the engine of state changes. Used at connection time.
@@ -102,14 +52,13 @@ export class PluginState {
 
   headerCacheDirty: boolean
   headerCacheTimestamp: number
-  serverCacheDirty: boolean
-  serverCacheTimestamp: number
+  serverCacheJson: Object
   pluginName: string
 
   constructor (io: AbcIo, currencyInfo: AbcCurrencyInfo) {
     this.height = 0
     this.headerCache = {}
-    this.serverCache = {}
+    this.serverCache = new ServerCache(this.saveData.bind(this))
     this.io = io
     this.defaultServers = []
     this.infoServerUris = ''
@@ -123,8 +72,7 @@ export class PluginState {
     this.pluginName = currencyInfo.pluginName
     this.headerCacheDirty = false
     this.headerCacheTimestamp = Date.now()
-    this.serverCacheDirty = false
-    this.serverCacheTimestamp = Date.now()
+    this.serverCacheJson = {}
   }
 
   async load () {
@@ -141,12 +89,11 @@ export class PluginState {
     }
 
     try {
-      const serverCacheText = await this.folder.file('servers.json').getText()
+      const serverCacheText = await this.folder.file('serverCache.json').getText()
       const serverCacheJson = JSON.parse(serverCacheText)
       // TODO: Validate JSON
 
-      this.serverCacheTimestamp = Date.now()
-      this.serverCache = serverCacheJson.servers
+      this.serverCacheJson = serverCacheJson
     } catch (e) {
       console.log(e)
     }
@@ -159,11 +106,10 @@ export class PluginState {
 
   async clearCache () {
     this.headerCache = {}
-    this.serverCache = {}
-    this.serverCacheDirty = true
+    this.serverCache = new ServerCache(this.saveData.bind(this))
     this.headerCacheDirty = true
     await this.saveHeaderCache()
-    await this.saveServerCache()
+    await this.serverCache.serverCacheSave()
     await this.fetchStratumServers()
   }
 
@@ -187,24 +133,32 @@ export class PluginState {
     return Promise.resolve()
   }
 
-  saveServerCache (): Promise<void> {
-    if (this.serverCacheDirty) {
-      return this.folder
-        .file('servers.json')
-        .setText(
-          JSON.stringify({
-            servers: this.serverCache
-          })
-        )
-        .then(() => {
-          this.log('Saved server cache')
-          this.serverCacheDirty = false
-          this.serverCacheTimestamp = Date.now()
-        })
-        .catch(e => this.log(e))
+  async saveData (data: Object) {
+    try {
+      await this.folder.file('serverCache.json').setText(JSON.stringify(data))
+      this.log('Saved server cache')
+    } catch (e) {
+      this.log(e)
     }
-    return Promise.resolve()
   }
+
+  // saveServerCache (): Promise<void> {
+  //   if (this.serverCacheDirty) {
+  //     const servers = this.serverCache.serverCacheSave()
+  //     return this.folder
+  //       .file('serverCache.json')
+  //       .setText(
+  //         JSON.stringify(servers)
+  //       )
+  //       .then(() => {
+  //         this.log('Saved server cache')
+  //         this.serverCacheDirty = false
+  //         this.serverCacheTimestamp = Date.now()
+  //       })
+  //       .catch(e => this.log(e))
+  //   }
+  //   return Promise.resolve()
+  // }
 
   dirtyHeaderCache () {
     this.headerCacheDirty = true
@@ -213,12 +167,12 @@ export class PluginState {
     }
   }
 
-  dirtyServerCache () {
-    this.serverCacheDirty = true
-    if (this.serverCacheTimestamp + TIME_LAZINESS < Date.now()) {
-      this.saveServerCache()
-    }
-  }
+  // dirtyServerCache () {
+  //   this.serverCacheDirty = true
+  //   if (this.serverCacheTimestamp + TIME_LAZINESS < Date.now()) {
+  //     this.saveServerCache()
+  //   }
+  // }
 
   async fetchStratumServers (): Promise<void> {
     const { io } = this
@@ -238,46 +192,12 @@ export class PluginState {
     } catch (e) {
       console.log(e)
     }
-    this.insertServers(serverList)
-  }
-
-  insertServers (serverArray: Array<string>) {
-    for (const uri of serverArray) {
-      if (!this.serverCache[uri]) {
-        this.serverCache[uri] = {
-          badMessages: 0,
-          disconnects: 0,
-          goodMessages: 0,
-          latency: 0,
-          version: ''
-        }
-      }
-    }
-    this.dirtyServerCache()
+    this.serverCache.serverCacheLoad(this.serverCacheJson, serverList)
+    await this.serverCache.serverCacheSave()
 
     // Tell the engines about the new servers:
     for (const engine of this.engines) {
       engine.refillServers()
-    }
-  }
-
-  serverDisconnected (
-    uri: string,
-    badMessages: number,
-    disconnected: boolean,
-    goodMessages: number,
-    latency: number
-  ) {
-    this.serverCache[uri].badMessages += badMessages
-    this.serverCache[uri].disconnects += disconnected ? 1 : 0
-    this.serverCache[uri].goodMessages += goodMessages
-    if (latency > 0) this.serverCache[uri].latency = latency
-    this.dirtyServerCache()
-    if (this.headerCacheDirty) {
-      this.saveHeaderCache()
-    }
-    if (this.serverCacheDirty) {
-      this.saveServerCache()
     }
   }
 

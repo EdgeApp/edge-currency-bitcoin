@@ -8,6 +8,10 @@ import { describe, it } from 'mocha'
 
 import { ServerCache } from '../src/engine/serverCache.js'
 
+function saveData (data) {
+  return Promise.resolve()
+}
+
 describe(`ServerCache`, function () {
   it('Score only', function () {
     const diskServerCache = {
@@ -71,7 +75,7 @@ describe(`ServerCache`, function () {
       'server5'
     ]
 
-    const cache = new ServerCache()
+    const cache = new ServerCache(saveData)
 
     cache.serverCacheLoad(diskServerCache, newServers)
     const result = cache.getServers(8)
@@ -151,10 +155,10 @@ describe(`ServerCache`, function () {
       'server7'
     ]
 
-    const cache = new ServerCache()
+    const cache = new ServerCache(saveData)
 
     cache.serverCacheLoad(diskServerCache, newServers)
-    cache.serverScoreUp('server8', 405)
+    cache.serverScoreUp('server8', 0, 405)
     const control = [
       'server8',
       'server2',
@@ -222,7 +226,7 @@ describe(`ServerCache`, function () {
     }
     const newServers = ['newServer1', 'newServer2', 'newServer3']
 
-    const cache = new ServerCache()
+    const cache = new ServerCache(saveData)
 
     cache.serverCacheLoad(diskServerCache, newServers)
     const result = cache.getServers(8)
