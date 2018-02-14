@@ -5,14 +5,6 @@ import { fetchVersion } from './stratumMessages.js'
 import type { StratumBlockHeader } from './stratumMessages.js'
 
 export type OnFailHandler = (error: Error) => void
-export type OnCloseHandler = (
-  uri: string,
-  badMessages: number,
-  goodMessages: number,
-  latency: number,
-  hadError: boolean
-) => void
-
 // Timing can vary a little in either direction for fewer wakeups:
 export const TIMER_SLACK = 500
 export const KEEPALIVE_MS = 60000
@@ -30,9 +22,10 @@ export interface StratumTask {
 
 export interface StratumCallbacks {
   +onOpen?: (uri: string) => void;
-  +onClose?: OnCloseHandler;
+  +onClose?: (uri: string, hadError: boolean) => void;
   +onQueueSpace?: (uri: string) => StratumTask | void;
-
+  +onGoodMessage?: (uri: string, latency: number) => void;
+  +onBadMessage?: (uri: string, latency: number) => void;
   onNotifyHeader?: (uri: string, headerInfo: StratumBlockHeader) => void;
   +onNotifyScriptHash?: (uri: string, scriptHash: string, hash: string) => void;
 }
@@ -57,12 +50,14 @@ export class StratumConnection {
   log: Function
 
   constructor (uri: string, options: StratumOptions, log: ?Function) {
-    const { callbacks = {}, io, queueSize = 10, timeout = 30 } = options
+    const { callbacks = {}, io, queueSize = 10, timeout = 15 } = options
     const {
       onOpen = nop,
       onClose = nop,
       onQueueSpace = nop,
       onNotifyHeader = nop,
+      onGoodMessage = nop,
+      onBadMessage = nop,
       onNotifyScriptHash = nop
     } = callbacks
 
@@ -73,11 +68,11 @@ export class StratumConnection {
     this.onQueueSpace = onQueueSpace
     this.onNotifyHeader = onNotifyHeader
     this.onNotifyScriptHash = onNotifyScriptHash
+    this.onGoodMessage = onGoodMessage
+    this.onBadMessage = onBadMessage
     this.queueSize = queueSize
     this.timeout = 1000 * timeout
     this.uri = uri
-    this.badMessages = 0
-    this.goodMessages = 0
 
     // Message queue:
     this.nextId = 0
@@ -153,9 +148,11 @@ export class StratumConnection {
   timeout: number // Converted to ms
 
   // Callbacks:
-  onClose: OnCloseHandler
+  onClose: (uri: string, hadError: boolean) => void;
   onOpen: (uri: string) => void
   onQueueSpace: (uri: string) => StratumTask | void
+  onGoodMessage: (uri: string, latency: number) => void;
+  onBadMessage: (uri: string, latency: number) => void;
   onNotifyHeader: (uri: string, headerInfo: StratumBlockHeader) => void
   onNotifyScriptHash: (uri: string, scriptHash: string, hash: string) => void
 
@@ -175,12 +172,6 @@ export class StratumConnection {
   socket: net$Socket | void
   timer: number
 
-  // Connection stats:
-  badMessages: number
-  goodMessages: number
-  totalLatency: number
-  totalMessages: number
-
   /**
    * Called when the socket disconnects for any reason.
    */
@@ -196,17 +187,14 @@ export class StratumConnection {
       const message = this.pendingMessages[id]
       try {
         message.task.onFail(e)
+        this.onBadMessage(this.uri, Date.now() - message.startTime)
       } catch (e) {
         this.log(e)
       }
     }
     this.pendingMessages = {}
-    let latency = 0
-    if (this.totalLatency && this.totalMessages) {
-      latency = this.totalLatency / this.totalMessages
-    }
     try {
-      this.onClose(this.uri, this.badMessages, this.goodMessages, latency, hadError)
+      this.onClose(this.uri, hadError)
     } catch (e) {
       this.log(e)
     }
@@ -224,11 +212,6 @@ export class StratumConnection {
     this.connected = true
     this.lastKeepalive = Date.now()
     this.partialMessage = ''
-
-    this.badMessages = 0
-    this.goodMessages = 0
-    this.totalLatency = 0
-    this.totalMessages = 0
 
     try {
       this.onOpen(this.uri)
@@ -274,14 +257,13 @@ export class StratumConnection {
           throw new Error(`Bad Stratum id in ${messageJson}`)
         }
         delete this.pendingMessages[id]
-        ++this.totalMessages
-        this.totalLatency = Date.now() - message.startTime
+        const latency = Date.now() - message.startTime
         try {
           message.task.onDone(json.result)
-          ++this.goodMessages
+          this.onGoodMessage(this.uri, latency)
         } catch (e) {
           message.task.onFail(e)
-          ++this.badMessages
+          this.onBadMessage(this.uri, latency)
         }
       } else if (json.method === 'blockchain.headers.subscribe') {
         try {
@@ -329,7 +311,7 @@ export class StratumConnection {
           this.log(e)
         }
         delete this.pendingMessages[id]
-        ++this.badMessages
+        this.onBadMessage(this.uri, Date.now() - message.startTime)
       }
     }
     this.setupTimer()
