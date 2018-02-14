@@ -385,29 +385,22 @@ export class EngineState {
 
       const callbacks: StratumCallbacks = {
         onOpen: (uri: string) => this.log(`Connected to ${uri}`),
-        onClose: (
-          uri: string,
-          badMessages: number,
-          goodMessages: number,
-          latency: number,
-          hadError: boolean
-        ) => {
+        onClose: (uri: string, hadError: boolean) => {
           delete this.connections[uri]
-          this.pluginState.serverDisconnected(
-            uri,
-            badMessages,
-            hadError,
-            goodMessages,
-            latency
-          )
+          this.pluginState.updateServerInfo({ uri, disconnects: 1 })
           if (this.engineStarted) {
             this.reconnectTimer = setTimeout(() => this.refillServers(),
-              goodMessages ? 0 : KEEPALIVE_MS)
+              hadError ? KEEPALIVE_MS : 0)
           }
-          this.addressCacheDirty && this.saveAddressCache()
-          this.txCacheDirty && this.saveTxCache()
+          this.saveAddressCache()
+          this.saveTxCache()
         },
-
+        onGoodMessage: (uri: string, latency: number) => {
+          this.pluginState.updateServerInfo({ uri, latency, goodMessages: 1 })
+        },
+        onBadMessage: (uri: string) => {
+          this.pluginState.updateServerInfo({ uri, badMessages: 1 })
+        },
         onQueueSpace: uri => {
           const start = Date.now()
           const task = this.pickNextTask(uri)

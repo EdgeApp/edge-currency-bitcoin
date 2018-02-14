@@ -10,6 +10,14 @@ export interface ServerInfo {
   version: string; // Server version
 }
 
+export type NewServerInfo = {
+  uri: string;
+  badMessages?: number;
+  disconnects?: number;
+  goodMessages?: number;
+  latency?: number;
+}
+
 export const TIME_LAZINESS = 10000
 
 /**
@@ -22,10 +30,8 @@ function scoreServer (info: ServerInfo) {
   // We give every server 1 failure and 1 success to start:
   const failures = 1 + info.badMessages + 2 * info.disconnects
   const successes = 1 + info.goodMessages
-  // If a server has zero latency, treat that like 1 second:
-  const latency = info.latency || 1000
 
-  return latency * failures / (failures + successes)
+  return failures / (failures + successes)
 }
 
 /**
@@ -72,7 +78,10 @@ export class PluginState {
         if (blacklistA !== blacklistB) {
           return blacklistA ? 1 : -1
         }
-        return scoreServer(infoA) - scoreServer(infoB)
+        const scoreA = scoreServer(infoA)
+        const scoreB = scoreServer(infoB)
+        if (scoreA !== scoreB) return scoreA - scoreB
+        return infoB.latency - infoA.latency
       })
   }
 
@@ -261,24 +270,20 @@ export class PluginState {
     }
   }
 
-  serverDisconnected (
-    uri: string,
-    badMessages: number,
-    disconnected: boolean,
-    goodMessages: number,
-    latency: number
-  ) {
+  updateServerInfo ({
+    uri,
+    latency = 0,
+    badMessages = 0,
+    goodMessages = 0,
+    disconnects = 0
+  }: NewServerInfo) {
     this.serverCache[uri].badMessages += badMessages
-    this.serverCache[uri].disconnects += disconnected ? 1 : 0
     this.serverCache[uri].goodMessages += goodMessages
-    if (latency > 0) this.serverCache[uri].latency = latency
+    this.serverCache[uri].disconnects += disconnects
+    if (latency > 0) {
+      this.serverCache[uri].latency = (this.serverCache[uri].latency + latency) / 2
+    }
     this.dirtyServerCache()
-    if (this.headerCacheDirty) {
-      this.saveHeaderCache()
-    }
-    if (this.serverCacheDirty) {
-      this.saveServerCache()
-    }
   }
 
   updateHeight (height: number) {
