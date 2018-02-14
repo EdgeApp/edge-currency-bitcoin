@@ -10,6 +10,14 @@ export interface ServerInfo {
   version: string; // Server version
 }
 
+export type NewServerInfo = {
+  uri: string;
+  badMessages?: number;
+  disconnects?: number;
+  goodMessages?: number;
+  latency?: number;
+}
+
 export const TIME_LAZINESS = 10000
 
 /**
@@ -261,24 +269,20 @@ export class PluginState {
     }
   }
 
-  serverDisconnected (
-    uri: string,
-    badMessages: number,
-    disconnected: boolean,
-    goodMessages: number,
-    latency: number
-  ) {
+  updateServerInfo ({
+    uri,
+    latency = 0,
+    badMessages = 0,
+    goodMessages = 0,
+    disconnects = 0
+  }: NewServerInfo) {
     this.serverCache[uri].badMessages += badMessages
-    this.serverCache[uri].disconnects += disconnected ? 1 : 0
     this.serverCache[uri].goodMessages += goodMessages
-    if (latency > 0) this.serverCache[uri].latency = latency
+    this.serverCache[uri].disconnects += disconnects
+    if (latency > 0) {
+      this.serverCache[uri].latency += (this.serverCache[uri].latency + latency) / 2
+    }
     this.dirtyServerCache()
-    if (this.headerCacheDirty) {
-      this.saveHeaderCache()
-    }
-    if (this.serverCacheDirty) {
-      this.saveServerCache()
-    }
   }
 
   updateHeight (height: number) {
