@@ -558,6 +558,33 @@ for (const fixture of fixtures) {
         .makeSpend(templateSpend)
         .catch(e => assert.equal(e.message, 'InsufficientFundsError'))
     })
+
+    it('Should throw InsufficientFundsError for a really big amount', function () {
+      // $FlowFixMe
+      const templateSpend: AbcSpendInfo = {
+        networkFeeOption: 'high',
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        },
+        spendTargets: [
+          {
+            currencyCode: 'BTC',
+            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
+            nativeAmount: '9999999999999000000000' // 0.021 BTC
+          },
+          {
+            currencyCode: 'BTC',
+            publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
+            nativeAmount: '9999999999999000000000' // 0.042 BTC
+          }
+        ]
+      }
+      // $FlowFixMe
+      return engine
+        .makeSpend(templateSpend)
+        .catch(e => assert.equal(e.message, 'InsufficientFundsError'))
+    })
   })
 
   describe(`Stop Engine for Wallet type ${WALLET_TYPE}`, function () {

@@ -20,6 +20,7 @@ import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import { validateObject } from '../utils/utils.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
+import { bns } from 'biggystring'
 import {
   toLegacyFormat,
   toNewFormat,
@@ -501,8 +502,11 @@ export class CurrencyEngine {
     ) {
       throw new Error('Need to provide Spend Targets')
     }
-    let resultedTransaction
-
+    const totalAmountToSend = abcSpendInfo.spendTargets
+      .reduce((sum, { nativeAmount }) => bns.add(sum, nativeAmount), '0')
+    if (bns.gt(totalAmountToSend, this.getBalance())) {
+      throw new Error('InsufficientFundsError')
+    }
     try {
       Object.assign(options, {
         rate: this.getRate(abcSpendInfo),
