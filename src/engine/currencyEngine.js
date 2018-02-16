@@ -515,50 +515,50 @@ export class CurrencyEngine {
         utxos: this.getUTXOs(),
         height: this.getBlockHeight()
       })
-      resultedTransaction = await this.keyManager.createTX(options)
+      const resultedTransaction = await this.keyManager.createTX(options)
+      const sumOfTx = abcSpendInfo.spendTargets.reduce(
+        (s, spendTarget: AbcSpendTarget) => {
+          if (
+            spendTarget.publicAddress &&
+            this.engineState.scriptHashes[spendTarget.publicAddress]
+          ) {
+            return s
+          } else return s - parseInt(spendTarget.nativeAmount)
+        },
+        0
+      )
+
+      const ourReceiveAddresses = []
+      for (const i in resultedTransaction.outputs) {
+        let address = resultedTransaction.outputs[i]
+          .getAddress()
+          .toString(this.network)
+        address = toNewFormat(address, this.network)
+        if (address && this.engineState.scriptHashes[address]) {
+          ourReceiveAddresses.push(address)
+        }
+      }
+
+      const abcTransaction: AbcTransaction = {
+        ourReceiveAddresses,
+        otherParams: {
+          bcoinTx: resultedTransaction,
+          abcSpendInfo,
+          rate: options.rate
+        },
+        currencyCode: this.currencyInfo.currencyCode,
+        txid: '',
+        date: 0,
+        blockHeight: 0,
+        nativeAmount: `${sumOfTx - parseInt(resultedTransaction.getFee())}`,
+        networkFee: `${resultedTransaction.getFee()}`,
+        signedTx: ''
+      }
+      return abcTransaction
     } catch (e) {
       if (e.type === 'FundingError') throw new Error('InsufficientFundsError')
       throw e
     }
-    const sumOfTx = abcSpendInfo.spendTargets.reduce(
-      (s, spendTarget: AbcSpendTarget) => {
-        if (
-          spendTarget.publicAddress &&
-          this.engineState.scriptHashes[spendTarget.publicAddress]
-        ) {
-          return s
-        } else return s - parseInt(spendTarget.nativeAmount)
-      },
-      0
-    )
-
-    const ourReceiveAddresses = []
-    for (const i in resultedTransaction.outputs) {
-      let address = resultedTransaction.outputs[i]
-        .getAddress()
-        .toString(this.network)
-      address = toNewFormat(address, this.network)
-      if (address && this.engineState.scriptHashes[address]) {
-        ourReceiveAddresses.push(address)
-      }
-    }
-
-    const abcTransaction: AbcTransaction = {
-      ourReceiveAddresses,
-      otherParams: {
-        bcoinTx: resultedTransaction,
-        abcSpendInfo,
-        rate: options.rate
-      },
-      currencyCode: this.currencyInfo.currencyCode,
-      txid: '',
-      date: 0,
-      blockHeight: 0,
-      nativeAmount: `${sumOfTx - parseInt(resultedTransaction.getFee())}`,
-      networkFee: `${resultedTransaction.getFee()}`,
-      signedTx: ''
-    }
-    return abcTransaction
   }
 
   async signTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
