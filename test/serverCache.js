@@ -6,10 +6,6 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-
-function saveData (data) {
-  return Promise.resolve()
-}
 import { ServerCache } from '../src/plugin/serverCache.js'
 
 describe(`ServerCache`, function () {
@@ -75,7 +71,7 @@ describe(`ServerCache`, function () {
       'server5'
     ]
 
-    const cache = new ServerCache(saveData)
+    const cache = new ServerCache()
 
     cache.serverCacheLoad(diskServerCache, newServers)
     const result = cache.getServers(8)
@@ -155,7 +151,7 @@ describe(`ServerCache`, function () {
       'server7'
     ]
 
-    const cache = new ServerCache(saveData)
+    const cache = new ServerCache()
 
     cache.serverCacheLoad(diskServerCache, newServers)
     cache.serverScoreUp('server8', 0, 405)
@@ -226,7 +222,7 @@ describe(`ServerCache`, function () {
     }
     const newServers = ['newServer1', 'newServer2', 'newServer3']
 
-    const cache = new ServerCache(saveData)
+    const cache = new ServerCache()
 
     cache.serverCacheLoad(diskServerCache, newServers)
     const result = cache.getServers(8)
