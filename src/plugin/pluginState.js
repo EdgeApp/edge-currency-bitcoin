@@ -9,7 +9,7 @@ export const TIME_LAZINESS = 10000
  * This object holds the plugin-wide per-currency caches.
  * Engine plugins are responsible for keeping it up to date.
  */
-export class PluginState {
+export class PluginState extends ServerCache {
   // On-disk header information:
   height: number
   headerCache: {
@@ -56,9 +56,9 @@ export class PluginState {
   pluginName: string
 
   constructor (io: AbcIo, currencyInfo: AbcCurrencyInfo) {
+    super()
     this.height = 0
     this.headerCache = {}
-    this.serverCache = new ServerCache(this.saveData.bind(this))
     this.io = io
     this.defaultServers = []
     this.infoServerUris = ''
@@ -66,7 +66,6 @@ export class PluginState {
       this.defaultServers = currencyInfo.defaultSettings.electrumServers || []
       this.infoServerUris = currencyInfo.defaultSettings.infoServer || ''
     }
-
     this.engines = []
     this.folder = io.folder.folder('plugins').folder(currencyInfo.pluginName)
     this.pluginName = currencyInfo.pluginName
@@ -105,11 +104,11 @@ export class PluginState {
   }
 
   async clearCache () {
+    this.clearServerCache()
     this.headerCache = {}
-    this.serverCache = new ServerCache(this.saveData.bind(this))
     this.headerCacheDirty = true
     await this.saveHeaderCache()
-    await this.serverCache.serverCacheSave()
+    await this.serverCacheSave()
     await this.fetchStratumServers()
   }
 
@@ -142,37 +141,12 @@ export class PluginState {
     }
   }
 
-  // saveServerCache (): Promise<void> {
-  //   if (this.serverCacheDirty) {
-  //     const servers = this.serverCache.serverCacheSave()
-  //     return this.folder
-  //       .file('serverCache.json')
-  //       .setText(
-  //         JSON.stringify(servers)
-  //       )
-  //       .then(() => {
-  //         this.log('Saved server cache')
-  //         this.serverCacheDirty = false
-  //         this.serverCacheTimestamp = Date.now()
-  //       })
-  //       .catch(e => this.log(e))
-  //   }
-  //   return Promise.resolve()
-  // }
-
   dirtyHeaderCache () {
     this.headerCacheDirty = true
     if (this.headerCacheTimestamp + TIME_LAZINESS < Date.now()) {
       this.saveHeaderCache()
     }
   }
-
-  // dirtyServerCache () {
-  //   this.serverCacheDirty = true
-  //   if (this.serverCacheTimestamp + TIME_LAZINESS < Date.now()) {
-  //     this.saveServerCache()
-  //   }
-  // }
 
   async fetchStratumServers (): Promise<void> {
     const { io } = this
@@ -192,8 +166,8 @@ export class PluginState {
     } catch (e) {
       console.log(e)
     }
-    this.serverCache.serverCacheLoad(this.serverCacheJson, serverList)
-    await this.serverCache.serverCacheSave()
+    this.serverCacheLoad(this.serverCacheJson, serverList)
+    await this.serverCacheSave()
 
     // Tell the engines about the new servers:
     for (const engine of this.engines) {
