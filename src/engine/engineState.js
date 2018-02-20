@@ -404,13 +404,7 @@ export class EngineState {
         onOpen: (uri: string) => {
           this.log(`Connected to ${uri}`)
         },
-        onClose: (
-          uri: string,
-          badMessages: number,
-          goodMessages: number,
-          latency: number,
-          hadError: boolean
-        ) => {
+        onClose: (uri: string, hadError: boolean) => {
           delete this.connections[uri]
 
           if (hadError) {
@@ -419,7 +413,7 @@ export class EngineState {
 
           if (this.engineStarted) {
             this.reconnectTimer = setTimeout(() => this.refillServers(),
-              goodMessages ? 0 : KEEPALIVE_MS)
+              hadError ? 0 : KEEPALIVE_MS)
           }
           this.addressCacheDirty && this.saveAddressCache()
           this.txCacheDirty && this.saveTxCache()
