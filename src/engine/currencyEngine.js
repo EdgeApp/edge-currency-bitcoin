@@ -472,7 +472,7 @@ export class CurrencyEngine {
     }
     addresses.forEach(address => {
       const scriptHash = this.engineState.scriptHashes[address]
-      if (typeof scriptHash === 'string') use(scriptHash)
+      if (typeof scriptHash === 'string') return use(scriptHash)
       this.keyManager.addressToScriptHash(address).then(use).catch(this.log)
     })
   }

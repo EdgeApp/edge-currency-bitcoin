@@ -271,6 +271,26 @@ for (const fixture of fixtures) {
     })
   })
 
+  describe('Should Add Gap Limit Addresses', function () {
+    it('Add Empty Array', function (done) {
+      engine.addGapLimitAddresses([])
+      done()
+    })
+
+    it('Add Already Derived Addresses', function (done) {
+      engine.addGapLimitAddresses([
+        '2MvNRPakFUtKSe7ZYcyextQd3sfSEKiqUHY',
+        '2MxRjw65NxR4DsRj2z1f5xFnKkU5uMRCsoT'
+      ])
+      done()
+    })
+
+    // it('Add Future Addresses', function (done) {
+    //   engine.addGapLimitAddresses([])
+    //   done()
+    // })
+  })
+
   describe('Should start engine', function () {
     it('Get BlockHeight', function (done) {
       this.timeout(10000)
