@@ -1,7 +1,7 @@
 // @flow
 import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'edge-login'
 import type { EngineState } from '../engine/engineState.js'
-import { ServerCache } from '../engine/serverCache.js'
+import { ServerCache } from './serverCache.js'
 
 export const TIME_LAZINESS = 10000
 

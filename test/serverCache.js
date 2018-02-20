@@ -6,11 +6,11 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import { ServerCache } from '../src/engine/serverCache.js'
 
 function saveData (data) {
   return Promise.resolve()
 }
+import { ServerCache } from '../src/plugin/serverCache.js'
 
 describe(`ServerCache`, function () {
   it('Score only', function () {

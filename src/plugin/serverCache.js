@@ -21,15 +21,9 @@ export class ServerCache {
   cacheLastSave_: number
   lastScoreUpTime_: number
   lastSaveTime: number
-  saveData: (data: Object) => Promise<void>
 
-  constructor (saveData: (data: Object) => Promise<void>) {
-    this.servers_ = {}
-    this.dirty_ = false
-    this.cacheLastSave_ = 0
-    this.lastScoreUpTime_ = Date.now()
-    this.lastSaveTime = 0
-    this.saveData = saveData
+  constructor () {
+    this.clearServerCache()
   }
 
   /**
@@ -88,6 +82,8 @@ export class ServerCache {
     this.dirty_ = true
   }
 
+  async saveData (data: Object) {}
+
   async serverCacheSave () {
     this.printServerCache()
     if (this.dirty_ && this.lastSaveTime + SAVE_LAZINESS < Date.now()) {
@@ -95,6 +91,14 @@ export class ServerCache {
       this.dirty_ = false
       this.lastSaveTime = Date.now()
     }
+  }
+
+  clearServerCache () {
+    this.servers_ = {}
+    this.dirty_ = false
+    this.cacheLastSave_ = 0
+    this.lastScoreUpTime_ = Date.now()
+    this.lastSaveTime = 0
   }
 
   printServerCache () {
