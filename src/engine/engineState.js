@@ -755,41 +755,35 @@ export class EngineState {
     await this.saveTxCache()
   }
 
-  saveAddressCache (): Promise<void> {
+  async saveAddressCache () {
     if (this.addressCacheDirty) {
-      const json = JSON.stringify({
-        addresses: this.addressCache,
-        heights: this.txHeightCache
-      })
-
-      return this.localFolder
-        .file('addresses.json')
-        .setText(json)
-        .then(() => {
-          this.log('Saved address cache')
-          this.addressCacheDirty = false
-          this.addressCacheTimestamp = Date.now()
+      try {
+        const json = JSON.stringify({
+          addresses: this.addressCache,
+          heights: this.txHeightCache
         })
-        .catch(e => this.log('saveAddressCache', e.message))
+        await this.localFolder.file('addresses.json').setText(json)
+        this.log('Saved address cache')
+        this.addressCacheDirty = false
+        this.addressCacheTimestamp = Date.now()
+      } catch (e) {
+        this.log('saveAddressCache', e.message)
+      }
     }
-    return Promise.resolve()
   }
 
-  saveTxCache (): Promise<void> {
+  async saveTxCache () {
     if (this.txCacheDirty) {
-      const json = JSON.stringify({ txs: this.txCache })
-
-      return this.localFolder
-        .file('txs.json')
-        .setText(json)
-        .then(() => {
-          this.log('Saved tx cache')
-          this.txCacheDirty = false
-          this.txCacheTimestamp = Date.now()
-        })
-        .catch(e => this.log('saveTxCache', e.message))
+      try {
+        const json = JSON.stringify({ txs: this.txCache })
+        await this.localFolder.file('txs.json').setText(json)
+        this.log('Saved tx cache')
+        this.txCacheDirty = false
+        this.txCacheTimestamp = Date.now()
+      } catch (e) {
+        this.log('saveTxCache', e.message)
+      }
     }
-    return Promise.resolve()
   }
 
   dirtyAddressCache () {
