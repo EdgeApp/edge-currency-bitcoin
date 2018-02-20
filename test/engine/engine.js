@@ -278,11 +278,13 @@ for (const fixture of fixtures) {
         'https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY',
         (err, res, body) => {
           assert(!err, 'getting block height from a second source')
-          emitter.once('onBlockHeightChange', height => {
-            const thirdPartyHeight = parseInt(JSON.parse(body).height)
-            assert(height >= thirdPartyHeight, 'Block height')
-            assert(engine.getBlockHeight() >= thirdPartyHeight, 'Block height')
-            done() // Can be "done" since the promise resolves before the event fires but just be on the safe side
+          const thirdPartyHeight = parseInt(JSON.parse(body).height)
+          emitter.on('onBlockHeightChange', height => {
+            if (height >= thirdPartyHeight) {
+              emitter.removeAllListeners('onBlockHeightChange')
+              assert(engine.getBlockHeight() >= thirdPartyHeight, 'Block height')
+              done() // Can be "done" since the promise resolves before the event fires but just be on the safe side
+            }
           })
           engine.startEngine().catch(e => {
             console.log('startEngine error', e, e.message)
