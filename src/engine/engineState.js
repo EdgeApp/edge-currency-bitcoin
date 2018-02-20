@@ -75,7 +75,7 @@ function nop () {}
  * It is responsible for staying connected to Stratum servers and keeping
  * this information up to date.
  */
-export class EngineState {
+export class EngineState extends EventEmitter {
   // On-disk address information:
   addressCache: {
     [scriptHash: string]: {
@@ -303,16 +303,21 @@ export class EngineState {
     }, TIME_LAZINESS)
   }
 
-  disconnect () {
+  async disconnect () {
     this.pluginState.removeEngine(this)
     this.engineStarted = false
     clearInterval(this.cacheTimer)
     clearTimeout(this.reconnectTimer)
+    const closed = []
     for (const uri of Object.keys(this.connections)) {
-      console.log('engineState.js - disconnect - uri', uri)
+      closed.push(new Promise((resolve, reject) => {
+        this.on('connectionClose', uriClosed => {
+          if (uriClosed === uri) resolve()
+        })
+      }))
       this.connections[uri].close()
-      delete this.connections[uri]
     }
+    await Promise.all(closed)
   }
 
   // ------------------------------------------------------------------------
@@ -337,6 +342,7 @@ export class EngineState {
   reconnectCounter: number
 
   constructor (options: EngineStateOptions) {
+    super()
     this.addressCache = {}
     this.addressInfos = {}
     this.scriptHashes = {}
@@ -424,7 +430,7 @@ export class EngineState {
           const msg = hadError ? ' by a problem' : ' cleanly'
           this.log(`Stratum ${uri} was closed${msg}`)
           this.emit('connectionClose', uri)
-          hadError && this.pluginState.serverScoreDown(uri)
+          hadError && this.pluginState.serverCache.serverScoreDown(uri)
           this.reconnect()
           this.saveAddressCache()
           this.saveTxCache()
