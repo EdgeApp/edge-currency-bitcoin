@@ -7,8 +7,8 @@ import type { StratumBlockHeader } from './stratumMessages.js'
 export type OnFailHandler = (error: Error) => void
 
 // Timing can vary a little in either direction for fewer wakeups:
-export const TIMER_SLACK = 500
-export const KEEPALIVE_MS = 60000
+const TIMER_SLACK = 500
+const KEEPALIVE_MS = 60000
 
 /**
  * This is a private type used by the Stratum connection.
