@@ -420,9 +420,7 @@ export class EngineState extends EventEmitter {
 
       const callbacks: StratumCallbacks = {
         onOpen: (uri: string) => {
-          if (this.reconnectCounter > 0) {
-            this.reconnectCounter--
-          }
+          this.reconnectCounter = 0
           this.log(`Connected to ${uri}`)
         },
         onClose: (uri: string, hadError: boolean) => {
