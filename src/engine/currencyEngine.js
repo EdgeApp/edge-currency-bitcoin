@@ -465,16 +465,20 @@ export class CurrencyEngine {
     return { publicAddress, legacyAddress }
   }
 
-  addGapLimitAddresses (addresses: Array<string>, options: any): void {
-    const use = (scriptHash) => {
+  async addGapLimitAddresses (addresses: Array<string>, options: any) {
+    const use = scriptHash => {
       this.engineState.markAddressesUsed([scriptHash])
-      if (this.keyManager) this.keyManager.setLookAhead()
     }
+    const laterUse = []
     addresses.forEach(address => {
       const scriptHash = this.engineState.scriptHashes[address]
       if (typeof scriptHash === 'string') return use(scriptHash)
-      this.keyManager.addressToScriptHash(address).then(use).catch(this.log)
+      laterUse.push(this.keyManager.addressToScriptHash(address))
     })
+    await Promise.all(laterUse)
+      .then(scriptHashs => scriptHashs.forEach(use))
+      .catch(this.log)
+    if (this.keyManager) this.keyManager.setLookAhead()
   }
 
   isAddressUsed (address: string, options: any): boolean {
