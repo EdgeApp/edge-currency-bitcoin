@@ -623,14 +623,12 @@ export class EngineState extends EventEmitter {
       const addressState = serverState.addresses[address]
       if (!addressState.subscribed && !addressState.subscribing) {
         addressState.subscribing = true
-        const queryTime = Date.now()
         return subscribeScriptHash(
           address,
           (hash: string | null) => {
             this.log(
               `Stratum ${uri} subscribed to ${address} at ${hash || 'null'}`
             )
-            this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             addressState.subscribing = false
             addressState.subscribed = true
             addressState.hash = hash
