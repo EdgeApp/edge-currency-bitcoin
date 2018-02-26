@@ -29,7 +29,10 @@ export type BitcoinFees = {
 
   // The amount of satoshis which will be charged the standardFeeHigh
   standardFeeHighAmount: string,
-  highFee: string
+  highFee: string,
+
+  // The last time the fees were updated
+  timestamp: number
 }
 
 export type EarnComFee = {

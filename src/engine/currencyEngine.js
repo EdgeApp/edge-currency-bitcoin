@@ -45,10 +45,6 @@ export class CurrencyEngine {
   pluginState: PluginState
   abcCurrencyEngineOptions: AbcCurrencyEngineOptions
   network: string
-  rawTransactionFees: {
-    lastUpdated: number,
-    fees: Array<any>
-  }
   feeInfoServer: string
   feeUpdateInterval: number
   feeTimer: any
@@ -81,17 +77,14 @@ export class CurrencyEngine {
       standardFeeLow: '',
       standardFeeHigh: '',
       standardFeeLowAmount: '',
-      standardFeeHighAmount: ''
+      standardFeeHighAmount: '',
+      timestamp: 0
     }
     if (this.currencyInfo.defaultSettings.simpleFeeSettings) {
       Object.assign(
         this.fees,
         this.currencyInfo.defaultSettings.simpleFeeSettings
       )
-    }
-    this.rawTransactionFees = {
-      lastUpdated: 0,
-      fees: []
     }
     this.log(
       `Created Wallet Type ${this.walletInfo.type} for Currency Plugin ${
@@ -266,10 +259,6 @@ export class CurrencyEngine {
 
   async updateFeeTable () {
     try {
-      if (this.rawTransactionFees.lastUpdated) {
-        throw new Error('Already has fees')
-      }
-      const url = `${INFO_SERVER}/networkFees/${this.currencyInfo.currencyCode}`
       if (
         !this.abcCurrencyEngineOptions.optionalSettings ||
         !this.abcCurrencyEngineOptions.optionalSettings.io ||
@@ -277,29 +266,29 @@ export class CurrencyEngine {
       ) {
         throw new Error('No io/fetch object')
       }
-      const feesResponse = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
-        url
-      )
-      const feesJson = await feesResponse.json()
-      if (validateObject(feesJson, InfoServerFeesSchema)) {
-        this.fees = feesJson
-      } else {
-        throw new Error('Fetched invalid networkFees')
+      await this.updateFeeTableLoop()
+      if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
+        const url = `${INFO_SERVER}/networkFees/${this.currencyInfo.currencyCode}`
+        const feesResponse = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
+          url
+        )
+        const feesJson = await feesResponse.json()
+        if (validateObject(feesJson, InfoServerFeesSchema)) {
+          this.fees = feesJson
+          this.fees.timestamp = Date.now()
+        } else {
+          throw new Error('Fetched invalid networkFees')
+        }
       }
     } catch (err) {
       this.log(err)
     }
-    await this.updateFeeTableLoop()
   }
 
   async updateFeeTableLoop () {
-    if (
-      this.abcCurrencyEngineOptions.optionalSettings &&
-      this.abcCurrencyEngineOptions.optionalSettings.io &&
-      this.feeInfoServer !== '' &&
-      this.rawTransactionFees.lastUpdated < Date.now() - this.feeUpdateInterval
-    ) {
-      try {
+    if (!this.feeInfoServer || this.feeInfoServer === '') return
+    try {
+      if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
         const results = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
           this.feeInfoServer
         )
@@ -307,16 +296,15 @@ export class CurrencyEngine {
           throw new Error(results.body)
         }
         const { fees }: EarnComFees = await results.json()
-        this.rawTransactionFees.lastUpdated = Date.now()
-        this.rawTransactionFees.fees = fees
         this.fees = calcFeesFromEarnCom(this.fees, { fees })
-      } catch (e) {
-        this.log('Error while trying to update fee table', e)
-      } finally {
-        this.feeTimer = setTimeout(() => {
-          this.updateFeeTableLoop()
-        }, this.feeUpdateInterval)
+        this.fees.timestamp = Date.now()
       }
+    } catch (e) {
+      this.log('Error while trying to update fee table', e)
+    } finally {
+      this.feeTimer = setTimeout(() => {
+        this.updateFeeTableLoop()
+      }, this.feeUpdateInterval)
     }
   }
 
@@ -512,6 +500,10 @@ export class CurrencyEngine {
       throw new Error('InsufficientFundsError')
     }
     try {
+      // If somehow we have outdated fees, try and get new ones
+      if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
+        await this.updateFeeTable()
+      }
       Object.assign(options, {
         rate: this.getRate(abcSpendInfo),
         maxFee: this.currencyInfo.defaultSettings.maxFee,
@@ -627,6 +619,7 @@ export class CurrencyEngine {
       walletId: this.walletId.split(' - ')[0],
       walletType: this.walletInfo.type,
       pluginType: this.currencyInfo.pluginName,
+      fees: this.fees,
       data: {}
     }
     const add = (cache, obj) => {
