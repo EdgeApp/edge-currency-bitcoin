@@ -175,13 +175,13 @@ export class ServerCache {
     this.dirty_ = true
   }
 
-  getServers (numServersWanted: number): Array<string> {
+  getServers (numServersWanted: number, ignorePatterns?: Array<string> = []): Array<string> {
     if (!this.servers_ || this.servers_.length === 0) {
       return []
     }
 
-    const serverInfos: Array<ServerInfo> = []
-    const newServerInfos: Array<ServerInfo> = []
+    let serverInfos: Array<ServerInfo> = []
+    let newServerInfos: Array<ServerInfo> = []
     //
     // Find new servers and cache them away
     //
@@ -198,7 +198,16 @@ export class ServerCache {
     if (serverInfos.length === 0) {
       return []
     }
-
+    if (ignorePatterns.length) {
+      const filter = (server: ServerInfo) => {
+        for (const pattern of ignorePatterns) {
+          if (server.serverUrl.includes(pattern)) return false
+        }
+        return true
+      }
+      serverInfos = serverInfos.filter(filter)
+      newServerInfos = newServerInfos.filter(filter)
+    }
     // Sort by score
     serverInfos.sort((a: ServerInfo, b: ServerInfo) => {
       return b.serverScore - a.serverScore

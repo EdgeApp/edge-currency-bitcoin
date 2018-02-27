@@ -396,22 +396,16 @@ export class EngineState extends EventEmitter {
     const { io } = this
 
     let i = 0
-    const servers = this.pluginState.getServers(8)
+    const ignorePatterns = []
+    if (!this.io.TLSSocket) ignorePatterns.push('electrums:')
+    if (!this.io.Socket) ignorePatterns.push('electrum:')
+    const servers = this.pluginState.getServers(8, ignorePatterns)
     this.log(`Refilling Servers, top 8 servers are:`, servers)
     while (Object.keys(this.connections).length < 3) {
       const uri = servers[i++]
       if (!uri) {
         this.reconnect()
         break
-      }
-      if (/^electrums:/.test(uri)) {
-        this.pluginState.serverScoreDown(uri, 100)
-        continue
-      }
-
-      if (!this.io.Socket && /^electrum:/.test(uri)) {
-        this.pluginState.serverScoreDown(uri, 100)
-        continue
       }
 
       if (this.connections[uri]) {
