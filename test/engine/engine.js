@@ -324,6 +324,7 @@ for (const fixture of fixtures) {
 
   describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
     it('Should provide a non used BTC address when no options are provided', function (done) {
+      this.timeout(10000)
       setTimeout(() => {
         const address = engine.getFreshAddress()
         request.get(
@@ -337,7 +338,7 @@ for (const fixture of fixtures) {
             done()
           }
         )
-      }, 1000)
+      }, 2000)
     })
   })
 
