@@ -48,6 +48,8 @@ describe('StratumConnection', function () {
   it('fetchVersion', function (done) {
     let taskQueued = false
     const callbacks: StratumCallbacks = {
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
       onOpen (uri: string) {},
       onClose (uri: string) {},
       onQueueSpace (uri: string) {
@@ -75,6 +77,8 @@ describe('StratumConnection', function () {
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
       onOpen (uri: string) {},
       onClose (uri: string) {},
       onQueueSpace (uri: string) {
@@ -107,6 +111,8 @@ describe('StratumConnection', function () {
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
       onOpen (uri: string) {},
       onClose (uri: string) {},
       onQueueSpace (uri: string) {
@@ -137,6 +143,8 @@ describe('StratumConnection', function () {
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
       onOpen (uri: string) {},
       onClose (uri: string) {},
       onQueueSpace (uri: string) {
@@ -169,6 +177,8 @@ describe('StratumConnection', function () {
     let versionTaskQueued = false
     let taskQueued = false
     const callbacks: StratumCallbacks = {
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
       onOpen (uri: string) {},
       onClose (uri: string) {},
       onQueueSpace (uri: string) {
@@ -207,6 +217,8 @@ describe('StratumConnection', function () {
     let versionTaskQueued = false
     let taskQueued = false
     const callbacks: StratumCallbacks = {
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
       onOpen (uri: string) {},
       onClose (uri: string) {},
       onQueueSpace (uri: string) {
@@ -246,6 +258,8 @@ describe('StratumConnection', function () {
     let versionTaskQueued = false
     let taskQueued = false
     const callbacks: StratumCallbacks = {
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
       onOpen (uri: string) {},
       onClose (uri: string) {},
       onQueueSpace (uri: string) {

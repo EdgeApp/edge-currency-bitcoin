@@ -21,13 +21,14 @@ export interface StratumTask {
   +onFail: OnFailHandler;
 }
 
-export interface StratumCallbacks {
-  +onOpen?: (uri: string) => void;
-  +onClose?: (uri: string, hadError: boolean) => void;
-  +onQueueSpace?: (uri: string) => StratumTask | void;
+export type Nop = () => void
 
-  onNotifyHeader?: (uri: string, headerInfo: StratumBlockHeader) => void;
-  +onNotifyScriptHash?: (uri: string, scriptHash: string, hash: string) => void;
+export interface StratumCallbacks {
+  +onOpen: (uri: string) => void | Nop;
+  +onClose: (uri: string, error: boolean) => void | Nop;
+  +onQueueSpace: (uri: string) => StratumTask | void | Nop;
+  +onNotifyHeader: (uri: string, headerInfo: StratumBlockHeader) => void | Nop;
+  +onNotifyScriptHash: (uri: string, scriptHash: string, hash: string) => void | Nop;
 }
 
 export interface StratumOptions {
@@ -36,8 +37,6 @@ export interface StratumOptions {
   queueSize?: number; // defaults to 10
   timeout?: number; // seconds, defaults to 30
 }
-
-function nop () {}
 
 /**
  * A connection to a Stratum server.
@@ -50,22 +49,10 @@ export class StratumConnection {
   log: Function
 
   constructor (uri: string, options: StratumOptions, log: ?Function) {
-    const { callbacks = {}, io, queueSize = 10, timeout = 30 } = options
-    const {
-      onOpen = nop,
-      onClose = nop,
-      onQueueSpace = nop,
-      onNotifyHeader = nop,
-      onNotifyScriptHash = nop
-    } = callbacks
-
+    const { callbacks, io, queueSize = 10, timeout = 30 } = options
     this.log = log || console.log
     this.io = io
-    this.onClose = onClose
-    this.onOpen = onOpen
-    this.onQueueSpace = onQueueSpace
-    this.onNotifyHeader = onNotifyHeader
-    this.onNotifyScriptHash = onNotifyScriptHash
+    this.callbacks = callbacks
     this.queueSize = queueSize
     this.timeout = 1000 * timeout
     this.uri = uri
@@ -111,7 +98,7 @@ export class StratumConnection {
    */
   wakeUp () {
     while (Object.keys(this.pendingMessages).length < this.queueSize) {
-      const task = this.onQueueSpace(this.uri)
+      const task = this.callbacks.onQueueSpace(this.uri)
       if (!task) break
       this.submitTask(task)
     }
@@ -142,13 +129,7 @@ export class StratumConnection {
   io: any
   queueSize: number
   timeout: number // Converted to ms
-
-  // Callbacks:
-  onClose: (uri: string, hadError: boolean) => void
-  onOpen: (uri: string) => void
-  onQueueSpace: (uri: string) => StratumTask | void
-  onNotifyHeader: (uri: string, headerInfo: StratumBlockHeader) => void
-  onNotifyScriptHash: (uri: string, scriptHash: string, hash: string) => void
+  callbacks: StratumCallbacks
 
   // Message queue:
   nextId: number
@@ -187,7 +168,7 @@ export class StratumConnection {
     }
     this.pendingMessages = {}
     try {
-      this.onClose(this.uri, hadError)
+      this.callbacks.onClose(this.uri, !!this.error || hadError)
     } catch (e) {
       this.log(e)
     }
@@ -207,7 +188,7 @@ export class StratumConnection {
     this.partialMessage = ''
 
     try {
-      this.onOpen(this.uri)
+      this.callbacks.onOpen(this.uri)
     } catch (e) {
       this.close(e)
     }
@@ -258,14 +239,14 @@ export class StratumConnection {
       } else if (json.method === 'blockchain.headers.subscribe') {
         try {
           // TODO: Validate
-          this.onNotifyHeader(this.uri, json.params[0])
+          this.callbacks.onNotifyHeader(this.uri, json.params[0])
         } catch (e) {
           this.log(e)
         }
       } else if (json.method === 'blockchain.scripthash.subscribe') {
         try {
           // TODO: Validate
-          this.onNotifyScriptHash(this.uri, json.params[0], json.params[1])
+          this.callbacks.onNotifyScriptHash(this.uri, json.params[0], json.params[1])
         } catch (e) {
           this.log(e)
         }
