@@ -255,7 +255,7 @@ export class EngineState extends EventEmitter {
             resolve(txid)
           }
         },
-        (e: Error) => {
+        (e?: Error) => {
           // We fail if every server failed:
           if (++bad === uris.length) {
             this.log(
@@ -488,9 +488,9 @@ export class EngineState extends EventEmitter {
           serverState.version = version
           this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
         },
-        (e: Error) => {
+        (e?: Error) => {
           serverState.fetchingVersion = false
-          this.onConnectionFail(uri, e, 'getting version')
+          this.onConnectionClose(uri, 'getting version', e)
         }
       )
     }
@@ -507,9 +507,9 @@ export class EngineState extends EventEmitter {
           this.pluginState.updateHeight(height)
           this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
         },
-        (e: Error) => {
+        (e?: Error) => {
           serverState.fetchingHeight = false
-          this.onConnectionFail(uri, e, 'subscribing to height')
+          this.onConnectionClose(uri, 'subscribing to height', e)
         }
       )
     }
@@ -542,13 +542,13 @@ export class EngineState extends EventEmitter {
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleHeaderFetch(height, header)
           },
-          (e: Error) => {
+          (e?: Error) => {
             this.fetchingHeaders[height] = false
             if (!serverState.headers[height]) {
-              this.onConnectionFail(
+              this.onConnectionClose(
                 uri,
-                e,
-                `getting header for block number ${height}`
+                `getting header for block number ${height}`,
+                e
               )
             } else {
               // TODO: Don't penalize the server score either.
@@ -571,10 +571,10 @@ export class EngineState extends EventEmitter {
             this.fetchingTxs[txid] = false
             this.handleTxFetch(txid, txData)
           },
-          (e: Error) => {
+          (e?: Error) => {
             this.fetchingTxs[txid] = false
             if (!serverState.txids[txid]) {
-              this.onConnectionFail(uri, e, `getting transaction ${txid}`)
+              this.onConnectionClose(uri, `getting transaction ${txid}`, e)
             } else {
               // TODO: Don't penalize the server score either.
             }
@@ -607,9 +607,9 @@ export class EngineState extends EventEmitter {
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleUtxoFetch(address, addressState.hash || '', utxos)
           },
-          (e: Error) => {
+          (e?: Error) => {
             addressState.fetchingUtxos = false
-            this.onConnectionFail(uri, e, `fetching utxos for ${address}`)
+            this.onConnectionClose(uri, `fetching utxos for ${address}`, e)
           }
         )
       }
@@ -633,9 +633,9 @@ export class EngineState extends EventEmitter {
             addressState.hash = hash
             addressState.lastUpdate = Date.now()
           },
-          (e: Error) => {
+          (e?: Error) => {
             addressState.subscribing = false
-            this.onConnectionFail(uri, e, `subscribing to address ${address}`)
+            this.onConnectionClose(uri, `subscribing to address ${address}`, e)
           }
         )
       }
@@ -665,12 +665,12 @@ export class EngineState extends EventEmitter {
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleHistoryFetch(address, addressState.hash || '', history)
           },
-          (e: Error) => {
+          (e?: Error) => {
             addressState.fetchingTxids = false
-            this.onConnectionFail(
+            this.onConnectionClose(
               uri,
-              e,
-              `getting history for address ${address}`
+              `getting history for address ${address}`,
+              e
             )
           }
         )
@@ -1077,8 +1077,9 @@ export class EngineState extends EventEmitter {
     return txids
   }
 
-  onConnectionFail (uri: string, e: Error, task: string) {
-    this.log(`Stratum ${uri} failed with message "${e.message}" while ${task}`)
+  onConnectionClose (uri: string, task: string, e?: Error) {
+    const msg = e ? `failed with message "${e.message}"` : `was closed`
+    this.log(`Stratum ${uri} ${msg} while ${task}`)
     if (this.connections[uri]) {
       this.connections[uri].close(e)
     }
