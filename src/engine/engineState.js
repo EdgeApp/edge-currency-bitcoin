@@ -69,6 +69,9 @@ export interface EngineStateOptions {
 
 function nop () {}
 
+const MAX_CONNECTIONS = 3
+const NEW_CONNECTIONS = 8
+
 /**
  * This object holds the current state of the wallet engine.
  * It is responsible for staying connected to Stratum servers and keeping
@@ -373,23 +376,28 @@ export class EngineState {
 
   refillServers () {
     const { io } = this
-
-    let i = 0
     const ignorePatterns = []
     if (!this.io.TLSSocket) ignorePatterns.push('electrums:')
     if (!this.io.Socket) ignorePatterns.push('electrum:')
-    const servers = this.pluginState.getServers(8, ignorePatterns)
 
-    this.log(`Refilling Servers, top 8 servers are:`, servers)
-    while (Object.keys(this.connections).length < 3) {
-      const uri = servers[i++]
+    const servers = this.pluginState.getServers(NEW_CONNECTIONS, ignorePatterns)
+    this.log(`Refilling Servers, top ${NEW_CONNECTIONS} servers are:`, servers)
+    let chanceToBePicked = 1.25
+    while (Object.keys(this.connections).length < MAX_CONNECTIONS) {
+      if (!servers.length) break
+      const uri = servers.shift()
+      if (this.connections[uri]) {
+        continue
+      }
+      chanceToBePicked -= chanceToBePicked > 0.5 ? 0.25 : 0
+      if (Math.random() > chanceToBePicked) {
+        servers.push(uri)
+        continue
+      }
+
       if (!uri) {
         this.reconnectTimer = setTimeout(() => this.refillServers(), 1000)
         break
-      }
-
-      if (this.connections[uri]) {
-        continue
       }
 
       const callbacks: StratumCallbacks = {
