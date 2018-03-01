@@ -119,6 +119,19 @@ export class CurrencyPlugin {
     return engine
   }
 
+  getSplittableTypes (walletInfo: AbcWalletInfo) {
+    let format = walletInfo.type.split('-')[1]
+    if (!format || format === '') {
+      format = walletInfo.keys && walletInfo.keys.format
+    }
+    const allowed = this.currencyInfo.splittableTypes.filter(type => {
+      return format === '' || !format || format === 'bip32'
+        ? !type.includes('bip')
+        : type.includes(format)
+    })
+    return allowed
+  }
+
   parseUri (uri: string): AbcParsedUri {
     const parsedUri = parse(uri)
     const currencyInfo = this.currencyInfo
