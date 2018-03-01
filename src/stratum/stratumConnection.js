@@ -24,11 +24,12 @@ export interface StratumTask {
 export type Nop = () => void
 
 export interface StratumCallbacks {
-  +onOpen: (uri: string) => void | Nop;
-  +onClose: (uri: string, error: boolean) => void | Nop;
-  +onQueueSpace: (uri: string) => StratumTask | void | Nop;
-  +onNotifyHeader: (uri: string, headerInfo: StratumBlockHeader) => void | Nop;
-  +onNotifyScriptHash: (uri: string, scriptHash: string, hash: string) => void | Nop;
+  +onOpen: () => void | Nop;
+  +onClose: (error?: Error) => void | Nop;
+  +onQueueSpace: () => StratumTask | void | Nop;
+  +onNotifyHeader: (headerInfo: StratumBlockHeader) => void | Nop;
+  +onNotifyScriptHash: (scriptHash: string, hash: string) => void | Nop;
+  +onTimer: (queryTime: number) => void | Nop;
 }
 
 export interface StratumOptions {
@@ -98,7 +99,7 @@ export class StratumConnection {
    */
   wakeUp () {
     while (Object.keys(this.pendingMessages).length < this.queueSize) {
-      const task = this.callbacks.onQueueSpace(this.uri)
+      const task = this.callbacks.onQueueSpace()
       if (!task) break
       this.submitTask(task)
     }
@@ -168,7 +169,7 @@ export class StratumConnection {
     }
     this.pendingMessages = {}
     try {
-      this.callbacks.onClose(this.uri, !!this.error || hadError)
+      this.callbacks.onClose(e)
     } catch (e) {
       this.log(e)
     }
@@ -188,7 +189,7 @@ export class StratumConnection {
     this.partialMessage = ''
 
     try {
-      this.callbacks.onOpen(this.uri)
+      this.callbacks.onOpen()
     } catch (e) {
       this.close(e)
     }
@@ -239,14 +240,14 @@ export class StratumConnection {
       } else if (json.method === 'blockchain.headers.subscribe') {
         try {
           // TODO: Validate
-          this.callbacks.onNotifyHeader(this.uri, json.params[0])
+          this.callbacks.onNotifyHeader(json.params[0])
         } catch (e) {
           this.log(e)
         }
       } else if (json.method === 'blockchain.scripthash.subscribe') {
         try {
           // TODO: Validate
-          this.callbacks.onNotifyScriptHash(this.uri, json.params[0], json.params[1])
+          this.callbacks.onNotifyScriptHash(json.params[0], json.params[1])
         } catch (e) {
           this.log(e)
         }
@@ -269,7 +270,9 @@ export class StratumConnection {
 
     if (this.lastKeepAlive + KEEP_ALIVE_MS < now) {
       this.submitTask(
-        fetchVersion((version: string) => {}, (e: Error) => this.close(e))
+        fetchVersion((version: string) => {
+          this.callbacks.onTimer(now)
+        }, (e: Error) => this.close(e))
       )
     }
 

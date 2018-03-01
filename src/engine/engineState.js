@@ -413,22 +413,22 @@ export class EngineState extends EventEmitter {
       }
 
       const callbacks: StratumCallbacks = {
-        onOpen: (uri: string) => {
+        onOpen: () => {
           this.reconnectCounter = 0
           this.log(`Connected to ${uri}`)
         },
-        onClose: (uri: string, hadError: boolean) => {
+        onClose: (error?: Error) => {
           delete this.connections[uri]
-          const msg = hadError ? ' by a problem' : ' cleanly'
+          const msg = error ? ` with error ${error.message}` : ''
           this.log(`Stratum ${uri} was closed${msg}`)
           this.emit('connectionClose', uri)
-          hadError && this.pluginState.serverCache.serverScoreDown(uri)
+          error && this.pluginState.serverScoreDown(uri)
           this.reconnect()
           this.saveAddressCache()
           this.saveTxCache()
         },
 
-        onQueueSpace: uri => {
+        onQueueSpace: () => {
           const start = Date.now()
           const task = this.pickNextTask(uri)
           const taskMessage = task
@@ -440,14 +440,17 @@ export class EngineState extends EventEmitter {
           )
           return task
         },
-
-        onNotifyHeader: (uri: string, headerInfo: StratumBlockHeader) => {
+        onTimer: (queryTime: number) => {
+          this.log(`Stratum ${uri} was pinged`)
+          this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
+        },
+        onNotifyHeader: (headerInfo: StratumBlockHeader) => {
           this.log(`Stratum ${uri} notified header ${headerInfo.block_height}`)
           this.serverStates[uri].height = headerInfo.block_height
           this.pluginState.updateHeight(headerInfo.block_height)
         },
 
-        onNotifyScriptHash: (uri: string, scriptHash: string, hash: string) => {
+        onNotifyScriptHash: (scriptHash: string, hash: string) => {
           this.log(`Stratum ${uri} notified scripthash ${scriptHash} change`)
           const addressState = this.serverStates[uri].addresses[scriptHash]
           addressState.hash = hash
