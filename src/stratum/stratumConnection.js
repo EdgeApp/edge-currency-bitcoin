@@ -57,6 +57,7 @@ export class StratumConnection {
     this.queueSize = queueSize
     this.timeout = 1000 * timeout
     this.uri = uri
+    this.sigkill = false
 
     // Message queue:
     this.nextId = 0
@@ -83,7 +84,7 @@ export class StratumConnection {
         : new this.io.Socket()
     socket.setEncoding('utf8')
     socket.on('close', (hadError: boolean) => this.onSocketClose(hadError))
-    socket.on('error', (e: Error) => this.log(e))
+    socket.on('error', (e: Error) => { this.error = e })
     socket.on('connect', () => this.onSocketConnect(socket))
     socket.on('data', (data: string) => this.onSocketData(data))
     socket.connect({
@@ -147,29 +148,33 @@ export class StratumConnection {
   partialMessage: string
   socket: net$Socket | void
   timer: number
+  error: Error
+  sigkill: boolean
 
   /**
    * Called when the socket disconnects for any reason.
    */
   onSocketClose (hadError: boolean) {
+    if ((hadError && !this.error) || !this.sigkill) {
+      this.error = new Error('Unknown Server Error')
+    }
     clearTimeout(this.timer)
     this.connected = false
     this.socket = void 0
     this.needsDisconnect = false
-    const e: Error = hadError
-      ? new Error('Stratum TCP socket error')
-      : new Error('Connection closed')
+    this.sigkill = false
+
     for (const id of Object.keys(this.pendingMessages)) {
       const message = this.pendingMessages[id]
       try {
-        message.task.onFail(e)
+        message.task.onFail(this.error)
       } catch (e) {
         this.log(e)
       }
     }
     this.pendingMessages = {}
     try {
-      this.callbacks.onClose(e)
+      this.callbacks.onClose(this.error)
     } catch (e) {
       this.log(e)
     }
@@ -294,10 +299,15 @@ export class StratumConnection {
    * Call whenever we want to close the connection for any reason
    */
   close (e?: Error) {
-    this.connected = false
-    clearTimeout(this.timer)
-    if (!this.connected) this.needsDisconnect = true
-    if (this.socket) this.socket.destroy(e)
+    if (e && !this.error) this.error = e
+    if (this.socket && this.connected) {
+      this.sigkill = true
+      this.connected = false
+      e ? this.socket.destroy(e) : this.socket.end()
+      clearTimeout(this.timer)
+    } else {
+      this.needsDisconnect = true
+    }
   }
 
   setupTimer () {
