@@ -53,7 +53,57 @@
           "message": "Hello World, I miss you !"
         }
       }]
-    }
+    },
+    "getSplittableTypes": [
+      {
+        "type": "wallet:bitcoin",
+        "keys": { "format": "bip32" }
+      },
+      {
+        "type": "wallet:bitcoin-bip32",
+        "keys": { "format": "bip32" }
+      },
+      {
+        "type": "wallet:bitcoin",
+        "keys": { "format": "bip44" }
+      },
+      {
+        "type": "wallet:bitcoin",
+        "keys": { "format": "bip49" }
+      },
+      {
+        "type": "wallet:bitcoin",
+        "keys": { }
+      },
+      {
+        "type": "wallet:bitcoin-bip32",
+        "keys": { }
+      },
+      {
+        "type": "wallet:bitcoin-bip44",
+        "keys": { }
+      },
+      {
+        "type": "wallet:bitcoin-bip49",
+        "keys": { }
+      },
+      {
+        "type": "wallet:bitcoin",
+        "keys": { "format": ""}
+      },
+      {
+        "type": "wallet:bitcoin-bip32",
+        "keys": { "format": ""}
+      },
+      {
+        "type": "wallet:bitcoin-bip44",
+        "keys": { "format": ""}
+      },
+      {
+        "type": "wallet:bitcoin-bip49",
+        "keys": { "format": ""}
+      }
+    ]
   },
   {
     "factory": "litecoinCurrencyPluginFactory",
@@ -109,6 +159,7 @@
           "message": "Hello World, I miss you !"
         }
       }]
-    }
+    },
+    "getSplittableTypes": []
   }
 ]

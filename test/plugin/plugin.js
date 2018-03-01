@@ -261,4 +261,21 @@ for (const fixture of fixtures) {
       })
     })
   })
+
+  describe(`getSplittableTypes for Wallet type ${WALLET_TYPE}`, function () {
+    let plugin
+
+    before('Plugin', function () {
+      CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
+        plugin = currencyPlugin
+      })
+    })
+    it('Test for all wallet types', function () {
+      for (const walletInfo of fixture['getSplittableTypes']) {
+        const walletTypes = plugin.getSplittableTypes(walletInfo)
+        const format = walletInfo.keys && walletInfo.keys.format
+        console.log(`splittableTypes for type ${walletInfo.type} with format ${format} are ${walletTypes}`)
+      }
+    })
+  })
 }

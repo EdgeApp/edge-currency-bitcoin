@@ -19,6 +19,7 @@ export const bitcoinTestnetInfo: AbcCurrencyInfo = {
 
   // Configuration options:
   defaultSettings: {
+    forks: ['bitcoincashtestnet', 'bitcoingoldtestnet', 'bitcoindiamondtestnet'],
     network: {
       type: 'bitcointestnet',
       magic: 0x0709110b,

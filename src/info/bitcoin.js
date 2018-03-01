@@ -19,6 +19,7 @@ export const bitcoinInfo: AbcCurrencyInfo = {
 
   // Configuration options:
   defaultSettings: {
+    forks: ['bitcoincash', 'bitcoingold', 'bitcoindiamond'],
     network: {
       type: 'bitcoin',
       magic: 0xd9b4bef9,
