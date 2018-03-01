@@ -8,13 +8,7 @@ import type {
 import bcoin from 'bcoin'
 
 // Coins Plugin Info
-import { bitcoinInfo } from './info/bitcoin.js'
-import { bitcoincashInfo } from './info/bitcoincash.js'
-import { bitcoincashTestnetInfo } from './info/bitcoincashtestnet.js'
-import { bitcoinTestnetInfo } from './info/bitcointestnet.js'
-import { dashInfo } from './info/dash.js'
-import { dogecoinInfo } from './info/dogecoin.js'
-import { litecoinInfo } from './info/litecoin.js'
+import * as currencyInfos from './info/currencyInfo.js'
 
 // CurrencyPlugin takes a plugin info and creates the plugin
 import { CurrencyPlugin } from './plugin/currencyPlugin.js'
@@ -33,6 +27,14 @@ function makePluginFactory (
     pluginName: currencyInfo.pluginName,
 
     makePlugin (options: AbcCorePluginOptions): Promise<AbcCurrencyPlugin> {
+      currencyInfo.splittableTypes = []
+      currencyInfo.defaultSettings.forks = currencyInfo.defaultSettings.forks || []
+      currencyInfo.defaultSettings.forks.forEach(fork => {
+        if (currencyInfos[fork]) {
+          const types = currencyInfos[fork].walletTypes
+          currencyInfo.splittableTypes = currencyInfo.splittableTypes.concat(types)
+        }
+      })
       const plugin = new CurrencyPlugin(options, currencyInfo)
       // Extend bcoin to support this plugin currency info
       // and faster crypto if possible
@@ -52,30 +54,30 @@ function makePluginFactory (
 }
 
 // Bitcoin:
-export const bitcoinCurrencyPluginFactory = makePluginFactory(bitcoinInfo)
+export const bitcoinCurrencyPluginFactory = makePluginFactory(currencyInfos.bitcoin)
 
 // Bitcoin Testnet:
 export const bitcoinTestnetCurrencyPluginFactory = makePluginFactory(
-  bitcoinTestnetInfo
+  currencyInfos.bitcoinTestnet
 )
 
 // Bitcoin Cash:
 export const bitcoincashCurrencyPluginFactory = makePluginFactory(
-  bitcoincashInfo
+  currencyInfos.bitcoincash
 )
 
 // Bitcoin Cash Testnet:
 export const bitcoincashTestnetCurrencyPluginFactory = makePluginFactory(
-  bitcoincashTestnetInfo
+  currencyInfos.bitcoincashTestnet
 )
 
 // Dash:
-export const dashCurrencyPluginFactory = makePluginFactory(dashInfo)
+export const dashCurrencyPluginFactory = makePluginFactory(currencyInfos.dash)
 // Such Dogecoin:
-export const dogecoinCurrencyPluginFactory = makePluginFactory(dogecoinInfo)
+export const dogecoinCurrencyPluginFactory = makePluginFactory(currencyInfos.dogecoin)
 
 // Litecoin:
-export const litecoinCurrencyPluginFactory = makePluginFactory(litecoinInfo)
+export const litecoinCurrencyPluginFactory = makePluginFactory(currencyInfos.litecoin)
 
 // Legacy uppercased names:
 export {
