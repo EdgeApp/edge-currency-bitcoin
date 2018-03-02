@@ -164,7 +164,6 @@ export class StratumConnection {
     this.socket = void 0
     this.needsDisconnect = false
     this.sigkill = false
-
     for (const id of Object.keys(this.pendingMessages)) {
       const message = this.pendingMessages[id]
       try {
@@ -301,14 +300,15 @@ export class StratumConnection {
    */
   close (e?: Error) {
     if (e && !this.error) this.error = e
-    if (this.socket && this.connected) {
-      this.sigkill = true
-      this.connected = false
-      e ? this.socket.destroy(e) : this.socket.end()
-      clearTimeout(this.timer)
-    } else {
-      this.needsDisconnect = true
-    }
+    if (this.connected && this.socket) this.disconnect()
+    else this.needsDisconnect = true
+  }
+
+  disconnect () {
+    clearTimeout(this.timer)
+    this.sigkill = true
+    this.connected = false
+    if (this.socket) this.socket.destroy(this.error)
   }
 
   setupTimer () {
