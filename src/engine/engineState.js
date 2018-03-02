@@ -8,6 +8,7 @@ import type {
   StratumTask
 } from '../stratum/stratumConnection.js'
 import EventEmitter from 'events'
+import stable from 'stable'
 import { StratumConnection } from '../stratum/stratumConnection.js'
 import {
   broadcastTx,
@@ -617,11 +618,10 @@ export class EngineState extends EventEmitter {
       }
     }
 
-    const priorityAddressList = Object.keys(this.addressInfos).sort(
+    const priorityAddressList = stable(Object.keys(this.addressInfos),
       (address1: string, address2: string) => {
-        const addressInfo1 = this.addressInfos[address1]
-        const addressInfo2 = this.addressInfos[address2]
-        return (addressInfo1.used ? 1 : 0) - (addressInfo2.used ? 1 : 0)
+        return (this.addressInfos[address1].used ? 1 : 0) >
+          (this.addressInfos[address2].used ? 1 : 0)
       })
     // Subscribe to addresses:
     for (const address of priorityAddressList) {
