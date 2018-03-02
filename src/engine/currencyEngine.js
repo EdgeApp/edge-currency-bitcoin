@@ -633,7 +633,7 @@ export class CurrencyEngine {
       'missingTxs',
       'fetchingHeaders'
     ]
-    const pluginCache = ['headerCache', 'serverCache']
+    const pluginCache = ['headerCache', 'serverCache', 'servers_']
 
     engineCache.forEach(c => add(c, 'engineState'))
     pluginCache.forEach(c => add(c, 'pluginState'))

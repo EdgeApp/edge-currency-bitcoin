@@ -107,6 +107,7 @@ export class PluginState extends ServerCache {
     this.clearServerCache()
     this.headerCache = {}
     this.headerCacheDirty = true
+    this.serverCacheDirty = true
     await this.saveHeaderCache()
     await this.serverCacheSave()
     await this.fetchStratumServers()
