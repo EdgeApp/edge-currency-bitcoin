@@ -266,7 +266,7 @@ export class CurrencyEngine {
       ) {
         throw new Error('No io/fetch object')
       }
-      await this.updateFeeTableLoop()
+      await this.fetchFee()
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
         const url = `${INFO_SERVER}/networkFees/${this.currencyInfo.currencyCode}`
         const feesResponse = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
@@ -283,10 +283,14 @@ export class CurrencyEngine {
     } catch (err) {
       this.log(err)
     }
+    this.feeTimer = setInterval(() => this.fetchFee(), this.feeUpdateInterval)
   }
 
-  async updateFeeTableLoop () {
-    if (!this.feeInfoServer || this.feeInfoServer === '') return
+  async fetchFee () {
+    if (!this.feeInfoServer || this.feeInfoServer === '') {
+      clearInterval(this.feeTimer)
+      return
+    }
     try {
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
         const results = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
@@ -300,11 +304,7 @@ export class CurrencyEngine {
         this.fees.timestamp = Date.now()
       }
     } catch (e) {
-      this.log('Error while trying to update fee table', e)
-    } finally {
-      this.feeTimer = setTimeout(() => {
-        this.updateFeeTableLoop()
-      }, this.feeUpdateInterval)
+      console.log(`${this.walletId} - Error while trying to update fee table ${e.toString()}`)
     }
   }
 
@@ -378,12 +378,12 @@ export class CurrencyEngine {
       this.currencyInfo.currencyCode,
       this.getBalance()
     )
-    await this.updateFeeTable()
+    this.updateFeeTable()
     return this.engineState.connect()
   }
 
   async killEngine (): Promise<void> {
-    clearTimeout(this.feeTimer)
+    clearInterval(this.feeTimer)
     return this.engineState.disconnect()
   }
 
