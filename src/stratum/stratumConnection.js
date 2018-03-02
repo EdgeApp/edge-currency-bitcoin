@@ -41,7 +41,7 @@ function nop () {}
 
 /**
  * A connection to a Stratum server.
- * Manages the underlying TCP sockect, as well as message framing,
+ * Manages the underlying TCP socket, as well as message framing,
  * queue depth, error handling, and so forth.
  */
 export class StratumConnection {
@@ -109,7 +109,7 @@ export class StratumConnection {
   /**
    * Re-triggers the `onQueueSpace` callback if there is space in the queue.
    */
-  wakeup () {
+  wakeUp () {
     while (Object.keys(this.pendingMessages).length < this.queueSize) {
       const task = this.onQueueSpace(this.uri)
       if (!task) break
@@ -161,7 +161,7 @@ export class StratumConnection {
 
   // Connection state:
   needsDisconnect: boolean
-  lastKeepalive: number
+  lastKeepAlive: number
   partialMessage: string
   socket: net$Socket | void
   timer: number
@@ -203,7 +203,7 @@ export class StratumConnection {
     }
 
     this.connected = true
-    this.lastKeepalive = Date.now()
+    this.lastKeepAlive = Date.now()
     this.partialMessage = ''
 
     try {
@@ -219,7 +219,7 @@ export class StratumConnection {
     }
 
     this.setupTimer()
-    this.wakeup()
+    this.wakeUp()
   }
 
   /**
@@ -277,7 +277,7 @@ export class StratumConnection {
     } catch (e) {
       this.close(e)
     }
-    this.wakeup()
+    this.wakeUp()
   }
 
   /**
@@ -286,7 +286,7 @@ export class StratumConnection {
   onTimer () {
     const now = Date.now() - TIMER_SLACK
 
-    if (this.lastKeepalive + KEEPALIVE_MS < now) {
+    if (this.lastKeepAlive + KEEP_ALIVE_MS < now) {
       this.submitTask(
         fetchVersion((version: string) => {}, (e: Error) => this.close(e))
       )
@@ -318,24 +318,24 @@ export class StratumConnection {
 
   setupTimer () {
     // Find the next time something needs to happen:
-    let nextWakeup = this.lastKeepalive + KEEPALIVE_MS
+    let nextWakeUp = this.lastKeepAlive + KEEP_ALIVE_MS
 
     for (const id of Object.keys(this.pendingMessages)) {
       const message = this.pendingMessages[id]
       const timeout = message.startTime + this.timeout
-      if (timeout < nextWakeup) nextWakeup = timeout
+      if (timeout < nextWakeUp) nextWakeUp = timeout
     }
 
     const now = Date.now() - TIMER_SLACK
-    const delay = nextWakeup < now ? 0 : nextWakeup - now
+    const delay = nextWakeUp < now ? 0 : nextWakeUp - now
     this.timer = setTimeout(() => this.onTimer(), delay)
   }
 
   transmitMessage (id: number, task: StratumTask) {
     if (this.socket && this.connected && !this.needsDisconnect) {
-      // If this is a keepalive, record the time:
+      // If this is a keepAlive, record the time:
       if (task.method === 'server.version') {
-        this.lastKeepalive = Date.now()
+        this.lastKeepAlive = Date.now()
       }
 
       const message = {
