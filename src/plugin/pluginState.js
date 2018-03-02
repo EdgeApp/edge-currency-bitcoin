@@ -123,11 +123,11 @@ export class PluginState extends ServerCache {
           })
         )
         .then(() => {
-          this.log('Saved header cache')
+          console.log(`${this.pluginName} - Saved header cache`)
           this.headerCacheDirty = false
           this.headerCacheTimestamp = Date.now()
         })
-        .catch(e => this.log(e))
+        .catch(e => console.log(`${this.pluginName} - ${e.toString()}`))
     }
     return Promise.resolve()
   }
@@ -135,9 +135,9 @@ export class PluginState extends ServerCache {
   async saveData (data: Object) {
     try {
       await this.folder.file('serverCache.json').setText(JSON.stringify(data))
-      this.log('Saved server cache')
+      console.log(`${this.pluginName} - Saved server cache`)
     } catch (e) {
-      this.log(e)
+      console.log(`${this.pluginName} - ${e.toString()}`)
     }
   }
 
@@ -150,15 +150,13 @@ export class PluginState extends ServerCache {
 
   async fetchStratumServers (): Promise<void> {
     const { io } = this
-    this.log(`GET ${this.infoServerUris}`)
+    console.log(`${this.pluginName} - GET ${this.infoServerUris}`)
     let serverList = this.defaultServers
     try {
       if (this.infoServerUris !== '') {
         const result = await io.fetch(this.infoServerUris)
         if (!result.ok) {
-          this.log(
-            `Fetching ${this.infoServerUris} failed with ${result.status}`
-          )
+          console.log(`${this.pluginName} - Fetching ${this.infoServerUris} failed with ${result.status}`)
         } else {
           serverList = await result.json()
         }
@@ -185,10 +183,5 @@ export class PluginState extends ServerCache {
         engine.onHeightUpdated(height)
       }
     }
-  }
-
-  log (...text: Array<any>) {
-    text[0] = `${this.pluginName} - ${text[0]}`
-    console.log(...text)
   }
 }

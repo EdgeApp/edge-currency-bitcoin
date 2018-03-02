@@ -64,7 +64,7 @@ export class CurrencyEngine {
     const test: AbcCurrencyEngine = this
 
     this.walletInfo = walletInfo
-    this.walletId = walletInfo.id ? `${walletInfo.id} - ` : ''
+    this.walletId = walletInfo.id || ''
     this.currencyInfo = currencyInfo
     this.pluginState = pluginState
     this.abcCurrencyEngineOptions = options
@@ -86,11 +86,9 @@ export class CurrencyEngine {
         this.currencyInfo.defaultSettings.simpleFeeSettings
       )
     }
-    this.log(
-      `Created Wallet Type ${this.walletInfo.type} for Currency Plugin ${
-        this.currencyInfo.pluginName
-      } `
-    )
+    console.log(`${this.walletId} - Created Wallet Type ${this.walletInfo.type} for Currency Plugin ${
+      this.currencyInfo.pluginName
+    }`)
   }
 
   async load (): Promise<any> {
@@ -117,7 +115,7 @@ export class CurrencyEngine {
       encryptedLocalFolder: this.abcCurrencyEngineOptions
         .walletLocalEncryptedFolder,
       pluginState: this.pluginState,
-      log: (...args) => this.log(...args)
+      walletId: this.walletId
     })
 
     await this.engineState.load()
@@ -281,7 +279,7 @@ export class CurrencyEngine {
         }
       }
     } catch (err) {
-      this.log(err)
+      console.log(`${this.walletId} - ${err.toString()}`)
     }
     this.feeTimer = setInterval(() => this.fetchFee(), this.feeUpdateInterval)
   }
@@ -349,11 +347,6 @@ export class CurrencyEngine {
     return utxos
   }
 
-  log (...text: Array<any>) {
-    text[0] = `${this.walletId}${text[0]}`
-    console.log(...text)
-  }
-
   logAbcTransaction (abcTransaction: AbcTransaction, action: string) {
     let log = `------------------ ${action} Transaction ------------------\n`
     log += `Transaction id: ${abcTransaction.txid}\n`
@@ -362,7 +355,7 @@ export class CurrencyEngine {
     const jsonObj = abcTransaction.otherParams.bcoinTx.getJSON(this.network)
     log += JSON.stringify(jsonObj, null, 2) + '\n'
     log += '------------------------------------------------------------------'
-    this.log(log)
+    console.log(`${this.walletId} - ${log}`)
   }
   // ------------------------------------------------------------------------
   // Public API
@@ -465,7 +458,7 @@ export class CurrencyEngine {
     })
     await Promise.all(laterUse)
       .then(scriptHashs => scriptHashs.forEach(use))
-      .catch(this.log)
+      .catch(e => console.log(`${this.walletId} - ${e.toString()}`))
     if (this.keyManager) this.keyManager.setLookAhead()
   }
 

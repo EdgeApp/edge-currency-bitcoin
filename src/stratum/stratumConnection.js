@@ -37,6 +37,7 @@ export interface StratumOptions {
   io: any;
   queueSize?: number; // defaults to 10
   timeout?: number; // seconds, defaults to 30
+  walletId?: string; // for logging purposes
 }
 
 /**
@@ -47,11 +48,11 @@ export interface StratumOptions {
 export class StratumConnection {
   uri: string
   connected: boolean
-  log: Function
+  errStr: (e: Error) => string
 
-  constructor (uri: string, options: StratumOptions, log: ?Function) {
-    const { callbacks, io, queueSize = 10, timeout = 30 } = options
-    this.log = log || console.log
+  constructor (uri: string, options: StratumOptions) {
+    const { callbacks, io, queueSize = 10, timeout = 30, walletId = '' } = options
+    this.errStr = (e) => `${walletId} - ${e.toString()}`
     this.io = io
     this.callbacks = callbacks
     this.queueSize = queueSize
@@ -169,14 +170,14 @@ export class StratumConnection {
       try {
         message.task.onFail(this.error)
       } catch (e) {
-        this.log(e)
+        console.log(this.errStr(e))
       }
     }
     this.pendingMessages = {}
     try {
       this.callbacks.onClose(this.error)
     } catch (e) {
-      this.log(e)
+      console.log(this.errStr(e))
     }
   }
 
@@ -247,14 +248,14 @@ export class StratumConnection {
           // TODO: Validate
           this.callbacks.onNotifyHeader(json.params[0])
         } catch (e) {
-          this.log(e)
+          console.log(this.errStr(e))
         }
       } else if (json.method === 'blockchain.scripthash.subscribe') {
         try {
           // TODO: Validate
           this.callbacks.onNotifyScriptHash(json.params[0], json.params[1])
         } catch (e) {
-          this.log(e)
+          console.log(this.errStr(e))
         }
       } else if (/subscribe$/.test(json.method)) {
         // It's some other kind of subscription.
@@ -287,7 +288,7 @@ export class StratumConnection {
         try {
           message.task.onFail(new Error('Timeout'))
         } catch (e) {
-          this.log(e)
+          console.log(this.errStr(e))
         }
         delete this.pendingMessages[id]
       }
