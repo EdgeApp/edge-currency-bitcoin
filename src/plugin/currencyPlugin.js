@@ -13,7 +13,8 @@ import type {
 import {
   validAddress,
   sanitizeAddress,
-  dirtyAddress
+  dirtyAddress,
+  toNewFormat
 } from '../utils/addressFormat/addressFormatIndex.js'
 import bcoin from 'bcoin'
 import { bns } from 'biggystring'
@@ -156,7 +157,10 @@ export class CurrencyPlugin {
   }
 
   encodeUri (obj: AbcEncodeUri): string {
-    if (!obj.publicAddress || !validAddress(obj.publicAddress, this.network)) {
+    if (obj.legacyAddress &&
+      validAddress(toNewFormat(obj.legacyAddress, this.network), this.network)) {
+      obj.publicAddress = obj.legacyAddress
+    } else if (!obj.publicAddress || !validAddress(obj.publicAddress, this.network)) {
       throw new Error('InvalidPublicAddressError')
     }
     if (!obj.nativeAmount && !obj.metadata) return dirtyAddress(obj.publicAddress, this.network)
