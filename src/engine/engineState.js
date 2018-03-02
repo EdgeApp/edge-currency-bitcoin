@@ -34,7 +34,7 @@ export type UtxoInfo = {
 export type AddressInfo = {
   txids: Array<string>,
   utxos: Array<UtxoInfo>,
-  used: boolean, // Set by `addGapLimitAddress`
+  used: boolean, // Set manually by `addGapLimitAddress`
   displayAddress: string, // base58 or other wallet-ready format
   path: string, // TODO: Define the contents of this member.
   balance: number
@@ -89,7 +89,7 @@ export class EngineState {
     }
   }
 
-  // Dervived address information:
+  // Derived address information:
   addressInfos: AddressInfos
 
   // Maps from display addresses to script hashes:
@@ -171,7 +171,7 @@ export class EngineState {
   // True if somebody is currently fetching a transaction:
   fetchingHeaders: { [height: string]: boolean }
 
-  // Headres that are relevant to our transactions, but missing locally:
+  // Headers that are relevant to our transactions, but missing locally:
   missingHeaders: { [height: string]: true }
 
   addAddress (scriptHash: string, displayAddress: string, path: string) {
@@ -182,7 +182,6 @@ export class EngineState {
       txidStratumHash: '',
       utxos: [],
       utxoStratumHash: '',
-      used: false,
       displayAddress,
       path
     }
@@ -704,7 +703,7 @@ export class EngineState {
       this.addressCache = cacheJson.addresses
       this.txHeightCache = cacheJson.heights
 
-      // Fillup the missing headers to fetch
+      // Fill up the missing headers to fetch
       for (const txid in this.txHeightCache) {
         const height = this.txHeightCache[txid].height
         if (!this.pluginState.headerCache[`${height}`]) {
