@@ -225,35 +225,15 @@ for (const fixture of fixtures) {
         plugin = currencyPlugin
       })
     })
-    it('address only', function () {
-      const encodedUri = plugin.encodeUri(
-        fixture['encodeUri']['address only'][0]
-      )
-      assert.equal(encodedUri, fixture['encodeUri']['address only'][1])
-    })
-    it('address & amount', function () {
-      const encodedUri = plugin.encodeUri(
-        fixture['encodeUri']['address & amount'][0]
-      )
-      assert.equal(encodedUri, fixture['encodeUri']['address & amount'][1])
-    })
-    it('address, amount, and label', function () {
-      const encodedUri = plugin.encodeUri(
-        fixture['encodeUri']['address, amount, and label'][0]
-      )
-      assert.equal(
-        encodedUri,
-        fixture['encodeUri']['address, amount, and label'][1]
-      )
-    })
-    it('address, amount, label, & message', function () {
-      const encodedUri = plugin.encodeUri(
-        fixture['encodeUri']['address, amount, label, & message'][0]
-      )
-      assert.equal(
-        encodedUri,
-        fixture['encodeUri']['address, amount, label, & message'][1]
-      )
+    Object.keys(fixture['encodeUri']).forEach(test => {
+      it(test, function () {
+        if (fixture['encodeUri'][test].length === 2) {
+          const encodedUri = plugin.encodeUri(
+            fixture['encodeUri'][test][0]
+          )
+          assert.equal(encodedUri, fixture['encodeUri'][test][1])
+        }
+      })
     })
     it('invalid currencyCode', function () {
       assert.throws(() => {

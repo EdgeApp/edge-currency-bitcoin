@@ -32,8 +32,20 @@ const bitcoincashLegacy = (address, network) => {
   }
 }
 
-const toBase58 = (address, network) => {
-  const prefix = bcoin.networks[network].addressPrefix.legacy
+const bitcoincashNewFormat = (address, network) => {
+  if (validAddress(address, network)) return dirtyAddress(address, network)
+  const { newAddressFormat } = bcoin.networks[network]
+  const addressObj = bcoin.primitives.Address.fromBase58(address)
+  const type = address.slice(0, 1)[0] === '3' ? 'scripthash' : 'pubkeyhash'
+  const newAddress = toCashAddress(
+    addressObj.hash,
+    type,
+    newAddressFormat.prefix
+  )
+  return newAddress
+}
+
+const toBase58 = (address, prefix) => {
   const bw = new bcoin.utils.StaticWriter(address.getSize())
   bw.writeU8(prefix)
   if (address.version !== -1) {
@@ -52,34 +64,33 @@ export const toLegacyFormat = (address: string, network: string): string => {
     case 'bitcoincashtestnet':
       return bitcoincashLegacy(address, network)
     case 'litecoin':
-      const prefix = bcoin.primitives.Address.fromBase58(address).getPrefix()
-      if (prefix === bcoin.networks[network].addressPrefix.pubkeyhash) {
-        return address
+      const addressObj = bcoin.primitives.Address.fromBase58(address)
+      const prefix = addressObj.getPrefix()
+      if (prefix === bcoin.networks[network].addressPrefix.scripthash) {
+        return toBase58(addressObj, bcoin.networks[network].addressPrefix.legacy)
       }
-      return toBase58(bcoin.primitives.Address.fromBase58(address), network)
+      return address
     default:
       return address
   }
 }
 
 export const toNewFormat = (address: string, network: string): string => {
-  if (
-    typeof address !== 'string' ||
-    address.includes('bitcoincash') ||
-    typeof network !== 'string' ||
-    !network.includes('bitcoincash')
-  ) {
-    return address
+  switch (network) {
+    case 'bitcoincash':
+      return bitcoincashNewFormat(address, network)
+    case 'bitcoincashtestnet':
+      return bitcoincashNewFormat(address, network)
+    case 'litecoin':
+      const addressObj = bcoin.primitives.Address.fromBase58(address)
+      const prefix = addressObj.getPrefix()
+      if (prefix === bcoin.networks[network].addressPrefix.legacy) {
+        return toBase58(addressObj, bcoin.networks[network].addressPrefix.scripthash)
+      }
+      return address
+    default:
+      return address
   }
-  const { newAddressFormat } = bcoin.networks[network]
-  const addressObj = bcoin.primitives.Address.fromBase58(address)
-  const type = address.slice(0, 1)[0] === '3' ? 'scripthash' : 'pubkeyhash'
-  const newAddress = toCashAddress(
-    addressObj.hash,
-    type,
-    newAddressFormat.prefix
-  )
-  return newAddress
 }
 
 export const validAddress = (address: string, network: string) => {

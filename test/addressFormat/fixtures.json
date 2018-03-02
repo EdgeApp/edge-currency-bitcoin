@@ -49,6 +49,12 @@
       [ "3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC", "3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC" ],
       [ "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4", "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4" ],
       [ "bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3", "bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3" ]
+    ],
+    "toNewFormat": [
+      [ "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu", "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu" ],
+      [ "3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC", "3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC" ],
+      [ "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4", "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4" ],
+      [ "bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3", "bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3" ]
     ]
   },
   {
@@ -100,6 +106,17 @@
       [ "bitcoincash:pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e", "3LDsS579y7sruadqu11beEJoTjdFiFCdX4" ],
       [ "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw", "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw" ],
       [ "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu", "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu" ]
+    ],
+    "toNewFormat": [
+      [ "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu", "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a" ],
+      [ "1KXrWXciRDZUpQwQmuM1DbwsKDLYAYsVLR", "bitcoincash:qr95sy3j9xwd2ap32xkykttr4cvcu7as4y0qverfuy" ],
+      [ "3LDsS579y7sruadqu11beEJoTjdFiFCdX4", "bitcoincash:pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e" ],
+      [ "bitcoincash:pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e", "bitcoincash:pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e" ],
+      [ "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a", "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a" ],
+      [ "bitcoincash:qr95sy3j9xwd2ap32xkykttr4cvcu7as4y0qverfuy", "bitcoincash:qr95sy3j9xwd2ap32xkykttr4cvcu7as4y0qverfuy" ],
+      [ "pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e", "bitcoincash:pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e" ],
+      [ "qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a", "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a" ],
+      [ "qr95sy3j9xwd2ap32xkykttr4cvcu7as4y0qverfuy", "bitcoincash:qr95sy3j9xwd2ap32xkykttr4cvcu7as4y0qverfuy" ]
     ]
   },
   {
@@ -152,6 +169,14 @@
       [ "M816EdyuvWV7oETCfQeZb5mGWm9nHczijH", "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw" ],
       [ "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw", "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw" ],
       [ "3LDsS579y7sruadqu11beEJoTjdFiFCdX4", "3LDsS579y7sruadqu11beEJoTjdFiFCdX4" ]
+    ],
+    "toNewFormat": [
+      [ "LQL9pVH1LsMfKwt82Y2wGhNGkrjF8vwUst", "LQL9pVH1LsMfKwt82Y2wGhNGkrjF8vwUst" ],
+      [ "LPpHectVSbk7YHa5X89Cm3FoFBfzkJBJc9", "LPpHectVSbk7YHa5X89Cm3FoFBfzkJBJc9" ],
+      [ "3LDsS579y7sruadqu11beEJoTjdFiFCdX4", "MSS1jxX7vEjHi5ujzszwTsZCnSDhkWKrBd" ],
+      [ "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw", "M816EdyuvWV7oETCfQeZb5mGWm9nHczijH" ],
+      [ "MSS1jxX7vEjHi5ujzszwTsZCnSDhkWKrBd", "MSS1jxX7vEjHi5ujzszwTsZCnSDhkWKrBd" ],
+      [ "M816EdyuvWV7oETCfQeZb5mGWm9nHczijH", "M816EdyuvWV7oETCfQeZb5mGWm9nHczijH" ]
     ]
   },
   {
@@ -198,6 +223,10 @@
       "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a"
     ],
     "toLegacy": [
+      [ "XekiLaxnqpFb2m4NQAEcsKutZcZgcyfo6W", "XekiLaxnqpFb2m4NQAEcsKutZcZgcyfo6W" ],
+      [ "XiBQaGtW6y1C52YtPBD4PTMntpA9hkBq5p", "XiBQaGtW6y1C52YtPBD4PTMntpA9hkBq5p" ]
+    ],
+    "toNewFormat": [
       [ "XekiLaxnqpFb2m4NQAEcsKutZcZgcyfo6W", "XekiLaxnqpFb2m4NQAEcsKutZcZgcyfo6W" ],
       [ "XiBQaGtW6y1C52YtPBD4PTMntpA9hkBq5p", "XiBQaGtW6y1C52YtPBD4PTMntpA9hkBq5p" ]
     ]

@@ -3,7 +3,7 @@ import { makeFakeIos } from 'edge-login'
 import { describe, it, before } from 'mocha'
 import * as Factories from '../../src/index.js'
 import { assert } from 'chai'
-import { toLegacyFormat } from '../../src/utils/addressFormat/addressFormatIndex.js'
+import { toLegacyFormat, toNewFormat } from '../../src/utils/addressFormat/addressFormatIndex.js'
 import fixtures from './fixtures.json'
 
 for (const fixture of fixtures) {
@@ -47,6 +47,13 @@ for (const fixture of fixtures) {
       for (const address of fixture['toLegacy']) {
         console.log(address)
         assert(toLegacyFormat(address[0], fixture['WALLET_TYPE'].split('wallet:')[1]) === address[1])
+      }
+    })
+
+    it('get new format', function () {
+      for (const address of fixture['toNewFormat']) {
+        console.log(address)
+        assert(toNewFormat(address[0], fixture['WALLET_TYPE'].split('wallet:')[1]) === address[1])
       }
     })
   })
