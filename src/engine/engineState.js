@@ -480,6 +480,7 @@ export class EngineState extends EventEmitter {
   pickNextTask (uri: string): StratumTask | void {
     const serverState = this.serverStates[uri]
     const prefix = `${this.walletId} - Stratum ${uri} `
+
     // Check the version if we haven't done that already:
     if (serverState.version === void 0 && !serverState.fetchingVersion) {
       serverState.fetchingVersion = true
@@ -616,8 +617,14 @@ export class EngineState extends EventEmitter {
       }
     }
 
+    const priorityAddressList = Object.keys(this.addressInfos).sort(
+      (address1: string, address2: string) => {
+        const addressInfo1 = this.addressInfos[address1]
+        const addressInfo2 = this.addressInfos[address2]
+        return (addressInfo1.used ? 1 : 0) - (addressInfo2.used ? 1 : 0)
+      })
     // Subscribe to addresses:
-    for (const address of Object.keys(this.addressCache)) {
+    for (const address of priorityAddressList) {
       const addressState = serverState.addresses[address]
       if (!addressState.subscribed && !addressState.subscribing) {
         addressState.subscribing = true
@@ -1084,7 +1091,7 @@ export class EngineState extends EventEmitter {
 
   populateServerAddresses (uri: string) {
     const serverState = this.serverStates[uri]
-    for (const address of Object.keys(this.addressCache)) {
+    for (const address of Object.keys(this.addressInfos)) {
       if (!serverState.addresses[address]) {
         serverState.addresses[address] = {
           fetchingTxids: false,
