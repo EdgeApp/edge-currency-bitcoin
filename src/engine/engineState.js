@@ -316,7 +316,7 @@ export class EngineState extends EventEmitter {
           if (uriClosed === uri) resolve()
         })
       }))
-      this.connections[uri].close()
+      this.connections[uri].disconnect()
     }
     await Promise.all(closed)
   }

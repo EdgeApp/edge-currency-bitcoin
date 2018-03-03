@@ -6,7 +6,7 @@ import type { StratumBlockHeader } from './stratumMessages.js'
 
 export type OnFailHandler = (error: Error) => void
 
-// Timing can vary a little in either direction for fewer wakeups:
+// Timing can vary a little in either direction for fewer wake ups:
 const TIMER_SLACK = 500
 const KEEP_ALIVE_MS = 60000
 
