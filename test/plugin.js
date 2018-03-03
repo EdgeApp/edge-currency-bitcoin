@@ -12,6 +12,7 @@ import { afterEach, describe, it } from 'mocha'
 
 import {
   bitcoinCurrencyPluginFactory,
+  decredCurrencyPluginFactory,
   bitcoincashCurrencyPluginFactory,
   dogecoinCurrencyPluginFactory,
   litecoinCurrencyPluginFactory
@@ -19,6 +20,7 @@ import {
 
 const plugins = [
   bitcoinCurrencyPluginFactory,
+  decredCurrencyPluginFactory,
   bitcoincashCurrencyPluginFactory,
   dogecoinCurrencyPluginFactory,
   litecoinCurrencyPluginFactory

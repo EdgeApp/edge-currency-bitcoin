@@ -9,6 +9,7 @@ import bcoin from 'bcoin'
 
 // Coins Plugin Info
 import { bitcoinInfo } from './info/bitcoin.js'
+import { decredInfo } from './info/decred.js'
 import { bitcoincashInfo } from './info/bitcoincash.js'
 import { bitcoincashTestnetInfo } from './info/bitcoincashtestnet.js'
 import { bitcoinTestnetInfo } from './info/bitcointestnet.js'
@@ -54,6 +55,9 @@ function makePluginFactory (
 // Bitcoin:
 export const bitcoinCurrencyPluginFactory = makePluginFactory(bitcoinInfo)
 
+// Decred
+export const decredCurrencyPluginFactory = makePluginFactory(decredInfo)
+
 // Bitcoin Testnet:
 export const bitcoinTestnetCurrencyPluginFactory = makePluginFactory(
   bitcoinTestnetInfo
@@ -80,6 +84,7 @@ export const litecoinCurrencyPluginFactory = makePluginFactory(litecoinInfo)
 // Legacy uppercased names:
 export {
   bitcoinCurrencyPluginFactory as BitcoinCurrencyPluginFactory,
+  decredCurrencyPluginFactory as DecredCurrencyPluginFactory,
   bitcoinTestnetCurrencyPluginFactory as BitcoinTestnetCurrencyPluginFactory,
   bitcoincashCurrencyPluginFactory as BitcoincashCurrencyPluginFactory,
   bitcoincashTestnetCurrencyPluginFactory as BitcoincashTestnetCurrencyPluginFactory,
