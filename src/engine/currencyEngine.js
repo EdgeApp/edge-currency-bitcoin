@@ -29,7 +29,7 @@ import {
 import bcoin from 'bcoin'
 
 const BYTES_TO_KB = 1000
-const MILI_TO_SEC = 1000
+const MILLI_TO_SEC = 1000
 const INFO_SERVER = 'https://info1.edgesecure.co:8444/v1'
 /**
  * The core currency plugin.
@@ -189,7 +189,7 @@ export class CurrencyEngine {
         date = blockHeight.timestamp
       }
     }
-    // Get pased bcoin tx from engine
+    // Get parsed bcoin tx from engine
     const bcoinTransaction = this.engineState.parsedTxs[txid]
     if (!bcoinTransaction) {
       throw new Error('Transaction not found')
@@ -457,7 +457,7 @@ export class CurrencyEngine {
       laterUse.push(this.keyManager.addressToScriptHash(address))
     })
     await Promise.all(laterUse)
-      .then(scriptHashs => scriptHashs.forEach(use))
+      .then(scriptHashes => scriptHashes.forEach(use))
       .catch(e => console.log(`${this.walletId} - ${e.toString()}`))
     if (this.keyManager) this.keyManager.setLookAhead()
   }
@@ -553,7 +553,7 @@ export class CurrencyEngine {
   async signTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
     this.logAbcTransaction(abcTransaction, 'Signing')
     await this.keyManager.sign(abcTransaction.otherParams.bcoinTx)
-    abcTransaction.date = Date.now() / MILI_TO_SEC
+    abcTransaction.date = Date.now() / MILLI_TO_SEC
     abcTransaction.signedTx = abcTransaction.otherParams.bcoinTx
       .toRaw()
       .toString('hex')

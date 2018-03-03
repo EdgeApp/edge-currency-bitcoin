@@ -145,10 +145,10 @@ export class CurrencyPlugin {
     const abcParsedUri: AbcParsedUri = { publicAddress, metadata }
 
     if (amountStr && typeof amountStr === 'string') {
-      const denom: any = currencyInfo.denominations.find(
+      const denomination: any = currencyInfo.denominations.find(
         e => e.name === currencyInfo.currencyCode
       )
-      const multiplier: string = denom.multiplier.toString()
+      const multiplier: string = denomination.multiplier.toString()
       const t = bns.mul(amountStr, multiplier)
       abcParsedUri.nativeAmount = bns.toFixed(t, 0, 0)
       abcParsedUri.currencyCode = currencyInfo.currencyCode
@@ -169,8 +169,8 @@ export class CurrencyPlugin {
     const info = this.currencyInfo
     if (obj.nativeAmount) {
       const currencyCode = obj.currencyCode || info.currencyCode
-      const denom: any = info.denominations.find(e => e.name === currencyCode)
-      const multiplier: string = denom.multiplier.toString()
+      const denomination: any = info.denominations.find(e => e.name === currencyCode)
+      const multiplier: string = denomination.multiplier.toString()
       // $FlowFixMe
       const amount = bns.div(obj.nativeAmount, multiplier, 8)
       queryString += 'amount=' + amount.toString() + '&'

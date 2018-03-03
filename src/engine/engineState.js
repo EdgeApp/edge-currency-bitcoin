@@ -106,7 +106,7 @@ export class EngineState extends EventEmitter {
   // On-disk hex transaction data:
   txCache: { [txid: string]: string }
 
-  // Transaction height / timestamps:
+  // Transaction height / Timestamp:
   txHeightCache: {
     [txid: string]: {
       height: number,
@@ -887,12 +887,12 @@ export class EngineState extends EventEmitter {
     this.txCache[txid] = txData
     delete this.missingTxs[txid]
     this.parsedTxs[txid] = parseTransaction(txData)
-    for (const scriptHash of this.findAffectedAddressesforInputs(txid)) {
+    for (const scriptHash of this.findAffectedAddressesForInputs(txid)) {
       this.refreshAddressInfo(scriptHash)
     }
     this.dirtyTxCache()
     this.onTxFetched(txid)
-    for (const scriptHash of this.findAffectedAddressesforOutput(txid)) {
+    for (const scriptHash of this.findAffectedAddressesForOutput(txid)) {
       this.refreshAddressInfo(scriptHash)
       for (const parsedTxid of this.addressInfos[scriptHash].txids) {
         const tx = this.parsedTxs[parsedTxid]
@@ -1043,7 +1043,7 @@ export class EngineState extends EventEmitter {
     if (prevUsed !== used) this.onAddressUsed()
   }
 
-  findAffectedAddressesforInputs (txid: string): Array<string> {
+  findAffectedAddressesForInputs (txid: string): Array<string> {
     const scriptHashSet = []
     for (const input of this.parsedTxs[txid].inputs) {
       const prevTx = this.parsedTxs[input.prevout.rhash()]
@@ -1055,7 +1055,7 @@ export class EngineState extends EventEmitter {
     return scriptHashSet
   }
 
-  findAffectedAddressesforOutput (txid: string): Array<string> {
+  findAffectedAddressesForOutput (txid: string): Array<string> {
     const scriptHashSet = []
     for (const output of this.parsedTxs[txid].outputs) {
       if (this.addressCache[output.scriptHash]) {
@@ -1066,8 +1066,8 @@ export class EngineState extends EventEmitter {
   }
 
   findAffectedAddresses (txid: string): Array<string> {
-    const inputs = this.findAffectedAddressesforInputs(txid)
-    const outputs = this.findAffectedAddressesforOutput(txid)
+    const inputs = this.findAffectedAddressesForInputs(txid)
+    const outputs = this.findAffectedAddressesForOutput(txid)
     return inputs.concat(outputs)
   }
 

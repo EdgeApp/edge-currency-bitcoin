@@ -18,6 +18,7 @@ export const litecoinInfo: AbcCurrencyInfo = {
 
   // Configuration options:
   defaultSettings: {
+    forks: ['litecoincash'],
     network: {
       type: 'litecoin',
       magic: 0xd9b4bef9,

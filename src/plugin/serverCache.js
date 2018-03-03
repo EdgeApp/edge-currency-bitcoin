@@ -141,7 +141,7 @@ export class ServerCache {
   serverScoreDown (serverUrl: string, changeScore: number = 10) {
     const currentTime = Date.now()
     if (currentTime - this.lastScoreUpTime_ > 60000) {
-      // It has been over 1 minute since we got an upvote for any server.
+      // It has been over 1 minute since we got an up-vote for any server.
       // Assume the network is down and don't penalize anyone for now
       return
     }
@@ -158,16 +158,16 @@ export class ServerCache {
     const serverInfo: ServerInfo = this.servers_[serverUrl]
     serverInfo.numResponseTimes++
 
-    const oldtime = serverInfo.responseTime
+    const oldTime = serverInfo.responseTime
     let newTime = 0
-    if (RESPONSE_TIME_UNINITIALIZED === oldtime) {
+    if (RESPONSE_TIME_UNINITIALIZED === oldTime) {
       newTime = responseTimeMilliseconds
     } else {
       // Every 10th setting of response time, decrease effect of prior values by 5x
       if (serverInfo.numResponseTimes % 10 === 0) {
-        newTime = (oldtime + responseTimeMilliseconds * 4) / 5
+        newTime = (oldTime + responseTimeMilliseconds * 4) / 5
       } else {
-        newTime = (oldtime + responseTimeMilliseconds) / 2
+        newTime = (oldTime + responseTimeMilliseconds) / 2
       }
     }
     serverInfo.responseTime = newTime
