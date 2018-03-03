@@ -86,9 +86,11 @@ export class CurrencyEngine {
         this.currencyInfo.defaultSettings.simpleFeeSettings
       )
     }
-    console.log(`${this.walletId} - Created Wallet Type ${this.walletInfo.type} for Currency Plugin ${
-      this.currencyInfo.pluginName
-    }`)
+    console.log(
+      `${this.walletId} - Created Wallet Type ${
+        this.walletInfo.type
+      } for Currency Plugin ${this.currencyInfo.pluginName}`
+    )
   }
 
   async load (): Promise<any> {
@@ -266,7 +268,9 @@ export class CurrencyEngine {
       }
       await this.fetchFee()
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        const url = `${INFO_SERVER}/networkFees/${this.currencyInfo.currencyCode}`
+        const url = `${INFO_SERVER}/networkFees/${
+          this.currencyInfo.currencyCode
+        }`
         const feesResponse = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
           url
         )
@@ -302,7 +306,11 @@ export class CurrencyEngine {
         this.fees.timestamp = Date.now()
       }
     } catch (e) {
-      console.log(`${this.walletId} - Error while trying to update fee table ${e.toString()}`)
+      console.log(
+        `${
+          this.walletId
+        } - Error while trying to update fee table ${e.toString()}`
+      )
     }
   }
 
@@ -487,8 +495,10 @@ export class CurrencyEngine {
     ) {
       throw new Error('Need to provide Spend Targets')
     }
-    const totalAmountToSend = abcSpendInfo.spendTargets
-      .reduce((sum, { nativeAmount }) => bns.add(sum, nativeAmount), '0')
+    const totalAmountToSend = abcSpendInfo.spendTargets.reduce(
+      (sum, { nativeAmount }) => bns.add(sum, nativeAmount),
+      '0'
+    )
     if (bns.gt(totalAmountToSend, this.getBalance())) {
       throw new Error('InsufficientFundsError')
     }

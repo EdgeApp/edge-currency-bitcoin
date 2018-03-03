@@ -51,8 +51,14 @@ export class StratumConnection {
   errStr: (e: Error) => string
 
   constructor (uri: string, options: StratumOptions) {
-    const { callbacks, io, queueSize = 10, timeout = 30, walletId = '' } = options
-    this.errStr = (e) => `${walletId} - ${e.toString()}`
+    const {
+      callbacks,
+      io,
+      queueSize = 10,
+      timeout = 30,
+      walletId = ''
+    } = options
+    this.errStr = e => `${walletId} - ${e.toString()}`
     this.io = io
     this.callbacks = callbacks
     this.queueSize = queueSize
@@ -85,7 +91,9 @@ export class StratumConnection {
         : new this.io.Socket()
     socket.setEncoding('utf8')
     socket.on('close', (hadError: boolean) => this.onSocketClose(hadError))
-    socket.on('error', (e: Error) => { this.error = e })
+    socket.on('error', (e: Error) => {
+      this.error = e
+    })
     socket.on('connect', () => this.onSocketConnect(socket))
     socket.on('data', (data: string) => this.onSocketData(data))
     socket.connect({
@@ -275,9 +283,12 @@ export class StratumConnection {
 
     if (this.lastKeepAlive + KEEP_ALIVE_MS < now) {
       this.submitTask(
-        fetchVersion((version: string) => {
-          this.callbacks.onTimer(now)
-        }, (e: Error) => this.close(e))
+        fetchVersion(
+          (version: string) => {
+            this.callbacks.onTimer(now)
+          },
+          (e: Error) => this.close(e)
+        )
       )
     }
 

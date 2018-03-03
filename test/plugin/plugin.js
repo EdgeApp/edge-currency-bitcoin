@@ -228,9 +228,7 @@ for (const fixture of fixtures) {
     Object.keys(fixture['encodeUri']).forEach(test => {
       it(test, function () {
         if (fixture['encodeUri'][test].length === 2) {
-          const encodedUri = plugin.encodeUri(
-            fixture['encodeUri'][test][0]
-          )
+          const encodedUri = plugin.encodeUri(fixture['encodeUri'][test][0])
           assert.equal(encodedUri, fixture['encodeUri'][test][1])
         }
       })

@@ -134,7 +134,9 @@ export class CurrencyPlugin {
     if (!publicAddress) throw new Error('InvalidUriError')
     publicAddress = publicAddress.replace('/', '') // Remove any slashes
     publicAddress = dirtyAddress(publicAddress, this.network)
-    if (!validAddress(publicAddress, this.network)) throw new Error('InvalidPublicAddressError')
+    if (!validAddress(publicAddress, this.network)) {
+      throw new Error('InvalidPublicAddressError')
+    }
 
     const amountStr = getParameterByName('amount', uri)
     const metadata = {}
@@ -157,19 +159,28 @@ export class CurrencyPlugin {
   }
 
   encodeUri (obj: AbcEncodeUri): string {
-    if (obj.legacyAddress &&
-      validAddress(toNewFormat(obj.legacyAddress, this.network), this.network)) {
+    if (
+      obj.legacyAddress &&
+      validAddress(toNewFormat(obj.legacyAddress, this.network), this.network)
+    ) {
       obj.publicAddress = obj.legacyAddress
-    } else if (!obj.publicAddress || !validAddress(obj.publicAddress, this.network)) {
+    } else if (
+      !obj.publicAddress ||
+      !validAddress(obj.publicAddress, this.network)
+    ) {
       throw new Error('InvalidPublicAddressError')
     }
-    if (!obj.nativeAmount && !obj.metadata) return dirtyAddress(obj.publicAddress, this.network)
+    if (!obj.nativeAmount && !obj.metadata) {
+      return dirtyAddress(obj.publicAddress, this.network)
+    }
     obj.publicAddress = sanitizeAddress(obj.publicAddress, this.network)
     let queryString = ''
     const info = this.currencyInfo
     if (obj.nativeAmount) {
       const currencyCode = obj.currencyCode || info.currencyCode
-      const denomination: any = info.denominations.find(e => e.name === currencyCode)
+      const denomination: any = info.denominations.find(
+        e => e.name === currencyCode
+      )
       const multiplier: string = denomination.multiplier.toString()
       // $FlowFixMe
       const amount = bns.div(obj.nativeAmount, multiplier, 8)

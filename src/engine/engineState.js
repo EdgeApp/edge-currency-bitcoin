@@ -239,12 +239,14 @@ export class EngineState extends EventEmitter {
 
   broadcastTx (rawTx: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const uris = Object.keys(this.connections).filter(uri =>
-        this.connections[uri].connected
+      const uris = Object.keys(this.connections).filter(
+        uri => this.connections[uri].connected
       )
       // If we have no connections then error
       if (!uris || !uris.length) {
-        reject(new Error('No available connections\nCheck your internet signal'))
+        reject(
+          new Error('No available connections\nCheck your internet signal')
+        )
       }
       let resolved = false
       let bad = 0
@@ -252,7 +254,9 @@ export class EngineState extends EventEmitter {
       const task = broadcastTx(
         rawTx,
         (txid: string) => {
-          console.log(`${this.walletId} - Stratum broadcasted transaction ${txid}`)
+          console.log(
+            `${this.walletId} - Stratum broadcasted transaction ${txid}`
+          )
           // We resolve if any server succeeds:
           if (!resolved) {
             resolved = true
@@ -263,7 +267,11 @@ export class EngineState extends EventEmitter {
           // We fail if every server failed:
           if (++bad === uris.length) {
             const msg = e ? `With error ${e.toString()}` : ''
-            console.log(`${this.walletId} - Stratum failed to broadcast transaction: ${rawTx}\n${msg}}`)
+            console.log(
+              `${
+                this.walletId
+              } - Stratum failed to broadcast transaction: ${rawTx}\n${msg}}`
+            )
             reject(e)
           }
         }
@@ -312,11 +320,13 @@ export class EngineState extends EventEmitter {
     clearTimeout(this.reconnectTimer)
     const closed = []
     for (const uri of Object.keys(this.connections)) {
-      closed.push(new Promise((resolve, reject) => {
-        this.on('connectionClose', uriClosed => {
-          if (uriClosed === uri) resolve()
+      closed.push(
+        new Promise((resolve, reject) => {
+          this.on('connectionClose', uriClosed => {
+            if (uriClosed === uri) resolve()
+          })
         })
-      }))
+      )
       this.connections[uri].disconnect()
     }
     await Promise.all(closed)
@@ -400,7 +410,12 @@ export class EngineState extends EventEmitter {
     if (!this.io.TLSSocket) ignorePatterns.push('electrums:')
     if (!this.io.Socket) ignorePatterns.push('electrum:')
     const servers = this.pluginState.getServers(NEW_CONNECTIONS, ignorePatterns)
-    console.log(`${this.walletId} - Refilling Servers, top ${NEW_CONNECTIONS} servers are:`, servers)
+    console.log(
+      `${
+        this.walletId
+      } - Refilling Servers, top ${NEW_CONNECTIONS} servers are:`,
+      servers
+    )
     let chanceToBePicked = 1.25
     while (Object.keys(this.connections).length < MAX_CONNECTIONS) {
       if (!servers.length) break
@@ -440,7 +455,12 @@ export class EngineState extends EventEmitter {
           const taskMessage = task
             ? `${task.method} with params: ${task.params.toString()}`
             : 'No task Has been Picked'
-          console.log(`${this.walletId} - Picked task: ${taskMessage}, for uri ${uri}, in: - ${Date.now() - start}ms`)
+          console.log(
+            `${
+              this.walletId
+            } - Picked task: ${taskMessage}, for uri ${uri}, in: - ${Date.now() -
+              start}ms`
+          )
           return task
         },
         onTimer: (queryTime: number) => {
@@ -461,9 +481,11 @@ export class EngineState extends EventEmitter {
         }
       }
 
-      this.connections[uri] = new StratumConnection(
-        uri, { callbacks, io, walletId: this.walletId }
-      )
+      this.connections[uri] = new StratumConnection(uri, {
+        callbacks,
+        io,
+        walletId: this.walletId
+      })
       this.serverStates[uri] = {
         fetchingHeight: false,
         fetchingVersion: false,
@@ -524,7 +546,9 @@ export class EngineState extends EventEmitter {
     // TODO: Check block headers to ensure we are on the right chain.
     if (!serverState.version) return
     if (serverState.version < '1.1') {
-      this.connections[uri].close(new Error('Server protocol version is too old'))
+      this.connections[uri].close(
+        new Error('Server protocol version is too old')
+      )
       this.pluginState.serverScoreDown(uri, 100)
       return
     }
@@ -618,11 +642,15 @@ export class EngineState extends EventEmitter {
       }
     }
 
-    const priorityAddressList = stable(Object.keys(this.addressInfos),
+    const priorityAddressList = stable(
+      Object.keys(this.addressInfos),
       (address1: string, address2: string) => {
-        return (this.addressInfos[address1].used ? 1 : 0) >
+        return (
+          (this.addressInfos[address1].used ? 1 : 0) >
           (this.addressInfos[address2].used ? 1 : 0)
-      })
+        )
+      }
+    )
     // Subscribe to addresses:
     for (const address of priorityAddressList) {
       const addressState = serverState.addresses[address]
@@ -631,7 +659,9 @@ export class EngineState extends EventEmitter {
         return subscribeScriptHash(
           address,
           (hash: string | null) => {
-            console.log(`${prefix}subscribed to ${address} at ${hash || 'null'}`)
+            console.log(
+              `${prefix}subscribed to ${address} at ${hash || 'null'}`
+            )
             addressState.subscribing = false
             addressState.subscribed = true
             addressState.hash = hash

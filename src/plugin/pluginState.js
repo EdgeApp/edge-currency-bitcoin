@@ -88,7 +88,9 @@ export class PluginState extends ServerCache {
     }
 
     try {
-      const serverCacheText = await this.folder.file('serverCache.json').getText()
+      const serverCacheText = await this.folder
+        .file('serverCache.json')
+        .getText()
       const serverCacheJson = JSON.parse(serverCacheText)
       // TODO: Validate JSON
 
@@ -157,7 +159,11 @@ export class PluginState extends ServerCache {
       if (this.infoServerUris !== '') {
         const result = await io.fetch(this.infoServerUris)
         if (!result.ok) {
-          console.log(`${this.pluginName} - Fetching ${this.infoServerUris} failed with ${result.status}`)
+          console.log(
+            `${this.pluginName} - Fetching ${this.infoServerUris} failed with ${
+              result.status
+            }`
+          )
         } else {
           serverList = await result.json()
         }

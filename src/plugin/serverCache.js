@@ -86,7 +86,10 @@ export class ServerCache {
 
   async serverCacheSave () {
     // this.printServerCache()
-    if (this.serverCacheDirty && this.lastSaveTime + SAVE_LAZINESS < Date.now()) {
+    if (
+      this.serverCacheDirty &&
+      this.lastSaveTime + SAVE_LAZINESS < Date.now()
+    ) {
       await this.saveData(this.servers_)
       this.serverCacheDirty = false
       this.lastSaveTime = Date.now()
@@ -122,7 +125,11 @@ export class ServerCache {
     console.log('**************************')
   }
 
-  serverScoreUp (serverUrl: string, responseTimeMilliseconds: number, changeScore: number = 1) {
+  serverScoreUp (
+    serverUrl: string,
+    responseTimeMilliseconds: number,
+    changeScore: number = 1
+  ) {
     const serverInfo: ServerInfo = this.servers_[serverUrl]
 
     serverInfo.serverScore += changeScore
@@ -130,7 +137,11 @@ export class ServerCache {
       serverInfo.serverScore = MAX_SCORE
       this.serverCacheDirty = true
     }
-    console.log(`Stratum ${serverUrl} score went UP ${serverInfo.serverScore} ${responseTimeMilliseconds}`)
+    console.log(
+      `Stratum ${serverUrl} score went UP ${
+        serverInfo.serverScore
+      } ${responseTimeMilliseconds}`
+    )
     this.lastScoreUpTime_ = Date.now()
 
     if (responseTimeMilliseconds !== 0) {
@@ -151,7 +162,9 @@ export class ServerCache {
       serverInfo.serverScore = MIN_SCORE
       this.serverCacheDirty = true
     }
-    console.log(`Stratum ${serverUrl} score went DOWN ${serverInfo.serverScore}`)
+    console.log(
+      `Stratum ${serverUrl} score went DOWN ${serverInfo.serverScore}`
+    )
   }
 
   setResponseTime (serverUrl: string, responseTimeMilliseconds: number) {
@@ -174,7 +187,10 @@ export class ServerCache {
     this.serverCacheDirty = true
   }
 
-  getServers (numServersWanted: number, ignorePatterns?: Array<string> = []): Array<string> {
+  getServers (
+    numServersWanted: number,
+    ignorePatterns?: Array<string> = []
+  ): Array<string> {
     if (!this.servers_ || this.servers_.length === 0) {
       return []
     }

@@ -299,11 +299,16 @@ for (const fixture of fixtures) {
         (err, res, body) => {
           assert(!err, 'getting block height from a second source')
           let thirdPartyHeight = parseInt(JSON.parse(body).height)
-          if (!thirdPartyHeight || isNaN(thirdPartyHeight)) thirdPartyHeight = 1286739
+          if (!thirdPartyHeight || isNaN(thirdPartyHeight)) {
+            thirdPartyHeight = 1286739
+          }
           emitter.on('onBlockHeightChange', height => {
             if (height >= thirdPartyHeight) {
               emitter.removeAllListeners('onBlockHeightChange')
-              assert(engine.getBlockHeight() >= thirdPartyHeight, 'Block height')
+              assert(
+                engine.getBlockHeight() >= thirdPartyHeight,
+                'Block height'
+              )
               done() // Can be "done" since the promise resolves before the event fires but just be on the safe side
             }
           })

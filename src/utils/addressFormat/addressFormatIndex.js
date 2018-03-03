@@ -67,7 +67,10 @@ export const toLegacyFormat = (address: string, network: string): string => {
       const addressObj = bcoin.primitives.Address.fromBase58(address)
       const prefix = addressObj.getPrefix()
       if (prefix === bcoin.networks[network].addressPrefix.scripthash) {
-        return toBase58(addressObj, bcoin.networks[network].addressPrefix.legacy)
+        return toBase58(
+          addressObj,
+          bcoin.networks[network].addressPrefix.legacy
+        )
       }
       return address
     default:
@@ -85,7 +88,10 @@ export const toNewFormat = (address: string, network: string): string => {
       const addressObj = bcoin.primitives.Address.fromBase58(address)
       const prefix = addressObj.getPrefix()
       if (prefix === bcoin.networks[network].addressPrefix.legacy) {
-        return toBase58(addressObj, bcoin.networks[network].addressPrefix.scripthash)
+        return toBase58(
+          addressObj,
+          bcoin.networks[network].addressPrefix.scripthash
+        )
       }
       return address
     default:
