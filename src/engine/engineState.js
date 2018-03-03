@@ -7,7 +7,7 @@ import type {
   StratumCallbacks,
   StratumTask
 } from '../stratum/stratumConnection.js'
-import EventEmitter from 'events'
+import EventEmitter from 'eventemitter3'
 import stable from 'stable'
 import { StratumConnection } from '../stratum/stratumConnection.js'
 import {
