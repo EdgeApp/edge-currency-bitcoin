@@ -8,7 +8,7 @@ export type OnFailHandler = (error: Error) => void
 
 // Timing can vary a little in either direction for fewer wakeups:
 const TIMER_SLACK = 500
-const KEEPALIVE_MS = 60000
+const KEEP_ALIVE_MS = 60000
 
 /**
  * This is a private type used by the Stratum connection.

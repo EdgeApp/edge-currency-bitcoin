@@ -7,7 +7,8 @@ import type {
   StratumCallbacks,
   StratumTask
 } from '../stratum/stratumConnection.js'
-import { StratumConnection, KEEPALIVE_MS } from '../stratum/stratumConnection.js'
+import EventEmitter from 'events'
+import { StratumConnection } from '../stratum/stratumConnection.js'
 import {
   broadcastTx,
   fetchScriptHashHistory,
@@ -333,6 +334,7 @@ export class EngineState {
   cacheTimer: number
   reconnectTimer: number
   log: Function
+  reconnectCounter: number
 
   constructor (options: EngineStateOptions) {
     this.addressCache = {}
@@ -368,6 +370,20 @@ export class EngineState {
     this.addressCacheTimestamp = Date.now()
     this.txCacheDirty = false
     this.txCacheTimestamp = Date.now()
+    this.reconnectCounter = 0
+  }
+
+  reconnect () {
+    if (this.engineStarted) {
+      if (!this.reconnectTimer) {
+        if (this.reconnectCounter < 30) this.reconnectCounter++
+        this.reconnectTimer = setTimeout(() => {
+          this.reconnectTimer = 0
+          this.refillServers()
+        }, this.reconnectCounter * 1000)
+      } else {
+      }
+    }
   }
 
   refillServers () {
@@ -379,7 +395,7 @@ export class EngineState {
     while (Object.keys(this.connections).length < 3) {
       const uri = servers[i++]
       if (!uri) {
-        this.reconnectTimer = setTimeout(() => this.refillServers(), 1000)
+        this.reconnect()
         break
       }
       if (/^electrums:/.test(uri)) {
@@ -398,21 +414,20 @@ export class EngineState {
 
       const callbacks: StratumCallbacks = {
         onOpen: (uri: string) => {
+          if (this.reconnectCounter > 0) {
+            this.reconnectCounter--
+          }
           this.log(`Connected to ${uri}`)
         },
         onClose: (uri: string, hadError: boolean) => {
           delete this.connections[uri]
-
-          if (hadError) {
-            this.pluginState.serverCache.serverScoreDown(uri)
-          }
-
-          if (this.engineStarted) {
-            this.reconnectTimer = setTimeout(() => this.refillServers(),
-              hadError ? 0 : KEEPALIVE_MS)
-          }
-          this.addressCacheDirty && this.saveAddressCache()
-          this.txCacheDirty && this.saveTxCache()
+          const msg = hadError ? ' by a problem' : ' cleanly'
+          this.log(`Stratum ${uri} was closed${msg}`)
+          this.emit('connectionClose', uri)
+          hadError && this.pluginState.serverScoreDown(uri)
+          this.reconnect()
+          this.saveAddressCache()
+          this.saveTxCache()
         },
 
         onQueueSpace: uri => {
