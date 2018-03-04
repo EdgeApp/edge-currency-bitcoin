@@ -63,8 +63,14 @@ export class PluginState extends ServerCache {
     this.defaultServers = []
     this.infoServerUris = ''
     if (currencyInfo.defaultSettings) {
-      this.defaultServers = currencyInfo.defaultSettings.electrumServers || []
-      this.infoServerUris = currencyInfo.defaultSettings.infoServer || ''
+      const { electrumServers, infoServer } = currencyInfo.defaultSettings
+      let { currencyCode } = currencyInfo
+      // Rename the bitcoin currencyCode to get the new version of the server list
+      if (currencyCode === 'BTC') {
+        currencyCode = 'BC1'
+      }
+      this.defaultServers = electrumServers || []
+      this.infoServerUris = infoServer ? `${infoServer}/electrumServers/${currencyCode}` : ''
     }
     this.engines = []
     this.folder = io.folder.folder('plugins').folder(currencyInfo.pluginName)

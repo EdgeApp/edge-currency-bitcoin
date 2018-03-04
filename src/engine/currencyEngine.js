@@ -30,7 +30,6 @@ import bcoin from 'bcoin'
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000
-const INFO_SERVER = 'https://info1.edgesecure.co:8444/v1'
 /**
  * The core currency plugin.
  * Provides information about the currency,
@@ -45,6 +44,7 @@ export class CurrencyEngine {
   pluginState: PluginState
   abcCurrencyEngineOptions: AbcCurrencyEngineOptions
   network: string
+  infoServer: string
   feeInfoServer: string
   feeUpdateInterval: number
   feeTimer: any
@@ -69,6 +69,7 @@ export class CurrencyEngine {
     this.pluginState = pluginState
     this.abcCurrencyEngineOptions = options
     this.network = this.currencyInfo.defaultSettings.network.type
+    this.infoServer = this.currencyInfo.defaultSettings.infoServer
     this.feeInfoServer = this.currencyInfo.defaultSettings.feeInfoServer
     this.feeUpdateInterval = this.currencyInfo.defaultSettings.feeUpdateInterval
     this.fees = {
@@ -268,7 +269,7 @@ export class CurrencyEngine {
       }
       await this.fetchFee()
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        const url = `${INFO_SERVER}/networkFees/${
+        const url = `${this.infoServer}/networkFees/${
           this.currencyInfo.currencyCode
         }`
         const feesResponse = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(

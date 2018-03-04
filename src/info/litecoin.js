@@ -45,7 +45,7 @@ export const litecoinInfo: AbcCurrencyInfo = {
     defaultFee: 50000,
     feeUpdateInterval: 60000,
     feeInfoServer: '',
-    infoServer: 'https://info1.edgesecure.co:8444/v1/electrumServers/LTC',
+    infoServer: 'https://info1.edgesecure.co:8444/v1',
     simpleFeeSettings: {
       highFee: '300',
       lowFee: '100',
