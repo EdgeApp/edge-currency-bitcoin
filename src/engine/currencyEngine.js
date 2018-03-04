@@ -286,12 +286,11 @@ export class CurrencyEngine {
     } catch (err) {
       console.log(`${this.walletId} - ${err.toString()}`)
     }
-    this.feeTimer = setInterval(() => this.fetchFee(), this.feeUpdateInterval)
   }
 
   async fetchFee () {
     if (!this.feeInfoServer || this.feeInfoServer === '') {
-      clearInterval(this.feeTimer)
+      clearTimeout(this.feeTimer)
       return
     }
     try {
@@ -313,6 +312,7 @@ export class CurrencyEngine {
         } - Error while trying to update fee table ${e.toString()}`
       )
     }
+    this.feeTimer = setTimeout(() => this.fetchFee(), this.feeUpdateInterval)
   }
 
   getRate ({
@@ -385,7 +385,7 @@ export class CurrencyEngine {
   }
 
   async killEngine (): Promise<void> {
-    clearInterval(this.feeTimer)
+    clearTimeout(this.feeTimer)
     return this.engineState.disconnect()
   }
 
