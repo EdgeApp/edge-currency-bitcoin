@@ -5,17 +5,10 @@ import { fetchVersion } from './stratumMessages.js'
 import type { StratumBlockHeader } from './stratumMessages.js'
 
 export type OnFailHandler = (error: Error) => void
-export type OnCloseHandler = (
-  uri: string,
-  badMessages: number,
-  goodMessages: number,
-  latency: number,
-  hadError: boolean
-) => void
 
-// Timing can vary a little in either direction for fewer wakeups:
-export const TIMER_SLACK = 500
-export const KEEPALIVE_MS = 60000
+// Timing can vary a little in either direction for fewer wake ups:
+const TIMER_SLACK = 500
+const KEEP_ALIVE_MS = 60000
 
 /**
  * This is a private type used by the Stratum connection.
@@ -29,12 +22,12 @@ export interface StratumTask {
 }
 
 export interface StratumCallbacks {
-  +onOpen?: (uri: string) => void;
-  +onClose?: OnCloseHandler;
-  +onQueueSpace?: (uri: string) => StratumTask | void;
-
-  onNotifyHeader?: (uri: string, headerInfo: StratumBlockHeader) => void;
-  +onNotifyScriptHash?: (uri: string, scriptHash: string, hash: string) => void;
+  +onOpen: () => void;
+  +onClose: (error?: Error) => void;
+  +onQueueSpace: () => StratumTask | void;
+  +onNotifyHeader: (headerInfo: StratumBlockHeader) => void;
+  +onNotifyScriptHash: (scriptHash: string, hash: string) => void;
+  +onTimer: (queryTime: number) => void;
 }
 
 export interface StratumOptions {
@@ -42,42 +35,34 @@ export interface StratumOptions {
   io: any;
   queueSize?: number; // defaults to 10
   timeout?: number; // seconds, defaults to 30
+  walletId?: string; // for logging purposes
 }
-
-function nop () {}
 
 /**
  * A connection to a Stratum server.
- * Manages the underlying TCP sockect, as well as message framing,
+ * Manages the underlying TCP socket, as well as message framing,
  * queue depth, error handling, and so forth.
  */
 export class StratumConnection {
   uri: string
   connected: boolean
-  log: Function
+  errStr: (e: Error) => string
 
-  constructor (uri: string, options: StratumOptions, log: ?Function) {
-    const { callbacks = {}, io, queueSize = 10, timeout = 30 } = options
+  constructor (uri: string, options: StratumOptions) {
     const {
-      onOpen = nop,
-      onClose = nop,
-      onQueueSpace = nop,
-      onNotifyHeader = nop,
-      onNotifyScriptHash = nop
-    } = callbacks
-
-    this.log = log || console.log
+      callbacks,
+      io,
+      queueSize = 10,
+      timeout = 30,
+      walletId = ''
+    } = options
+    this.errStr = e => `${walletId} - ${e.toString()}`
     this.io = io
-    this.onClose = onClose
-    this.onOpen = onOpen
-    this.onQueueSpace = onQueueSpace
-    this.onNotifyHeader = onNotifyHeader
-    this.onNotifyScriptHash = onNotifyScriptHash
+    this.callbacks = callbacks
     this.queueSize = queueSize
     this.timeout = 1000 * timeout
     this.uri = uri
-    this.badMessages = 0
-    this.goodMessages = 0
+    this.sigkill = false
 
     // Message queue:
     this.nextId = 0
@@ -104,7 +89,9 @@ export class StratumConnection {
         : new this.io.Socket()
     socket.setEncoding('utf8')
     socket.on('close', (hadError: boolean) => this.onSocketClose(hadError))
-    socket.on('error', (e: Error) => this.log(e))
+    socket.on('error', (e: Error) => {
+      this.error = e
+    })
     socket.on('connect', () => this.onSocketConnect(socket))
     socket.on('data', (data: string) => this.onSocketData(data))
     socket.connect({
@@ -118,9 +105,9 @@ export class StratumConnection {
   /**
    * Re-triggers the `onQueueSpace` callback if there is space in the queue.
    */
-  wakeup () {
+  wakeUp () {
     while (Object.keys(this.pendingMessages).length < this.queueSize) {
-      const task = this.onQueueSpace(this.uri)
+      const task = this.callbacks.onQueueSpace()
       if (!task) break
       this.submitTask(task)
     }
@@ -151,13 +138,7 @@ export class StratumConnection {
   io: any
   queueSize: number
   timeout: number // Converted to ms
-
-  // Callbacks:
-  onClose: OnCloseHandler
-  onOpen: (uri: string) => void
-  onQueueSpace: (uri: string) => StratumTask | void
-  onNotifyHeader: (uri: string, headerInfo: StratumBlockHeader) => void
-  onNotifyScriptHash: (uri: string, scriptHash: string, hash: string) => void
+  callbacks: StratumCallbacks
 
   // Message queue:
   nextId: number
@@ -170,45 +151,38 @@ export class StratumConnection {
 
   // Connection state:
   needsDisconnect: boolean
-  lastKeepalive: number
+  lastKeepAlive: number
   partialMessage: string
   socket: net$Socket | void
   timer: number
-
-  // Connection stats:
-  badMessages: number
-  goodMessages: number
-  totalLatency: number
-  totalMessages: number
+  error: Error
+  sigkill: boolean
 
   /**
    * Called when the socket disconnects for any reason.
    */
   onSocketClose (hadError: boolean) {
+    if ((hadError && !this.error) || !this.sigkill) {
+      this.error = new Error('Unknown Server Error')
+    }
     clearTimeout(this.timer)
     this.connected = false
     this.socket = void 0
     this.needsDisconnect = false
-    const e: Error = hadError
-      ? new Error('Stratum TCP socket error')
-      : new Error('Connection closed')
+    this.sigkill = false
     for (const id of Object.keys(this.pendingMessages)) {
       const message = this.pendingMessages[id]
       try {
-        message.task.onFail(e)
+        message.task.onFail(this.error)
       } catch (e) {
-        this.log(e)
+        console.log(this.errStr(e))
       }
     }
     this.pendingMessages = {}
-    let latency = 0
-    if (this.totalLatency && this.totalMessages) {
-      latency = this.totalLatency / this.totalMessages
-    }
     try {
-      this.onClose(this.uri, this.badMessages, this.goodMessages, latency, hadError)
+      this.callbacks.onClose(this.error)
     } catch (e) {
-      this.log(e)
+      console.log(this.errStr(e))
     }
   }
 
@@ -222,16 +196,11 @@ export class StratumConnection {
     }
 
     this.connected = true
-    this.lastKeepalive = Date.now()
+    this.lastKeepAlive = Date.now()
     this.partialMessage = ''
 
-    this.badMessages = 0
-    this.goodMessages = 0
-    this.totalLatency = 0
-    this.totalMessages = 0
-
     try {
-      this.onOpen(this.uri)
+      this.callbacks.onOpen()
     } catch (e) {
       this.close(e)
     }
@@ -243,7 +212,7 @@ export class StratumConnection {
     }
 
     this.setupTimer()
-    this.wakeup()
+    this.wakeUp()
   }
 
   /**
@@ -274,28 +243,24 @@ export class StratumConnection {
           throw new Error(`Bad Stratum id in ${messageJson}`)
         }
         delete this.pendingMessages[id]
-        ++this.totalMessages
-        this.totalLatency = Date.now() - message.startTime
         try {
           message.task.onDone(json.result)
-          ++this.goodMessages
         } catch (e) {
           message.task.onFail(e)
-          ++this.badMessages
         }
       } else if (json.method === 'blockchain.headers.subscribe') {
         try {
           // TODO: Validate
-          this.onNotifyHeader(this.uri, json.params[0])
+          this.callbacks.onNotifyHeader(json.params[0])
         } catch (e) {
-          this.log(e)
+          console.log(this.errStr(e))
         }
       } else if (json.method === 'blockchain.scripthash.subscribe') {
         try {
           // TODO: Validate
-          this.onNotifyScriptHash(this.uri, json.params[0], json.params[1])
+          this.callbacks.onNotifyScriptHash(json.params[0], json.params[1])
         } catch (e) {
-          this.log(e)
+          console.log(this.errStr(e))
         }
       } else if (/subscribe$/.test(json.method)) {
         // It's some other kind of subscription.
@@ -305,7 +270,7 @@ export class StratumConnection {
     } catch (e) {
       this.close(e)
     }
-    this.wakeup()
+    this.wakeUp()
   }
 
   /**
@@ -314,9 +279,14 @@ export class StratumConnection {
   onTimer () {
     const now = Date.now() - TIMER_SLACK
 
-    if (this.lastKeepalive + KEEPALIVE_MS < now) {
+    if (this.lastKeepAlive + KEEP_ALIVE_MS < now) {
       this.submitTask(
-        fetchVersion((version: string) => {}, (e: Error) => this.close(e))
+        fetchVersion(
+          (version: string) => {
+            this.callbacks.onTimer(now)
+          },
+          (e: Error) => this.close(e)
+        )
       )
     }
 
@@ -326,10 +296,9 @@ export class StratumConnection {
         try {
           message.task.onFail(new Error('Timeout'))
         } catch (e) {
-          this.log(e)
+          console.log(this.errStr(e))
         }
         delete this.pendingMessages[id]
-        ++this.badMessages
       }
     }
     this.setupTimer()
@@ -339,32 +308,38 @@ export class StratumConnection {
    * Call whenever we want to close the connection for any reason
    */
   close (e?: Error) {
-    this.connected = false
+    if (e && !this.error) this.error = e
+    if (this.connected && this.socket) this.disconnect()
+    else this.needsDisconnect = true
+  }
+
+  disconnect () {
     clearTimeout(this.timer)
-    if (!this.connected) this.needsDisconnect = true
-    if (this.socket) this.socket.destroy(e)
+    this.sigkill = true
+    this.connected = false
+    if (this.socket) this.socket.destroy(this.error)
   }
 
   setupTimer () {
     // Find the next time something needs to happen:
-    let nextWakeup = this.lastKeepalive + KEEPALIVE_MS
+    let nextWakeUp = this.lastKeepAlive + KEEP_ALIVE_MS
 
     for (const id of Object.keys(this.pendingMessages)) {
       const message = this.pendingMessages[id]
       const timeout = message.startTime + this.timeout
-      if (timeout < nextWakeup) nextWakeup = timeout
+      if (timeout < nextWakeUp) nextWakeUp = timeout
     }
 
     const now = Date.now() - TIMER_SLACK
-    const delay = nextWakeup < now ? 0 : nextWakeup - now
+    const delay = nextWakeUp < now ? 0 : nextWakeUp - now
     this.timer = setTimeout(() => this.onTimer(), delay)
   }
 
   transmitMessage (id: number, task: StratumTask) {
     if (this.socket && this.connected && !this.needsDisconnect) {
-      // If this is a keepalive, record the time:
+      // If this is a keepAlive, record the time:
       if (task.method === 'server.version') {
-        this.lastKeepalive = Date.now()
+        this.lastKeepAlive = Date.now()
       }
 
       const message = {

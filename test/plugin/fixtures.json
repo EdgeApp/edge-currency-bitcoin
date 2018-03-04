@@ -23,6 +23,10 @@
     },
     "encodeUri": {
       "address only": [{"publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"}, "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"],
+      "legacy address1": [{"legacyAddress": "34YtuLdPgopC8xNMKo98oJkGmeSQUrUWvc"}, "34YtuLdPgopC8xNMKo98oJkGmeSQUrUWvc"],
+      "legacy address2": [{"legacyAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"}, "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"],
+      "legacy address": [{"legacyAddress": "34YtuLdPgopC8xNMKo98oJkGmeSQUrUWvc"}, "34YtuLdPgopC8xNMKo98oJkGmeSQUrUWvc"],
+      "new format address": [{"publicAddress": "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"}, "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4"],
       "address & amount": [{
         "publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX",
         "nativeAmount": "123456780000"
@@ -79,6 +83,11 @@
     },
     "encodeUri": {
       "address only": [{"publicAddress": "LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T"}, "LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T"],
+      "legacy address1": [{"legacyAddress": "34YtuLdPgopC8xNMKo98oJkGmeSQUrUWvc"}, "34YtuLdPgopC8xNMKo98oJkGmeSQUrUWvc"],
+      "legacy address2": [{"legacyAddress": "LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T"}, "LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T"],
+      "legacy address3": [{"legacyAddress": "M816EdyuvWV7oETCfQeZb5mGWm9nHczijH"}, "M816EdyuvWV7oETCfQeZb5mGWm9nHczijH"],
+      "legacy address3": [{"legacyAddress": "M816EdyuvWV7oETCfQeZb5mGWm9nHczijH", "publicAddress": "LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T"}, "M816EdyuvWV7oETCfQeZb5mGWm9nHczijH"],
+      "new format address": [{"publicAddress": "MJiPwX84iBe4WnFDwsYGgtnz1XonPhUqhf"}, "MJiPwX84iBe4WnFDwsYGgtnz1XonPhUqhf"],
       "address & amount": [{
         "publicAddress": "LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T",
         "nativeAmount": "123456780000"

@@ -271,6 +271,26 @@ for (const fixture of fixtures) {
     })
   })
 
+  describe('Should Add Gap Limit Addresses', function () {
+    it('Add Empty Array', function (done) {
+      engine.addGapLimitAddresses([])
+      done()
+    })
+
+    it('Add Already Derived Addresses', function (done) {
+      engine.addGapLimitAddresses([
+        '2MvNRPakFUtKSe7ZYcyextQd3sfSEKiqUHY',
+        '2MxRjw65NxR4DsRj2z1f5xFnKkU5uMRCsoT'
+      ])
+      done()
+    })
+
+    // it('Add Future Addresses', function (done) {
+    //   engine.addGapLimitAddresses([])
+    //   done()
+    // })
+  })
+
   describe('Should start engine', function () {
     it('Get BlockHeight', function (done) {
       this.timeout(10000)
@@ -278,11 +298,19 @@ for (const fixture of fixtures) {
         'https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY',
         (err, res, body) => {
           assert(!err, 'getting block height from a second source')
-          emitter.once('onBlockHeightChange', height => {
-            const thirdPartyHeight = parseInt(JSON.parse(body).height)
-            assert(height >= thirdPartyHeight, 'Block height')
-            assert(engine.getBlockHeight() >= thirdPartyHeight, 'Block height')
-            done() // Can be "done" since the promise resolves before the event fires but just be on the safe side
+          let thirdPartyHeight = parseInt(JSON.parse(body).height)
+          if (!thirdPartyHeight || isNaN(thirdPartyHeight)) {
+            thirdPartyHeight = 1286739
+          }
+          emitter.on('onBlockHeightChange', height => {
+            if (height >= thirdPartyHeight) {
+              emitter.removeAllListeners('onBlockHeightChange')
+              assert(
+                engine.getBlockHeight() >= thirdPartyHeight,
+                'Block height'
+              )
+              done() // Can be "done" since the promise resolves before the event fires but just be on the safe side
+            }
           })
           engine.startEngine().catch(e => {
             console.log('startEngine error', e, e.message)
@@ -321,6 +349,7 @@ for (const fixture of fixtures) {
 
   describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
     it('Should provide a non used BTC address when no options are provided', function (done) {
+      this.timeout(10000)
       setTimeout(() => {
         const address = engine.getFreshAddress()
         request.get(
@@ -334,7 +363,7 @@ for (const fixture of fixtures) {
             done()
           }
         )
-      }, 1000)
+      }, 2000)
     })
   })
 
@@ -550,6 +579,33 @@ for (const fixture of fixtures) {
             currencyCode: 'BTC',
             publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
             nativeAmount: '420000' // 0.042 BTC
+          }
+        ]
+      }
+      // $FlowFixMe
+      return engine
+        .makeSpend(templateSpend)
+        .catch(e => assert.equal(e.message, 'InsufficientFundsError'))
+    })
+
+    it('Should throw InsufficientFundsError for a really big amount', function () {
+      // $FlowFixMe
+      const templateSpend: AbcSpendInfo = {
+        networkFeeOption: 'high',
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        },
+        spendTargets: [
+          {
+            currencyCode: 'BTC',
+            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
+            nativeAmount: '9999999999999000000000' // 0.021 BTC
+          },
+          {
+            currencyCode: 'BTC',
+            publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
+            nativeAmount: '9999999999999000000000' // 0.042 BTC
           }
         ]
       }

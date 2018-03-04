@@ -21,7 +21,8 @@ describe(`Mining Fees`, function () {
       standardFeeLow: '',
       standardFeeHigh: '',
       standardFeeLowAmount: '100000',
-      standardFeeHighAmount: '10000000'
+      standardFeeHighAmount: '10000000',
+      timestamp: 0
     }
     const outBitcoinFees: BitcoinFees = calcFeesFromEarnCom(
       inBitcoinFees,
@@ -42,7 +43,8 @@ describe(`Mining Fees`, function () {
       standardFeeHigh: '333',
       highFee: '666',
       standardFeeLowAmount: '1111111',
-      standardFeeHighAmount: '22222222'
+      standardFeeHighAmount: '22222222',
+      timestamp: 0
     }
     const outBitcoinFees = calcFeesFromEarnCom(inBitcoinFees, [])
 
@@ -60,7 +62,8 @@ describe(`Mining Fees`, function () {
       standardFeeHigh: '333',
       highFee: '666',
       standardFeeLowAmount: '1111111',
-      standardFeeHighAmount: '22222222'
+      standardFeeHighAmount: '22222222',
+      timestamp: 0
     }
     const outBitcoinFees = calcFeesFromEarnCom(inBitcoinFees, null)
 
@@ -78,7 +81,8 @@ describe(`Mining Fees`, function () {
       standardFeeHigh: '333',
       highFee: '666',
       standardFeeLowAmount: '1111111',
-      standardFeeHighAmount: '22222222'
+      standardFeeHighAmount: '22222222',
+      timestamp: 0
     }
     const outBitcoinFees = calcFeesFromEarnCom(inBitcoinFees, { fees: [] })
 
@@ -99,7 +103,8 @@ describe(`Mining Fees`, function () {
       standardFeeHigh: '300',
       highFee: '350',
       standardFeeLowAmount: '100000',
-      standardFeeHighAmount: '10000000'
+      standardFeeHighAmount: '10000000',
+      timestamp: 0
     }
     const result = calcMinerFeePerByte(
       nativeAmount,
@@ -119,7 +124,8 @@ describe(`Mining Fees`, function () {
       standardFeeHigh: '100',
       highFee: '350',
       standardFeeLowAmount: '100000',
-      standardFeeHighAmount: '10000000'
+      standardFeeHighAmount: '10000000',
+      timestamp: 0
     }
     const result = calcMinerFeePerByte(
       nativeAmount,
@@ -139,7 +145,8 @@ describe(`Mining Fees`, function () {
       standardFeeHigh: '100',
       highFee: '350',
       standardFeeLowAmount: '100000',
-      standardFeeHighAmount: '200000'
+      standardFeeHighAmount: '200000',
+      timestamp: 0
     }
     const result = calcMinerFeePerByte(
       nativeAmount,
@@ -159,7 +166,8 @@ describe(`Mining Fees`, function () {
       standardFeeHigh: '100',
       highFee: '350',
       standardFeeLowAmount: '100000',
-      standardFeeHighAmount: '200000'
+      standardFeeHighAmount: '200000',
+      timestamp: 0
     }
     const result = calcMinerFeePerByte(
       nativeAmount,
@@ -179,7 +187,8 @@ describe(`Mining Fees`, function () {
       standardFeeHigh: '100',
       highFee: '350',
       standardFeeLowAmount: '100000',
-      standardFeeHighAmount: '200000'
+      standardFeeHighAmount: '200000',
+      timestamp: 0
     }
     const result = calcMinerFeePerByte(
       nativeAmount,
@@ -199,7 +208,8 @@ describe(`Mining Fees`, function () {
       standardFeeHigh: '100',
       highFee: '350',
       standardFeeLowAmount: '100000',
-      standardFeeHighAmount: '200000'
+      standardFeeHighAmount: '200000',
+      timestamp: 0
     }
     const result = calcMinerFeePerByte(
       nativeAmount,

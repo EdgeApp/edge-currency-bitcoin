@@ -300,15 +300,15 @@ export class KeyManager {
       utxos = utxos.filter(({ utxo }) => utxo.txid === CPFP)
       // If not outputs are given try and build the most efficient TX
       if (!mtx.outputs || mtx.outputs.length === 0) {
-        // Sort the UTXO's by size
+        // Sort the UTXOs by size
         utxos = utxos.sort(
           (a, b) => parseInt(b.utxo.value) - parseInt(a.utxo.value)
         )
-        // Try and get only the biggest UTXO's unless the limit is 0 which means take all
+        // Try and get only the biggest UTXO unless the limit is 0 which means take all
         if (CPFPlimit) utxos = utxos.slice(0, CPFPlimit)
         // CPFP transactions will try to not have change
-        // by subtracting moving all the value from the UTXO's
-        // and substracting the fee from the total output value
+        // by subtracting moving all the value from the UTXOs
+        // and subtracting the fee from the total output value
         const value = utxos.reduce((s, { utxo }) => s + utxo.value, 0)
         subtractFee = true
         // CPFP transactions will add the change address as a single output

@@ -20,6 +20,7 @@ import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import { validateObject } from '../utils/utils.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
+import { bns } from 'biggystring'
 import {
   toLegacyFormat,
   toNewFormat,
@@ -28,8 +29,7 @@ import {
 import bcoin from 'bcoin'
 
 const BYTES_TO_KB = 1000
-const MILI_TO_SEC = 1000
-const INFO_SERVER = 'https://info1.edgesecure.co:8444/v1'
+const MILLI_TO_SEC = 1000
 /**
  * The core currency plugin.
  * Provides information about the currency,
@@ -44,10 +44,7 @@ export class CurrencyEngine {
   pluginState: PluginState
   abcCurrencyEngineOptions: AbcCurrencyEngineOptions
   network: string
-  rawTransactionFees: {
-    lastUpdated: number,
-    fees: Array<any>
-  }
+  infoServer: string
   feeInfoServer: string
   feeUpdateInterval: number
   feeTimer: any
@@ -67,11 +64,12 @@ export class CurrencyEngine {
     const test: AbcCurrencyEngine = this
 
     this.walletInfo = walletInfo
-    this.walletId = walletInfo.id ? `${walletInfo.id} - ` : ''
+    this.walletId = walletInfo.id || ''
     this.currencyInfo = currencyInfo
     this.pluginState = pluginState
     this.abcCurrencyEngineOptions = options
     this.network = this.currencyInfo.defaultSettings.network.type
+    this.infoServer = this.currencyInfo.defaultSettings.infoServer
     this.feeInfoServer = this.currencyInfo.defaultSettings.feeInfoServer
     this.feeUpdateInterval = this.currencyInfo.defaultSettings.feeUpdateInterval
     this.fees = {
@@ -80,7 +78,8 @@ export class CurrencyEngine {
       standardFeeLow: '',
       standardFeeHigh: '',
       standardFeeLowAmount: '',
-      standardFeeHighAmount: ''
+      standardFeeHighAmount: '',
+      timestamp: 0
     }
     if (this.currencyInfo.defaultSettings.simpleFeeSettings) {
       Object.assign(
@@ -88,14 +87,10 @@ export class CurrencyEngine {
         this.currencyInfo.defaultSettings.simpleFeeSettings
       )
     }
-    this.rawTransactionFees = {
-      lastUpdated: 0,
-      fees: []
-    }
-    this.log(
-      `Created Wallet Type ${this.walletInfo.type} for Currency Plugin ${
-        this.currencyInfo.pluginName
-      } `
+    console.log(
+      `${this.walletId} - Created Wallet Type ${
+        this.walletInfo.type
+      } for Currency Plugin ${this.currencyInfo.pluginName}`
     )
   }
 
@@ -123,7 +118,7 @@ export class CurrencyEngine {
       encryptedLocalFolder: this.abcCurrencyEngineOptions
         .walletLocalEncryptedFolder,
       pluginState: this.pluginState,
-      log: (...args) => this.log(...args)
+      walletId: this.walletId
     })
 
     await this.engineState.load()
@@ -197,7 +192,7 @@ export class CurrencyEngine {
         date = blockHeight.timestamp
       }
     }
-    // Get pased bcoin tx from engine
+    // Get parsed bcoin tx from engine
     const bcoinTransaction = this.engineState.parsedTxs[txid]
     if (!bcoinTransaction) {
       throw new Error('Transaction not found')
@@ -265,10 +260,6 @@ export class CurrencyEngine {
 
   async updateFeeTable () {
     try {
-      if (this.rawTransactionFees.lastUpdated) {
-        throw new Error('Already has fees')
-      }
-      const url = `${INFO_SERVER}/networkFees/${this.currencyInfo.currencyCode}`
       if (
         !this.abcCurrencyEngineOptions.optionalSettings ||
         !this.abcCurrencyEngineOptions.optionalSettings.io ||
@@ -276,29 +267,34 @@ export class CurrencyEngine {
       ) {
         throw new Error('No io/fetch object')
       }
-      const feesResponse = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
-        url
-      )
-      const feesJson = await feesResponse.json()
-      if (validateObject(feesJson, InfoServerFeesSchema)) {
-        this.fees = feesJson
-      } else {
-        throw new Error('Fetched invalid networkFees')
+      await this.fetchFee()
+      if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
+        const url = `${this.infoServer}/networkFees/${
+          this.currencyInfo.currencyCode
+        }`
+        const feesResponse = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
+          url
+        )
+        const feesJson = await feesResponse.json()
+        if (validateObject(feesJson, InfoServerFeesSchema)) {
+          this.fees = feesJson
+          this.fees.timestamp = Date.now()
+        } else {
+          throw new Error('Fetched invalid networkFees')
+        }
       }
     } catch (err) {
-      this.log(err)
+      console.log(`${this.walletId} - ${err.toString()}`)
     }
-    await this.updateFeeTableLoop()
   }
 
-  async updateFeeTableLoop () {
-    if (
-      this.abcCurrencyEngineOptions.optionalSettings &&
-      this.abcCurrencyEngineOptions.optionalSettings.io &&
-      this.feeInfoServer !== '' &&
-      this.rawTransactionFees.lastUpdated < Date.now() - this.feeUpdateInterval
-    ) {
-      try {
+  async fetchFee () {
+    if (!this.feeInfoServer || this.feeInfoServer === '') {
+      clearTimeout(this.feeTimer)
+      return
+    }
+    try {
+      if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
         const results = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
           this.feeInfoServer
         )
@@ -306,17 +302,17 @@ export class CurrencyEngine {
           throw new Error(results.body)
         }
         const { fees }: EarnComFees = await results.json()
-        this.rawTransactionFees.lastUpdated = Date.now()
-        this.rawTransactionFees.fees = fees
         this.fees = calcFeesFromEarnCom(this.fees, { fees })
-      } catch (e) {
-        this.log('Error while trying to update fee table', e)
-      } finally {
-        this.feeTimer = setTimeout(() => {
-          this.updateFeeTableLoop()
-        }, this.feeUpdateInterval)
+        this.fees.timestamp = Date.now()
       }
+    } catch (e) {
+      console.log(
+        `${
+          this.walletId
+        } - Error while trying to update fee table ${e.toString()}`
+      )
     }
+    this.feeTimer = setTimeout(() => this.fetchFee(), this.feeUpdateInterval)
   }
 
   getRate ({
@@ -360,11 +356,6 @@ export class CurrencyEngine {
     return utxos
   }
 
-  log (...text: Array<any>) {
-    text[0] = `${this.walletId}${text[0]}`
-    console.log(...text)
-  }
-
   logAbcTransaction (abcTransaction: AbcTransaction, action: string) {
     let log = `------------------ ${action} Transaction ------------------\n`
     log += `Transaction id: ${abcTransaction.txid}\n`
@@ -373,7 +364,7 @@ export class CurrencyEngine {
     const jsonObj = abcTransaction.otherParams.bcoinTx.getJSON(this.network)
     log += JSON.stringify(jsonObj, null, 2) + '\n'
     log += '------------------------------------------------------------------'
-    this.log(log)
+    console.log(`${this.walletId} - ${log}`)
   }
   // ------------------------------------------------------------------------
   // Public API
@@ -389,7 +380,7 @@ export class CurrencyEngine {
       this.currencyInfo.currencyCode,
       this.getBalance()
     )
-    await this.updateFeeTable()
+    this.updateFeeTable()
     return this.engineState.connect()
   }
 
@@ -464,16 +455,20 @@ export class CurrencyEngine {
     return { publicAddress, legacyAddress }
   }
 
-  addGapLimitAddresses (addresses: Array<string>, options: any): void {
-    const use = (scriptHash) => {
+  async addGapLimitAddresses (addresses: Array<string>, options: any) {
+    const use = scriptHash => {
       this.engineState.markAddressesUsed([scriptHash])
-      if (this.keyManager) this.keyManager.setLookAhead()
     }
+    const laterUse = []
     addresses.forEach(address => {
       const scriptHash = this.engineState.scriptHashes[address]
-      if (typeof scriptHash === 'string') use(scriptHash)
-      this.keyManager.addressToScriptHash(address).then(use).catch(this.log)
+      if (typeof scriptHash === 'string') return use(scriptHash)
+      laterUse.push(this.keyManager.addressToScriptHash(address))
     })
+    await Promise.all(laterUse)
+      .then(scriptHashes => scriptHashes.forEach(use))
+      .catch(e => console.log(`${this.walletId} - ${e.toString()}`))
+    if (this.keyManager) this.keyManager.setLookAhead()
   }
 
   isAddressUsed (address: string, options: any): boolean {
@@ -501,9 +496,18 @@ export class CurrencyEngine {
     ) {
       throw new Error('Need to provide Spend Targets')
     }
-    let resultedTransaction
-
+    const totalAmountToSend = abcSpendInfo.spendTargets.reduce(
+      (sum, { nativeAmount }) => bns.add(sum, nativeAmount),
+      '0'
+    )
+    if (bns.gt(totalAmountToSend, this.getBalance())) {
+      throw new Error('InsufficientFundsError')
+    }
     try {
+      // If somehow we have outdated fees, try and get new ones
+      if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
+        await this.updateFeeTable()
+      }
       Object.assign(options, {
         rate: this.getRate(abcSpendInfo),
         maxFee: this.currencyInfo.defaultSettings.maxFee,
@@ -511,56 +515,56 @@ export class CurrencyEngine {
         utxos: this.getUTXOs(),
         height: this.getBlockHeight()
       })
-      resultedTransaction = await this.keyManager.createTX(options)
+      const resultedTransaction = await this.keyManager.createTX(options)
+      const sumOfTx = abcSpendInfo.spendTargets.reduce(
+        (s, spendTarget: AbcSpendTarget) => {
+          if (
+            spendTarget.publicAddress &&
+            this.engineState.scriptHashes[spendTarget.publicAddress]
+          ) {
+            return s
+          } else return s - parseInt(spendTarget.nativeAmount)
+        },
+        0
+      )
+
+      const ourReceiveAddresses = []
+      for (const i in resultedTransaction.outputs) {
+        let address = resultedTransaction.outputs[i]
+          .getAddress()
+          .toString(this.network)
+        address = toNewFormat(address, this.network)
+        if (address && this.engineState.scriptHashes[address]) {
+          ourReceiveAddresses.push(address)
+        }
+      }
+
+      const abcTransaction: AbcTransaction = {
+        ourReceiveAddresses,
+        otherParams: {
+          bcoinTx: resultedTransaction,
+          abcSpendInfo,
+          rate: options.rate
+        },
+        currencyCode: this.currencyInfo.currencyCode,
+        txid: '',
+        date: 0,
+        blockHeight: 0,
+        nativeAmount: `${sumOfTx - parseInt(resultedTransaction.getFee())}`,
+        networkFee: `${resultedTransaction.getFee()}`,
+        signedTx: ''
+      }
+      return abcTransaction
     } catch (e) {
       if (e.type === 'FundingError') throw new Error('InsufficientFundsError')
       throw e
     }
-    const sumOfTx = abcSpendInfo.spendTargets.reduce(
-      (s, spendTarget: AbcSpendTarget) => {
-        if (
-          spendTarget.publicAddress &&
-          this.engineState.scriptHashes[spendTarget.publicAddress]
-        ) {
-          return s
-        } else return s - parseInt(spendTarget.nativeAmount)
-      },
-      0
-    )
-
-    const ourReceiveAddresses = []
-    for (const i in resultedTransaction.outputs) {
-      let address = resultedTransaction.outputs[i]
-        .getAddress()
-        .toString(this.network)
-      address = toNewFormat(address, this.network)
-      if (address && this.engineState.scriptHashes[address]) {
-        ourReceiveAddresses.push(address)
-      }
-    }
-
-    const abcTransaction: AbcTransaction = {
-      ourReceiveAddresses,
-      otherParams: {
-        bcoinTx: resultedTransaction,
-        abcSpendInfo,
-        rate: options.rate
-      },
-      currencyCode: this.currencyInfo.currencyCode,
-      txid: '',
-      date: 0,
-      blockHeight: 0,
-      nativeAmount: `${sumOfTx - parseInt(resultedTransaction.getFee())}`,
-      networkFee: `${resultedTransaction.getFee()}`,
-      signedTx: ''
-    }
-    return abcTransaction
   }
 
   async signTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
     this.logAbcTransaction(abcTransaction, 'Signing')
     await this.keyManager.sign(abcTransaction.otherParams.bcoinTx)
-    abcTransaction.date = Date.now() / MILI_TO_SEC
+    abcTransaction.date = Date.now() / MILLI_TO_SEC
     abcTransaction.signedTx = abcTransaction.otherParams.bcoinTx
       .toRaw()
       .toString('hex')
@@ -619,6 +623,7 @@ export class CurrencyEngine {
       walletId: this.walletId.split(' - ')[0],
       walletType: this.walletInfo.type,
       pluginType: this.currencyInfo.pluginName,
+      fees: this.fees,
       data: {}
     }
     const add = (cache, obj) => {
@@ -639,7 +644,7 @@ export class CurrencyEngine {
       'missingTxs',
       'fetchingHeaders'
     ]
-    const pluginCache = ['headerCache', 'serverCache']
+    const pluginCache = ['headerCache', 'serverCache', 'servers_']
 
     engineCache.forEach(c => add(c, 'engineState'))
     pluginCache.forEach(c => add(c, 'pluginState'))

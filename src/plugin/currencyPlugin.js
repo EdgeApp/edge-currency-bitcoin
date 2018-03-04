@@ -13,7 +13,8 @@ import type {
 import {
   validAddress,
   sanitizeAddress,
-  dirtyAddress
+  dirtyAddress,
+  toNewFormat
 } from '../utils/addressFormat/addressFormatIndex.js'
 import bcoin from 'bcoin'
 import { bns } from 'biggystring'
@@ -133,7 +134,9 @@ export class CurrencyPlugin {
     if (!publicAddress) throw new Error('InvalidUriError')
     publicAddress = publicAddress.replace('/', '') // Remove any slashes
     publicAddress = dirtyAddress(publicAddress, this.network)
-    if (!validAddress(publicAddress, this.network)) throw new Error('InvalidPublicAddressError')
+    if (!validAddress(publicAddress, this.network)) {
+      throw new Error('InvalidPublicAddressError')
+    }
 
     const amountStr = getParameterByName('amount', uri)
     const metadata = {}
@@ -144,10 +147,10 @@ export class CurrencyPlugin {
     const abcParsedUri: AbcParsedUri = { publicAddress, metadata }
 
     if (amountStr && typeof amountStr === 'string') {
-      const denom: any = currencyInfo.denominations.find(
+      const denomination: any = currencyInfo.denominations.find(
         e => e.name === currencyInfo.currencyCode
       )
-      const multiplier: string = denom.multiplier.toString()
+      const multiplier: string = denomination.multiplier.toString()
       const t = bns.mul(amountStr, multiplier)
       abcParsedUri.nativeAmount = bns.toFixed(t, 0, 0)
       abcParsedUri.currencyCode = currencyInfo.currencyCode
@@ -156,17 +159,29 @@ export class CurrencyPlugin {
   }
 
   encodeUri (obj: AbcEncodeUri): string {
-    if (!obj.publicAddress || !validAddress(obj.publicAddress, this.network)) {
+    if (
+      obj.legacyAddress &&
+      validAddress(toNewFormat(obj.legacyAddress, this.network), this.network)
+    ) {
+      obj.publicAddress = obj.legacyAddress
+    } else if (
+      !obj.publicAddress ||
+      !validAddress(obj.publicAddress, this.network)
+    ) {
       throw new Error('InvalidPublicAddressError')
     }
-    if (!obj.nativeAmount && !obj.metadata) return dirtyAddress(obj.publicAddress, this.network)
+    if (!obj.nativeAmount && !obj.metadata) {
+      return dirtyAddress(obj.publicAddress, this.network)
+    }
     obj.publicAddress = sanitizeAddress(obj.publicAddress, this.network)
     let queryString = ''
     const info = this.currencyInfo
     if (obj.nativeAmount) {
       const currencyCode = obj.currencyCode || info.currencyCode
-      const denom: any = info.denominations.find(e => e.name === currencyCode)
-      const multiplier: string = denom.multiplier.toString()
+      const denomination: any = info.denominations.find(
+        e => e.name === currencyCode
+      )
+      const multiplier: string = denomination.multiplier.toString()
       // $FlowFixMe
       const amount = bns.div(obj.nativeAmount, multiplier, 8)
       queryString += 'amount=' + amount.toString() + '&'
