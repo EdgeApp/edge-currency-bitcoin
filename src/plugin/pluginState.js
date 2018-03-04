@@ -70,7 +70,9 @@ export class PluginState extends ServerCache {
         currencyCode = 'BC1'
       }
       this.defaultServers = electrumServers || []
-      this.infoServerUris = infoServer ? `${infoServer}/electrumServers/${currencyCode}` : ''
+      this.infoServerUris = infoServer
+        ? `${infoServer}/electrumServers/${currencyCode}`
+        : ''
     }
     this.engines = []
     this.folder = io.folder.folder('plugins').folder(currencyInfo.pluginName)
