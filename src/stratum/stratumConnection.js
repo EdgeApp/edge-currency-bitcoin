@@ -21,15 +21,13 @@ export interface StratumTask {
   +onFail: OnFailHandler;
 }
 
-export type Nop = () => void
-
 export interface StratumCallbacks {
-  +onOpen: () => void | Nop;
-  +onClose: (error?: Error) => void | Nop;
-  +onQueueSpace: () => StratumTask | void | Nop;
-  +onNotifyHeader: (headerInfo: StratumBlockHeader) => void | Nop;
-  +onNotifyScriptHash: (scriptHash: string, hash: string) => void | Nop;
-  +onTimer: (queryTime: number) => void | Nop;
+  +onOpen: () => void;
+  +onClose: (error?: Error) => void;
+  +onQueueSpace: () => StratumTask | void;
+  +onNotifyHeader: (headerInfo: StratumBlockHeader) => void;
+  +onNotifyScriptHash: (scriptHash: string, hash: string) => void;
+  +onTimer: (queryTime: number) => void;
 }
 
 export interface StratumOptions {
