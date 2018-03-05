@@ -1,6 +1,6 @@
 {
   "name": "edge-currency-bitcoin",
-  "version": "2.14.6",
+  "version": "2.14.7",
   "description": "Edge Bitcoin currency plugin",
   "homepage": "https://edgesecure.co",
   "license": "SEE LICENSE IN LICENSE",
@@ -55,7 +55,7 @@
     "babel-preset-flow": "^6.23.0",
     "chai": "^4.1.2",
     "disklet": "^0.2.4",
-    "edge-login": "^0.5.0",
+    "edge-core-js": "^0.6.2",
     "eslint": "4.5.0",
     "eslint-config-standard": "^10.2.1",
     "eslint-plugin-flowtype": "^2.35.0",

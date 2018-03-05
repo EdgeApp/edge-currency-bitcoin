@@ -9,7 +9,7 @@ import type {
   AbcCurrencyInfo,
   AbcSpendTarget,
   AbcDataDump
-} from 'edge-login'
+} from 'edge-core-js'
 
 import { EngineState } from './engineState.js'
 import { PluginState } from '../plugin/pluginState.js'

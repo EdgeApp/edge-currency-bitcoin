@@ -1,5 +1,5 @@
 // @flow
-import type { AbcIo, DiskletFolder } from 'edge-login'
+import type { AbcIo, DiskletFolder } from 'edge-core-js'
 
 import { type PluginState, TIME_LAZINESS } from '../plugin/pluginState.js'
 // import { scoreServer2 } from '../plugin/pluginState.js'

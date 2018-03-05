@@ -3,7 +3,7 @@
 
 [![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
 
-Implements Bitcoin send/receive functionality per the spec for currency plugins for [edge-login](https://github.com/Airbitz/edge-login)
+Implements Bitcoin send/receive functionality per the spec for currency plugins for [edge-core-js](https://github.com/Airbitz/edge-core-js)
 
 ## Installing
 
@@ -55,11 +55,11 @@ To run a local version of this repo inside the full Edge Wallet app, clone this 
 
 Run `npm run test` to run the unit tests.
 
-To use the local cloned version of this repo, `cd edge-react-gui` and run 
+To use the local cloned version of this repo, `cd edge-react-gui` and run
 
     npm run updot edge-currency-bitcoin
     npm run postinstall
-    
+
 This will copy the necessary files from `edge-currency-bitcoin` into the `edge-react-gui/node_modules/edge-currency-bitcoin` replacing the npm installed version. This needs to be done after any modifications to `edge-currency-bitcoin`
 
 All sources are in the [JavaScript Standard Style](http://standardjs.com/) + [Prettier](https://prettier.io/). We check files prior to each commit, so if you have formatting issues, you can run `npm run format` to fix them automatically.

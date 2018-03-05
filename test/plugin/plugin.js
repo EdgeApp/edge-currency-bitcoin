@@ -1,5 +1,5 @@
 // @flow
-import { makeFakeIos } from 'edge-login'
+import { makeFakeIos } from 'edge-core-js'
 import { describe, it, before } from 'mocha'
 import * as Factories from '../../src/index.js'
 import { assert } from 'chai'

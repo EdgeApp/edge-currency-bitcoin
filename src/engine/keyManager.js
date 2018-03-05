@@ -1,5 +1,5 @@
 // @flow
-import type { AbcSpendTarget } from 'edge-login'
+import type { AbcSpendTarget } from 'edge-core-js'
 import type { UtxoInfo, AddressInfo, AddressInfos } from './engineState.js'
 // $FlowFixMe
 import buffer from 'buffer-hack'

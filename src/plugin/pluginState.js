@@ -1,5 +1,5 @@
 // @flow
-import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'edge-login'
+import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'edge-core-js'
 import type { EngineState } from '../engine/engineState.js'
 import { ServerCache } from './serverCache.js'
 

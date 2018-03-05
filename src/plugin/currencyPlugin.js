@@ -9,7 +9,7 @@ import type {
   AbcIo,
   AbcParsedUri,
   AbcWalletInfo
-} from 'edge-login'
+} from 'edge-core-js'
 import {
   validAddress,
   sanitizeAddress,

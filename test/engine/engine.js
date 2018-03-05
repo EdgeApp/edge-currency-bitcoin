@@ -1,8 +1,8 @@
 // @flow
 import EventEmitter from 'events'
 
-import { makeFakeIos } from 'edge-login'
-import type { AbcSpendInfo } from 'edge-login'
+import { makeFakeIos } from 'edge-core-js'
+import type { AbcSpendInfo } from 'edge-core-js'
 import { assert } from 'chai'
 import { before, describe, it } from 'mocha'
 import fetch from 'node-fetch'

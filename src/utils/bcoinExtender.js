@@ -1,5 +1,5 @@
 // @flow
-import type { AbcCurrencyInfo } from 'edge-login'
+import type { AbcCurrencyInfo } from 'edge-core-js'
 import { patchBcashTX } from './bcashExtender.js'
 import {
   patchDerivePublic,
