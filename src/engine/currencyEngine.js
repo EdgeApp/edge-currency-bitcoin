@@ -455,20 +455,18 @@ export class CurrencyEngine {
     return { publicAddress, legacyAddress }
   }
 
-  async addGapLimitAddresses (addresses: Array<string>, options: any) {
-    const use = scriptHash => {
-      this.engineState.markAddressesUsed([scriptHash])
-    }
-    const laterUse = []
-    addresses.forEach(address => {
+  addGapLimitAddresses (addresses: Array<string>, options: any): void {
+    const scriptHashPromises = addresses.map(address => {
       const scriptHash = this.engineState.scriptHashes[address]
-      if (typeof scriptHash === 'string') return use(scriptHash)
-      laterUse.push(this.keyManager.addressToScriptHash(address))
+      if (typeof scriptHash === 'string') return Promise.resolve(scriptHash)
+      else return this.keyManager.addressToScriptHash(address)
     })
-    await Promise.all(laterUse)
-      .then(scriptHashes => scriptHashes.forEach(use))
+    Promise.all(scriptHashPromises)
+      .then((scriptHashs: Array<string>) => {
+        this.engineState.markAddressesUsed(scriptHashs)
+        if (this.keyManager) this.keyManager.setLookAhead()
+      })
       .catch(e => console.log(`${this.walletId} - ${e.toString()}`))
-    if (this.keyManager) this.keyManager.setLookAhead()
   }
 
   isAddressUsed (address: string, options: any): boolean {

@@ -573,7 +573,7 @@ export class KeyManager {
     return publicKey
   }
 
-  async addressToScriptHash (address: string) {
+  async addressToScriptHash (address: string): Promise<string> {
     const scriptRaw = bcoin.script.fromAddress(address).toRaw()
     const scriptHashRaw = await hash256(scriptRaw)
     const scriptHash = reverseBufferToHex(scriptHashRaw)
