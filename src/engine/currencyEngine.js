@@ -272,6 +272,9 @@ export class CurrencyEngine {
         const url = `${this.infoServer}/networkFees/${
           this.currencyInfo.currencyCode
         }`
+        if (!this.abcCurrencyEngineOptions.optionalSettings) {
+          throw new Error('Missing optionalSettings')
+        }
         const feesResponse = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
           url
         )
@@ -295,6 +298,9 @@ export class CurrencyEngine {
     }
     try {
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
+        if (!this.abcCurrencyEngineOptions.optionalSettings) {
+          throw new Error('Missing optionalSettings')
+        }
         const results = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
           this.feeInfoServer
         )
@@ -495,7 +501,7 @@ export class CurrencyEngine {
       throw new Error('Need to provide Spend Targets')
     }
     const totalAmountToSend = abcSpendInfo.spendTargets.reduce(
-      (sum, { nativeAmount }) => bns.add(sum, nativeAmount),
+      (sum, { nativeAmount }) => bns.add(sum, nativeAmount || '0'),
       '0'
     )
     if (bns.gt(totalAmountToSend, this.getBalance())) {
