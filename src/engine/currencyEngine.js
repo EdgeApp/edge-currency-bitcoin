@@ -182,7 +182,7 @@ export class CurrencyEngine {
   }
 
   getTransaction (txid: string): AbcTransaction {
-    const { height = -1, firstSeen = Date.now() } =
+    const { height = -1, firstSeen = Date.now() / 1000 } =
       this.engineState.txHeightCache[txid] || {}
     let date = firstSeen
     // If confirmed, we will try and take the timestamp as the date
