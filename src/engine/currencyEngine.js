@@ -104,7 +104,8 @@ export class CurrencyEngine {
         this.abcCurrencyEngineOptions.callbacks.onTransactionsChanged([
           abcTransaction
         ])
-      }
+      },
+      onAddressesChecked: this.abcCurrencyEngineOptions.callbacks.onAddressesChecked
     }
     const gapLimit = this.currencyInfo.defaultSettings.gapLimit
     const io = this.abcCurrencyEngineOptions.optionalSettings
