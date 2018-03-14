@@ -1,5 +1,5 @@
 // @flow
-import type { AbcCurrencyInfo } from 'edge-login'
+import type { AbcCurrencyInfo } from 'edge-core-js'
 
 export const bitcoinInfo: AbcCurrencyInfo = {
   // Basic currency information:
@@ -45,7 +45,7 @@ export const bitcoinInfo: AbcCurrencyInfo = {
     defaultFee: 1000,
     feeUpdateInterval: 60000,
     feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
-    infoServer: 'https://info1.edgesecure.co:8444/v1/electrumServers/BC1',
+    infoServer: 'https://info1.edgesecure.co:8444/v1',
     simpleFeeSettings: {
       highFee: '150',
       lowFee: '20',

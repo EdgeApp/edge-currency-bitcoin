@@ -48,9 +48,12 @@ describe('StratumConnection', function () {
   it('fetchVersion', function (done) {
     let taskQueued = false
     const callbacks: StratumCallbacks = {
-      onOpen (uri: string) {},
-      onClose (uri: string) {},
-      onQueueSpace (uri: string) {
+      onTimer () {},
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
+      onOpen () {},
+      onClose () {},
+      onQueueSpace () {
         if (taskQueued) {
           return void 0
         }
@@ -75,9 +78,12 @@ describe('StratumConnection', function () {
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
-      onOpen (uri: string) {},
-      onClose (uri: string) {},
-      onQueueSpace (uri: string) {
+      onTimer () {},
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
+      onOpen () {},
+      onClose () {},
+      onQueueSpace () {
         if (taskQueued) {
           return void 0
         }
@@ -107,9 +113,12 @@ describe('StratumConnection', function () {
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
-      onOpen (uri: string) {},
-      onClose (uri: string) {},
-      onQueueSpace (uri: string) {
+      onTimer () {},
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
+      onOpen () {},
+      onClose () {},
+      onQueueSpace () {
         if (taskQueued) {
           return void 0
         }
@@ -137,9 +146,12 @@ describe('StratumConnection', function () {
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
-      onOpen (uri: string) {},
-      onClose (uri: string) {},
-      onQueueSpace (uri: string) {
+      onTimer () {},
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
+      onOpen () {},
+      onClose () {},
+      onQueueSpace () {
         if (taskQueued) {
           return void 0
         }
@@ -169,9 +181,12 @@ describe('StratumConnection', function () {
     let versionTaskQueued = false
     let taskQueued = false
     const callbacks: StratumCallbacks = {
-      onOpen (uri: string) {},
-      onClose (uri: string) {},
-      onQueueSpace (uri: string) {
+      onTimer () {},
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
+      onOpen () {},
+      onClose () {},
+      onQueueSpace () {
         if (!versionTaskQueued) {
           versionTaskQueued = true
           return fetchVersionHelper(null, null)
@@ -207,9 +222,12 @@ describe('StratumConnection', function () {
     let versionTaskQueued = false
     let taskQueued = false
     const callbacks: StratumCallbacks = {
-      onOpen (uri: string) {},
-      onClose (uri: string) {},
-      onQueueSpace (uri: string) {
+      onTimer () {},
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
+      onOpen () {},
+      onClose () {},
+      onQueueSpace () {
         if (!versionTaskQueued) {
           versionTaskQueued = true
           return fetchVersionHelper(null, null)
@@ -246,9 +264,12 @@ describe('StratumConnection', function () {
     let versionTaskQueued = false
     let taskQueued = false
     const callbacks: StratumCallbacks = {
-      onOpen (uri: string) {},
-      onClose (uri: string) {},
-      onQueueSpace (uri: string) {
+      onTimer () {},
+      onNotifyHeader () {},
+      onNotifyScriptHash () {},
+      onOpen () {},
+      onClose () {},
+      onQueueSpace () {
         if (!versionTaskQueued) {
           versionTaskQueued = true
           return fetchVersionHelper(null, null)

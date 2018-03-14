@@ -1,5 +1,5 @@
 // @flow
-import type { AbcIo, DiskletFolder } from 'edge-login'
+import type { AbcIo, DiskletFolder } from 'edge-core-js'
 
 import { type PluginState, TIME_LAZINESS } from '../plugin/pluginState.js'
 // import { scoreServer2 } from '../plugin/pluginState.js'
@@ -7,7 +7,9 @@ import type {
   StratumCallbacks,
   StratumTask
 } from '../stratum/stratumConnection.js'
-import { StratumConnection, KEEPALIVE_MS } from '../stratum/stratumConnection.js'
+import EventEmitter from 'eventemitter3'
+import stable from 'stable'
+import { StratumConnection } from '../stratum/stratumConnection.js'
 import {
   broadcastTx,
   fetchScriptHashHistory,
@@ -34,7 +36,7 @@ export type UtxoInfo = {
 export type AddressInfo = {
   txids: Array<string>,
   utxos: Array<UtxoInfo>,
-  used: boolean, // Set by `addGapLimitAddress`
+  used: boolean, // Set manually by `addGapLimitAddress`
   displayAddress: string, // base58 or other wallet-ready format
   path: string, // TODO: Define the contents of this member.
   balance: number
@@ -64,17 +66,20 @@ export interface EngineStateOptions {
   localFolder: any;
   encryptedLocalFolder: any;
   pluginState: PluginState;
-  log?: Function;
+  walletId?: string;
 }
 
 function nop () {}
+
+const MAX_CONNECTIONS = 3
+const NEW_CONNECTIONS = 8
 
 /**
  * This object holds the current state of the wallet engine.
  * It is responsible for staying connected to Stratum servers and keeping
  * this information up to date.
  */
-export class EngineState {
+export class EngineState extends EventEmitter {
   // On-disk address information:
   addressCache: {
     [scriptHash: string]: {
@@ -89,7 +94,7 @@ export class EngineState {
     }
   }
 
-  // Dervived address information:
+  // Derived address information:
   addressInfos: AddressInfos
 
   // Maps from display addresses to script hashes:
@@ -101,7 +106,7 @@ export class EngineState {
   // On-disk hex transaction data:
   txCache: { [txid: string]: string }
 
-  // Transaction height / timestamps:
+  // Transaction height / Timestamp:
   txHeightCache: {
     [txid: string]: {
       height: number,
@@ -171,7 +176,7 @@ export class EngineState {
   // True if somebody is currently fetching a transaction:
   fetchingHeaders: { [height: string]: boolean }
 
-  // Headres that are relevant to our transactions, but missing locally:
+  // Headers that are relevant to our transactions, but missing locally:
   missingHeaders: { [height: string]: true }
 
   addAddress (scriptHash: string, displayAddress: string, path: string) {
@@ -182,7 +187,6 @@ export class EngineState {
       txidStratumHash: '',
       utxos: [],
       utxoStratumHash: '',
-      used: false,
       displayAddress,
       path
     }
@@ -213,9 +217,9 @@ export class EngineState {
     try {
       const json = JSON.stringify({ keys: keys })
       await this.encryptedLocalFolder.file('keys.json').setText(json)
-      this.log('Saved keys cache')
+      console.log(`${this.walletId} - Saved keys cache`)
     } catch (e) {
-      this.log('Error saving Keys', e)
+      console.log(`${this.walletId} - ${e.toString()}`)
     }
   }
 
@@ -228,19 +232,21 @@ export class EngineState {
       // TODO: Validate JSON
       return keysCacheJson.keys
     } catch (e) {
-      this.log(e)
+      console.log(`${this.walletId} - ${e.toString()}`)
       return {}
     }
   }
 
   broadcastTx (rawTx: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const uris = Object.keys(this.connections).filter(uri =>
-        this.connections[uri].connected
+      const uris = Object.keys(this.connections).filter(
+        uri => this.connections[uri].connected
       )
       // If we have no connections then error
       if (!uris || !uris.length) {
-        reject(new Error('No available connections\nCheck your internet signal'))
+        reject(
+          new Error('No available connections\nCheck your internet signal')
+        )
       }
       let resolved = false
       let bad = 0
@@ -248,19 +254,23 @@ export class EngineState {
       const task = broadcastTx(
         rawTx,
         (txid: string) => {
-          this.log(`Stratum broadcasted transaction ${txid}`)
+          console.log(
+            `${this.walletId} - Stratum broadcasted transaction ${txid}`
+          )
           // We resolve if any server succeeds:
           if (!resolved) {
             resolved = true
             resolve(txid)
           }
         },
-        (e: Error) => {
+        (e?: Error) => {
           // We fail if every server failed:
           if (++bad === uris.length) {
-            this.log(
-              `Stratum failed to broadcast transaction: ${rawTx}\n With error`,
-              e
+            const msg = e ? `With error ${e.toString()}` : ''
+            console.log(
+              `${
+                this.walletId
+              } - Stratum failed to broadcast transaction: ${rawTx}\n${msg}}`
             )
             reject(e)
           }
@@ -298,27 +308,35 @@ export class EngineState {
       this.saveTxCache()
       if (this.pluginState) {
         this.pluginState.saveHeaderCache()
-        this.pluginState.serverCache.serverCacheSave()
+        this.pluginState.serverCacheSave()
       }
     }, TIME_LAZINESS)
   }
 
-  disconnect () {
+  async disconnect () {
     this.pluginState.removeEngine(this)
     this.engineStarted = false
     clearInterval(this.cacheTimer)
     clearTimeout(this.reconnectTimer)
+    const closed = []
     for (const uri of Object.keys(this.connections)) {
-      console.log('engineState.js - disconnect - uri', uri)
-      this.connections[uri].close()
-      delete this.connections[uri]
+      closed.push(
+        new Promise((resolve, reject) => {
+          this.on('connectionClose', uriClosed => {
+            if (uriClosed === uri) resolve()
+          })
+        })
+      )
+      this.connections[uri].disconnect()
     }
+    await Promise.all(closed)
   }
 
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------
   io: AbcIo
+  walletId: string
   localFolder: DiskletFolder
   encryptedLocalFolder: DiskletFolder
   pluginState: PluginState
@@ -333,9 +351,10 @@ export class EngineState {
   txCacheTimestamp: number
   cacheTimer: number
   reconnectTimer: number
-  log: Function
+  reconnectCounter: number
 
   constructor (options: EngineStateOptions) {
+    super()
     this.addressCache = {}
     this.addressInfos = {}
     this.scriptHashes = {}
@@ -349,7 +368,7 @@ export class EngineState {
     this.missingTxs = {}
     this.fetchingHeaders = {}
     this.missingHeaders = {}
-    this.log = options.log || console.log
+    this.walletId = options.walletId || ''
     this.io = options.io
     this.localFolder = options.localFolder
     this.encryptedLocalFolder = options.encryptedLocalFolder
@@ -369,91 +388,104 @@ export class EngineState {
     this.addressCacheTimestamp = Date.now()
     this.txCacheDirty = false
     this.txCacheTimestamp = Date.now()
+    this.reconnectCounter = 0
+  }
+
+  reconnect () {
+    if (this.engineStarted) {
+      if (!this.reconnectTimer) {
+        if (this.reconnectCounter < 30) this.reconnectCounter++
+        this.reconnectTimer = setTimeout(() => {
+          this.reconnectTimer = 0
+          this.refillServers()
+        }, this.reconnectCounter * 1000)
+      } else {
+      }
+    }
   }
 
   refillServers () {
     const { io } = this
-
-    let i = 0
-    const servers = this.pluginState.serverCache.getServers(8)
-    this.log(`Refilling Servers, top 8 servers are:`, servers)
-    while (Object.keys(this.connections).length < 3) {
-      const uri = servers[i++]
-      if (!uri) {
-        this.reconnectTimer = setTimeout(() => this.refillServers(), 1000)
-        break
-      }
-      if (/^electrums:/.test(uri)) {
-        this.pluginState.serverCache.serverScoreDown(uri, 100)
-        continue
-      }
-
-      if (!this.io.Socket && /^electrum:/.test(uri)) {
-        this.pluginState.serverCache.serverScoreDown(uri, 100)
-        continue
-      }
-
+    const ignorePatterns = []
+    if (!this.io.TLSSocket) ignorePatterns.push('electrums:')
+    if (!this.io.Socket) ignorePatterns.push('electrum:')
+    const servers = this.pluginState.getServers(NEW_CONNECTIONS, ignorePatterns)
+    console.log(
+      `${
+        this.walletId
+      } - Refilling Servers, top ${NEW_CONNECTIONS} servers are:`,
+      servers
+    )
+    let chanceToBePicked = 1.25
+    while (Object.keys(this.connections).length < MAX_CONNECTIONS) {
+      if (!servers.length) break
+      const uri = servers.shift()
       if (this.connections[uri]) {
         continue
       }
-
+      chanceToBePicked -= chanceToBePicked > 0.5 ? 0.25 : 0
+      if (Math.random() > chanceToBePicked) {
+        servers.push(uri)
+        continue
+      }
+      if (!uri) {
+        this.reconnect()
+        break
+      }
+      const prefix = `${this.walletId} - Stratum ${uri} `
       const callbacks: StratumCallbacks = {
-        onOpen: (uri: string) => {
-          this.log(`Connected to ${uri}`)
+        onOpen: () => {
+          this.reconnectCounter = 0
+          console.log(`${this.walletId} - Connected to ${uri}`)
         },
-        onClose: (
-          uri: string,
-          badMessages: number,
-          goodMessages: number,
-          latency: number,
-          hadError: boolean
-        ) => {
+        onClose: (error?: Error) => {
           delete this.connections[uri]
-
-          if (hadError) {
-            this.pluginState.serverCache.serverScoreDown(uri)
-          }
-
-          if (this.engineStarted) {
-            this.reconnectTimer = setTimeout(() => this.refillServers(),
-              goodMessages ? 0 : KEEPALIVE_MS)
-          }
-          this.addressCacheDirty && this.saveAddressCache()
-          this.txCacheDirty && this.saveTxCache()
+          const msg = error ? ` with error ${error.message}` : ''
+          console.log(`${prefix}was closed${msg}`)
+          this.emit('connectionClose', uri)
+          error && this.pluginState.serverScoreDown(uri)
+          this.reconnect()
+          this.saveAddressCache()
+          this.saveTxCache()
         },
 
-        onQueueSpace: uri => {
+        onQueueSpace: () => {
           const start = Date.now()
           const task = this.pickNextTask(uri)
           const taskMessage = task
             ? `${task.method} with params: ${task.params.toString()}`
             : 'No task Has been Picked'
-          this.log(
-            `Picked task: ${taskMessage}, for uri ${uri}, in: - ${Date.now() -
+          console.log(
+            `${
+              this.walletId
+            } - Picked task: ${taskMessage}, for uri ${uri}, in: - ${Date.now() -
               start}ms`
           )
           return task
         },
-
-        onNotifyHeader: (uri: string, headerInfo: StratumBlockHeader) => {
-          this.log(`Stratum ${uri} notified header ${headerInfo.block_height}`)
+        onTimer: (queryTime: number) => {
+          console.log(`${prefix}was pinged`)
+          this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
+        },
+        onNotifyHeader: (headerInfo: StratumBlockHeader) => {
+          console.log(`${prefix}notified header ${headerInfo.block_height}`)
           this.serverStates[uri].height = headerInfo.block_height
           this.pluginState.updateHeight(headerInfo.block_height)
         },
 
-        onNotifyScriptHash: (uri: string, scriptHash: string, hash: string) => {
-          this.log(`Stratum ${uri} notified scripthash ${scriptHash} change`)
+        onNotifyScriptHash: (scriptHash: string, hash: string) => {
+          console.log(`${prefix}notified scripthash ${scriptHash} change`)
           const addressState = this.serverStates[uri].addresses[scriptHash]
           addressState.hash = hash
           addressState.lastUpdate = Date.now()
         }
       }
 
-      this.connections[uri] = new StratumConnection(
-        uri,
-        { callbacks, io },
-        this.log
-      )
+      this.connections[uri] = new StratumConnection(uri, {
+        callbacks,
+        io,
+        walletId: this.walletId
+      })
       this.serverStates[uri] = {
         fetchingHeight: false,
         fetchingVersion: false,
@@ -470,6 +502,7 @@ export class EngineState {
 
   pickNextTask (uri: string): StratumTask | void {
     const serverState = this.serverStates[uri]
+    const prefix = `${this.walletId} - Stratum ${uri} `
 
     // Check the version if we haven't done that already:
     if (serverState.version === void 0 && !serverState.fetchingVersion) {
@@ -477,14 +510,14 @@ export class EngineState {
       const queryTime = Date.now()
       return fetchVersion(
         (version: string) => {
-          this.log(`Stratum ${uri} received version ${version}`)
+          console.log(`${prefix}received version ${version}`)
           serverState.fetchingVersion = false
           serverState.version = version
-          this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
+          this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
         },
-        (e: Error) => {
+        (e?: Error) => {
           serverState.fetchingVersion = false
-          this.onConnectionFail(uri, e, 'getting version')
+          this.onConnectionClose(uri, 'getting version', e)
         }
       )
     }
@@ -495,15 +528,15 @@ export class EngineState {
       const queryTime = Date.now()
       return subscribeHeight(
         (height: number) => {
-          this.log(`Stratum ${uri} received height ${height}`)
+          console.log(`${prefix}received height ${height}`)
           serverState.fetchingHeight = false
           serverState.height = height
           this.pluginState.updateHeight(height)
-          this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
+          this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
         },
-        (e: Error) => {
+        (e?: Error) => {
           serverState.fetchingHeight = false
-          this.onConnectionFail(uri, e, 'subscribing to height')
+          this.onConnectionClose(uri, 'subscribing to height', e)
         }
       )
     }
@@ -513,8 +546,10 @@ export class EngineState {
     // TODO: Check block headers to ensure we are on the right chain.
     if (!serverState.version) return
     if (serverState.version < '1.1') {
-      this.connections[uri].close(new Error('Server protocol version is too old'))
-      this.pluginState.serverCache.serverScoreDown(uri, 100)
+      this.connections[uri].close(
+        new Error('Server protocol version is too old')
+      )
+      this.pluginState.serverScoreDown(uri, 100)
       return
     }
 
@@ -529,20 +564,18 @@ export class EngineState {
         return fetchBlockHeader(
           parseInt(height),
           (header: any) => {
-            this.log(
-              `Stratum ${uri} received header for block number ${height}`
-            )
+            console.log(`${prefix}received header for block number ${height}`)
             this.fetchingHeaders[height] = false
-            this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
+            this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleHeaderFetch(height, header)
           },
-          (e: Error) => {
+          (e?: Error) => {
             this.fetchingHeaders[height] = false
             if (!serverState.headers[height]) {
-              this.onConnectionFail(
+              this.onConnectionClose(
                 uri,
-                e,
-                `getting header for block number ${height}`
+                `getting header for block number ${height}`,
+                e
               )
             } else {
               // TODO: Don't penalize the server score either.
@@ -560,15 +593,15 @@ export class EngineState {
         return fetchTransaction(
           txid,
           (txData: string) => {
-            this.log(`Stratum ${uri} received tx ${txid}`)
-            this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
+            console.log(`${prefix}received tx ${txid}`)
+            this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.fetchingTxs[txid] = false
             this.handleTxFetch(txid, txData)
           },
-          (e: Error) => {
+          (e?: Error) => {
             this.fetchingTxs[txid] = false
             if (!serverState.txids[txid]) {
-              this.onConnectionFail(uri, e, `getting transaction ${txid}`)
+              this.onConnectionClose(uri, `getting transaction ${txid}`, e)
             } else {
               // TODO: Don't penalize the server score either.
             }
@@ -591,45 +624,52 @@ export class EngineState {
         return fetchScriptHashUtxo(
           address,
           (utxos: Array<StratumUtxo>) => {
-            this.log(`Stratum ${uri} received utxos for ${address}`)
+            console.log(`${prefix}received utxos for ${address}`)
             addressState.fetchingUtxos = false
             if (!addressState.hash) {
               throw new Error(
                 'Blank stratum hash (logic bug - should never happen)'
               )
             }
-            this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
+            this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleUtxoFetch(address, addressState.hash || '', utxos)
           },
-          (e: Error) => {
+          (e?: Error) => {
             addressState.fetchingUtxos = false
-            this.onConnectionFail(uri, e, `fetching utxos for ${address}`)
+            this.onConnectionClose(uri, `fetching utxos for ${address}`, e)
           }
         )
       }
     }
 
+    const priorityAddressList = stable(
+      Object.keys(this.addressInfos),
+      (address1: string, address2: string) => {
+        return (
+          (this.addressInfos[address1].used ? 1 : 0) >
+          (this.addressInfos[address2].used ? 1 : 0)
+        )
+      }
+    )
     // Subscribe to addresses:
-    for (const address of Object.keys(this.addressCache)) {
+    for (const address of priorityAddressList) {
       const addressState = serverState.addresses[address]
       if (!addressState.subscribed && !addressState.subscribing) {
         addressState.subscribing = true
-        const queryTime = Date.now()
         return subscribeScriptHash(
           address,
           (hash: string | null) => {
-            this.log(
-              `Stratum ${uri} subscribed to ${address} at ${hash || 'null'}`
+            console.log(
+              `${prefix}subscribed to ${address} at ${hash || 'null'}`
             )
-            this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
             addressState.subscribing = false
             addressState.subscribed = true
             addressState.hash = hash
             addressState.lastUpdate = Date.now()
           },
-          (e: Error) => {
+          (e?: Error) => {
             addressState.subscribing = false
-            this.onConnectionFail(uri, e, `subscribing to address ${address}`)
+            this.onConnectionClose(uri, `subscribing to address ${address}`, e)
           }
         )
       }
@@ -649,22 +689,22 @@ export class EngineState {
         return fetchScriptHashHistory(
           address,
           (history: Array<StratumHistoryRow>) => {
-            this.log(`Stratum ${uri} received history for ${address}`)
+            console.log(`${prefix}received history for ${address}`)
             addressState.fetchingTxids = false
             if (!addressState.hash) {
               throw new Error(
                 'Blank stratum hash (logic bug - should never happen)'
               )
             }
-            this.pluginState.serverCache.serverScoreUp(uri, Date.now() - queryTime)
+            this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleHistoryFetch(address, addressState.hash || '', history)
           },
-          (e: Error) => {
+          (e?: Error) => {
             addressState.fetchingTxids = false
-            this.onConnectionFail(
+            this.onConnectionClose(
               uri,
-              e,
-              `getting history for address ${address}`
+              `getting history for address ${address}`,
+              e
             )
           }
         )
@@ -673,7 +713,7 @@ export class EngineState {
   }
 
   async load () {
-    this.log('Loading wallet engine caches')
+    console.log(`${this.walletId} - Loading wallet engine caches`)
 
     // Load transaction data cache:
     try {
@@ -710,7 +750,7 @@ export class EngineState {
       this.addressCache = cacheJson.addresses
       this.txHeightCache = cacheJson.heights
 
-      // Fillup the missing headers to fetch
+      // Fill up the missing headers to fetch
       for (const txid in this.txHeightCache) {
         const height = this.txHeightCache[txid].height
         if (!this.pluginState.headerCache[`${height}`]) {
@@ -755,41 +795,35 @@ export class EngineState {
     await this.saveTxCache()
   }
 
-  saveAddressCache (): Promise<void> {
+  async saveAddressCache () {
     if (this.addressCacheDirty) {
-      const json = JSON.stringify({
-        addresses: this.addressCache,
-        heights: this.txHeightCache
-      })
-
-      return this.localFolder
-        .file('addresses.json')
-        .setText(json)
-        .then(() => {
-          this.log('Saved address cache')
-          this.addressCacheDirty = false
-          this.addressCacheTimestamp = Date.now()
+      try {
+        const json = JSON.stringify({
+          addresses: this.addressCache,
+          heights: this.txHeightCache
         })
-        .catch(e => this.log('saveAddressCache', e.message))
+        await this.localFolder.file('addresses.json').setText(json)
+        console.log(`${this.walletId} - Saved address cache`)
+        this.addressCacheDirty = false
+        this.addressCacheTimestamp = Date.now()
+      } catch (e) {
+        console.log(`${this.walletId} - saveAddressCache - ${e.toString()}`)
+      }
     }
-    return Promise.resolve()
   }
 
-  saveTxCache (): Promise<void> {
+  async saveTxCache () {
     if (this.txCacheDirty) {
-      const json = JSON.stringify({ txs: this.txCache })
-
-      return this.localFolder
-        .file('txs.json')
-        .setText(json)
-        .then(() => {
-          this.log('Saved tx cache')
-          this.txCacheDirty = false
-          this.txCacheTimestamp = Date.now()
-        })
-        .catch(e => this.log('saveTxCache', e.message))
+      try {
+        const json = JSON.stringify({ txs: this.txCache })
+        await this.localFolder.file('txs.json').setText(json)
+        console.log(`${this.walletId} - Saved tx cache`)
+        this.txCacheDirty = false
+        this.txCacheTimestamp = Date.now()
+      } catch (e) {
+        console.log(`${this.walletId} - saveTxCache - ${e.toString()}`)
+      }
     }
-    return Promise.resolve()
   }
 
   dirtyAddressCache () {
@@ -883,12 +917,12 @@ export class EngineState {
     this.txCache[txid] = txData
     delete this.missingTxs[txid]
     this.parsedTxs[txid] = parseTransaction(txData)
-    for (const scriptHash of this.findAffectedAddressesforInputs(txid)) {
+    for (const scriptHash of this.findAffectedAddressesForInputs(txid)) {
       this.refreshAddressInfo(scriptHash)
     }
     this.dirtyTxCache()
     this.onTxFetched(txid)
-    for (const scriptHash of this.findAffectedAddressesforOutput(txid)) {
+    for (const scriptHash of this.findAffectedAddressesForOutput(txid)) {
       this.refreshAddressInfo(scriptHash)
       for (const parsedTxid of this.addressInfos[scriptHash].txids) {
         const tx = this.parsedTxs[parsedTxid]
@@ -1039,7 +1073,7 @@ export class EngineState {
     if (prevUsed !== used) this.onAddressUsed()
   }
 
-  findAffectedAddressesforInputs (txid: string): Array<string> {
+  findAffectedAddressesForInputs (txid: string): Array<string> {
     const scriptHashSet = []
     for (const input of this.parsedTxs[txid].inputs) {
       const prevTx = this.parsedTxs[input.prevout.rhash()]
@@ -1051,7 +1085,7 @@ export class EngineState {
     return scriptHashSet
   }
 
-  findAffectedAddressesforOutput (txid: string): Array<string> {
+  findAffectedAddressesForOutput (txid: string): Array<string> {
     const scriptHashSet = []
     for (const output of this.parsedTxs[txid].outputs) {
       if (this.addressCache[output.scriptHash]) {
@@ -1062,8 +1096,8 @@ export class EngineState {
   }
 
   findAffectedAddresses (txid: string): Array<string> {
-    const inputs = this.findAffectedAddressesforInputs(txid)
-    const outputs = this.findAffectedAddressesforOutput(txid)
+    const inputs = this.findAffectedAddressesForInputs(txid)
+    const outputs = this.findAffectedAddressesForOutput(txid)
     return inputs.concat(outputs)
   }
 
@@ -1077,8 +1111,9 @@ export class EngineState {
     return txids
   }
 
-  onConnectionFail (uri: string, e: Error, task: string) {
-    this.log(`Stratum ${uri} failed with message "${e.message}" while ${task}`)
+  onConnectionClose (uri: string, task: string, e?: Error) {
+    const msg = e ? `failed with message "${e.message}"` : `was closed`
+    console.log(`${this.walletId} - Stratum ${uri} ${msg} while ${task}`)
     if (this.connections[uri]) {
       this.connections[uri].close(e)
     }
@@ -1086,7 +1121,7 @@ export class EngineState {
 
   populateServerAddresses (uri: string) {
     const serverState = this.serverStates[uri]
-    for (const address of Object.keys(this.addressCache)) {
+    for (const address of Object.keys(this.addressInfos)) {
       if (!serverState.addresses[address]) {
         serverState.addresses[address] = {
           fetchingTxids: false,

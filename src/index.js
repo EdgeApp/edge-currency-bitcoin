@@ -4,7 +4,7 @@ import type {
   AbcCurrencyInfo,
   AbcCurrencyPlugin,
   AbcCurrencyPluginFactory
-} from 'edge-login'
+} from 'edge-core-js'
 import bcoin from 'bcoin'
 
 // Coins Plugin Info

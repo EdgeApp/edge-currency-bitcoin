@@ -1,7 +1,7 @@
 // @flow
-import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'edge-login'
+import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'edge-core-js'
 import type { EngineState } from '../engine/engineState.js'
-import { ServerCache } from '../engine/serverCache.js'
+import { ServerCache } from './serverCache.js'
 
 export const TIME_LAZINESS = 10000
 
@@ -9,7 +9,7 @@ export const TIME_LAZINESS = 10000
  * This object holds the plugin-wide per-currency caches.
  * Engine plugins are responsible for keeping it up to date.
  */
-export class PluginState {
+export class PluginState extends ServerCache {
   // On-disk header information:
   height: number
   headerCache: {
@@ -56,17 +56,24 @@ export class PluginState {
   pluginName: string
 
   constructor (io: AbcIo, currencyInfo: AbcCurrencyInfo) {
+    super()
     this.height = 0
     this.headerCache = {}
-    this.serverCache = new ServerCache(this.saveData.bind(this))
     this.io = io
     this.defaultServers = []
     this.infoServerUris = ''
     if (currencyInfo.defaultSettings) {
-      this.defaultServers = currencyInfo.defaultSettings.electrumServers || []
-      this.infoServerUris = currencyInfo.defaultSettings.infoServer || ''
+      const { electrumServers, infoServer } = currencyInfo.defaultSettings
+      let { currencyCode } = currencyInfo
+      // Rename the bitcoin currencyCode to get the new version of the server list
+      if (currencyCode === 'BTC') {
+        currencyCode = 'BC1'
+      }
+      this.defaultServers = electrumServers || []
+      this.infoServerUris = infoServer
+        ? `${infoServer}/electrumServers/${currencyCode}`
+        : ''
     }
-
     this.engines = []
     this.folder = io.folder.folder('plugins').folder(currencyInfo.pluginName)
     this.pluginName = currencyInfo.pluginName
@@ -89,7 +96,9 @@ export class PluginState {
     }
 
     try {
-      const serverCacheText = await this.folder.file('serverCache.json').getText()
+      const serverCacheText = await this.folder
+        .file('serverCache.json')
+        .getText()
       const serverCacheJson = JSON.parse(serverCacheText)
       // TODO: Validate JSON
 
@@ -105,11 +114,12 @@ export class PluginState {
   }
 
   async clearCache () {
+    this.clearServerCache()
     this.headerCache = {}
-    this.serverCache = new ServerCache(this.saveData.bind(this))
     this.headerCacheDirty = true
+    this.serverCacheDirty = true
     await this.saveHeaderCache()
-    await this.serverCache.serverCacheSave()
+    await this.serverCacheSave()
     await this.fetchStratumServers()
   }
 
@@ -124,11 +134,11 @@ export class PluginState {
           })
         )
         .then(() => {
-          this.log('Saved header cache')
+          console.log(`${this.pluginName} - Saved header cache`)
           this.headerCacheDirty = false
           this.headerCacheTimestamp = Date.now()
         })
-        .catch(e => this.log(e))
+        .catch(e => console.log(`${this.pluginName} - ${e.toString()}`))
     }
     return Promise.resolve()
   }
@@ -136,29 +146,11 @@ export class PluginState {
   async saveData (data: Object) {
     try {
       await this.folder.file('serverCache.json').setText(JSON.stringify(data))
-      this.log('Saved server cache')
+      console.log(`${this.pluginName} - Saved server cache`)
     } catch (e) {
-      this.log(e)
+      console.log(`${this.pluginName} - ${e.toString()}`)
     }
   }
-
-  // saveServerCache (): Promise<void> {
-  //   if (this.serverCacheDirty) {
-  //     const servers = this.serverCache.serverCacheSave()
-  //     return this.folder
-  //       .file('serverCache.json')
-  //       .setText(
-  //         JSON.stringify(servers)
-  //       )
-  //       .then(() => {
-  //         this.log('Saved server cache')
-  //         this.serverCacheDirty = false
-  //         this.serverCacheTimestamp = Date.now()
-  //       })
-  //       .catch(e => this.log(e))
-  //   }
-  //   return Promise.resolve()
-  // }
 
   dirtyHeaderCache () {
     this.headerCacheDirty = true
@@ -167,23 +159,18 @@ export class PluginState {
     }
   }
 
-  // dirtyServerCache () {
-  //   this.serverCacheDirty = true
-  //   if (this.serverCacheTimestamp + TIME_LAZINESS < Date.now()) {
-  //     this.saveServerCache()
-  //   }
-  // }
-
   async fetchStratumServers (): Promise<void> {
     const { io } = this
-    this.log(`GET ${this.infoServerUris}`)
+    console.log(`${this.pluginName} - GET ${this.infoServerUris}`)
     let serverList = this.defaultServers
     try {
       if (this.infoServerUris !== '') {
         const result = await io.fetch(this.infoServerUris)
         if (!result.ok) {
-          this.log(
-            `Fetching ${this.infoServerUris} failed with ${result.status}`
+          console.log(
+            `${this.pluginName} - Fetching ${this.infoServerUris} failed with ${
+              result.status
+            }`
           )
         } else {
           serverList = await result.json()
@@ -192,8 +179,8 @@ export class PluginState {
     } catch (e) {
       console.log(e)
     }
-    this.serverCache.serverCacheLoad(this.serverCacheJson, serverList)
-    await this.serverCache.serverCacheSave()
+    this.serverCacheLoad(this.serverCacheJson, serverList)
+    await this.serverCacheSave()
 
     // Tell the engines about the new servers:
     for (const engine of this.engines) {
@@ -211,10 +198,5 @@ export class PluginState {
         engine.onHeightUpdated(height)
       }
     }
-  }
-
-  log (...text: Array<any>) {
-    text[0] = `${this.pluginName} - ${text[0]}`
-    console.log(...text)
   }
 }

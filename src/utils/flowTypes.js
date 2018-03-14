@@ -3,7 +3,7 @@
  * @flow
  */
 
-// import type { AbcTransaction } from 'edge-login'
+// import type { AbcTransaction } from 'edge-core-js'
 // import { txLibInfo } from './currencyInfoETH.js'
 // export const DATA_STORE_FOLDER = 'txEngineFolder'
 // export const DATA_STORE_FILE = 'walletLocalData.json'
@@ -29,7 +29,10 @@ export type BitcoinFees = {
 
   // The amount of satoshis which will be charged the standardFeeHigh
   standardFeeHighAmount: string,
-  highFee: string
+  highFee: string,
+
+  // The last time the fees were updated
+  timestamp: number
 }
 
 export type EarnComFee = {

@@ -18,7 +18,7 @@ const MAX_STANDARD_DELAY = 12
 const MIN_STANDARD_DELAY = 3
 
 /**
- * Calculate the BitcoinFees struct given a default BitcoinFees struct and EarnComFees
+ * Calculate the BitcoinFees object given a default BitcoinFees object and EarnComFees
  * @param bitcoinFees
  * @param earnComFees
  * @returns {BitcoinFees}
@@ -85,7 +85,7 @@ export function calcFeesFromEarnCom (
 
   // Go backwards looking for lowest standardFeeHigh that:
   // 1. Is < highFee
-  // 2. Has a blockdelay > highDelay
+  // 2. Has a blockDelay > highDelay
   // 3. Has a delay that is > MIN_STANDARD_DELAY
   // Use the highFee as the default standardHighFee
   standardFeeHigh = highFee
@@ -141,7 +141,7 @@ export function calcFeesFromEarnCom (
 }
 
 /**
- * Calculate the sat/byte mining fee given an amount to spend and a BitcoinFees struct
+ * Calculate the sat/byte mining fee given an amount to spend and a BitcoinFees object
  * @param nativeAmount
  * @param feeOption
  * @param customFee

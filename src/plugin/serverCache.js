@@ -17,20 +17,16 @@ const SAVE_LAZINESS = 10000
 
 export class ServerCache {
   servers_: { [serverUrl: string]: ServerInfo }
-  dirty_: boolean
+  serverCacheDirty: boolean
   cacheLastSave_: number
   lastScoreUpTime_: number
   lastSaveTime: number
-  saveData: (data: Object) => Promise<void>
 
-  constructor (saveData: (data: Object) => Promise<void>) {
-    this.servers_ = {}
-    this.dirty_ = false
-    this.cacheLastSave_ = 0
-    this.lastScoreUpTime_ = Date.now()
-    this.lastSaveTime = 0
-    this.saveData = saveData
+  constructor () {
+    this.clearServerCache()
   }
+
+  async saveData (data: Object) {}
 
   /**
    * Loads the server cache with new and old servers
@@ -85,16 +81,27 @@ export class ServerCache {
       oldServer.serverScore = serverScore
       this.servers_[serverUrl] = oldServer
     }
-    this.dirty_ = true
+    this.serverCacheDirty = true
   }
 
   async serverCacheSave () {
-    this.printServerCache()
-    if (this.dirty_ && this.lastSaveTime + SAVE_LAZINESS < Date.now()) {
+    // this.printServerCache()
+    if (
+      this.serverCacheDirty &&
+      this.lastSaveTime + SAVE_LAZINESS < Date.now()
+    ) {
       await this.saveData(this.servers_)
-      this.dirty_ = false
+      this.serverCacheDirty = false
       this.lastSaveTime = Date.now()
     }
+  }
+
+  clearServerCache () {
+    this.servers_ = {}
+    this.serverCacheDirty = false
+    this.cacheLastSave_ = 0
+    this.lastScoreUpTime_ = Date.now()
+    this.lastSaveTime = 0
   }
 
   printServerCache () {
@@ -118,16 +125,23 @@ export class ServerCache {
     console.log('**************************')
   }
 
-  serverScoreUp (serverUrl: string, responseTimeMilliseconds: number, changeScore: number = 1) {
+  serverScoreUp (
+    serverUrl: string,
+    responseTimeMilliseconds: number,
+    changeScore: number = 1
+  ) {
     const serverInfo: ServerInfo = this.servers_[serverUrl]
 
     serverInfo.serverScore += changeScore
     if (serverInfo.serverScore > MAX_SCORE) {
       serverInfo.serverScore = MAX_SCORE
-      this.dirty_ = true
+      this.serverCacheDirty = true
     }
-
-    console.log(`ServerCache UP: ${serverUrl} ${serverInfo.serverScore} ${responseTimeMilliseconds}`)
+    console.log(
+      `Stratum ${serverUrl} score went UP ${
+        serverInfo.serverScore
+      } ${responseTimeMilliseconds}`
+    )
     this.lastScoreUpTime_ = Date.now()
 
     if (responseTimeMilliseconds !== 0) {
@@ -138,7 +152,7 @@ export class ServerCache {
   serverScoreDown (serverUrl: string, changeScore: number = 10) {
     const currentTime = Date.now()
     if (currentTime - this.lastScoreUpTime_ > 60000) {
-      // It has been over 1 minute since we got an upvote for any server.
+      // It has been over 1 minute since we got an up-vote for any server.
       // Assume the network is down and don't penalize anyone for now
       return
     }
@@ -146,38 +160,43 @@ export class ServerCache {
     serverInfo.serverScore -= changeScore
     if (serverInfo.serverScore < MIN_SCORE) {
       serverInfo.serverScore = MIN_SCORE
-      this.dirty_ = true
+      this.serverCacheDirty = true
     }
-    console.log(`ServerCache DOWN: ${serverUrl} ${serverInfo.serverScore.toString()}`)
+    console.log(
+      `Stratum ${serverUrl} score went DOWN ${serverInfo.serverScore}`
+    )
   }
 
   setResponseTime (serverUrl: string, responseTimeMilliseconds: number) {
     const serverInfo: ServerInfo = this.servers_[serverUrl]
     serverInfo.numResponseTimes++
 
-    const oldtime = serverInfo.responseTime
+    const oldTime = serverInfo.responseTime
     let newTime = 0
-    if (RESPONSE_TIME_UNINITIALIZED === oldtime) {
+    if (RESPONSE_TIME_UNINITIALIZED === oldTime) {
       newTime = responseTimeMilliseconds
     } else {
       // Every 10th setting of response time, decrease effect of prior values by 5x
       if (serverInfo.numResponseTimes % 10 === 0) {
-        newTime = (oldtime + responseTimeMilliseconds * 4) / 5
+        newTime = (oldTime + responseTimeMilliseconds * 4) / 5
       } else {
-        newTime = (oldtime + responseTimeMilliseconds) / 2
+        newTime = (oldTime + responseTimeMilliseconds) / 2
       }
     }
     serverInfo.responseTime = newTime
-    this.dirty_ = true
+    this.serverCacheDirty = true
   }
 
-  getServers (numServersWanted: number): Array<string> {
+  getServers (
+    numServersWanted: number,
+    ignorePatterns?: Array<string> = []
+  ): Array<string> {
     if (!this.servers_ || this.servers_.length === 0) {
       return []
     }
 
-    const serverInfos: Array<ServerInfo> = []
-    const newServerInfos: Array<ServerInfo> = []
+    let serverInfos: Array<ServerInfo> = []
+    let newServerInfos: Array<ServerInfo> = []
     //
     // Find new servers and cache them away
     //
@@ -194,7 +213,16 @@ export class ServerCache {
     if (serverInfos.length === 0) {
       return []
     }
-
+    if (ignorePatterns.length) {
+      const filter = (server: ServerInfo) => {
+        for (const pattern of ignorePatterns) {
+          if (server.serverUrl.includes(pattern)) return false
+        }
+        return true
+      }
+      serverInfos = serverInfos.filter(filter)
+      newServerInfos = newServerInfos.filter(filter)
+    }
     // Sort by score
     serverInfos.sort((a: ServerInfo, b: ServerInfo) => {
       return b.serverScore - a.serverScore
