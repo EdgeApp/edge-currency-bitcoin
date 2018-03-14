@@ -421,27 +421,29 @@ export class EngineState extends EventEmitter {
   }
 
   updateProgressRatio () {
-    const fetchedTxsLen = Object.keys(this.txCache).length
-    const missingTxsLen = Object.keys(this.missingTxs).length
-    const totalTxs = fetchedTxsLen + missingTxsLen - this.txCacheInitSize
+    if (this.progressRatio !== 1) {
+      const fetchedTxsLen = Object.keys(this.txCache).length
+      const missingTxsLen = Object.keys(this.missingTxs).length
+      const totalTxs = fetchedTxsLen + missingTxsLen - this.txCacheInitSize
 
-    const scriptHashs = Object.keys(this.addressCache)
-    const totalAddresses = scriptHashs.length
-    const syncedAddressesLen = scriptHashs.filter(scriptHash => {
-      for (const uri in this.serverStates) {
-        const address = this.serverStates[uri].addresses[scriptHash]
-        if (address && address.synced) return true
+      const scriptHashs = Object.keys(this.addressCache)
+      const totalAddresses = scriptHashs.length
+      const syncedAddressesLen = scriptHashs.filter(scriptHash => {
+        for (const uri in this.serverStates) {
+          const address = this.serverStates[uri].addresses[scriptHash]
+          if (address && address.synced) return true
+        }
+        return false
+      }).length
+      const missingAddressesLen = totalAddresses - syncedAddressesLen
+      const allTasks = totalAddresses + totalTxs
+      const missingTasks = missingTxsLen + missingAddressesLen
+      const percent = (allTasks - missingTasks) / allTasks
+
+      if (percent !== this.progressRatio) {
+        this.progressRatio = percent
+        this.onAddressesChecked(this.progressRatio)
       }
-      return false
-    }).length
-    const missingAddressesLen = totalAddresses - syncedAddressesLen
-    const allTasks = totalAddresses + totalTxs
-    const missingTasks = missingTxsLen + missingAddressesLen
-    const percent = (allTasks - missingTasks) / allTasks
-
-    if (percent !== this.progressRatio) {
-      this.progressRatio = percent
-      this.onAddressesChecked(this.progressRatio)
     }
   }
 
