@@ -119,7 +119,7 @@ export class PluginState extends ServerCache {
     this.headerCacheDirty = true
     this.serverCacheDirty = true
     await this.saveHeaderCache()
-    await this.serverCacheSave()
+    await this.saveServerCache()
     await this.fetchStratumServers()
   }
 
@@ -180,7 +180,7 @@ export class PluginState extends ServerCache {
       console.log(e)
     }
     this.serverCacheLoad(this.serverCacheJson, serverList)
-    await this.serverCacheSave()
+    await this.saveServerCache()
 
     // Tell the engines about the new servers:
     for (const engine of this.engines) {

@@ -84,7 +84,7 @@ export class ServerCache {
     this.serverCacheDirty = true
   }
 
-  async serverCacheSave () {
+  async saveServerCache () {
     // this.printServerCache()
     if (
       this.serverCacheDirty &&
