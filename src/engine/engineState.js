@@ -46,6 +46,21 @@ export type AddressInfos = {
   [scriptHash: string]: AddressInfo
 }
 
+export type AddressState = {
+  subscribed: boolean,
+  synced: boolean,
+
+  hash: string | null,
+  // Timestamp of the last hash change.
+  // The server with the latest timestamp "owns" an address for the sake
+  // of fetching utxos and txids:
+  lastUpdate: number,
+
+  fetchingUtxos: boolean,
+  fetchingTxids: boolean,
+  subscribing: boolean
+}
+
 export interface EngineStateCallbacks {
   // Changes to an address UTXO set:
   +onBalanceChanged?: () => void;
@@ -140,22 +155,7 @@ export class EngineState extends EventEmitter {
       version: string | void,
 
       // Address subscriptions:
-      addresses: {
-        [scriptHash: string]: {
-          subscribed: boolean,
-          synced: boolean,
-
-          hash: string | null,
-          // Timestamp of the last hash change.
-          // The server with the latest timestamp "owns" an address for the sake
-          // of fetching utxos and txids:
-          lastUpdate: number,
-
-          fetchingUtxos: boolean,
-          fetchingTxids: boolean,
-          subscribing: boolean
-        }
-      },
+      addresses: { [scriptHash: string]: AddressState },
 
       // All txids this server knows about (from subscribes or whatever):
       // Servers that know about txids are eligible to fetch those txs.
@@ -426,9 +426,9 @@ export class EngineState extends EventEmitter {
       const missingTxsLen = Object.keys(this.missingTxs).length
       const totalTxs = fetchedTxsLen + missingTxsLen - this.txCacheInitSize
 
-      const scriptHashs = Object.keys(this.addressCache)
-      const totalAddresses = scriptHashs.length
-      const syncedAddressesLen = scriptHashs.filter(scriptHash => {
+      const scriptHashes = Object.keys(this.addressCache)
+      const totalAddresses = scriptHashes.length
+      const syncedAddressesLen = scriptHashes.filter(scriptHash => {
         for (const uri in this.serverStates) {
           const address = this.serverStates[uri].addresses[scriptHash]
           if (address && address.synced) return true
@@ -944,7 +944,7 @@ export class EngineState extends EventEmitter {
   // A server has sent address history data, so update the caches:
   handleHistoryFetch (
     scriptHash: string,
-    addressState: any,
+    addressState: AddressState,
     history: Array<StratumHistoryRow>
   ) {
     // Process the txid list:
