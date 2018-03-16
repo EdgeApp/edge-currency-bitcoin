@@ -316,7 +316,7 @@ export class EngineState extends EventEmitter {
       this.saveTxCache()
       if (this.pluginState) {
         this.pluginState.saveHeaderCache()
-        this.pluginState.serverCacheSave()
+        this.pluginState.saveServerCache()
       }
     }, TIME_LAZINESS)
   }
