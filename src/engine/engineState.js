@@ -1074,7 +1074,9 @@ export class EngineState extends EventEmitter {
 
     // Make a list of unconfirmed transactions for the utxo search:
     const pendingTxids = txids.filter(
-      txid => this.txHeightCache[txid].height <= 0
+      txid =>
+        this.txHeightCache[txid].height <= 0 &&
+        !utxos.find(utxo => utxo.txid === txid)
     )
 
     // Add all our own unconfirmed outpoints to the utxo list:
