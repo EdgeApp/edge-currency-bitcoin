@@ -1,7 +1,7 @@
 // @flow
 import type { AbcIo, DiskletFolder } from 'edge-core-js'
 
-import { type PluginState, TIME_LAZINESS } from '../plugin/pluginState.js'
+import { type PluginState } from '../plugin/pluginState.js'
 // import { scoreServer2 } from '../plugin/pluginState.js'
 import type {
   StratumCallbacks,
@@ -91,6 +91,7 @@ function nop () {}
 
 const MAX_CONNECTIONS = 3
 const NEW_CONNECTIONS = 8
+const CACHE_THROTTLE = 0.1
 
 /**
  * This object holds the current state of the wallet engine.
@@ -311,21 +312,12 @@ export class EngineState extends EventEmitter {
     this.engineStarted = true
     this.pluginState.addEngine(this)
     this.refillServers()
-    this.cacheTimer = setInterval(() => {
-      this.saveAddressCache()
-      this.saveTxCache()
-      if (this.pluginState) {
-        this.pluginState.saveHeaderCache()
-        this.pluginState.saveServerCache()
-      }
-    }, TIME_LAZINESS)
   }
 
   async disconnect () {
     this.pluginState.removeEngine(this)
     this.engineStarted = false
     this.progressRatio = 0
-    clearInterval(this.cacheTimer)
     clearTimeout(this.reconnectTimer)
     const closed = []
     for (const uri of Object.keys(this.connections)) {
@@ -356,10 +348,7 @@ export class EngineState extends EventEmitter {
   onAddressesChecked: (progressRatio: number) => void
 
   addressCacheDirty: boolean
-  addressCacheTimestamp: number
   txCacheDirty: boolean
-  txCacheTimestamp: number
-  cacheTimer: number
   reconnectTimer: number
   reconnectCounter: number
   progressRatio: number
@@ -399,9 +388,7 @@ export class EngineState extends EventEmitter {
     this.onAddressesChecked = onAddressesChecked
 
     this.addressCacheDirty = false
-    this.addressCacheTimestamp = Date.now()
     this.txCacheDirty = false
-    this.txCacheTimestamp = Date.now()
     this.reconnectCounter = 0
     this.progressRatio = 0
     this.txCacheInitSize = 0
@@ -773,7 +760,6 @@ export class EngineState extends EventEmitter {
       if (!txCacheJson.txs) throw new Error('Missing txs in cache')
 
       // Update the cache:
-      this.txCacheTimestamp = Date.now()
       this.txCache = txCacheJson.txs
 
       // Update the derived information:
@@ -795,7 +781,6 @@ export class EngineState extends EventEmitter {
       if (!cacheJson.heights) throw new Error('Missing heights in cache')
 
       // Update the cache:
-      this.addressCacheTimestamp = Date.now()
       this.addressCache = cacheJson.addresses
       this.txHeightCache = cacheJson.heights
 
@@ -854,7 +839,6 @@ export class EngineState extends EventEmitter {
         await this.localFolder.file('addresses.json').setText(json)
         console.log(`${this.walletId} - Saved address cache`)
         this.addressCacheDirty = false
-        this.addressCacheTimestamp = Date.now()
       } catch (e) {
         console.log(`${this.walletId} - saveAddressCache - ${e.toString()}`)
       }
@@ -868,7 +852,6 @@ export class EngineState extends EventEmitter {
         await this.localFolder.file('txs.json').setText(json)
         console.log(`${this.walletId} - Saved tx cache`)
         this.txCacheDirty = false
-        this.txCacheTimestamp = Date.now()
       } catch (e) {
         console.log(`${this.walletId} - saveTxCache - ${e.toString()}`)
       }
@@ -877,16 +860,12 @@ export class EngineState extends EventEmitter {
 
   dirtyAddressCache () {
     this.addressCacheDirty = true
-    if (this.addressCacheTimestamp + TIME_LAZINESS < Date.now()) {
-      this.saveAddressCache()
-    }
+    if (this.progressRatio === 1) this.saveAddressCache()
   }
 
   dirtyTxCache () {
     this.txCacheDirty = true
-    if (this.txCacheTimestamp + TIME_LAZINESS < Date.now()) {
-      this.saveTxCache()
-    }
+    if (this.progressRatio === 1) this.saveTxCache()
   }
 
   findBestServer (address: string) {
