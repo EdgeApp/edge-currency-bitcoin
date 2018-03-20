@@ -1,7 +1,7 @@
 // @flow
 import type { AbcIo, DiskletFolder } from 'edge-core-js'
 
-import { type PluginState, TIME_LAZINESS } from '../plugin/pluginState.js'
+import { type PluginState } from '../plugin/pluginState.js'
 // import { scoreServer2 } from '../plugin/pluginState.js'
 import type {
   StratumCallbacks,
@@ -46,6 +46,21 @@ export type AddressInfos = {
   [scriptHash: string]: AddressInfo
 }
 
+export type AddressState = {
+  subscribed: boolean,
+  synced: boolean,
+
+  hash: string | null,
+  // Timestamp of the last hash change.
+  // The server with the latest timestamp "owns" an address for the sake
+  // of fetching utxos and txids:
+  lastUpdate: number,
+
+  fetchingUtxos: boolean,
+  fetchingTxids: boolean,
+  subscribing: boolean
+}
+
 export interface EngineStateCallbacks {
   // Changes to an address UTXO set:
   +onBalanceChanged?: () => void;
@@ -58,6 +73,9 @@ export interface EngineStateCallbacks {
 
   // Fetched a transaction from the network:
   +onTxFetched?: (txid: string) => void;
+
+  // Called when the engine gets more synced with electrum:
+  +onAddressesChecked?: (progressRatio: number) => void;
 }
 
 export interface EngineStateOptions {
@@ -73,6 +91,7 @@ function nop () {}
 
 const MAX_CONNECTIONS = 3
 const NEW_CONNECTIONS = 8
+const CACHE_THROTTLE = 0.1
 
 /**
  * This object holds the current state of the wallet engine.
@@ -137,21 +156,7 @@ export class EngineState extends EventEmitter {
       version: string | void,
 
       // Address subscriptions:
-      addresses: {
-        [scriptHash: string]: {
-          subscribed: boolean,
-
-          hash: string | null,
-          // Timestamp of the last hash change.
-          // The server with the latest timestamp "owns" an address for the sake
-          // of fetching utxos and txids:
-          lastUpdate: number,
-
-          fetchingUtxos: boolean,
-          fetchingTxids: boolean,
-          subscribing: boolean
-        }
-      },
+      addresses: { [scriptHash: string]: AddressState },
 
       // All txids this server knows about (from subscribes or whatever):
       // Servers that know about txids are eligible to fetch those txs.
@@ -201,7 +206,8 @@ export class EngineState extends EventEmitter {
         hash: null,
         lastUpdate: 0,
         subscribed: false,
-        subscribing: false
+        subscribing: false,
+        synced: false
       }
     }
   }
@@ -300,23 +306,18 @@ export class EngineState extends EventEmitter {
   }
 
   connect () {
-    this.pluginState.addEngine(this)
+    this.progressRatio = 0
+    this.txCacheInitSize = Object.keys(this.txCache).length
+    this.onAddressesChecked(this.progressRatio)
     this.engineStarted = true
+    this.pluginState.addEngine(this)
     this.refillServers()
-    this.cacheTimer = setInterval(() => {
-      this.saveAddressCache()
-      this.saveTxCache()
-      if (this.pluginState) {
-        this.pluginState.saveHeaderCache()
-        this.pluginState.serverCacheSave()
-      }
-    }, TIME_LAZINESS)
   }
 
   async disconnect () {
     this.pluginState.removeEngine(this)
     this.engineStarted = false
-    clearInterval(this.cacheTimer)
+    this.progressRatio = 0
     clearTimeout(this.reconnectTimer)
     const closed = []
     for (const uri of Object.keys(this.connections)) {
@@ -344,14 +345,14 @@ export class EngineState extends EventEmitter {
   onAddressUsed: () => void
   onHeightUpdated: (height: number) => void
   onTxFetched: (txid: string) => void
+  onAddressesChecked: (progressRatio: number) => void
 
   addressCacheDirty: boolean
-  addressCacheTimestamp: number
   txCacheDirty: boolean
-  txCacheTimestamp: number
-  cacheTimer: number
   reconnectTimer: number
   reconnectCounter: number
+  progressRatio: number
+  txCacheInitSize: number
 
   constructor (options: EngineStateOptions) {
     super()
@@ -377,18 +378,20 @@ export class EngineState extends EventEmitter {
       onBalanceChanged = nop,
       onAddressUsed = nop,
       onHeightUpdated = nop,
-      onTxFetched = nop
+      onTxFetched = nop,
+      onAddressesChecked = nop
     } = options.callbacks
     this.onBalanceChanged = onBalanceChanged
     this.onAddressUsed = onAddressUsed
     this.onHeightUpdated = onHeightUpdated
     this.onTxFetched = onTxFetched
+    this.onAddressesChecked = onAddressesChecked
 
     this.addressCacheDirty = false
-    this.addressCacheTimestamp = Date.now()
     this.txCacheDirty = false
-    this.txCacheTimestamp = Date.now()
     this.reconnectCounter = 0
+    this.progressRatio = 0
+    this.txCacheInitSize = 0
   }
 
   reconnect () {
@@ -400,6 +403,46 @@ export class EngineState extends EventEmitter {
           this.refillServers()
         }, this.reconnectCounter * 1000)
       } else {
+      }
+    }
+  }
+
+  updateProgressRatio () {
+    if (this.progressRatio !== 1) {
+      const fetchedTxsLen = Object.keys(this.txCache).length
+      const missingTxsLen = Object.keys(this.missingTxs).length
+      const totalTxs = fetchedTxsLen + missingTxsLen - this.txCacheInitSize
+
+      const scriptHashes = Object.keys(this.addressCache)
+      const totalAddresses = scriptHashes.length
+      const syncedAddressesLen = scriptHashes.filter(scriptHash => {
+        for (const uri in this.serverStates) {
+          const address = this.serverStates[uri].addresses[scriptHash]
+          if (address && address.synced) return true
+        }
+        return false
+      }).length
+      const missingAddressesLen = totalAddresses - syncedAddressesLen
+      const allTasks = totalAddresses + totalTxs
+      const missingTasks = missingTxsLen + missingAddressesLen
+      const percent = (allTasks - missingTasks) / allTasks
+
+      const end = () => {
+        this.progressRatio = percent
+        this.onAddressesChecked(this.progressRatio)
+      }
+
+      if (percent !== this.progressRatio) {
+        if (Math.abs(percent - this.progressRatio) > CACHE_THROTTLE) {
+          const saves = [this.saveAddressCache(), this.saveTxCache()]
+          if (this.pluginState) {
+            saves.push(this.pluginState.saveHeaderCache())
+            saves.push(this.pluginState.saveServerCache())
+          }
+          Promise.all(saves).then(end)
+        } else {
+          end()
+        }
       }
     }
   }
@@ -597,6 +640,7 @@ export class EngineState extends EventEmitter {
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.fetchingTxs[txid] = false
             this.handleTxFetch(txid, txData)
+            this.updateProgressRatio()
           },
           (e?: Error) => {
             this.fetchingTxs[txid] = false
@@ -666,6 +710,11 @@ export class EngineState extends EventEmitter {
             addressState.subscribed = true
             addressState.hash = hash
             addressState.lastUpdate = Date.now()
+            const { txidStratumHash } = this.addressCache[address]
+            if (!hash || hash === txidStratumHash) {
+              addressState.synced = true
+              this.updateProgressRatio()
+            }
           },
           (e?: Error) => {
             addressState.subscribing = false
@@ -697,7 +746,7 @@ export class EngineState extends EventEmitter {
               )
             }
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
-            this.handleHistoryFetch(address, addressState.hash || '', history)
+            this.handleHistoryFetch(address, addressState, history)
           },
           (e?: Error) => {
             addressState.fetchingTxids = false
@@ -724,7 +773,6 @@ export class EngineState extends EventEmitter {
       if (!txCacheJson.txs) throw new Error('Missing txs in cache')
 
       // Update the cache:
-      this.txCacheTimestamp = Date.now()
       this.txCache = txCacheJson.txs
 
       // Update the derived information:
@@ -746,7 +794,6 @@ export class EngineState extends EventEmitter {
       if (!cacheJson.heights) throw new Error('Missing heights in cache')
 
       // Update the cache:
-      this.addressCacheTimestamp = Date.now()
       this.addressCache = cacheJson.addresses
       this.txHeightCache = cacheJson.heights
 
@@ -805,7 +852,6 @@ export class EngineState extends EventEmitter {
         await this.localFolder.file('addresses.json').setText(json)
         console.log(`${this.walletId} - Saved address cache`)
         this.addressCacheDirty = false
-        this.addressCacheTimestamp = Date.now()
       } catch (e) {
         console.log(`${this.walletId} - saveAddressCache - ${e.toString()}`)
       }
@@ -819,7 +865,6 @@ export class EngineState extends EventEmitter {
         await this.localFolder.file('txs.json').setText(json)
         console.log(`${this.walletId} - Saved tx cache`)
         this.txCacheDirty = false
-        this.txCacheTimestamp = Date.now()
       } catch (e) {
         console.log(`${this.walletId} - saveTxCache - ${e.toString()}`)
       }
@@ -828,16 +873,12 @@ export class EngineState extends EventEmitter {
 
   dirtyAddressCache () {
     this.addressCacheDirty = true
-    if (this.addressCacheTimestamp + TIME_LAZINESS < Date.now()) {
-      this.saveAddressCache()
-    }
+    if (this.progressRatio === 1) this.saveAddressCache()
   }
 
   dirtyTxCache () {
     this.txCacheDirty = true
-    if (this.txCacheTimestamp + TIME_LAZINESS < Date.now()) {
-      this.saveTxCache()
-    }
+    if (this.progressRatio === 1) this.saveTxCache()
   }
 
   findBestServer (address: string) {
@@ -895,7 +936,7 @@ export class EngineState extends EventEmitter {
   // A server has sent address history data, so update the caches:
   handleHistoryFetch (
     scriptHash: string,
-    stateHash: string,
+    addressState: AddressState,
     history: Array<StratumHistoryRow>
   ) {
     // Process the txid list:
@@ -906,8 +947,10 @@ export class EngineState extends EventEmitter {
     }
 
     // Save to the address cache:
+    addressState.synced = true
     this.addressCache[scriptHash].txids = txidList
-    this.addressCache[scriptHash].txidStratumHash = stateHash
+    this.addressCache[scriptHash].txidStratumHash = addressState.hash || ''
+    this.updateProgressRatio()
     this.refreshAddressInfo(scriptHash)
     this.dirtyAddressCache()
   }
@@ -1023,7 +1066,9 @@ export class EngineState extends EventEmitter {
 
     // Make a list of unconfirmed transactions for the utxo search:
     const pendingTxids = txids.filter(
-      txid => this.txHeightCache[txid].height <= 0
+      txid =>
+        this.txHeightCache[txid].height <= 0 &&
+        !utxos.find(utxo => utxo.txid === txid)
     )
 
     // Add all our own unconfirmed outpoints to the utxo list:
@@ -1129,7 +1174,8 @@ export class EngineState extends EventEmitter {
           hash: null,
           lastUpdate: 0,
           subscribed: false,
-          subscribing: false
+          subscribing: false,
+          synced: false
         }
       }
     }

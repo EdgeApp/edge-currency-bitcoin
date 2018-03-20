@@ -357,9 +357,24 @@ for (const fixture of fixtures) {
             address.publicAddress
           }?api_key=MY_APIKEY`,
           (err, res, body) => {
-            const thirdPartyBalance = parseInt(JSON.parse(body).received)
-            assert(!err, 'getting address incoming txs from a second source')
-            assert(thirdPartyBalance === 0, 'Should have never received coins')
+            const code = parseInt(JSON.parse(body).code)
+            if (!err && code !== 429) {
+              const thirdPartyBalance = parseInt(JSON.parse(body).received)
+              assert(!err, 'getting address incoming txs from a second source')
+              assert(
+                thirdPartyBalance === 0,
+                'Should have never received coins'
+              )
+            } else {
+              const scriptHash =
+                engine.engineState.scriptHashes[address.publicAddress]
+              const transactions =
+                engine.engineState.addressInfos[scriptHash].txids
+              assert(
+                transactions.length === 0,
+                'Should have never received coins'
+              )
+            }
             done()
           }
         )
