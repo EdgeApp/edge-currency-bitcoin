@@ -10,14 +10,17 @@ export const zcoinInfo: AbcCurrencyInfo = {
     { name: 'XZC', multiplier: '100000000', symbol: 'Z' },
     { name: 'mXZC', multiplier: '100000', symbol: 'mZ' }
   ],
-  walletTypes: ['wallet:zcoin-bip44', 'wallet:zcoin'],
+  walletTypes: [
+    'wallet:zcoin',
+    'wallet:zcoin-bip44'
+  ],
 
   // Configuration options:
   defaultSettings: {
     forks: [],
     network: {
       type: 'zcoin',
-      magic: 0xe3d9fef1,
+      magic: 0xd9b4bef9,
       keyPrefix: {
         privkey: 0x80,
         xpubkey: 0x0488b21e,
@@ -40,7 +43,7 @@ export const zcoinInfo: AbcCurrencyInfo = {
     defaultFee: 1000,
     feeUpdateInterval: 60000,
     feeInfoServer: '',
-    infoServer: 'https://info1.edgesecure.co:8444/v1',
+    infoServer: '',
     simpleFeeSettings: {
       highFee: '150',
       lowFee: '20',
@@ -49,9 +52,13 @@ export const zcoinInfo: AbcCurrencyInfo = {
       standardFeeLowAmount: '173200',
       standardFeeHighAmount: '8670000'
     },
-    electrumServers: [  
-      'electrum://45.63.92.224:50002',
-      'electrums://45.63.92.224:50002'
+    electrumServers: [
+      'electrum://51.15.82.184:50001',
+      'electrums://51.15.82.184:50002',
+      'electrums://45.63.92.224:50001',
+      'electrums://45.63.92.224:50002',
+      'electrum://47.75.76.176:50001',
+      'electrums://47.75.76.176:50002'
     ]
   },
   metaTokens: [],
