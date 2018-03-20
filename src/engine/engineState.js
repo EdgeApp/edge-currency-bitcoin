@@ -427,9 +427,22 @@ export class EngineState extends EventEmitter {
       const missingTasks = missingTxsLen + missingAddressesLen
       const percent = (allTasks - missingTasks) / allTasks
 
-      if (percent !== this.progressRatio) {
+      const end = () => {
         this.progressRatio = percent
         this.onAddressesChecked(this.progressRatio)
+      }
+
+      if (percent !== this.progressRatio) {
+        if (Math.abs(percent - this.progressRatio) > CACHE_THROTTLE) {
+          const saves = [this.saveAddressCache(), this.saveTxCache()]
+          if (this.pluginState) {
+            saves.push(this.pluginState.saveHeaderCache())
+            saves.push(this.pluginState.saveServerCache())
+          }
+          Promise.all(saves).then(end)
+        } else {
+          end()
+        }
       }
     }
   }
