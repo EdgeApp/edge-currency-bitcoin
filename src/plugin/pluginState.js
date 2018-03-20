@@ -3,8 +3,6 @@ import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'edge-core-js'
 import type { EngineState } from '../engine/engineState.js'
 import { ServerCache } from './serverCache.js'
 
-export const TIME_LAZINESS = 10000
-
 /**
  * This object holds the plugin-wide per-currency caches.
  * Engine plugins are responsible for keeping it up to date.
@@ -51,7 +49,6 @@ export class PluginState extends ServerCache {
   folder: DiskletFolder
 
   headerCacheDirty: boolean
-  headerCacheTimestamp: number
   serverCacheJson: Object
   pluginName: string
 
@@ -78,7 +75,6 @@ export class PluginState extends ServerCache {
     this.folder = io.folder.folder('plugins').folder(currencyInfo.pluginName)
     this.pluginName = currencyInfo.pluginName
     this.headerCacheDirty = false
-    this.headerCacheTimestamp = Date.now()
     this.serverCacheJson = {}
   }
 
@@ -88,7 +84,6 @@ export class PluginState extends ServerCache {
       const headerCacheJson = JSON.parse(headerCacheText)
       // TODO: Validate JSON
 
-      this.headerCacheTimestamp = Date.now()
       this.height = headerCacheJson.height
       this.headerCache = headerCacheJson.headers
     } catch (e) {
@@ -136,26 +131,49 @@ export class PluginState extends ServerCache {
         .then(() => {
           console.log(`${this.pluginName} - Saved header cache`)
           this.headerCacheDirty = false
-          this.headerCacheTimestamp = Date.now()
         })
         .catch(e => console.log(`${this.pluginName} - ${e.toString()}`))
     }
     return Promise.resolve()
   }
 
-  async saveData (data: Object) {
-    try {
-      await this.folder.file('serverCache.json').setText(JSON.stringify(data))
-      console.log(`${this.pluginName} - Saved server cache`)
-    } catch (e) {
-      console.log(`${this.pluginName} - ${e.toString()}`)
+  async saveServerCache () {
+    // this.printServerCache()
+    if (this.serverCacheDirty) {
+      try {
+        await this.folder
+          .file('serverCache.json')
+          .setText(JSON.stringify(this.servers_))
+        this.serverCacheDirty = false
+        this.cacheLastSave_ = Date.now()
+        console.log(`${this.pluginName} - Saved server cache`)
+      } catch (e) {
+        console.log(`${this.pluginName} - ${e.toString()}`)
+      }
+    }
+  }
+
+  dirtyServerCache (serverUrl: string) {
+    this.serverCacheDirty = true
+    for (const engine of this.engines) {
+      if (engine.progressRatio === 1) {
+        for (const uri in engine.serverStates) {
+          if (uri === serverUrl) {
+            this.saveServerCache()
+            return
+          }
+        }
+      }
     }
   }
 
   dirtyHeaderCache () {
     this.headerCacheDirty = true
-    if (this.headerCacheTimestamp + TIME_LAZINESS < Date.now()) {
-      this.saveHeaderCache()
+    for (const engine of this.engines) {
+      if (engine.progressRatio === 1) {
+        this.saveHeaderCache()
+        return
+      }
     }
   }
 
