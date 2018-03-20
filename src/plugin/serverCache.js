@@ -13,20 +13,20 @@ export type ServerInfo = {
 const RESPONSE_TIME_UNINITIALIZED = 999999999
 const MAX_SCORE = 500
 const MIN_SCORE = -100
-const SAVE_LAZINESS = 10000
 
 export class ServerCache {
   servers_: { [serverUrl: string]: ServerInfo }
   serverCacheDirty: boolean
   cacheLastSave_: number
   lastScoreUpTime_: number
-  lastSaveTime: number
 
   constructor () {
     this.clearServerCache()
   }
 
-  async saveData (data: Object) {}
+  dirtyServerCache (url: string) {
+    this.serverCacheDirty = true
+  }
 
   /**
    * Loads the server cache with new and old servers
@@ -74,34 +74,20 @@ export class ServerCache {
       }
 
       if (this.cacheLastSave_ === 0) {
-        serverScore =
-          serverScore > MAX_SCORE - 100 ? MAX_SCORE - 100 : serverScore
+        serverScore = Math.min(serverScore, MAX_SCORE - 100)
       }
 
       oldServer.serverScore = serverScore
       this.servers_[serverUrl] = oldServer
-    }
-    this.serverCacheDirty = true
-  }
-
-  async saveServerCache () {
-    // this.printServerCache()
-    if (
-      this.serverCacheDirty &&
-      this.lastSaveTime + SAVE_LAZINESS < Date.now()
-    ) {
-      await this.saveData(this.servers_)
-      this.serverCacheDirty = false
-      this.lastSaveTime = Date.now()
+      this.dirtyServerCache(serverUrl)
     }
   }
 
   clearServerCache () {
     this.servers_ = {}
     this.serverCacheDirty = false
-    this.cacheLastSave_ = 0
+    this.cacheLastSave_ = Date.now()
     this.lastScoreUpTime_ = Date.now()
-    this.lastSaveTime = 0
   }
 
   printServerCache () {
@@ -135,18 +121,19 @@ export class ServerCache {
     serverInfo.serverScore += changeScore
     if (serverInfo.serverScore > MAX_SCORE) {
       serverInfo.serverScore = MAX_SCORE
-      this.serverCacheDirty = true
     }
-    console.log(
-      `Stratum ${serverUrl} score went UP ${
-        serverInfo.serverScore
-      } ${responseTimeMilliseconds}`
-    )
     this.lastScoreUpTime_ = Date.now()
 
     if (responseTimeMilliseconds !== 0) {
       this.setResponseTime(serverUrl, responseTimeMilliseconds)
     }
+
+    console.log(
+      `Stratum ${serverUrl} score went UP ${
+        serverInfo.serverScore
+      } ${responseTimeMilliseconds}`
+    )
+    this.dirtyServerCache(serverUrl)
   }
 
   serverScoreDown (serverUrl: string, changeScore: number = 10) {
@@ -160,11 +147,12 @@ export class ServerCache {
     serverInfo.serverScore -= changeScore
     if (serverInfo.serverScore < MIN_SCORE) {
       serverInfo.serverScore = MIN_SCORE
-      this.serverCacheDirty = true
     }
+
     console.log(
       `Stratum ${serverUrl} score went DOWN ${serverInfo.serverScore}`
     )
+    this.dirtyServerCache(serverUrl)
   }
 
   setResponseTime (serverUrl: string, responseTimeMilliseconds: number) {
@@ -184,7 +172,7 @@ export class ServerCache {
       }
     }
     serverInfo.responseTime = newTime
-    this.serverCacheDirty = true
+    this.dirtyServerCache(serverUrl)
   }
 
   getServers (
