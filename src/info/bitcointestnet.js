@@ -56,7 +56,6 @@ export const bitcoinTestnetInfo: AbcCurrencyInfo = {
     electrumServers: [
       'electrum://testnetnode.arihanc.com:51001',
       'electrum://electrum.akinbo.org:51001',
-      'electrum://hsmithsxurybd7uh.onion:53011',
       'electrums://testnet.hsmiths.com:53012',
       'electrums://testnet.qtornado.com:51002',
       'electrums://electrum.akinbo.org:51002',
