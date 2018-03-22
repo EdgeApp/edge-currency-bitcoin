@@ -230,5 +230,57 @@
       [ "XekiLaxnqpFb2m4NQAEcsKutZcZgcyfo6W", "XekiLaxnqpFb2m4NQAEcsKutZcZgcyfo6W" ],
       [ "XiBQaGtW6y1C52YtPBD4PTMntpA9hkBq5p", "XiBQaGtW6y1C52YtPBD4PTMntpA9hkBq5p" ]
     ]
+  },
+  {
+    "factory": "zcoinCurrencyPluginFactory",
+    "WALLET_TYPE": "wallet:zcoin-bip44",
+    "valid": [
+      "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty",
+      "aLTSv7QbTZbkgorYEhbNx2gH4hGYNLsoGv",
+      "aCc86PsFU4phnkTMzq5aUkwcbXhZYem9Tn",
+      "ZzyfJFVqCWnzEXCDTUyhaseLW7GzCq9sA1",
+      "aQ18FBVFtnueucZKeVg4srhmzbpAeb1KoN",
+      "a5ozVQfAhdbctoyi6scufVWNp3gSvmVchf",
+      "aEj9Wf4Qt5R68mMpN9X2fti1rJkSEhMCDB"
+    ],
+    "inValid": [
+      "LQL9pVH1LsMfKwt82Y2wGhNGkrjF8vwUst",
+      "LPpHectVSbk7YHa5X89Cm3FoFBfzkJBJc9",
+      "LRcYfbDMhwvXaGPFccaKuc3fZD1Nb55aGn",
+      "LY5fxZS74Ewuj1TTHwat23eUmZwimsksrU",
+      "LdP8Qox1VAhCzLJNqrr74YovaWYyNBUWvL",
+      "Laub752qu81oWwkNKEyawyKruUC6cEyD2x",
+      "LbHBMZTQBq7aM5WS5TeKYJWH8pxeaLoRXe",
+      "LPpVeFSKvH593CChqP9qpV5toEXntekjiF",
+      "LfmG6qepmucU2aQaVJK4EJgBzQHeGz5ML4",
+      "MSS1jxX7vEjHi5ujzszwTsZCnSDhkWKrBd",
+      "M816EdyuvWV7oETCfQeZb5mGWm9nHczijH",
+      "MJiPwX84iBe4WnFDwsYGgtnz1XonPhUqhf",
+      "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu",
+      "1KXrWXciRDZUpQwQmuM1DbwsKDLYAYsVLR",
+      "16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb",
+      "3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC",
+      "3LDsS579y7sruadqu11beEJoTjdFiFCdX4",
+      "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw",
+      "18uKBY8mgA7MWfRHpw8faQRZQtssqXWSJS",
+      "3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN",
+      "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
+      "bc1qc7slrfxkknqcq2jevvvkdgvrt8080852dfjewde450xdlk4ugp7szw5tk9",
+      "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a",
+      "bitcoincash:qr95sy3j9xwd2ap32xkykttr4cvcu7as4y0qverfuy",
+      "bitcoincash:qqq3728yw0y47sqn6l2na30mcw6zm78dzqre909m2r",
+      "bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq",
+      "bitcoincash:pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e",
+      "bitcoincash:pqq3728yw0y47sqn6l2na30mcw6zm78dzq5ucqzc37",
+      "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a"
+    ],
+    "toLegacy": [
+      [ "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty", "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty" ],
+      [ "aLTSv7QbTZbkgorYEhbNx2gH4hGYNLsoGv", "aLTSv7QbTZbkgorYEhbNx2gH4hGYNLsoGv" ]
+    ],
+    "toNewFormat": [
+      [ "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty", "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty" ],
+      [ "aLTSv7QbTZbkgorYEhbNx2gH4hGYNLsoGv", "aLTSv7QbTZbkgorYEhbNx2gH4hGYNLsoGv" ]
+    ]
   }
 ]
