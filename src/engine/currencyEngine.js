@@ -95,6 +95,10 @@ export class CurrencyEngine {
   }
 
   async load (): Promise<any> {
+    /* ************ */
+    /* Engine State */
+    /* ************ */
+    // Setting up the callbacks
     const engineStateCallbacks: EngineStateCallbacks = {
       onHeightUpdated: (height: number) => {
         this.abcCurrencyEngineOptions.callbacks.onBlockHeightChanged(height)
@@ -108,7 +112,6 @@ export class CurrencyEngine {
       onAddressesChecked: this.abcCurrencyEngineOptions.callbacks
         .onAddressesChecked
     }
-    const gapLimit = this.currencyInfo.defaultSettings.gapLimit
     const io = this.abcCurrencyEngineOptions.optionalSettings
       ? this.abcCurrencyEngineOptions.optionalSettings.io
       : null
@@ -123,45 +126,34 @@ export class CurrencyEngine {
       walletId: this.walletId
     })
 
+    // Load the state from disk
     await this.engineState.load()
 
+    /* *********** */
+    /* Key Manager */
+    /* *********** */
+    // Setting up the callbacks
     const keyManagerCallbacks: KeyManagerCallbacks = {
       onNewAddress: (scriptHash: string, address: string, path: string) => {
         return this.engineState.addAddress(scriptHash, address, path)
       },
       onNewKey: (keys: any) => this.engineState.saveKeys(keys)
     }
-
+    const { keys = {} } = this.walletInfo
+    const gapLimit = this.currencyInfo.defaultSettings.gapLimit
     const rawKeys = await this.engineState.loadKeys()
-    if (!rawKeys.master) {
-      rawKeys.master = {}
-    }
+    if (!rawKeys.master) rawKeys.master = {}
     if (!rawKeys.master.xpub) {
-      if (this.walletInfo.keys && this.walletInfo.keys[`${this.network}Xpub`]) {
-        rawKeys.master.xpub = this.walletInfo.keys[`${this.network}Xpub`]
+      if (keys[`${this.network}Xpub`]) {
+        rawKeys.master.xpub = keys[`${this.network}Xpub`]
       }
     }
-    let seed = ''
-    let bip = ''
-    let coinType = -1
-    if (this.walletInfo.keys) {
-      if (this.walletInfo.keys[`${this.network}Key`]) {
-        seed = this.walletInfo.keys[`${this.network}Key`]
-      }
-      if (typeof this.walletInfo.keys.format === 'string') {
-        bip = this.walletInfo.keys.format
-      }
-      if (typeof this.walletInfo.keys.coinType === 'number') {
-        coinType = this.walletInfo.keys.coinType
-      }
-    }
-    bip = bip === '' ? this.walletInfo.type.split('-')[1] : bip
 
     this.keyManager = new KeyManager({
-      seed: seed,
+      seed: keys[`${this.network}Key`] || '',
       rawKeys: rawKeys,
-      bip: bip,
-      coinType: coinType,
+      bip: keys.format || this.walletInfo.type.split('-')[1],
+      coinType: keys.coinType || -1,
       gapLimit: gapLimit,
       network: this.network,
       callbacks: keyManagerCallbacks,
@@ -169,6 +161,7 @@ export class CurrencyEngine {
       txInfos: this.engineState.parsedTxs
     })
 
+    // Setup the callbacks on engineState that has meaning only after we have a keyManager
     this.engineState.onAddressUsed = () => {
       this.keyManager.setLookAhead()
     }
@@ -180,6 +173,7 @@ export class CurrencyEngine {
       )
     }
 
+    // Load the keys and addresses from disk
     await this.keyManager.load()
   }
 
