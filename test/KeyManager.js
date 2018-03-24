@@ -27,8 +27,9 @@ const keyManagerCallbacks: KeyManagerCallbacks = {
 describe(`Key Manager`, function () {
   let keyManager
   it('creates new key manager', function () {
-    keyManager = new KeyManager({
+    const options = {
       walletType: 'wallet:bitcoin',
+      bip: 'bip49',
       rawKeys: {
         master: {
           xpub:
@@ -40,12 +41,17 @@ describe(`Key Manager`, function () {
       gapLimit: gapLimit,
       network: network,
       callbacks: keyManagerCallbacks
-    })
-    keyManager.load().then(() => {
+    }
+    keyManager = new KeyManager(options)
+    return keyManager.load().then(() => {
+      const pubSeed = keyManager.getPublicSeed()
+      const seed = keyManager.getSeed()
+      assert.equal(seed, options.seed)
+      assert.equal(pubSeed, options.rawKeys.master.xpub)
       assert.equal(keyManager.keys.receive.children.length, 10)
       assert(keyManager.keys.receive.pubKey)
-      assert.equal(keyManager.keys.change.children.length, 0)
-      assert(!keyManager.keys.change.pubKey)
+      assert.equal(keyManager.keys.change.children.length, 10)
+      assert(keyManager.keys.change.pubKey)
     })
   })
 })
