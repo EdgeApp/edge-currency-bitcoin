@@ -401,6 +401,26 @@ export class KeyManager {
     } else mtx.sign(keys)
   }
 
+  getSeed (): string | null {
+    if (this.seed && this.seed !== '') {
+      if (this.bip !== 'bip32') return this.seed
+      try {
+        const keyBuffer = Buffer.from(this.seed, 'base64')
+        return keyBuffer.toString('hex')
+      } catch (e) {
+        console.log(e)
+        return null
+      }
+    }
+    return null
+  }
+
+  getPublicSeed (): string | null {
+    return this.keys.master.pubKey
+      ? this.keys.master.pubKey.toBase58(this.network)
+      : null
+  }
+
   // ////////////////////////////////////////////// //
   // ////////////// Private API /////////////////// //
   // ////////////////////////////////////////////// //
