@@ -207,11 +207,17 @@ export class CurrencyEngine {
     let address = ''
     let value = 0
     let output = null
+    let type = null
 
     // Process tx outputs
     const outputsLength = bcoinTransaction.outputs.length
     for (let i = 0; i < outputsLength; i++) {
-      output = bcoinTransaction.outputs[i].getJSON(this.network)
+      output = bcoinTransaction.outputs[i]
+      type = output.getType()
+      if (type === 'nonstandard' || type === 'nulldata') {
+        continue
+      }
+      output = output.getJSON(this.network)
       value = output.value
       address = toNewFormat(output.address, this.network)
       totalOutputAmount += value
