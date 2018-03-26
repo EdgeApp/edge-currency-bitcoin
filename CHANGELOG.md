@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 2.14.12-pending
+
+* Fix throw in getTransaction when tx has an OP_RETURN
+
 ## 2.14.9
 
 * Fix .flowconfig to include all src files
