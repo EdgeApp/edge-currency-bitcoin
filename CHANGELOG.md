@@ -1,6 +1,6 @@
 # edge-currency-bitcoin
 
-## 2.14.12-pending
+## 2.15.0
 
 * Add Zcoin support
 * Fix throw in getTransaction when tx has an OP_RETURN
