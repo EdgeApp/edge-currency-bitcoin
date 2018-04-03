@@ -167,21 +167,23 @@ export class CurrencyPlugin {
   }
 
   encodeUri (obj: AbcEncodeUri): string {
+    const { legacyAddress } = obj
+    let { publicAddress } = obj
     if (
-      obj.legacyAddress &&
-      validAddress(toNewFormat(obj.legacyAddress, this.network), this.network)
+      legacyAddress &&
+      validAddress(toNewFormat(legacyAddress, this.network), this.network)
     ) {
-      obj.publicAddress = obj.legacyAddress
+      publicAddress = legacyAddress
     } else if (
-      !obj.publicAddress ||
-      !validAddress(obj.publicAddress, this.network)
+      publicAddress &&
+      validAddress(publicAddress, this.network)
     ) {
+      publicAddress = dirtyAddress(publicAddress, this.network)
+    } else {
       throw new Error('InvalidPublicAddressError')
     }
-    if (!obj.nativeAmount && !obj.metadata) {
-      return dirtyAddress(obj.publicAddress, this.network)
-    }
-    obj.publicAddress = sanitizeAddress(obj.publicAddress, this.network)
+    if (!obj.nativeAmount && !obj.metadata) return publicAddress
+    publicAddress = sanitizeAddress(publicAddress, this.network)
     let queryString = ''
     const info = this.currencyInfo
     if (obj.nativeAmount) {
@@ -206,7 +208,7 @@ export class CurrencyPlugin {
 
     return serialize({
       scheme: info.currencyName.toLowerCase(),
-      path: obj.publicAddress,
+      path: publicAddress,
       query: queryString
     })
   }
