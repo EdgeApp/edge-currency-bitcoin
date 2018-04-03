@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 2.16.0
+
+* Allow for Parse Uri to recognize legacy address
+
 ## 2.15.0
 
 * Add Zcoin support
