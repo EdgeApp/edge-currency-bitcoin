@@ -117,103 +117,16 @@ for (const fixture of fixtures) {
         plugin = currencyPlugin
       })
     })
-    it('address only', function () {
-      const parsedUri = plugin.parseUri(fixture['parseUri']['address only'][0])
-      assert.equal(
-        parsedUri.publicAddress,
-        fixture['parseUri']['address only'][1]
-      )
-      assert.equal(parsedUri.nativeAmount, undefined)
-      assert.equal(parsedUri.currencyCode, undefined)
-    })
-    it('uri address', function () {
-      const parsedUri = plugin.parseUri(fixture['parseUri']['uri address'][0])
-      assert.equal(
-        parsedUri.publicAddress,
-        fixture['parseUri']['uri address'][1]
-      )
-      assert.equal(parsedUri.nativeAmount, undefined)
-      assert.equal(parsedUri.currencyCode, undefined)
-    })
-    it('uri address with amount', function () {
-      const parsedUri = plugin.parseUri(
-        fixture['parseUri']['uri address with amount'][0]
-      )
-      assert.equal(
-        parsedUri.publicAddress,
-        fixture['parseUri']['uri address with amount'][1]
-      )
-      assert.equal(
-        parsedUri.nativeAmount,
-        fixture['parseUri']['uri address with amount'][2]
-      )
-      assert.equal(
-        parsedUri.currencyCode,
-        fixture['parseUri']['uri address with amount'][3]
-      )
-    })
-    it('uri address with amount & label', function () {
-      const parsedUri = plugin.parseUri(
-        fixture['parseUri']['uri address with amount & label'][0]
-      )
-      assert.equal(
-        parsedUri.publicAddress,
-        fixture['parseUri']['uri address with amount & label'][1]
-      )
-      assert.equal(
-        parsedUri.nativeAmount,
-        fixture['parseUri']['uri address with amount & label'][2]
-      )
-      assert.equal(
-        parsedUri.currencyCode,
-        fixture['parseUri']['uri address with amount & label'][3]
-      )
-      assert.equal(
-        parsedUri.metadata.name,
-        fixture['parseUri']['uri address with amount & label'][4]
-      )
-    })
-    it('uri address with amount, label & message', function () {
-      const parsedUri = plugin.parseUri(
-        fixture['parseUri']['uri address with amount & label'][0]
-      )
-      assert.equal(
-        parsedUri.publicAddress,
-        fixture['parseUri']['uri address with amount & label'][1]
-      )
-      assert.equal(
-        parsedUri.nativeAmount,
-        fixture['parseUri']['uri address with amount & label'][2]
-      )
-      assert.equal(
-        parsedUri.currencyCode,
-        fixture['parseUri']['uri address with amount & label'][3]
-      )
-      assert.equal(
-        parsedUri.metadata.name,
-        fixture['parseUri']['uri address with amount & label'][4]
-      )
-      assert.equal(
-        parsedUri.metadata.message,
-        fixture['parseUri']['uri address with amount & label'][5]
-      )
-    })
-    it('uri address with unsupported param', function () {
-      const parsedUri = plugin.parseUri(
-        fixture['parseUri']['uri address with amount & label'][0]
-      )
-      assert.equal(
-        parsedUri.publicAddress,
-        fixture['parseUri']['uri address with amount & label'][1]
-      )
-      assert.equal(
-        parsedUri.nativeAmount,
-        fixture['parseUri']['uri address with amount & label'][2]
-      )
-      assert.equal(
-        parsedUri.currencyCode,
-        fixture['parseUri']['uri address with amount & label'][3]
-      )
+    Object.keys(fixture['parseUri']).forEach(test => {
+      it(test, function () {
+        const parsedUri = plugin.parseUri(fixture['parseUri'][test][0])
+        assert.equal(parsedUri.publicAddress, fixture['parseUri'][test][1])
+        assert.equal(parsedUri.nativeAmount, fixture['parseUri'][test][2])
+        assert.equal(parsedUri.currencyCode, fixture['parseUri'][test][3])
+        assert.equal(parsedUri.metadata.name, fixture['parseUri'][test][4])
+        assert.equal(parsedUri.metadata.message, fixture['parseUri'][test][5])
+        assert.equal(parsedUri.legacyAddress, fixture['parseUri'][test][6])
+      })
     })
   })
 

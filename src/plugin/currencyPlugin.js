@@ -131,11 +131,17 @@ export class CurrencyPlugin {
     }
 
     let publicAddress = parsedUri.host || parsedUri.path
+    let legacyAddress = ''
     if (!publicAddress) throw new Error('InvalidUriError')
     publicAddress = publicAddress.replace('/', '') // Remove any slashes
     publicAddress = dirtyAddress(publicAddress, this.network)
     if (!validAddress(publicAddress, this.network)) {
-      throw new Error('InvalidPublicAddressError')
+      publicAddress = sanitizeAddress(publicAddress, this.network)
+      legacyAddress = publicAddress
+      publicAddress = toNewFormat(publicAddress, this.network)
+      if (!validAddress(publicAddress, this.network)) {
+        throw new Error('InvalidPublicAddressError')
+      }
     }
 
     const amountStr = getParameterByName('amount', uri)
@@ -145,6 +151,8 @@ export class CurrencyPlugin {
     if (name) metadata.name = name
     if (message) metadata.message = message
     const abcParsedUri: AbcParsedUri = { publicAddress, metadata }
+
+    if (legacyAddress !== '') abcParsedUri.legacyAddress = legacyAddress
 
     if (amountStr && typeof amountStr === 'string') {
       const denomination: any = currencyInfo.denominations.find(
@@ -159,21 +167,20 @@ export class CurrencyPlugin {
   }
 
   encodeUri (obj: AbcEncodeUri): string {
+    const { legacyAddress } = obj
+    let { publicAddress } = obj
     if (
-      obj.legacyAddress &&
-      validAddress(toNewFormat(obj.legacyAddress, this.network), this.network)
+      legacyAddress &&
+      validAddress(toNewFormat(legacyAddress, this.network), this.network)
     ) {
-      obj.publicAddress = obj.legacyAddress
-    } else if (
-      !obj.publicAddress ||
-      !validAddress(obj.publicAddress, this.network)
-    ) {
+      publicAddress = legacyAddress
+    } else if (publicAddress && validAddress(publicAddress, this.network)) {
+      publicAddress = dirtyAddress(publicAddress, this.network)
+    } else {
       throw new Error('InvalidPublicAddressError')
     }
-    if (!obj.nativeAmount && !obj.metadata) {
-      return dirtyAddress(obj.publicAddress, this.network)
-    }
-    obj.publicAddress = sanitizeAddress(obj.publicAddress, this.network)
+    if (!obj.nativeAmount && !obj.metadata) return publicAddress
+    publicAddress = sanitizeAddress(publicAddress, this.network)
     let queryString = ''
     const info = this.currencyInfo
     if (obj.nativeAmount) {
@@ -198,7 +205,7 @@ export class CurrencyPlugin {
 
     return serialize({
       scheme: info.currencyName.toLowerCase(),
-      path: obj.publicAddress,
+      path: publicAddress,
       query: queryString
     })
   }
