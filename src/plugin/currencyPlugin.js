@@ -131,11 +131,17 @@ export class CurrencyPlugin {
     }
 
     let publicAddress = parsedUri.host || parsedUri.path
+    let legacyAddress = ''
     if (!publicAddress) throw new Error('InvalidUriError')
     publicAddress = publicAddress.replace('/', '') // Remove any slashes
     publicAddress = dirtyAddress(publicAddress, this.network)
     if (!validAddress(publicAddress, this.network)) {
-      throw new Error('InvalidPublicAddressError')
+      publicAddress = sanitizeAddress(publicAddress, this.network)
+      legacyAddress = publicAddress
+      publicAddress = toNewFormat(publicAddress, this.network)
+      if (!validAddress(publicAddress, this.network)) {
+        throw new Error('InvalidPublicAddressError')
+      }
     }
 
     const amountStr = getParameterByName('amount', uri)
@@ -145,6 +151,8 @@ export class CurrencyPlugin {
     if (name) metadata.name = name
     if (message) metadata.message = message
     const abcParsedUri: AbcParsedUri = { publicAddress, metadata }
+
+    if (legacyAddress !== '') abcParsedUri.legacyAddress = legacyAddress
 
     if (amountStr && typeof amountStr === 'string') {
       const denomination: any = currencyInfo.denominations.find(
