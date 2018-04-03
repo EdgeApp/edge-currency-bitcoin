@@ -10,10 +10,7 @@ export const zcoinInfo: AbcCurrencyInfo = {
     { name: 'XZC', multiplier: '100000000', symbol: 'Z' },
     { name: 'mXZC', multiplier: '100000', symbol: 'mZ' }
   ],
-  walletTypes: [
-    'wallet:zcoin',
-    'wallet:zcoin-bip44'
-  ],
+  walletTypes: ['wallet:zcoin', 'wallet:zcoin-bip44'],
 
   // Configuration options:
   defaultSettings: {
@@ -63,7 +60,7 @@ export const zcoinInfo: AbcCurrencyInfo = {
   },
   metaTokens: [],
 
-  // Explorers:  
+  // Explorers:
   addressExplorer: 'insight.zcoin.io/address/%s',
   blockExplorer: 'insight.zcoin.io/block/%s',
   transactionExplorer: 'insight.zcoin.io/tx/%s',

@@ -174,10 +174,7 @@ export class CurrencyPlugin {
       validAddress(toNewFormat(legacyAddress, this.network), this.network)
     ) {
       publicAddress = legacyAddress
-    } else if (
-      publicAddress &&
-      validAddress(publicAddress, this.network)
-    ) {
+    } else if (publicAddress && validAddress(publicAddress, this.network)) {
       publicAddress = dirtyAddress(publicAddress, this.network)
     } else {
       throw new Error('InvalidPublicAddressError')
