@@ -16,6 +16,7 @@ import { dashInfo } from './info/dash.js'
 import { dogecoinInfo } from './info/dogecoin.js'
 import { litecoinInfo } from './info/litecoin.js'
 import { zcoinInfo } from './info/zcoin.js'
+import { feathercoinInfo } from './info/feathercoin.js'
 
 // CurrencyPlugin takes a plugin info and creates the plugin
 import { CurrencyPlugin } from './plugin/currencyPlugin.js'
@@ -82,6 +83,11 @@ export const litecoinCurrencyPluginFactory = makePluginFactory(litecoinInfo)
 // Zcoin:
 export const zcoinCurrencyPluginFactory = makePluginFactory(zcoinInfo)
 
+// Feathercoin:
+export const feathercoinCurrencyPluginFactory = makePluginFactory(
+  feathercoinInfo
+)
+
 // Legacy uppercased names:
 export {
   bitcoinCurrencyPluginFactory as BitcoinCurrencyPluginFactory,
@@ -91,5 +97,6 @@ export {
   dashCurrencyPluginFactory as DashCurrencyPluginFactory,
   dogecoinCurrencyPluginFactory as DogecoinCurrencyPluginFactory,
   litecoinCurrencyPluginFactory as LitecoinCurrencyPluginFactory,
-  zcoinCurrencyPluginFactory as ZcoinCurrencyPluginFactory
+  zcoinCurrencyPluginFactory as ZcoinCurrencyPluginFactory,
+  feathercoinCurrencyPluginFactory as FeathercoinCurrencyPluginFactory
 }

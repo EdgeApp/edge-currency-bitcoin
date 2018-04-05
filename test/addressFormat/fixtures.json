@@ -282,5 +282,60 @@
       [ "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty", "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty" ],
       [ "aLTSv7QbTZbkgorYEhbNx2gH4hGYNLsoGv", "aLTSv7QbTZbkgorYEhbNx2gH4hGYNLsoGv" ]
     ]
+  },
+  {
+    "factory": "feathercoinCurrencyPluginFactory",
+    "WALLET_TYPE": "wallet:feathercoin",
+    "valid": [
+      "6fLKmA19ESYgg5HPq9q3UvY3EJ6HThr5DD",
+      "6iH1kg2ojtcVLkEQMQtLXQ2ub6ztRJuzT2",
+      "6iRgFB4Fi922TqJHD7KaFn8Y1DJRHNy9BL",
+      "6mqxEokEi4ui22pBzEgJ8cCyBqbfgtJ5S8",
+      "6oLWMBechqxE98A7opVvPe1HkTaxCkANip",
+      "6oZoShfULB72Y3Waig5rjxNk9Zg8zGL2GE",
+      "fc1q4apxcls6tfrjmuhjjg2vw5csecc7yzjdp73y44",
+      "fc1qa697hngv9h4zt3wrpa55cp3w4nlwfwr0ju80ha",
+      "fc1q56wavzlnjjvwe2qmgk94vk09xtxklevum9eup6",
+      "3HWSjpbJvd3tZm844hjnVU3fDeirrTZFDt",
+      "34edSxw6dnV1Jnmev1p1tkb1UoPEcwxRqH",
+      "3M7jVJ7SHcezMXQ3q2TqyLindX8WsWwwKe"
+    ],
+    "inValid": [
+      "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu",
+      "1KXrWXciRDZUpQwQmuM1DbwsKDLYAYsVLR",
+      "16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb",
+      "MSS1jxX7vEjHi5ujzszwTsZCnSDhkWKrBd",
+      "M816EdyuvWV7oETCfQeZb5mGWm9nHczijH",
+      "MJiPwX84iBe4WnFDwsYGgtnz1XonPhUqhf",
+      "18uKBY8mgA7MWfRHpw8faQRZQtssqXWSJS",
+      "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq",
+      "bc1qc7slrfxkknqcq2jevvvkdgvrt8080852dfjewde450xdlk4ugp7szw5tk9",
+      "XekiLaxnqpFb2m4NQAEcsKutZcZgcyfo6W",
+      "XiBQaGtW6y1C52YtPBD4PTMntpA9hkBq5p",
+      "XqWgAZEGdWDUhbS1YxSwxrK3GLGdJjSHus",
+      "XbtvGzi2JgjYTbTqabUjSREWeovDxznoyh",
+      "Xx9R3uriMAF2W71WH5kwpNdoHxqzGGih3c",
+      "Xm9TJiJ7nWjme8K7iEPUGsC5JjYGzPk2QU",
+      "XvwKzdsn46psqy6WhZ2wfhRPyRkD6GL2BG",
+      "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a",
+      "bitcoincash:qr95sy3j9xwd2ap32xkykttr4cvcu7as4y0qverfuy",
+      "bitcoincash:qqq3728yw0y47sqn6l2na30mcw6zm78dzqre909m2r",
+      "bitcoincash:ppm2qsznhks23z7629mms6s4cwef74vcwvn0h829pq",
+      "bitcoincash:pr95sy3j9xwd2ap32xkykttr4cvcu7as4yc93ky28e",
+      "bitcoincash:pqq3728yw0y47sqn6l2na30mcw6zm78dzq5ucqzc37",
+      "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a"
+    ],
+    "toLegacy": [
+      [ "6fLKmA19ESYgg5HPq9q3UvY3EJ6HThr5DD", "6fLKmA19ESYgg5HPq9q3UvY3EJ6HThr5DD" ],
+      [ "6iH1kg2ojtcVLkEQMQtLXQ2ub6ztRJuzT2", "6iH1kg2ojtcVLkEQMQtLXQ2ub6ztRJuzT2" ],
+      [ "3HWSjpbJvd3tZm844hjnVU3fDeirrTZFDt", "3HWSjpbJvd3tZm844hjnVU3fDeirrTZFDt" ],
+      [ "fc1q4apxcls6tfrjmuhjjg2vw5csecc7yzjdp73y44", "fc1q4apxcls6tfrjmuhjjg2vw5csecc7yzjdp73y44" ]
+    ],
+    "toNewFormat": [
+      [ "6fLKmA19ESYgg5HPq9q3UvY3EJ6HThr5DD", "6fLKmA19ESYgg5HPq9q3UvY3EJ6HThr5DD" ],
+      [ "6iH1kg2ojtcVLkEQMQtLXQ2ub6ztRJuzT2", "6iH1kg2ojtcVLkEQMQtLXQ2ub6ztRJuzT2" ],
+      [ "3HWSjpbJvd3tZm844hjnVU3fDeirrTZFDt", "3HWSjpbJvd3tZm844hjnVU3fDeirrTZFDt" ],
+      [ "fc1q4apxcls6tfrjmuhjjg2vw5csecc7yzjdp73y44", "fc1q4apxcls6tfrjmuhjjg2vw5csecc7yzjdp73y44" ]
+    ]
   }
 ]
