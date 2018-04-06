@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 2.16.1
+
+* Fix unhandled exception due to LTC transactions with bech32 outputs
+
 ## 2.16.0
 
 * Allow for Parse Uri to recognize legacy address

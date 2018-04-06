@@ -219,7 +219,16 @@ export class CurrencyEngine {
       }
       output = output.getJSON(this.network)
       value = output.value
-      address = toNewFormat(output.address, this.network)
+      try {
+        address = toNewFormat(output.address, this.network)
+      } catch (e) {
+        console.log(e)
+        if (value <= 0) {
+          continue
+        } else {
+          address = ''
+        }
+      }
       totalOutputAmount += value
       if (this.engineState.scriptHashes[address]) {
         nativeAmount += value
