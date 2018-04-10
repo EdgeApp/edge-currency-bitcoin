@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 2.16.2
+
+* Catch errors from startum servers
+
 ## 2.16.1
 
 * Fix unhandled exception due to LTC transactions with bech32 outputs
