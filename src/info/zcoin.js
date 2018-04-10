@@ -51,19 +51,19 @@ export const zcoinInfo: AbcCurrencyInfo = {
     },
     electrumServers: [
       'electrum://51.15.82.184:50001',
-      'electrums://51.15.82.184:50002',
-      'electrums://45.63.92.224:50001',
-      'electrums://45.63.92.224:50002',
+      'electrum://45.63.92.224:50001',
       'electrum://47.75.76.176:50001',
+      'electrums://51.15.82.184:50002',
+      'electrums://45.63.92.224:50002',
       'electrums://47.75.76.176:50002'
     ]
   },
   metaTokens: [],
 
   // Explorers:
-  addressExplorer: 'insight.zcoin.io/address/%s',
-  blockExplorer: 'insight.zcoin.io/block/%s',
-  transactionExplorer: 'insight.zcoin.io/tx/%s',
+  addressExplorer: 'https://insight.zcoin.io/address/%s',
+  blockExplorer: 'https://insight.zcoin.io/block/%s',
+  transactionExplorer: 'https://insight.zcoin.io/tx/%s',
 
   // Images:
   symbolImage:
