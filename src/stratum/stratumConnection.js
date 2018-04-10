@@ -243,7 +243,14 @@ export class StratumConnection {
           throw new Error(`Bad Stratum id in ${messageJson}`)
         }
         delete this.pendingMessages[id]
+        const { error } = json
         try {
+          if (error) {
+            const errorMessage = error.message
+              ? error.message.split('\n')[0]
+              : error.code
+            throw new Error(errorMessage)
+          }
           message.task.onDone(json.result)
         } catch (e) {
           message.task.onFail(e)
