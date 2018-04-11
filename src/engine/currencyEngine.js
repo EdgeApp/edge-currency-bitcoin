@@ -285,6 +285,9 @@ export class CurrencyEngine {
         throw new Error('No io/fetch object')
       }
       await this.fetchFee()
+      if (!this.infoServer) {
+        throw new Error('infoServer not set')
+      }
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
         const url = `${this.infoServer}/networkFees/${
           this.currencyInfo.currencyCode

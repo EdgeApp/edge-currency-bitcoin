@@ -1,5 +1,16 @@
 # edge-currency-bitcoin
 
+## 2.16.3
+
+* Set the response time if serverScoreDown() is called. This prevents this server from being considered "new" and being tried again in the future at the top of the list.
+* Fix port numbers for zcoin electrum servers
+* Fix zcoin block explorer urls
+* Completely ignore electrums: urls for now
+
+## 2.16.2
+
+* Catch errors from stratum servers
+
 ## 2.16.1
 
 * Fix unhandled exception due to LTC transactions with bech32 outputs

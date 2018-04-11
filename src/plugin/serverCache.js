@@ -149,6 +149,10 @@ export class ServerCache {
       serverInfo.serverScore = MIN_SCORE
     }
 
+    if (serverInfo.numResponseTimes === 0) {
+      this.setResponseTime(serverUrl, 9999)
+    }
+
     console.log(
       `Stratum ${serverUrl} score went DOWN ${serverInfo.serverScore}`
     )

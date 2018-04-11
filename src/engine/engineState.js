@@ -450,7 +450,8 @@ export class EngineState extends EventEmitter {
   refillServers () {
     const { io } = this
     const ignorePatterns = []
-    if (!this.io.TLSSocket) ignorePatterns.push('electrums:')
+    // if (!this.io.TLSSocket)
+    ignorePatterns.push('electrums:')
     if (!this.io.Socket) ignorePatterns.push('electrum:')
     const servers = this.pluginState.getServers(NEW_CONNECTIONS, ignorePatterns)
     console.log(
