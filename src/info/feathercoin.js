@@ -11,7 +11,7 @@ export const feathercoinInfo: AbcCurrencyInfo = {
     { name: 'mFTC', multiplier: '100000', symbol: 'mF' }
   ],
   walletTypes: [
-    'wallet:feathercoin-bip49',
+    // 'wallet:feathercoin-bip49', // Disable creating segwit wallets for now
     'wallet:feathercoin-bip44',
     'wallet:feathercoin'
   ],
@@ -50,14 +50,14 @@ export const feathercoinInfo: AbcCurrencyInfo = {
       lowFee: '400',
       standardFeeLow: '600',
       standardFeeHigh: '800',
-      standardFeeLowAmount: '20000000',
-      standardFeeHighAmount: '981000000'
+      standardFeeLowAmount: '2000000000',
+      standardFeeHighAmount: '98100000000'
     },
     electrumServers: [
-      'electrum://electrumx-ch-1.feathercoin.ch:50002',
-      'electrum://electrumx-de-2.feathercoin.ch:50002',
-      'electrum://electrumxftc.trezarcoin.com:50002',
-      'electrums://electrum.feathercoin.network:50002'
+      'electrum://electrumx-ch-1.feathercoin.ch:50001',
+      'electrum://electrumx-de-2.feathercoin.ch:50001',
+      'electrum://electrumxftc.trezarcoin.com:50001',
+      'electrum://electrum.feathercoin.network:50001'
     ]
   },
   metaTokens: [],
