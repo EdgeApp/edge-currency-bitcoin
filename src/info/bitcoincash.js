@@ -9,7 +9,7 @@ export const bitcoincashInfo: AbcCurrencyInfo = {
   denominations: [
     { name: 'BCH', multiplier: '100000000', symbol: '₿' },
     { name: 'mBCH', multiplier: '100000', symbol: 'm₿' },
-    { name: 'bits', multiplier: '100', symbol: 'ƀ' }
+    { name: 'cash', multiplier: '100', symbol: 'ƀ' }
   ],
   walletTypes: ['wallet:bitcoincash-bip44', 'wallet:bitcoincash'],
 
