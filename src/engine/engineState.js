@@ -353,6 +353,7 @@ export class EngineState extends EventEmitter {
   reconnectCounter: number
   progressRatio: number
   txCacheInitSize: number
+  serverList: Array<string>
 
   constructor (options: EngineStateOptions) {
     super()
@@ -374,6 +375,7 @@ export class EngineState extends EventEmitter {
     this.localFolder = options.localFolder
     this.encryptedLocalFolder = options.encryptedLocalFolder
     this.pluginState = options.pluginState
+    this.serverList = []
     const {
       onBalanceChanged = nop,
       onAddressUsed = nop,
@@ -453,23 +455,25 @@ export class EngineState extends EventEmitter {
     // if (!this.io.TLSSocket)
     ignorePatterns.push('electrums:')
     if (!this.io.Socket) ignorePatterns.push('electrum:')
-    const servers = this.pluginState.getServers(NEW_CONNECTIONS, ignorePatterns)
+    if (this.serverList.length === 0) {
+      this.serverList = this.pluginState.getServers(NEW_CONNECTIONS, ignorePatterns)
+    }
     console.log(
       `${
         this.walletId
       } - Refilling Servers, top ${NEW_CONNECTIONS} servers are:`,
-      servers
+      this.serverList
     )
     let chanceToBePicked = 1.25
     while (Object.keys(this.connections).length < MAX_CONNECTIONS) {
-      if (!servers.length) break
-      const uri = servers.shift()
+      if (!this.serverList.length) break
+      const uri = this.serverList.shift()
       if (this.connections[uri]) {
         continue
       }
       chanceToBePicked -= chanceToBePicked > 0.5 ? 0.25 : 0
       if (Math.random() > chanceToBePicked) {
-        servers.push(uri)
+        this.serverList.push(uri)
         continue
       }
       if (!uri) {
