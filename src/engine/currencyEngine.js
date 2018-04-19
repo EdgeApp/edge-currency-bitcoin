@@ -132,6 +132,9 @@ export class CurrencyEngine {
     this.network = this.engineInfo.network
 
     this.fees = { ...engineInfo.simpleFeeSettings, timestamp: 0 }
+    console.log(
+      `${this.walletId.slice(0, 6)}: create engine type: ${this.walletInfo.type}`
+    )
   }
 
   async load (): Promise<any> {
@@ -267,7 +270,7 @@ export class CurrencyEngine {
         }
       }
     } catch (err) {
-      console.log(`${this.walletId} - ${err.toString()}`)
+      console.log(`${this.walletId.slice(0, 6)} - ${err.toString()}`)
     }
   }
 
@@ -342,7 +345,7 @@ export class CurrencyEngine {
       log += JSON.stringify(jsonObj, null, 2) + '\n'
     }
     log += '------------------------------------------------------------------'
-    console.log(`${this.walletId} - ${log}`)
+    console.log(`${this.walletId.slice(0, 6)}: ${log}`)
   }
   // ------------------------------------------------------------------------
   // Public API
@@ -432,7 +435,7 @@ export class CurrencyEngine {
         this.engineState.markAddressesUsed(scriptHashs)
         if (this.keyManager) this.keyManager.setLookAhead()
       })
-      .catch(e => console.log(`${this.walletId} - ${e.toString()}`))
+      .catch(e => console.log(`${this.walletId.slice(0, 6)}: ${e.toString()}`))
   }
 
   isAddressUsed (address: string, options: any): boolean {

@@ -129,9 +129,9 @@ export class ServerCache {
     }
 
     console.log(
-      `Stratum ${serverUrl} score went UP ${
+      `${serverUrl}: score UP to ${
         serverInfo.serverScore
-      } ${responseTimeMilliseconds}`
+      } ${responseTimeMilliseconds}ms`
     )
     this.dirtyServerCache(serverUrl)
   }
@@ -154,7 +154,7 @@ export class ServerCache {
     }
 
     console.log(
-      `Stratum ${serverUrl} score went DOWN ${serverInfo.serverScore}`
+      `${serverUrl}: score DOWN to ${serverInfo.serverScore}`
     )
     this.dirtyServerCache(serverUrl)
   }
