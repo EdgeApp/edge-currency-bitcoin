@@ -45,3 +45,16 @@ export function reverseBufferToHex (rawBuffer: any) {
     .reverse()
     .join('')
 }
+
+/**
+ * Waits for the first successful promise.
+ * If no promise succeeds, returns the last failure.
+ */
+export function promiseAny (promises: Array<Promise<any>>): Promise<any> {
+  return new Promise((resolve: Function, reject: Function) => {
+    let pending = promises.length
+    for (const promise of promises) {
+      promise.then(value => resolve(value), error => --pending || reject(error))
+    }
+  })
+}
