@@ -805,7 +805,7 @@ export class EngineState extends EventEmitter {
       // Fill up the missing headers to fetch
       for (const txid in this.txHeightCache) {
         const height = this.txHeightCache[txid].height
-        if (!this.pluginState.headerCache[`${height}`]) {
+        if (height > 0 && !this.pluginState.headerCache[`${height}`]) {
           this.missingHeaders[`${height}`] = true
         }
       }
