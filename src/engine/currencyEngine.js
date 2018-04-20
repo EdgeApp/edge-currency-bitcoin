@@ -114,6 +114,7 @@ export class CurrencyEngine {
       : null
 
     this.engineState = new EngineState({
+      files: { txs: 'txs.json', addresses: 'addresses.json' },
       callbacks: engineStateCallbacks,
       io: io,
       localFolder: this.abcCurrencyEngineOptions.walletLocalFolder,

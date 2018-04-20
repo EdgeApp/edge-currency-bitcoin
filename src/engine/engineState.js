@@ -79,6 +79,7 @@ export interface EngineStateCallbacks {
 }
 
 export interface EngineStateOptions {
+  files: { txs: string, addresses: string };
   callbacks: EngineStateCallbacks;
   io: any;
   localFolder: any;
@@ -338,6 +339,8 @@ export class EngineState extends EventEmitter {
   // ------------------------------------------------------------------------
   io: AbcIo
   walletId: string
+  txFile: string
+  addressFile: string
   localFolder: DiskletFolder
   encryptedLocalFolder: DiskletFolder
   pluginState: PluginState
@@ -372,6 +375,8 @@ export class EngineState extends EventEmitter {
     this.missingHeaders = {}
     this.walletId = options.walletId || ''
     this.io = options.io
+    this.txFile = options.files.txs
+    this.addressFile = options.files.addresses
     this.localFolder = options.localFolder
     this.encryptedLocalFolder = options.encryptedLocalFolder
     this.pluginState = options.pluginState
@@ -771,7 +776,8 @@ export class EngineState extends EventEmitter {
 
     // Load transaction data cache:
     try {
-      const txCacheText = await this.localFolder.file('txs.json').getText()
+      if (!this.txFile || this.txFile === '') throw new Error('Missing txFile')
+      const txCacheText = await this.localFolder.file(this.txFile).getText()
       const txCacheJson = JSON.parse(txCacheText)
 
       // TODO: Validate JSON
@@ -791,7 +797,10 @@ export class EngineState extends EventEmitter {
     // Load the address and height caches.
     // Must come after transactions are loaded for proper txid filtering:
     try {
-      const cacheText = await this.localFolder.file('addresses.json').getText()
+      if (!this.addressFile || this.addressFile === '') {
+        throw new Error('Missing addressFile')
+      }
+      const cacheText = await this.localFolder.file(this.addressFile).getText()
       const cacheJson = JSON.parse(cacheText)
 
       // TODO: Validate JSON
@@ -854,7 +863,10 @@ export class EngineState extends EventEmitter {
           addresses: this.addressCache,
           heights: this.txHeightCache
         })
-        await this.localFolder.file('addresses.json').setText(json)
+        if (!this.addressFile || this.addressFile === '') {
+          throw new Error('Missing addressFile')
+        }
+        await this.localFolder.file(this.addressFile).setText(json)
         console.log(`${this.walletId} - Saved address cache`)
         this.addressCacheDirty = false
       } catch (e) {
@@ -866,8 +878,11 @@ export class EngineState extends EventEmitter {
   async saveTxCache () {
     if (this.txCacheDirty) {
       try {
+        if (!this.txFile || this.txFile === '') {
+          throw new Error('Missing txFile')
+        }
         const json = JSON.stringify({ txs: this.txCache })
-        await this.localFolder.file('txs.json').setText(json)
+        await this.localFolder.file(this.txFile).setText(json)
         console.log(`${this.walletId} - Saved tx cache`)
         this.txCacheDirty = false
       } catch (e) {
