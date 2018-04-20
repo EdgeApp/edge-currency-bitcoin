@@ -489,6 +489,73 @@ export class CurrencyEngine {
     return false
   }
 
+  async sweepPrivateKeys (
+    abcSpendInfo: AbcSpendInfo,
+    options?: any = {}
+  ): Promise<AbcTransaction> {
+    // $FlowFixMe
+    const { privateKeys } = abcSpendInfo
+    let success, failure
+    const end = new Promise((resolve, reject) => {
+      success = resolve
+      failure = reject
+    })
+    const engineStateCallbacks: EngineStateCallbacks = {
+      onAddressesChecked: (ratio: number) => {
+        if (ratio === 1) {
+          engineState.disconnect()
+          options.subtractFee = true
+          const utxos = engineState.getUTXOs()
+          if (!utxos || !utxos.length) {
+            failure(new Error('Private key has no funds'))
+          }
+          const publicAddress = this.getFreshAddress().publicAddress
+          const nativeAmount = engineState.getBalance()
+          options.utxos = utxos
+          abcSpendInfo.spendTargets = [{ publicAddress, nativeAmount }]
+          this.makeSpend(abcSpendInfo, options)
+            .then(tx => success(tx))
+            .catch(e => failure(e))
+        }
+      }
+    }
+
+    const io = this.abcCurrencyEngineOptions.optionalSettings
+      ? this.abcCurrencyEngineOptions.optionalSettings.io
+      : null
+
+    const engineState = new EngineState({
+      files: { txs: '', addresses: '' },
+      callbacks: engineStateCallbacks,
+      io: io,
+      localFolder: this.abcCurrencyEngineOptions.walletLocalFolder,
+      encryptedLocalFolder: this.abcCurrencyEngineOptions
+        .walletLocalEncryptedFolder,
+      pluginState: this.pluginState,
+      walletId: this.walletId
+    })
+
+    await this.engineState.load()
+
+    for (const key of privateKeys) {
+      const privKey = bcoin.primitives.KeyRing.fromSecret(key, this.network)
+      const keyAddress = privKey.getAddress('base58')
+      privKey.nested = true
+      privKey.witness = true
+      const nestedAddress = privKey.getAddress('base58')
+      const keyHash = await this.keyManager.addressToScriptHash(keyAddress)
+      const nestedHash = await this.keyManager.addressToScriptHash(
+        nestedAddress
+      )
+      engineState.addAddress(keyHash, keyAddress)
+      engineState.addAddress(nestedHash, nestedAddress)
+    }
+
+    engineState.connect()
+
+    return end
+  }
+
   async makeSpend (
     abcSpendInfo: AbcSpendInfo,
     options?: any = {}
