@@ -334,6 +334,37 @@ export class EngineState extends EventEmitter {
     await Promise.all(closed)
   }
 
+  getBalance (options: any): string {
+    return Object.keys(this.addressInfos)
+      .reduce((total, scriptHash) => {
+        const { balance } = this.addressInfos[scriptHash]
+        return total + balance
+      }, 0)
+      .toString()
+  }
+
+  getUTXOs () {
+    const utxos: any = []
+    for (const scriptHash in this.addressInfos) {
+      const utxoLength = this.addressInfos[scriptHash].utxos.length
+      for (let i = 0; i < utxoLength; i++) {
+        const utxo = this.addressInfos[scriptHash].utxos[i]
+        const { txid } = utxo
+        let height = -1
+        if (this.txHeightCache[txid]) {
+          height = this.txHeightCache[txid].height
+        }
+        const tx = this.parsedTxs[txid] || {}
+        utxos.push({ utxo, tx, height })
+      }
+    }
+    return utxos
+  }
+
+  getNumTransactions (options: any): number {
+    return Object.keys(this.txCache).length
+  }
+
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------
@@ -461,7 +492,10 @@ export class EngineState extends EventEmitter {
     ignorePatterns.push('electrums:')
     if (!this.io.Socket) ignorePatterns.push('electrum:')
     if (this.serverList.length === 0) {
-      this.serverList = this.pluginState.getServers(NEW_CONNECTIONS, ignorePatterns)
+      this.serverList = this.pluginState.getServers(
+        NEW_CONNECTIONS,
+        ignorePatterns
+      )
     }
     console.log(
       `${

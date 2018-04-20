@@ -367,22 +367,6 @@ export class CurrencyEngine {
     }
   }
 
-  getUTXOs () {
-    const utxos: any = []
-    for (const scriptHash in this.engineState.addressInfos) {
-      const utxoLength = this.engineState.addressInfos[scriptHash].utxos.length
-      for (let i = 0; i < utxoLength; i++) {
-        const utxo = this.engineState.addressInfos[scriptHash].utxos[i]
-        let height = -1
-        if (this.engineState.txHeightCache[utxo.txid]) {
-          height = this.engineState.txHeightCache[utxo.txid].height
-        }
-        utxos.push({ utxo, height })
-      }
-    }
-    return utxos
-  }
-
   logAbcTransaction (abcTransaction: AbcTransaction, action: string) {
     let log = `------------------ ${action} Transaction ------------------\n`
     log += `Transaction id: ${abcTransaction.txid}\n`
@@ -447,16 +431,11 @@ export class CurrencyEngine {
   }
 
   getBalance (options: any): string {
-    let totalBalance = 0
-    for (const scriptHash in this.engineState.addressInfos) {
-      const { balance } = this.engineState.addressInfos[scriptHash]
-      totalBalance += balance
-    }
-    return `${totalBalance}`
+    return this.engineState.getBalance()
   }
 
   getNumTransactions (options: any): number {
-    return Object.keys(this.engineState.txCache).length
+    return this.engineState.getNumTransactions(options)
   }
 
   async getTransactions (options: any): Promise<Array<AbcTransaction>> {
@@ -537,7 +516,7 @@ export class CurrencyEngine {
         rate: this.getRate(abcSpendInfo),
         maxFee: this.currencyInfo.defaultSettings.maxFee,
         outputs: abcSpendInfo.spendTargets,
-        utxos: this.getUTXOs(),
+        utxos: options.utxos || this.engineState.getUTXOs(),
         height: this.getBlockHeight()
       })
       const resultedTransaction = await this.keyManager.createTX(options)
@@ -588,12 +567,13 @@ export class CurrencyEngine {
 
   async signTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
     this.logAbcTransaction(abcTransaction, 'Signing')
-    await this.keyManager.sign(abcTransaction.otherParams.bcoinTx)
+    const otherParams = abcTransaction.otherParams
+    const { abcSpendInfo, bcoinTx } = otherParams
+    const { privateKeys = [] } = abcSpendInfo
+    await this.keyManager.sign(bcoinTx, privateKeys)
     abcTransaction.date = Date.now() / MILLI_TO_SEC
-    abcTransaction.signedTx = abcTransaction.otherParams.bcoinTx
-      .toRaw()
-      .toString('hex')
-    abcTransaction.txid = abcTransaction.otherParams.bcoinTx.rhash()
+    abcTransaction.signedTx = bcoinTx.toRaw().toString('hex')
+    abcTransaction.txid = bcoinTx.rhash()
     return abcTransaction
   }
 
