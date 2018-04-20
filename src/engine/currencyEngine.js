@@ -1,5 +1,6 @@
 // @flow
 import type {
+  EdgeTransaction,
   AbcWalletInfo,
   AbcCurrencyEngine,
   AbcCurrencyEngineOptions,
@@ -17,10 +18,11 @@ import { KeyManager } from './keyManager'
 import type { EngineStateCallbacks } from './engineState.js'
 import type { KeyManagerCallbacks } from './keyManager'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
-import { validateObject } from '../utils/utils.js'
+import { validateObject, promiseAny } from '../utils/utils.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import { bns } from 'biggystring'
+import { broadcastFactories } from './broadcastApi.js'
 import {
   toLegacyFormat,
   toNewFormat,
@@ -596,7 +598,7 @@ export class CurrencyEngine {
     return abcTransaction
   }
 
-  async broadcastTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
+  async broadcastTx (abcTransaction: EdgeTransaction): Promise<AbcTransaction> {
     if (!abcTransaction.otherParams.bcoinTx) {
       abcTransaction.otherParams.bcoinTx = bcoin.primitives.TX.fromRaw(
         abcTransaction.signedTx,
@@ -609,8 +611,35 @@ export class CurrencyEngine {
         throw new Error('Wrong spend amount')
       }
     }
-    const txid = await this.engineState.broadcastTx(abcTransaction.signedTx)
-    if (!abcTransaction.txid) abcTransaction.txid = txid
+
+    // Try APIs
+    const broadcasters = []
+    if (this.abcCurrencyEngineOptions.optionalSettings) {
+      for (const f of broadcastFactories) {
+        const broadcaster = f(
+          this.abcCurrencyEngineOptions.optionalSettings.io,
+          abcTransaction.currencyCode
+        )
+        if (broadcaster) {
+          broadcasters.push(broadcaster)
+        }
+      }
+    }
+
+    const promiseArray = []
+
+    for (const broadcaster of broadcasters) {
+      const p = broadcaster(abcTransaction.signedTx)
+      promiseArray.push(p)
+    }
+    promiseArray.push(this.engineState.broadcastTx(abcTransaction.signedTx))
+
+    try {
+      await promiseAny(promiseArray)
+    } catch (e) {
+      throw e
+    }
+
     return abcTransaction
   }
 
