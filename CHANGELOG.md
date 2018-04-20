@@ -1,5 +1,15 @@
 # edge-currency-bitcoin
 
+## 2.17.1
+
+* Add broadcast APIs for BTC, BCH, LTC, and DASH
+* Improve serverCache usage by depleting all servers returned for getServers before asking for new servers
+
+## 2.17.0
+
+* Add support for FTC and XZC
+* Fix crash when no info server is specified for a coin
+
 ## 2.16.3
 
 * Set the response time if serverScoreDown() is called. This prevents this server from being considered "new" and being tried again in the future at the top of the list.
