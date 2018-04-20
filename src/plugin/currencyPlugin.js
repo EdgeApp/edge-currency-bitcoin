@@ -5,36 +5,21 @@ import type {
   AbcCurrencyEngineOptions,
   AbcCurrencyInfo,
   AbcCurrencyPlugin,
-  AbcEncodeUri,
   AbcIo,
-  AbcParsedUri,
-  AbcWalletInfo
+  AbcWalletInfo,
+  AbcEncodeUri,
+  AbcParsedUri
 } from 'edge-core-js'
-import {
-  validAddress,
-  sanitizeAddress,
-  dirtyAddress,
-  toNewFormat
-} from '../utils/addressFormat/addressFormatIndex.js'
+
 import bcoin from 'bcoin'
-import { bns } from 'biggystring'
 // $FlowFixMe
 import buffer from 'buffer-hack'
-import { parse, serialize } from 'uri-js'
 import { CurrencyEngine } from '../engine/currencyEngine.js'
 import { PluginState } from './pluginState.js'
+import { parseUri, encodeUri } from '../utils/uri.js'
 
 // $FlowFixMe
 const { Buffer } = buffer
-
-const getParameterByName = (param: string, url: string) => {
-  const name = param.replace(/[[\]]/g, '\\$&')
-  const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)')
-  const results = regex.exec(url)
-  if (!results) return null
-  if (!results[2]) return ''
-  return decodeURIComponent(results[2].replace(/\+/g, ' '))
-}
 
 /**
  * The core currency plugin.
@@ -82,9 +67,9 @@ export class CurrencyPlugin {
       throw new Error('InvalidWalletType')
     }
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
-    const walletType = walletInfo.keys[`${this.network}Key`]
-    if (!walletType) throw new Error('InvalidKeyName')
-    const mnemonic = bcoin.hd.Mnemonic.fromPhrase(walletType)
+    const seed = walletInfo.keys[`${this.network}Key`]
+    if (!seed) throw new Error('InvalidKeyName')
+    const mnemonic = bcoin.hd.Mnemonic.fromPhrase(seed)
     // TODO: Allow fromMnemonic to be async. API needs to change -paulvp
     let privateKey
     const result = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
@@ -121,92 +106,10 @@ export class CurrencyPlugin {
   }
 
   parseUri (uri: string): AbcParsedUri {
-    const parsedUri = parse(uri)
-    const currencyInfo = this.currencyInfo
-    if (
-      parsedUri.scheme &&
-      parsedUri.scheme.toLowerCase() !== currencyInfo.currencyName.toLowerCase()
-    ) {
-      throw new Error('InvalidUriError')
-    }
-
-    let publicAddress = parsedUri.host || parsedUri.path
-    let legacyAddress = ''
-    if (!publicAddress) throw new Error('InvalidUriError')
-    publicAddress = publicAddress.replace('/', '') // Remove any slashes
-    publicAddress = dirtyAddress(publicAddress, this.network)
-    if (!validAddress(publicAddress, this.network)) {
-      publicAddress = sanitizeAddress(publicAddress, this.network)
-      legacyAddress = publicAddress
-      publicAddress = toNewFormat(publicAddress, this.network)
-      if (!validAddress(publicAddress, this.network)) {
-        throw new Error('InvalidPublicAddressError')
-      }
-    }
-
-    const amountStr = getParameterByName('amount', uri)
-    const metadata = {}
-    const name = getParameterByName('label', uri)
-    const message = getParameterByName('message', uri)
-    if (name) metadata.name = name
-    if (message) metadata.message = message
-    const abcParsedUri: AbcParsedUri = { publicAddress, metadata }
-
-    if (legacyAddress !== '') abcParsedUri.legacyAddress = legacyAddress
-
-    if (amountStr && typeof amountStr === 'string') {
-      const denomination: any = currencyInfo.denominations.find(
-        e => e.name === currencyInfo.currencyCode
-      )
-      const multiplier: string = denomination.multiplier.toString()
-      const t = bns.mul(amountStr, multiplier)
-      abcParsedUri.nativeAmount = bns.toFixed(t, 0, 0)
-      abcParsedUri.currencyCode = currencyInfo.currencyCode
-    }
-    return abcParsedUri
+    return parseUri(uri, this.currencyInfo)
   }
 
   encodeUri (obj: AbcEncodeUri): string {
-    const { legacyAddress } = obj
-    let { publicAddress } = obj
-    if (
-      legacyAddress &&
-      validAddress(toNewFormat(legacyAddress, this.network), this.network)
-    ) {
-      publicAddress = legacyAddress
-    } else if (publicAddress && validAddress(publicAddress, this.network)) {
-      publicAddress = dirtyAddress(publicAddress, this.network)
-    } else {
-      throw new Error('InvalidPublicAddressError')
-    }
-    if (!obj.nativeAmount && !obj.metadata) return publicAddress
-    publicAddress = sanitizeAddress(publicAddress, this.network)
-    let queryString = ''
-    const info = this.currencyInfo
-    if (obj.nativeAmount) {
-      const currencyCode = obj.currencyCode || info.currencyCode
-      const denomination: any = info.denominations.find(
-        e => e.name === currencyCode
-      )
-      const multiplier: string = denomination.multiplier.toString()
-      // $FlowFixMe
-      const amount = bns.div(obj.nativeAmount, multiplier, 8)
-      queryString += 'amount=' + amount.toString() + '&'
-    }
-    if (obj.metadata) {
-      // $FlowFixMe
-      if (obj.metadata.name) queryString += `label=${obj.metadata.name}&`
-      if (obj.metadata.message) {
-        // $FlowFixMe
-        queryString += `message=${obj.metadata.message}&`
-      }
-    }
-    queryString = queryString.substr(0, queryString.length - 1)
-
-    return serialize({
-      scheme: info.currencyName.toLowerCase(),
-      path: publicAddress,
-      query: queryString
-    })
+    return encodeUri(obj, this.currencyInfo)
   }
 }
