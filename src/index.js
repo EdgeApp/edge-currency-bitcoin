@@ -17,6 +17,7 @@ import { dogecoinInfo } from './info/dogecoin.js'
 import { litecoinInfo } from './info/litecoin.js'
 import { zcoinInfo } from './info/zcoin.js'
 import { feathercoinInfo } from './info/feathercoin.js'
+import { qtumInfo } from './info/qtum.js'
 
 // CurrencyPlugin takes a plugin info and creates the plugin
 import { CurrencyPlugin } from './plugin/currencyPlugin.js'
@@ -87,6 +88,8 @@ export const zcoinCurrencyPluginFactory = makePluginFactory(zcoinInfo)
 export const feathercoinCurrencyPluginFactory = makePluginFactory(
   feathercoinInfo
 )
+
+export const qtumCurrencyPluginFactory = makePluginFactory(qtumInfo)
 
 // Legacy uppercased names:
 export {
