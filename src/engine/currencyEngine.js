@@ -116,6 +116,7 @@ export class CurrencyEngine {
       : null
 
     this.engineState = new EngineState({
+      files: { txs: 'txs.json', addresses: 'addresses.json' },
       callbacks: engineStateCallbacks,
       io: io,
       localFolder: this.abcCurrencyEngineOptions.walletLocalFolder,
@@ -368,22 +369,6 @@ export class CurrencyEngine {
     }
   }
 
-  getUTXOs () {
-    const utxos: any = []
-    for (const scriptHash in this.engineState.addressInfos) {
-      const utxoLength = this.engineState.addressInfos[scriptHash].utxos.length
-      for (let i = 0; i < utxoLength; i++) {
-        const utxo = this.engineState.addressInfos[scriptHash].utxos[i]
-        let height = -1
-        if (this.engineState.txHeightCache[utxo.txid]) {
-          height = this.engineState.txHeightCache[utxo.txid].height
-        }
-        utxos.push({ utxo, height })
-      }
-    }
-    return utxos
-  }
-
   logAbcTransaction (abcTransaction: AbcTransaction, action: string) {
     let log = `------------------ ${action} Transaction ------------------\n`
     log += `Transaction id: ${abcTransaction.txid}\n`
@@ -448,16 +433,11 @@ export class CurrencyEngine {
   }
 
   getBalance (options: any): string {
-    let totalBalance = 0
-    for (const scriptHash in this.engineState.addressInfos) {
-      const { balance } = this.engineState.addressInfos[scriptHash]
-      totalBalance += balance
-    }
-    return `${totalBalance}`
+    return this.engineState.getBalance()
   }
 
   getNumTransactions (options: any): number {
-    return Object.keys(this.engineState.txCache).length
+    return this.engineState.getNumTransactions(options)
   }
 
   async getTransactions (options: any): Promise<Array<AbcTransaction>> {
@@ -511,6 +491,73 @@ export class CurrencyEngine {
     return false
   }
 
+  async sweepPrivateKeys (
+    abcSpendInfo: AbcSpendInfo,
+    options?: any = {}
+  ): Promise<AbcTransaction> {
+    // $FlowFixMe
+    const { privateKeys } = abcSpendInfo
+    let success, failure
+    const end = new Promise((resolve, reject) => {
+      success = resolve
+      failure = reject
+    })
+    const engineStateCallbacks: EngineStateCallbacks = {
+      onAddressesChecked: (ratio: number) => {
+        if (ratio === 1) {
+          engineState.disconnect()
+          options.subtractFee = true
+          const utxos = engineState.getUTXOs()
+          if (!utxos || !utxos.length) {
+            failure(new Error('Private key has no funds'))
+          }
+          const publicAddress = this.getFreshAddress().publicAddress
+          const nativeAmount = engineState.getBalance()
+          options.utxos = utxos
+          abcSpendInfo.spendTargets = [{ publicAddress, nativeAmount }]
+          this.makeSpend(abcSpendInfo, options)
+            .then(tx => success(tx))
+            .catch(e => failure(e))
+        }
+      }
+    }
+
+    const io = this.abcCurrencyEngineOptions.optionalSettings
+      ? this.abcCurrencyEngineOptions.optionalSettings.io
+      : null
+
+    const engineState = new EngineState({
+      files: { txs: '', addresses: '' },
+      callbacks: engineStateCallbacks,
+      io: io,
+      localFolder: this.abcCurrencyEngineOptions.walletLocalFolder,
+      encryptedLocalFolder: this.abcCurrencyEngineOptions
+        .walletLocalEncryptedFolder,
+      pluginState: this.pluginState,
+      walletId: this.walletId
+    })
+
+    await this.engineState.load()
+
+    for (const key of privateKeys) {
+      const privKey = bcoin.primitives.KeyRing.fromSecret(key, this.network)
+      const keyAddress = privKey.getAddress('base58')
+      privKey.nested = true
+      privKey.witness = true
+      const nestedAddress = privKey.getAddress('base58')
+      const keyHash = await this.keyManager.addressToScriptHash(keyAddress)
+      const nestedHash = await this.keyManager.addressToScriptHash(
+        nestedAddress
+      )
+      engineState.addAddress(keyHash, keyAddress)
+      engineState.addAddress(nestedHash, nestedAddress)
+    }
+
+    engineState.connect()
+
+    return end
+  }
+
   async makeSpend (
     abcSpendInfo: AbcSpendInfo,
     options?: any = {}
@@ -538,7 +585,7 @@ export class CurrencyEngine {
         rate: this.getRate(abcSpendInfo),
         maxFee: this.currencyInfo.defaultSettings.maxFee,
         outputs: abcSpendInfo.spendTargets,
-        utxos: this.getUTXOs(),
+        utxos: options.utxos || this.engineState.getUTXOs(),
         height: this.getBlockHeight()
       })
       const resultedTransaction = await this.keyManager.createTX(options)
@@ -589,12 +636,13 @@ export class CurrencyEngine {
 
   async signTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
     this.logAbcTransaction(abcTransaction, 'Signing')
-    await this.keyManager.sign(abcTransaction.otherParams.bcoinTx)
+    const otherParams = abcTransaction.otherParams
+    const { abcSpendInfo, bcoinTx } = otherParams
+    const { privateKeys = [] } = abcSpendInfo
+    await this.keyManager.sign(bcoinTx, privateKeys)
     abcTransaction.date = Date.now() / MILLI_TO_SEC
-    abcTransaction.signedTx = abcTransaction.otherParams.bcoinTx
-      .toRaw()
-      .toString('hex')
-    abcTransaction.txid = abcTransaction.otherParams.bcoinTx.rhash()
+    abcTransaction.signedTx = bcoinTx.toRaw().toString('hex')
+    abcTransaction.txid = bcoinTx.rhash()
     return abcTransaction
   }
 

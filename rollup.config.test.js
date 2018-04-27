@@ -6,7 +6,8 @@ import multiEntry from 'rollup-plugin-multi-entry'
 import config from './rollup.config.js'
 
 const babelOptions = {
-  presets: ['flow']
+  presets: ['flow'],
+  plugins: ['transform-object-rest-spread']
 }
 
 export default {
