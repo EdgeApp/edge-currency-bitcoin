@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 2.18.1
+
+* Fix a flow error.
+
 ## 2.18.0
 
 * Add private key sweeping.
