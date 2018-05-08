@@ -491,12 +491,10 @@ export class CurrencyEngine {
     return false
   }
 
-  async sweepPrivateKeys (
-    abcSpendInfo: AbcSpendInfo,
-    options?: any = {}
-  ): Promise<AbcTransaction> {
-    // $FlowFixMe
+  async sweepPrivateKeys (abcSpendInfo: AbcSpendInfo): Promise<AbcTransaction> {
     const { privateKeys } = abcSpendInfo
+    if (!privateKeys) return Promise.reject(new Error('No privateKeys array'))
+
     let success, failure
     const end = new Promise((resolve, reject) => {
       success = resolve
@@ -506,14 +504,13 @@ export class CurrencyEngine {
       onAddressesChecked: (ratio: number) => {
         if (ratio === 1) {
           engineState.disconnect()
-          options.subtractFee = true
           const utxos = engineState.getUTXOs()
           if (!utxos || !utxos.length) {
             failure(new Error('Private key has no funds'))
           }
           const publicAddress = this.getFreshAddress().publicAddress
           const nativeAmount = engineState.getBalance()
-          options.utxos = utxos
+          const options = { subtractFee: true, utxos }
           abcSpendInfo.spendTargets = [{ publicAddress, nativeAmount }]
           this.makeSpend(abcSpendInfo, options)
             .then(tx => success(tx))
