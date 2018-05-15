@@ -50,6 +50,9 @@ for (const fixture of fixtures) {
     onTransactionsChanged (transactionList) {
       // console.log('onTransactionsChanged:', transactionList)
       emitter.emit('onTransactionsChanged', transactionList)
+    },
+    onTxidsChanged (txids) {
+      emitter.emit('onTxidsChanged', txids)
     }
   }
 
@@ -156,6 +159,7 @@ for (const fixture of fixtures) {
             'function',
             'getTransactions'
           )
+          assert.equal(typeof engine.getTxids, 'function', 'getTxids')
           assert.equal(
             typeof engine.getFreshAddress,
             'function',
@@ -268,6 +272,16 @@ for (const fixture of fixtures) {
         assert.equal(txs.length, 2, 'should have 2 tx from cache')
         done()
       })
+    })
+
+    it('Should get txids from cache', function (done) {
+      const txids = Object.keys(dummyTransactionsData.txs)
+      assert.deepEqual(
+        engine.getTxids(),
+        txids,
+        `should have ${TX_AMOUNT} txids from cache`
+      )
+      done()
     })
   })
 

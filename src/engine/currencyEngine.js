@@ -102,13 +102,15 @@ export class CurrencyEngine {
         this.abcCurrencyEngineOptions.callbacks.onBlockHeightChanged(height)
       },
       onTxFetched: (txid: string) => {
+        this.abcCurrencyEngineOptions.callbacks.onTxidsChanged([txid])
         const abcTransaction = this.getTransaction(txid)
         this.abcCurrencyEngineOptions.callbacks.onTransactionsChanged([
           abcTransaction
         ])
       },
       onAddressesChecked: this.abcCurrencyEngineOptions.callbacks
-        .onAddressesChecked
+        .onAddressesChecked,
+      onTxidsChanged: this.abcCurrencyEngineOptions.callbacks.onTxidsChanged
     }
     const gapLimit = this.currencyInfo.defaultSettings.gapLimit
     const io = this.abcCurrencyEngineOptions.optionalSettings
@@ -440,6 +442,10 @@ export class CurrencyEngine {
     return this.engineState.getNumTransactions(options)
   }
 
+  getTxids (): Array<string> {
+    return this.engineState.getTxids()
+  }
+
   async getTransactions (options: any): Promise<Array<AbcTransaction>> {
     const rawTxs = this.engineState.txCache
     const abcTransactions = []
@@ -539,6 +545,7 @@ export class CurrencyEngine {
 
     await this.engineState.load()
 
+    // $FlowFixMe
     for (const key of privateKeys) {
       const privKey = bcoin.primitives.KeyRing.fromSecret(key, this.network)
       const keyAddress = privKey.getAddress('base58')

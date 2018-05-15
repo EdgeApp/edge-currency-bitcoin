@@ -76,6 +76,9 @@ export interface EngineStateCallbacks {
 
   // Called when the engine gets more synced with electrum:
   +onAddressesChecked?: (progressRatio: number) => void;
+
+  // Called when txids changes:
+  +onTxidsChanged?: (txids: Array<string>) => void;
 }
 
 export interface EngineStateOptions {
@@ -365,6 +368,10 @@ export class EngineState extends EventEmitter {
     return Object.keys(this.txCache).length
   }
 
+  getTxids (): Array<string> {
+    return Object.keys(this.txCache)
+  }
+
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------
@@ -379,6 +386,7 @@ export class EngineState extends EventEmitter {
   onAddressUsed: () => void
   onHeightUpdated: (height: number) => void
   onTxFetched: (txid: string) => void
+  onTxidsChanged: (txids: Array<string>) => void
   onAddressesChecked: (progressRatio: number) => void
 
   addressCacheDirty: boolean
@@ -417,13 +425,15 @@ export class EngineState extends EventEmitter {
       onAddressUsed = nop,
       onHeightUpdated = nop,
       onTxFetched = nop,
-      onAddressesChecked = nop
+      onAddressesChecked = nop,
+      onTxidsChanged = nop
     } = options.callbacks
     this.onBalanceChanged = onBalanceChanged
     this.onAddressUsed = onAddressUsed
     this.onHeightUpdated = onHeightUpdated
     this.onTxFetched = onTxFetched
     this.onAddressesChecked = onAddressesChecked
+    this.onTxidsChanged = onTxidsChanged
 
     this.addressCacheDirty = false
     this.txCacheDirty = false
@@ -820,8 +830,11 @@ export class EngineState extends EventEmitter {
       // Update the cache:
       this.txCache = txCacheJson.txs
 
+      const txids = Object.keys(this.txCache)
+      this.onTxidsChanged(txids)
+
       // Update the derived information:
-      for (const txid of Object.keys(this.txCache)) {
+      for (const txid of txids) {
         this.parsedTxs[txid] = parseTransaction(this.txCache[txid])
       }
     } catch (e) {
@@ -1019,6 +1032,7 @@ export class EngineState extends EventEmitter {
     }
     this.dirtyTxCache()
     this.onTxFetched(txid)
+    this.onTxidsChanged([txid])
     for (const scriptHash of this.findAffectedAddressesForOutput(txid)) {
       this.refreshAddressInfo(scriptHash)
       for (const parsedTxid of this.addressInfos[scriptHash].txids) {
