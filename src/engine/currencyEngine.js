@@ -573,7 +573,12 @@ export class CurrencyEngine {
       (sum, { nativeAmount }) => bns.add(sum, nativeAmount || '0'),
       '0'
     )
-    if (bns.gt(totalAmountToSend, this.getBalance())) {
+
+    const balance = options.utxos
+      ? options.utxos.reduce((sum, { utxo }) => sum + utxo.value, 0)
+      : this.getBalance()
+
+    if (bns.gt(totalAmountToSend, `${balance}`)) {
       throw new Error('InsufficientFundsError')
     }
     try {
