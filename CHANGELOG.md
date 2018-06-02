@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 2.18.0
+
+* Add private key sweeping.
+
 ## 2.17.1
 
 * Add broadcast APIs for BTC, BCH, LTC, and DASH

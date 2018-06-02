@@ -631,6 +631,92 @@ for (const fixture of fixtures) {
     })
   })
 
+  describe(`Sweep Keys and Sign for Wallet type ${WALLET_TYPE}`, function () {
+    it('Should build transaction with low fee', function () {
+      // $FlowFixMe
+      const templateSpend: AbcSpendInfo = {
+        networkFeeOption: 'low',
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        },
+        privateKeys: ['cQSzMGPwF7uWP2jRcLxndSvgepeVXJ1DLVrDu7gRJS3kZDmHHXsp']
+      }
+      // $FlowFixMe
+      return engine
+        .sweepPrivateKeys(templateSpend)
+        .then(a => {
+          return engine.signTx(a)
+        })
+        .then(a => {
+          // console.log('sign', a)
+        })
+    })
+
+    it('Should build transaction with low standard fee', function () {
+      // $FlowFixMe
+      const templateSpend: AbcSpendInfo = {
+        networkFeeOption: 'low',
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        },
+        privateKeys: ['cQSzMGPwF7uWP2jRcLxndSvgepeVXJ1DLVrDu7gRJS3kZDmHHXsp']
+      }
+      return engine
+        .sweepPrivateKeys(templateSpend)
+        .then(a => {
+          return engine.signTx(a)
+        })
+        .then(a => {
+          // console.log('sign', a)
+        })
+    })
+
+    it('Should build transaction with high fee', function () {
+      // $FlowFixMe
+      const templateSpend: AbcSpendInfo = {
+        networkFeeOption: 'high',
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        },
+        privateKeys: ['cQSzMGPwF7uWP2jRcLxndSvgepeVXJ1DLVrDu7gRJS3kZDmHHXsp']
+      }
+      return engine
+        .sweepPrivateKeys(templateSpend)
+        .then(a => {
+          return engine.signTx(a)
+        })
+        .then(a => {
+          // console.log('sign', a)
+        })
+    })
+
+    it('Should build transaction with custom fee', function () {
+      const templateSpend: AbcSpendInfo = {
+        networkFeeOption: 'custom',
+        customNetworkFee: { satPerByte: '1000' },
+        metadata: {
+          name: 'Transfer to College Fund',
+          category: 'Transfer:Wallet:College Fund'
+        },
+        privateKeys: ['cQSzMGPwF7uWP2jRcLxndSvgepeVXJ1DLVrDu7gRJS3kZDmHHXsp']
+      }
+      // $FlowFixMe
+      return engine
+        .sweepPrivateKeys(templateSpend)
+        .then(function (a) {
+          // console.log('makeSpend', a)
+          return engine.signTx(a)
+        })
+        .then(function (a) {
+          // console.log('signTx', a)
+          // console.log('signTx', a.otherParams.bcoinTx.inputs)
+        })
+    })
+  })
+
   describe(`Stop Engine for Wallet type ${WALLET_TYPE}`, function () {
     it('dump the wallet data', function (done) {
       const dataDump = engine.dumpData()

@@ -22,7 +22,12 @@
       "uri address with amount": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=12345.6789", "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX", "1234567890000", "BTC"],
       "uri address with amount & label": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.56789&label=Johnny%20Bitcoin", "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX", "123456789000", "BTC", "Johnny Bitcoin"],
       "uri address with amount, label & message": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.56789&label=Johnny%20Bitcoin&message=Hello%20World,%20I%20miss%20you%20!", "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX", "123456789000", "BTC", "Johnny Bitcoin", "Hello World, I miss you !"],
-      "uri address with unsupported param": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?unsupported=helloworld&amount=12345.6789", "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX", "1234567890000", "BTC"]
+      "uri address with unsupported param": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?unsupported=helloworld&amount=12345.6789", "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX", "1234567890000", "BTC"],
+      "seed": ["elevator rookie hair marine express wasp town resemble snap blush wide iron tackle adult crash slush senior term vibrant language body cruel prevent auto", "elevator rookie hair marine express wasp town resemble snap blush wide iron tackle adult crash slush senior term vibrant language body cruel prevent auto"],
+      "master private key": ["xprv9twnbyJhBAAVPsntF54SCKCDfJgbBemavSquVwYdFkacHT2U1MHcc4AC9Gxehtv7oFfSUor2b9xomvNCPPgjfXD4FTWcMPUSeC8HEfskehz", "xprv9twnbyJhBAAVPsntF54SCKCDfJgbBemavSquVwYdFkacHT2U1MHcc4AC9Gxehtv7oFfSUor2b9xomvNCPPgjfXD4FTWcMPUSeC8HEfskehz"],
+      "wif 1": ["L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2", [ "L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2"] ],
+      "wif 2": ["KzjzkvbBjyaVeECBJFFv5eTwRrsQ4eBg8BNoPpr1z6tjyua6KGEd", [ "KzjzkvbBjyaVeECBJFFv5eTwRrsQ4eBg8BNoPpr1z6tjyua6KGEd"] ]
+      
     },
     "encodeUri": {
       "address only": [{"publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"}, "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"],
@@ -89,7 +94,11 @@
       "legacy uri address with amount": ["litecoin:3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN?amount=12345.6789", "MLh6oJm8tWbTNKTXpiREMoAMqE3CbYzgi6", "1234567890000", "LTC", null, null, "3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN"],
       "legacy uri address with amount & label": ["litecoin:3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN?amount=1234.56789&label=Johnny%20Litecoin", "MLh6oJm8tWbTNKTXpiREMoAMqE3CbYzgi6", "123456789000", "LTC", "Johnny Litecoin", null, "3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN"],
       "legacy uri address with amount, label & message": ["litecoin:3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN?amount=1234.56789&label=Johnny%20Litecoin&message=Hello%20World,%20I%20miss%20you%20!", "MLh6oJm8tWbTNKTXpiREMoAMqE3CbYzgi6", "123456789000", "LTC", "Johnny Litecoin", "Hello World, I miss you !", "3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN"],
-      "legacy uri address with unsupported param": ["litecoin:3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN?unsupported=helloworld&amount=12345.6789", "MLh6oJm8tWbTNKTXpiREMoAMqE3CbYzgi6", "1234567890000", "LTC", null, null, "3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN"]
+      "legacy uri address with unsupported param": ["litecoin:3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN?unsupported=helloworld&amount=12345.6789", "MLh6oJm8tWbTNKTXpiREMoAMqE3CbYzgi6", "1234567890000", "LTC", null, null, "3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN"],
+      "seed": ["elevator rookie hair marine express wasp town resemble snap blush wide iron tackle adult crash slush senior term vibrant language body cruel prevent auto", "elevator rookie hair marine express wasp town resemble snap blush wide iron tackle adult crash slush senior term vibrant language body cruel prevent auto"],
+      "master private key": ["xprv9twnbyJhBAAVPsntF54SCKCDfJgbBemavSquVwYdFkacHT2U1MHcc4AC9Gxehtv7oFfSUor2b9xomvNCPPgjfXD4FTWcMPUSeC8HEfskehz", "xprv9twnbyJhBAAVPsntF54SCKCDfJgbBemavSquVwYdFkacHT2U1MHcc4AC9Gxehtv7oFfSUor2b9xomvNCPPgjfXD4FTWcMPUSeC8HEfskehz"],
+      "wif 1": ["L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2", [ "L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2"] ],
+      "wif 2": ["KzjzkvbBjyaVeECBJFFv5eTwRrsQ4eBg8BNoPpr1z6tjyua6KGEd", [ "KzjzkvbBjyaVeECBJFFv5eTwRrsQ4eBg8BNoPpr1z6tjyua6KGEd"] ]
     },
     "encodeUri": {
       "address only": [{"publicAddress": "LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T"}, "LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T"],

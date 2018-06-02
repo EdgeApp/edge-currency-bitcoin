@@ -5,7 +5,8 @@ import json from 'rollup-plugin-json'
 import packageJson from './package.json'
 
 const babelOptions = {
-  presets: ['flow']
+  presets: ['flow'],
+  plugins: ['transform-object-rest-spread']
 }
 
 export default {

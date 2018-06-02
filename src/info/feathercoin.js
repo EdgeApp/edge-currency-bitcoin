@@ -11,7 +11,7 @@ export const feathercoinInfo: AbcCurrencyInfo = {
     { name: 'mFTC', multiplier: '100000', symbol: 'mF' }
   ],
   walletTypes: [
-    // 'wallet:feathercoin-bip49', // Disable creating segwit wallets for now
+    'wallet:feathercoin-bip49',
     'wallet:feathercoin-bip44',
     'wallet:feathercoin'
   ],

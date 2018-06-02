@@ -57,7 +57,7 @@ export type createTxOptions = {
   outputs: Array<AbcSpendTarget>,
   utxos: Array<{
     utxo: UtxoInfo,
-    rawTx: RawTx,
+    tx: any,
     height: BlockHeight
   }>,
   height: BlockHeight,
@@ -317,9 +317,8 @@ export class KeyManager {
       }
     }
 
-    const coins = utxos.map(({ utxo, height }) => {
-      const bcoinTX = this.txInfos[utxo.txid]
-      return bcoin.primitives.Coin.fromTX(bcoinTX, utxo.index, height)
+    const coins = utxos.map(({ tx, utxo, height }) => {
+      return bcoin.primitives.Coin.fromTX(tx, utxo.index, height)
     })
 
     await mtx.fund(coins, {
@@ -352,7 +351,7 @@ export class KeyManager {
     return mtx
   }
 
-  async sign (mtx: any) {
+  async sign (mtx: any, privateKeys: Array<string> = []) {
     if (!this.keys.master.privKey && this.seed === '') {
       throw new Error("Can't sign without private key")
     }
@@ -361,38 +360,44 @@ export class KeyManager {
       this.saveKeysToCache()
     }
     const keys = []
-    for (const input: any of mtx.inputs) {
-      const { prevout } = input
-      if (prevout) {
-        const [branch: number, index: number] = this.utxoToPath(prevout)
-        const keyRing = branch === 0 ? this.keys.receive : this.keys.change
-        let { privKey } = keyRing
-        if (!privKey) {
-          const result = this.keys.master.privKey.derive(branch)
-          if (typeof result.then === 'function') {
-            keyRing.privKey = await Promise.resolve(result)
-          } else {
-            keyRing.privKey = result
+    for (const key of privateKeys) {
+      const privKey = bcoin.primitives.KeyRing.fromSecret(key, this.network)
+      keys.push(privKey)
+    }
+    if (!keys.length) {
+      for (const input: any of mtx.inputs) {
+        const { prevout } = input
+        if (prevout) {
+          const [branch: number, index: number] = this.utxoToPath(prevout)
+          const keyRing = branch === 0 ? this.keys.receive : this.keys.change
+          let { privKey } = keyRing
+          if (!privKey) {
+            const result = this.keys.master.privKey.derive(branch)
+            if (typeof result.then === 'function') {
+              keyRing.privKey = await Promise.resolve(result)
+            } else {
+              keyRing.privKey = result
+            }
+            privKey = keyRing.privKey
+            this.saveKeysToCache()
           }
-          privKey = keyRing.privKey
-          this.saveKeysToCache()
+          const result = privKey.derive(index)
+          let privateKey
+          if (typeof result.then === 'function') {
+            privateKey = await Promise.resolve(result)
+          } else {
+            privateKey = result
+          }
+          const nested = this.bip === 'bip49'
+          const witness = this.bip === 'bip49'
+          const key = bcoin.primitives.KeyRing.fromOptions({
+            privateKey,
+            nested,
+            witness
+          })
+          key.network = bcoin.network.get(this.network)
+          keys.push(key)
         }
-        const result = privKey.derive(index)
-        let privateKey
-        if (typeof result.then === 'function') {
-          privateKey = await Promise.resolve(result)
-        } else {
-          privateKey = result
-        }
-        const nested = this.bip === 'bip49'
-        const witness = this.bip === 'bip49'
-        const key = bcoin.primitives.KeyRing.fromOptions({
-          privateKey,
-          nested,
-          witness
-        })
-        key.network = bcoin.network.get(this.network)
-        keys.push(key)
       }
     }
     await mtx.template(keys)

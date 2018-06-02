@@ -120,12 +120,20 @@ for (const fixture of fixtures) {
     Object.keys(fixture['parseUri']).forEach(test => {
       it(test, function () {
         const parsedUri = plugin.parseUri(fixture['parseUri'][test][0])
-        assert.equal(parsedUri.publicAddress, fixture['parseUri'][test][1])
-        assert.equal(parsedUri.nativeAmount, fixture['parseUri'][test][2])
-        assert.equal(parsedUri.currencyCode, fixture['parseUri'][test][3])
-        assert.equal(parsedUri.metadata.name, fixture['parseUri'][test][4])
-        assert.equal(parsedUri.metadata.message, fixture['parseUri'][test][5])
-        assert.equal(parsedUri.legacyAddress, fixture['parseUri'][test][6])
+        if (parsedUri.seed) {
+          assert.equal(parsedUri.seed, fixture['parseUri'][test][1])
+        } else if (parsedUri.masterPriv) {
+          assert.equal(parsedUri.masterPriv, fixture['parseUri'][test][1])
+        } else if (parsedUri.privateKeys) {
+          assert.deepEqual(parsedUri.privateKeys, fixture['parseUri'][test][1])
+        } else {
+          assert.equal(parsedUri.publicAddress, fixture['parseUri'][test][1])
+          assert.equal(parsedUri.nativeAmount, fixture['parseUri'][test][2])
+          assert.equal(parsedUri.currencyCode, fixture['parseUri'][test][3])
+          assert.equal(parsedUri.metadata.name, fixture['parseUri'][test][4])
+          assert.equal(parsedUri.metadata.message, fixture['parseUri'][test][5])
+          assert.equal(parsedUri.legacyAddress, fixture['parseUri'][test][6])
+        }
       })
     })
   })
