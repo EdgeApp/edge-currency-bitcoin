@@ -66,9 +66,11 @@ export const qtumInfo: AbcCurrencyInfo = {
   // Explorers:
   blockExplorer: 'https://explorer.qtum.org/block/%s',
   addressExplorer: 'https://explorer.qtum.org/address/%s',
-  transactionExplorer: 'https://explorer.qtum.org/tx/%s'
+  transactionExplorer: 'https://explorer.qtum.org/tx/%s',
 
   // Images:
-  // symbolImage: null,
-  // symbolImageDarkMono: null
+  symbolImage:
+    'https://developer.airbitz.co/content/qtum-logo-64.png',
+  symbolImageDarkMono:
+    'https://developer.airbitz.co/content/qtum-logo-mono-64.png'
 }
