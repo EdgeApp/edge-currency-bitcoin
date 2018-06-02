@@ -496,12 +496,15 @@ export class CurrencyEngine {
     options?: any = {}
   ): Promise<AbcTransaction> {
     // $FlowFixMe
-    const { privateKeys } = abcSpendInfo
+    const privateKeys = abcSpendInfo.privateKeys || []
     let success, failure
     const end = new Promise((resolve, reject) => {
       success = resolve
       failure = reject
     })
+    if (!privateKeys.length) {
+      throw (new Error('No private keys given'))
+    }
     const engineStateCallbacks: EngineStateCallbacks = {
       onAddressesChecked: (ratio: number) => {
         if (ratio === 1) {

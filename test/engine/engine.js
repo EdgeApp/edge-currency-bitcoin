@@ -651,7 +651,7 @@ for (const fixture of fixtures) {
         .then(a => {
           // console.log('sign', a)
         })
-    })
+    }).timeout(5000)
 
     it('Should build transaction with low standard fee', function () {
       // $FlowFixMe
@@ -671,7 +671,7 @@ for (const fixture of fixtures) {
         .then(a => {
           // console.log('sign', a)
         })
-    })
+    }).timeout(5000)
 
     it('Should build transaction with high fee', function () {
       // $FlowFixMe
@@ -691,7 +691,7 @@ for (const fixture of fixtures) {
         .then(a => {
           // console.log('sign', a)
         })
-    })
+    }).timeout(5000)
 
     it('Should build transaction with custom fee', function () {
       const templateSpend: AbcSpendInfo = {
@@ -714,7 +714,7 @@ for (const fixture of fixtures) {
           // console.log('signTx', a)
           // console.log('signTx', a.otherParams.bcoinTx.inputs)
         })
-    })
+    }).timeout(5000)
   })
 
   describe(`Stop Engine for Wallet type ${WALLET_TYPE}`, function () {
