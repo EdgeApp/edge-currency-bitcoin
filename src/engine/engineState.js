@@ -42,6 +42,21 @@ export type AddressInfo = {
   balance: number
 }
 
+export type AddressCacheEntry = {
+  txids: Array<string>,
+  txidStratumHash: string,
+
+  utxos: Array<UtxoInfo>,
+  utxoStratumHash: string,
+
+  displayAddress: string, // base58 or other wallet-ready format
+  path: string // TODO: Define the contents of this member.
+}
+
+export type AddressCache = {
+  [scriptHash: string]: AddressCacheEntry
+}
+
 export type AddressInfos = {
   [scriptHash: string]: AddressInfo
 }
@@ -61,6 +76,16 @@ export type AddressState = {
   subscribing: boolean
 }
 
+export type TxHeightCache = {
+  [txid: string]: {
+    height: number,
+    firstSeen: number // Timestamp for unconfirmed stuff
+  }
+}
+
+export type Timestamp = number
+export type Txids = { [txid: string]: Timestamp }
+
 export interface EngineStateCallbacks {
   // Changes to an address UTXO set:
   +onBalanceChanged?: () => void;
@@ -76,6 +101,9 @@ export interface EngineStateCallbacks {
 
   // Called when the engine gets more synced with electrum:
   +onAddressesChecked?: (progressRatio: number) => void;
+
+  // Called when txids changes:
+  +onTxidsChanged?: (txids: Txids) => void;
 }
 
 export interface EngineStateOptions {
@@ -101,18 +129,7 @@ const CACHE_THROTTLE = 0.1
  */
 export class EngineState extends EventEmitter {
   // On-disk address information:
-  addressCache: {
-    [scriptHash: string]: {
-      txids: Array<string>,
-      txidStratumHash: string,
-
-      utxos: Array<UtxoInfo>,
-      utxoStratumHash: string,
-
-      displayAddress: string, // base58 or other wallet-ready format
-      path: string // TODO: Define the contents of this member.
-    }
-  }
+  addressCache: AddressCache
 
   // Derived address information:
   addressInfos: AddressInfos
@@ -126,13 +143,11 @@ export class EngineState extends EventEmitter {
   // On-disk hex transaction data:
   txCache: { [txid: string]: string }
 
+  // All known txids with timestamp
+  txids: Txids
+
   // Transaction height / Timestamp:
-  txHeightCache: {
-    [txid: string]: {
-      height: number,
-      firstSeen: number // Timestamp for unconfirmed stuff
-    }
-  }
+  txHeightCache: TxHeightCache
 
   // Cache of parsed transaction data:
   parsedTxs: { [txid: string]: any }
@@ -365,6 +380,10 @@ export class EngineState extends EventEmitter {
     return Object.keys(this.txCache).length
   }
 
+  getTxids (): Txids {
+    return this.txids
+  }
+
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------
@@ -379,6 +398,7 @@ export class EngineState extends EventEmitter {
   onAddressUsed: () => void
   onHeightUpdated: (height: number) => void
   onTxFetched: (txid: string) => void
+  onTxidsChanged: (txids: Txids) => void
   onAddressesChecked: (progressRatio: number) => void
 
   addressCacheDirty: boolean
@@ -396,6 +416,7 @@ export class EngineState extends EventEmitter {
     this.scriptHashes = {}
     this.usedAddresses = {}
     this.txCache = {}
+    this.txids = {}
     this.parsedTxs = {}
     this.txHeightCache = {}
     this.connections = {}
@@ -417,13 +438,15 @@ export class EngineState extends EventEmitter {
       onAddressUsed = nop,
       onHeightUpdated = nop,
       onTxFetched = nop,
-      onAddressesChecked = nop
+      onAddressesChecked = nop,
+      onTxidsChanged = nop
     } = options.callbacks
     this.onBalanceChanged = onBalanceChanged
     this.onAddressUsed = onAddressUsed
     this.onHeightUpdated = onHeightUpdated
     this.onTxFetched = onTxFetched
     this.onAddressesChecked = onAddressesChecked
+    this.onTxidsChanged = onTxidsChanged
 
     this.addressCacheDirty = false
     this.txCacheDirty = false
@@ -845,6 +868,13 @@ export class EngineState extends EventEmitter {
       this.addressCache = cacheJson.addresses
       this.txHeightCache = cacheJson.heights
 
+      this.txids = this.deriveTxidsWithTimestamps(
+        this.addressCache,
+        this.txHeightCache,
+        this.pluginState.headerCache
+      )
+      this.onTxidsChanged(this.txids)
+
       // Fill up the missing headers to fetch
       for (const txid in this.txHeightCache) {
         const height = this.txHeightCache[txid].height
@@ -983,6 +1013,13 @@ export class EngineState extends EventEmitter {
         if (this.parsedTxs[txid]) this.onTxFetched(txid)
       }
       this.pluginState.dirtyHeaderCache()
+
+      this.txids = this.deriveTxidsWithTimestamps(
+        this.addressCache,
+        this.txHeightCache,
+        this.pluginState.headerCache
+      )
+      this.onTxidsChanged(this.txids)
     }
     delete this.missingHeaders[height]
   }
@@ -1007,6 +1044,13 @@ export class EngineState extends EventEmitter {
     this.updateProgressRatio()
     this.refreshAddressInfo(scriptHash)
     this.dirtyAddressCache()
+
+    this.txids = this.deriveTxidsWithTimestamps(
+      this.addressCache,
+      this.txHeightCache,
+      this.pluginState.headerCache
+    )
+    this.onTxidsChanged(this.txids)
   }
 
   // A server has sent a transaction, so update the caches:
@@ -1233,5 +1277,31 @@ export class EngineState extends EventEmitter {
         }
       }
     }
+  }
+
+  deriveTxidsWithTimestamps (
+    addressCache: AddressCache,
+    txHeightCache: TxHeightCache,
+    headerCache: { [height: string]: { timestamp: number } }
+  ) {
+    const addressCacheValues = Object.values(addressCache)
+    // $FlowExpectedError
+    const txidLists = addressCacheValues.map(entry => entry.txids)
+    const allTxids = txidLists.reduce((txids, list) => [...txids, ...list], [])
+    const txidsWithTimestamps = allTxids.reduce((result, txid) => {
+      const { height, firstSeen } = txHeightCache[txid] || {
+        height: Infinity,
+        firstSeen: Date.now()
+      }
+      // eslint-disable-next-line standard/computed-property-even-spacing
+      const { timestamp: blockTimestamp = Date.now() } = headerCache[
+        height.toString()
+      ] || { timestamp: Date.now() }
+      const txTimestamp = Math.min(firstSeen, blockTimestamp)
+
+      return { ...result, [txid]: txTimestamp }
+    }, {})
+
+    return txidsWithTimestamps
   }
 }
