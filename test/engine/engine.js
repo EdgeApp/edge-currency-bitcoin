@@ -50,6 +50,9 @@ for (const fixture of fixtures) {
     onTransactionsChanged (transactionList) {
       // console.log('onTransactionsChanged:', transactionList)
       emitter.emit('onTransactionsChanged', transactionList)
+    },
+    onTxidsChanged (txids) {
+      emitter.emit('onTxidsChanged', txids)
     }
   }
 
@@ -156,6 +159,7 @@ for (const fixture of fixtures) {
             'function',
             'getTransactions'
           )
+          assert.equal(typeof engine.getTxids, 'function', 'getTxids')
           assert.equal(
             typeof engine.getFreshAddress,
             'function',
@@ -268,6 +272,25 @@ for (const fixture of fixtures) {
         assert.equal(txs.length, 2, 'should have 2 tx from cache')
         done()
       })
+    })
+
+    it('Should get txids from cache', function (done) {
+      const expected = {
+        '99701d23ae201fafeafeafa2120f048213f4cec6030208a35b4adab98f500bf0': 1511921758,
+        '9c8d213abeddebe6800597a5333215d9eb90fcae710c3b95daa0b7710f72612d': 1511921758,
+        '19e59364daf34d97ed6584e9e978f3e2375adea9a4561a83d2066d92a010ba13': 1511921758,
+        '86de2d2e689bda718fd7e2a486c9c6ed371c0cee9c3c6bc905211552c02f88a5': 1511921758,
+        c5b4b48406155c5cbddcb0be3ffcfb42dc1b698856913bd79cd0f154fb05c8a1: 1511926758,
+        e1d703801f2f64400cc98d9a2e7b6a4bcb304ff9e718685b9932c0d46cd124b3: 1511925758
+      }
+      const actual = engine.getTxids()
+
+      assert.deepEqual(
+        actual,
+        expected,
+        `should have ${TX_AMOUNT} txids from cache`
+      )
+      done()
     })
   })
 
