@@ -107,8 +107,8 @@ export class CurrencyEngine {
           abcTransaction
         ])
       },
-      onAddressesChecked: this.abcCurrencyEngineOptions.callbacks
-        .onAddressesChecked
+      onAddressesChecked: this.abcCurrencyEngineOptions.callbacks.onAddressesChecked,
+      onTxidsChanged: this.abcCurrencyEngineOptions.callbacks.onTxidsChanged
     }
     const gapLimit = this.currencyInfo.defaultSettings.gapLimit
     const io = this.abcCurrencyEngineOptions.optionalSettings
@@ -393,6 +393,7 @@ export class CurrencyEngine {
       this.currencyInfo.currencyCode,
       this.getBalance()
     )
+    this.abcCurrencyEngineOptions.callbacks.onTxidsChanged(this.getTxids())
     this.updateFeeTable()
     return this.engineState.connect()
   }
@@ -438,6 +439,10 @@ export class CurrencyEngine {
 
   getNumTransactions (options: any): number {
     return this.engineState.getNumTransactions(options)
+  }
+
+  getTxids () {
+    return this.engineState.getTxids()
   }
 
   async getTransactions (options: any): Promise<Array<AbcTransaction>> {
