@@ -23,6 +23,7 @@ import type { EngineStateCallbacks } from './engineState.js'
 import type { KeyManagerCallbacks } from './keyManager'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import { validateObject, promiseAny } from '../utils/utils.js'
+import { parsePayment } from '../utils/paymentRequest.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import { bns } from 'biggystring'
@@ -546,6 +547,22 @@ export class CurrencyEngine {
     engineState.connect()
 
     return end
+  }
+
+  // $FlowFixMe
+  async getPaymentProtocolInfo (
+    paymentProtocolURL: string
+  ): Promise<AbcPaymentProtocolInfo> {
+    try {
+      if (!this.io || !this.io.fetch) {
+        throw new Error('No io/fetch object')
+      }
+      const result = await this.io.fetch(paymentProtocolURL)
+      const buf = await result.buffer()
+      return parsePayment(buf, this.network, this.currencyInfo.currencyCode)
+    } catch (err) {
+      console.log(`${this.walletId} - ${err.toString()}`)
+    }
   }
 
   async makeSpend (
