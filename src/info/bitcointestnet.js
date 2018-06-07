@@ -54,6 +54,11 @@ export const bitcoinTestnetInfo: AbcCurrencyInfo = {
       standardFeeHighAmount: '86700000'
     },
     electrumServers: [
+      'electrum://estnet.qtornado.com:51001',
+      'electrum://testnet.hsmiths.com:53011',
+      'electrum://testnet1.bauerj.eu:50001',
+      'electrum://electrum.akinbo.org:51001',
+      'electrum://hsmithsxurybd7uh.onion:53011',
       'electrum://testnetnode.arihanc.com:51001',
       'electrum://electrum.akinbo.org:51001',
       'electrums://testnet.hsmiths.com:53012',
