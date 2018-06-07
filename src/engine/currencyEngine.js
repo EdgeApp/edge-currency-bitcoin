@@ -4,12 +4,16 @@ import type {
   AbcWalletInfo,
   AbcCurrencyEngine,
   AbcCurrencyEngineOptions,
+  AbcCurrencyEngineCallbacks,
+  // $FlowFixMe
+  AbcPaymentProtocolInfo,
   AbcFreshAddress,
   AbcSpendInfo,
   AbcTransaction,
   AbcCurrencyInfo,
   AbcSpendTarget,
-  AbcDataDump
+  AbcDataDump,
+  DiskletFolder
 } from 'edge-core-js'
 
 import { EngineState } from './engineState.js'
@@ -45,6 +49,10 @@ export class CurrencyEngine {
   engineState: EngineState
   pluginState: PluginState
   abcCurrencyEngineOptions: AbcCurrencyEngineOptions
+  callbacks: AbcCurrencyEngineCallbacks
+  walletLocalFolder: DiskletFolder
+  walletLocalEncryptedFolder: DiskletFolder
+  io: any
   network: string
   infoServer: string
   feeInfoServer: string
@@ -70,6 +78,13 @@ export class CurrencyEngine {
     this.currencyInfo = currencyInfo
     this.pluginState = pluginState
     this.abcCurrencyEngineOptions = options
+    this.callbacks = this.abcCurrencyEngineOptions.callbacks
+    this.walletLocalFolder = this.abcCurrencyEngineOptions.walletLocalFolder
+    this.walletLocalEncryptedFolder = this.abcCurrencyEngineOptions.walletLocalEncryptedFolder
+    this.io = null
+    if (this.abcCurrencyEngineOptions.optionalSettings) {
+      this.io = this.abcCurrencyEngineOptions.optionalSettings.io
+    }
     this.network = this.currencyInfo.defaultSettings.network.type
     this.infoServer = this.currencyInfo.defaultSettings.infoServer
     this.feeInfoServer = this.currencyInfo.defaultSettings.feeInfoServer
@@ -98,30 +113,21 @@ export class CurrencyEngine {
 
   async load (): Promise<any> {
     const engineStateCallbacks: EngineStateCallbacks = {
-      onHeightUpdated: (height: number) => {
-        this.abcCurrencyEngineOptions.callbacks.onBlockHeightChanged(height)
-      },
+      onHeightUpdated: this.callbacks.onBlockHeightChanged,
       onTxFetched: (txid: string) => {
         const abcTransaction = this.getTransaction(txid)
-        this.abcCurrencyEngineOptions.callbacks.onTransactionsChanged([
-          abcTransaction
-        ])
+        this.callbacks.onTransactionsChanged([abcTransaction])
       },
-      onAddressesChecked: this.abcCurrencyEngineOptions.callbacks
-        .onAddressesChecked
+      onAddressesChecked: this.callbacks.onAddressesChecked
     }
     const gapLimit = this.currencyInfo.defaultSettings.gapLimit
-    const io = this.abcCurrencyEngineOptions.optionalSettings
-      ? this.abcCurrencyEngineOptions.optionalSettings.io
-      : null
 
     this.engineState = new EngineState({
       files: { txs: 'txs.json', addresses: 'addresses.json' },
       callbacks: engineStateCallbacks,
-      io: io,
-      localFolder: this.abcCurrencyEngineOptions.walletLocalFolder,
-      encryptedLocalFolder: this.abcCurrencyEngineOptions
-        .walletLocalEncryptedFolder,
+      io: this.io,
+      localFolder: this.walletLocalFolder,
+      encryptedLocalFolder: this.walletLocalEncryptedFolder,
       pluginState: this.pluginState,
       walletId: this.walletId
     })
@@ -177,7 +183,7 @@ export class CurrencyEngine {
     }
 
     this.engineState.onBalanceChanged = () => {
-      this.abcCurrencyEngineOptions.callbacks.onBalanceChanged(
+      this.callbacks.onBalanceChanged(
         this.currencyInfo.currencyCode,
         this.getBalance()
       )
@@ -280,11 +286,7 @@ export class CurrencyEngine {
 
   async updateFeeTable () {
     try {
-      if (
-        !this.abcCurrencyEngineOptions.optionalSettings ||
-        !this.abcCurrencyEngineOptions.optionalSettings.io ||
-        !this.abcCurrencyEngineOptions.optionalSettings.io.fetch
-      ) {
+      if (!this.io || !this.io.fetch) {
         throw new Error('No io/fetch object')
       }
       await this.fetchFee()
@@ -295,12 +297,7 @@ export class CurrencyEngine {
         const url = `${this.infoServer}/networkFees/${
           this.currencyInfo.currencyCode
         }`
-        if (!this.abcCurrencyEngineOptions.optionalSettings) {
-          throw new Error('Missing optionalSettings')
-        }
-        const feesResponse = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
-          url
-        )
+        const feesResponse = await this.io.fetch(url)
         const feesJson = await feesResponse.json()
         if (validateObject(feesJson, InfoServerFeesSchema)) {
           this.fees = feesJson
@@ -321,12 +318,10 @@ export class CurrencyEngine {
     }
     try {
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        if (!this.abcCurrencyEngineOptions.optionalSettings) {
-          throw new Error('Missing optionalSettings')
+        if (!this.io || !this.io.fetch) {
+          throw new Error('No io/fetch object')
         }
-        const results = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
-          this.feeInfoServer
-        )
+        const results = await this.io.fetch(this.feeInfoServer)
         if (results.status !== 200) {
           throw new Error(results.body)
         }
@@ -388,8 +383,8 @@ export class CurrencyEngine {
 
   async startEngine (): Promise<void> {
     const cachedTXs = await this.getTransactions()
-    this.abcCurrencyEngineOptions.callbacks.onTransactionsChanged(cachedTXs)
-    this.abcCurrencyEngineOptions.callbacks.onBalanceChanged(
+    this.callbacks.onTransactionsChanged(cachedTXs)
+    this.callbacks.onBalanceChanged(
       this.currencyInfo.currencyCode,
       this.getBalance()
     )
@@ -522,17 +517,12 @@ export class CurrencyEngine {
       }
     }
 
-    const io = this.abcCurrencyEngineOptions.optionalSettings
-      ? this.abcCurrencyEngineOptions.optionalSettings.io
-      : null
-
     const engineState = new EngineState({
       files: { txs: '', addresses: '' },
       callbacks: engineStateCallbacks,
-      io: io,
-      localFolder: this.abcCurrencyEngineOptions.walletLocalFolder,
-      encryptedLocalFolder: this.abcCurrencyEngineOptions
-        .walletLocalEncryptedFolder,
+      io: this.io,
+      localFolder: this.walletLocalFolder,
+      encryptedLocalFolder: this.walletLocalEncryptedFolder,
       pluginState: this.pluginState,
       walletId: this.walletId
     })
@@ -667,15 +657,10 @@ export class CurrencyEngine {
 
     // Try APIs
     const broadcasters = []
-    if (this.abcCurrencyEngineOptions.optionalSettings) {
+    if (this.io) {
       for (const f of broadcastFactories) {
-        const broadcaster = f(
-          this.abcCurrencyEngineOptions.optionalSettings.io,
-          abcTransaction.currencyCode
-        )
-        if (broadcaster) {
-          broadcasters.push(broadcaster)
-        }
+        const broadcaster = f(this.io, abcTransaction.currencyCode)
+        if (broadcaster) broadcasters.push(broadcaster)
       }
     }
 
