@@ -46,7 +46,8 @@
     "jsonschema": "^1.2.0",
     "stable": "^0.1.6",
     "unorm": "^1.4.1",
-    "uri-js": "^3.0.2"
+    "uri-js": "^3.0.2",
+    "url-parse": "^1.4.1"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
