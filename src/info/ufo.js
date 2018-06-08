@@ -7,8 +7,8 @@ export const ufoInfo: EdgeCurrencyInfo = {
   currencyName: 'UFO Coin',
   pluginName: 'ufo',
   denominations: [
-    { name: 'kUFO', multiplier: '100000000000', symbol: 'kU' },
-    { name: 'UFO', multiplier: '100000000', symbol: 'U' }
+    { name: 'UFO', multiplier: '100000000', symbol: 'U' },
+    { name: 'kUFO', multiplier: '100000000000', symbol: 'kU' }
   ],
   walletTypes: [
     'wallet:ufo-bip49'
