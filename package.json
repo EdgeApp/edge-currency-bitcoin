@@ -1,14 +1,14 @@
 {
   "name": "edge-currency-bitcoin",
-  "version": "2.19.0-beta.0",
+  "version": "2.20.0",
   "description": "Edge Bitcoin currency plugin",
-  "homepage": "https://edgesecure.co",
+  "homepage": "https://edge.app",
   "license": "SEE LICENSE IN LICENSE",
   "author": "Edge",
   "contributors": [
-    "Eliran Zach <eliran@edgesecure.co>",
-    "William Swanson <william@edgesecure.co>",
-    "Paul Puey <paul@edgesecure.co>",
+    "Eliran Zach <eliran@edge.app>",
+    "William Swanson <william@edge.app>",
+    "Paul Puey <paul@edge.app>",
     "Stan Synko <stan@airbitz.co>"
   ],
   "files": [
