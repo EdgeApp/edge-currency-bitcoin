@@ -12,9 +12,9 @@ export const bitcoinInfo: AbcCurrencyInfo = {
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
   walletTypes: [
-    'wallet:bitcoin',
     'wallet:bitcoin-bip49',
-    'wallet:bitcoin-bip44'
+    'wallet:bitcoin-bip44',
+    'wallet:bitcoin'
   ],
 
   // Configuration options:
