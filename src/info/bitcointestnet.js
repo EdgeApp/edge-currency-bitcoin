@@ -1,7 +1,7 @@
 // @flow
-import type { AbcCurrencyInfo } from 'edge-core-js'
+import type { EdgeCurrencyInfo } from 'edge-core-js'
 
-export const bitcoinTestnetInfo: AbcCurrencyInfo = {
+export const bitcoinTestnetInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BTC',
   currencyName: 'BitcoinTestnet',
@@ -54,6 +54,11 @@ export const bitcoinTestnetInfo: AbcCurrencyInfo = {
       standardFeeHighAmount: '86700000'
     },
     electrumServers: [
+      'electrum://estnet.qtornado.com:51001',
+      'electrum://testnet.hsmiths.com:53011',
+      'electrum://testnet1.bauerj.eu:50001',
+      'electrum://electrum.akinbo.org:51001',
+      'electrum://hsmithsxurybd7uh.onion:53011',
       'electrum://testnetnode.arihanc.com:51001',
       'electrum://electrum.akinbo.org:51001',
       'electrum://testnet1.bauerj.eu:50001',

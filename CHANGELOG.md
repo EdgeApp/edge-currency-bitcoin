@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 2.21.0
+
+* Add support for Bip70
+
 ## 2.20.1
 
 * Re-order bitcoin wallet types to put segwit up top

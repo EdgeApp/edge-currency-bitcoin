@@ -1,55 +1,44 @@
 // @flow
-import type { AbcEncodeUri, AbcParsedUri, AbcCurrencyInfo } from 'edge-core-js'
+import type {
+  EdgeEncodeUri,
+  EdgeParsedUri,
+  EdgeCurrencyInfo
+} from 'edge-core-js'
 import {
   validAddress,
   sanitizeAddress,
   dirtyAddress,
   toNewFormat
 } from './addressFormat/addressFormatIndex.js'
-import { parse, serialize } from 'uri-js'
+import { serialize } from 'uri-js'
+import parse from 'url-parse'
 import { bns } from 'biggystring'
 import bcoin from 'bcoin'
 
-const getParameterByName = (param: string, url: string) => {
-  const name = param.replace(/[[\]]/g, '\\$&')
-  const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)')
-  const results = regex.exec(url)
-  if (!results) return null
-  if (!results[2]) return ''
-  return decodeURIComponent(results[2].replace(/\+/g, ' '))
-}
-
-const isSeed = (seed: string) => {
+const parsePathname = (pathname: string, network: string) => {
+  // Check if the pathname type is a mnemonic seed
   try {
-    bcoin.hd.Mnemonic.fromPhrase(seed)
-    return true
-  } catch (e) {
-    return false
-  }
-}
-
-const isMasterPriv = (privateKey: string, network: string) => {
-  try {
-    bcoin.hd.PrivateKey.fromBase58(privateKey, network)
-    return true
+    bcoin.hd.Mnemonic.fromPhrase(pathname)
+    return { seed: pathname }
   } catch (e) {}
-  return false
-}
-
-const isWif = (privateKey: string, network: string) => {
+  // Check if the pathname type is a private key
   try {
-    bcoin.primitives.KeyRing.fromSecret(privateKey, network)
-    return true
+    bcoin.hd.PrivateKey.fromBase58(pathname, network)
+    return { masterPriv: pathname }
   } catch (e) {}
-  return false
-}
-
-const parseAddress = (address: string, network: string) => {
+  // Check if the pathname type is a wif
+  try {
+    bcoin.primitives.KeyRing.fromSecret(pathname, network)
+    return { privateKeys: [pathname] }
+  } catch (e) {}
+  // If the pathname is non of the above, then assume it's an address and check for validity
   const parsedAddress = {}
+  let address = pathname
   let legacyAddress = ''
-  address = address.replace('/', '') // Remove any slashes
   address = dirtyAddress(address, network)
-  if (!validAddress(address, network)) {
+  if (validAddress(address, network)) {
+    parsedAddress.publicAddress = address
+  } else {
     address = sanitizeAddress(address, network)
     legacyAddress = address
     address = toNewFormat(address, network)
@@ -58,71 +47,60 @@ const parseAddress = (address: string, network: string) => {
     }
     parsedAddress.publicAddress = address
     parsedAddress.legacyAddress = legacyAddress
-  } else {
-    parsedAddress.publicAddress = address
   }
   return parsedAddress
 }
 
-const parseHost = (uri: string, currencyInfo: AbcCurrencyInfo) => {
+export const parseUri = (
+  uri: string,
+  currencyInfo: EdgeCurrencyInfo
+): EdgeParsedUri => {
+  const result: EdgeParsedUri = { metadata: {} }
+  const parsedUri = parse(uri, true)
+  const { protocol, pathname, query } = parsedUri
+  const currencyName = currencyInfo.currencyName.toLowerCase()
   const network = currencyInfo.defaultSettings.network.type
-  if (isSeed(uri)) return { seed: uri }
-  if (isMasterPriv(uri, network)) return { masterPriv: uri }
-  if (isWif(uri, network)) return { privateKeys: [uri] }
-  const parsedUri = parse(uri)
-  if (
-    parsedUri.scheme &&
-    parsedUri.scheme.toLowerCase() !== currencyInfo.currencyName.toLowerCase()
-  ) {
+  const currencyCode = protocol && protocol.replace(':', '')
+  // If the currency URI belongs to the wrong network then error
+  if (currencyCode && currencyCode.toLowerCase() !== currencyName) {
     throw new Error('InvalidUriError')
   }
-  const host = parsedUri.host || parsedUri.path
-  if (!host) throw new Error('InvalidUriError')
-  return parseAddress(host, network)
-}
-
-const parseNativeAmount = (uri: string, currencyInfo: AbcCurrencyInfo) => {
-  const nativeAmount = {}
-  const amountStr = getParameterByName('amount', uri)
-  if (amountStr && typeof amountStr === 'string') {
+  // Get all posible query params
+  const { label, message, amount, r } = query
+  // If we don't have a pathname or a paymentProtocolURL uri then we bail
+  if (!pathname && !r) throw new Error('InvalidUriError')
+  // Parse the pathname and add it to the result object
+  if (pathname) {
+    // Test if the currency code
+    const parsedPath = parsePathname(pathname, network)
+    if (!parsedPath) throw new Error('InvalidUriError')
+    // $FlowFixMe
+    Object.assign(result, parsedPath)
+  }
+  // Assign the query params to the result object
+  // $FlowFixMe
+  if (label) result.metadata.name = label
+  // $FlowFixMe
+  if (message) result.metadata.message = message
+  // $FlowFixMe
+  if (r) result.paymentProtocolURL = r
+  // Get amount in native denomination if exists
+  if (amount && typeof amount === 'string') {
     const { denominations, currencyCode } = currencyInfo
     const denomination = denominations.find(e => e.name === currencyCode)
     if (denomination) {
       const { multiplier = '1' } = denomination
-      const t = bns.mul(amountStr, multiplier.toString())
-      nativeAmount.nativeAmount = bns.toFixed(t, 0, 0)
-      nativeAmount.currencyCode = currencyCode
+      const t = bns.mul(amount, multiplier.toString())
+      result.nativeAmount = bns.toFixed(t, 0, 0)
+      result.currencyCode = currencyCode
     }
   }
-  return nativeAmount
-}
-
-const parseMetadata = (uri: string, currencyInfo: AbcCurrencyInfo) => {
-  const metadata = {}
-  const name = getParameterByName('label', uri)
-  const message = getParameterByName('message', uri)
-  if (name) metadata.name = name
-  if (message) metadata.message = message
-  return metadata
-}
-
-export const parseUri = (
-  uri: string,
-  currencyInfo: AbcCurrencyInfo
-): AbcParsedUri => {
-  const host = parseHost(uri, currencyInfo)
-  const metadata = parseMetadata(uri, currencyInfo)
-  const nativeAmount = parseNativeAmount(uri, currencyInfo)
-  return {
-    metadata,
-    ...host,
-    ...nativeAmount
-  }
+  return result
 }
 
 export const encodeUri = (
-  obj: AbcEncodeUri,
-  currencyInfo: AbcCurrencyInfo
+  obj: EdgeEncodeUri,
+  currencyInfo: EdgeCurrencyInfo
 ): string => {
   const { legacyAddress } = obj
   let { publicAddress } = obj

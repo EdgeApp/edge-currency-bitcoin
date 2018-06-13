@@ -10,9 +10,7 @@ export const ufoInfo: EdgeCurrencyInfo = {
     { name: 'UFO', multiplier: '100000000', symbol: 'U' },
     { name: 'kUFO', multiplier: '100000000000', symbol: 'kU' }
   ],
-  walletTypes: [
-    'wallet:ufo-bip49'
-  ],
+  walletTypes: ['wallet:ufo-bip49'],
 
   // Configuration options:
   defaultSettings: {
@@ -21,9 +19,9 @@ export const ufoInfo: EdgeCurrencyInfo = {
       type: 'uniformfiscalobject',
       magic: 0xfcd9b7dd,
       keyPrefix: {
-        privkey: 0x9B,
-        xpubkey: 0x0488B21E,
-        xprivkey: 0x0488ADE4,
+        privkey: 0x9b,
+        xpubkey: 0x0488b21e,
+        xprivkey: 0x0488ade4,
         xpubkey58: 'xpub',
         xprivkey58: 'xprv',
         coinType: 202
@@ -68,8 +66,6 @@ export const ufoInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://chainz.cryptoid.info/ufo/tx.dws?%s.htm',
 
   // Images:
-  symbolImage:
-    'https://developer.airbitz.co/content/ufo_64_white.png',
-  symbolImageDarkMono:
-    'https://developer.airbitz.co/content/ufo_64_87939D.png'
+  symbolImage: 'https://developer.airbitz.co/content/ufo_64_white.png',
+  symbolImageDarkMono: 'https://developer.airbitz.co/content/ufo_64_87939D.png'
 }

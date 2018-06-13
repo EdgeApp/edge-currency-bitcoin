@@ -1,15 +1,18 @@
 // @flow
 import type {
   EdgeTransaction,
-  AbcWalletInfo,
-  AbcCurrencyEngine,
-  AbcCurrencyEngineOptions,
-  AbcFreshAddress,
-  AbcSpendInfo,
-  AbcTransaction,
-  AbcCurrencyInfo,
-  AbcSpendTarget,
-  AbcDataDump
+  EdgeWalletInfo,
+  EdgeCurrencyEngine,
+  EdgeCurrencyEngineOptions,
+  EdgeCurrencyEngineCallbacks,
+  // $FlowFixMe
+  EdgePaymentProtocolInfo,
+  EdgeFreshAddress,
+  EdgeSpendInfo,
+  EdgeCurrencyInfo,
+  EdgeSpendTarget,
+  EdgeDataDump,
+  DiskletFolder
 } from 'edge-core-js'
 
 import { EngineState } from './engineState.js'
@@ -19,6 +22,7 @@ import type { EngineStateCallbacks } from './engineState.js'
 import type { KeyManagerCallbacks } from './keyManager'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import { validateObject, promiseAny } from '../utils/utils.js'
+import { parsePayment } from '../utils/paymentRequest.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import { bns } from 'biggystring'
@@ -38,13 +42,17 @@ const MILLI_TO_SEC = 1000
  * as well as generic (non-wallet) functionality.
  */
 export class CurrencyEngine {
-  walletInfo: AbcWalletInfo
+  walletInfo: EdgeWalletInfo
   walletId: string
-  currencyInfo: AbcCurrencyInfo
+  currencyInfo: EdgeCurrencyInfo
   keyManager: KeyManager
   engineState: EngineState
   pluginState: PluginState
-  abcCurrencyEngineOptions: AbcCurrencyEngineOptions
+  edgeCurrencyEngineOptions: EdgeCurrencyEngineOptions
+  callbacks: EdgeCurrencyEngineCallbacks
+  walletLocalFolder: DiskletFolder
+  walletLocalEncryptedFolder: DiskletFolder
+  io: any
   network: string
   infoServer: string
   feeInfoServer: string
@@ -56,20 +64,27 @@ export class CurrencyEngine {
   // Private API
   // ------------------------------------------------------------------------
   constructor (
-    walletInfo: AbcWalletInfo,
-    currencyInfo: AbcCurrencyInfo,
+    walletInfo: EdgeWalletInfo,
+    currencyInfo: EdgeCurrencyInfo,
     pluginState: PluginState,
-    options: AbcCurrencyEngineOptions
+    options: EdgeCurrencyEngineOptions
   ) {
-    // Validate that we are a valid AbcCurrencyEngine:
+    // Validate that we are a valid EdgeCurrencyEngine:
     // eslint-disable-next-line no-unused-vars
-    const test: AbcCurrencyEngine = this
+    const test: EdgeCurrencyEngine = this
 
     this.walletInfo = walletInfo
     this.walletId = walletInfo.id || ''
     this.currencyInfo = currencyInfo
     this.pluginState = pluginState
-    this.abcCurrencyEngineOptions = options
+    this.edgeCurrencyEngineOptions = options
+    this.callbacks = this.edgeCurrencyEngineOptions.callbacks
+    this.walletLocalFolder = this.edgeCurrencyEngineOptions.walletLocalFolder
+    this.walletLocalEncryptedFolder = this.edgeCurrencyEngineOptions.walletLocalEncryptedFolder
+    this.io = null
+    if (this.edgeCurrencyEngineOptions.optionalSettings) {
+      this.io = this.edgeCurrencyEngineOptions.optionalSettings.io
+    }
     this.network = this.currencyInfo.defaultSettings.network.type
     this.infoServer = this.currencyInfo.defaultSettings.infoServer
     this.feeInfoServer = this.currencyInfo.defaultSettings.feeInfoServer
@@ -98,30 +113,21 @@ export class CurrencyEngine {
 
   async load (): Promise<any> {
     const engineStateCallbacks: EngineStateCallbacks = {
-      onHeightUpdated: (height: number) => {
-        this.abcCurrencyEngineOptions.callbacks.onBlockHeightChanged(height)
-      },
+      onHeightUpdated: this.callbacks.onBlockHeightChanged,
       onTxFetched: (txid: string) => {
-        const abcTransaction = this.getTransaction(txid)
-        this.abcCurrencyEngineOptions.callbacks.onTransactionsChanged([
-          abcTransaction
-        ])
+        const edgeTransaction = this.getTransaction(txid)
+        this.callbacks.onTransactionsChanged([edgeTransaction])
       },
-      onAddressesChecked: this.abcCurrencyEngineOptions.callbacks
-        .onAddressesChecked
+      onAddressesChecked: this.callbacks.onAddressesChecked
     }
     const gapLimit = this.currencyInfo.defaultSettings.gapLimit
-    const io = this.abcCurrencyEngineOptions.optionalSettings
-      ? this.abcCurrencyEngineOptions.optionalSettings.io
-      : null
 
     this.engineState = new EngineState({
       files: { txs: 'txs.json', addresses: 'addresses.json' },
       callbacks: engineStateCallbacks,
-      io: io,
-      localFolder: this.abcCurrencyEngineOptions.walletLocalFolder,
-      encryptedLocalFolder: this.abcCurrencyEngineOptions
-        .walletLocalEncryptedFolder,
+      io: this.io,
+      localFolder: this.walletLocalFolder,
+      encryptedLocalFolder: this.walletLocalEncryptedFolder,
       pluginState: this.pluginState,
       walletId: this.walletId
     })
@@ -177,7 +183,7 @@ export class CurrencyEngine {
     }
 
     this.engineState.onBalanceChanged = () => {
-      this.abcCurrencyEngineOptions.callbacks.onBalanceChanged(
+      this.callbacks.onBalanceChanged(
         this.currencyInfo.currencyCode,
         this.getBalance()
       )
@@ -186,7 +192,7 @@ export class CurrencyEngine {
     await this.keyManager.load()
   }
 
-  getTransaction (txid: string): AbcTransaction {
+  getTransaction (txid: string): EdgeTransaction {
     const { height = -1, firstSeen = Date.now() / 1000 } =
       this.engineState.txHeightCache[txid] || {}
     let date = firstSeen
@@ -264,7 +270,7 @@ export class CurrencyEngine {
     }
 
     const fee = totalInputAmount ? totalInputAmount - totalOutputAmount : 0
-    const abcTransaction: AbcTransaction = {
+    const edgeTransaction: EdgeTransaction = {
       ourReceiveAddresses,
       currencyCode: this.currencyInfo.currencyCode,
       otherParams: {},
@@ -275,16 +281,12 @@ export class CurrencyEngine {
       networkFee: `${fee}`,
       signedTx: this.engineState.txCache[txid]
     }
-    return abcTransaction
+    return edgeTransaction
   }
 
   async updateFeeTable () {
     try {
-      if (
-        !this.abcCurrencyEngineOptions.optionalSettings ||
-        !this.abcCurrencyEngineOptions.optionalSettings.io ||
-        !this.abcCurrencyEngineOptions.optionalSettings.io.fetch
-      ) {
+      if (!this.io || !this.io.fetch) {
         throw new Error('No io/fetch object')
       }
       await this.fetchFee()
@@ -295,12 +297,7 @@ export class CurrencyEngine {
         const url = `${this.infoServer}/networkFees/${
           this.currencyInfo.currencyCode
         }`
-        if (!this.abcCurrencyEngineOptions.optionalSettings) {
-          throw new Error('Missing optionalSettings')
-        }
-        const feesResponse = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
-          url
-        )
+        const feesResponse = await this.io.fetch(url)
         const feesJson = await feesResponse.json()
         if (validateObject(feesJson, InfoServerFeesSchema)) {
           this.fees = feesJson
@@ -321,12 +318,10 @@ export class CurrencyEngine {
     }
     try {
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        if (!this.abcCurrencyEngineOptions.optionalSettings) {
-          throw new Error('Missing optionalSettings')
+        if (!this.io || !this.io.fetch) {
+          throw new Error('No io/fetch object')
         }
-        const results = await this.abcCurrencyEngineOptions.optionalSettings.io.fetch(
-          this.feeInfoServer
-        )
+        const results = await this.io.fetch(this.feeInfoServer)
         if (results.status !== 200) {
           throw new Error(results.body)
         }
@@ -348,7 +343,7 @@ export class CurrencyEngine {
     spendTargets,
     networkFeeOption = 'standard',
     customNetworkFee = {}
-  }: AbcSpendInfo): number {
+  }: EdgeSpendInfo): number {
     const customFeeSetting = this.currencyInfo.defaultSettings
       .customFeeSettings[0]
     const customFeeAmount = customNetworkFee[customFeeSetting] || '0'
@@ -369,12 +364,12 @@ export class CurrencyEngine {
     }
   }
 
-  logAbcTransaction (abcTransaction: AbcTransaction, action: string) {
+  logEdgeTransaction (edgeTransaction: EdgeTransaction, action: string) {
     let log = `------------------ ${action} Transaction ------------------\n`
-    log += `Transaction id: ${abcTransaction.txid}\n`
-    log += `Our Receiving addresses are: ${abcTransaction.ourReceiveAddresses.toString()}\n`
+    log += `Transaction id: ${edgeTransaction.txid}\n`
+    log += `Our Receiving addresses are: ${edgeTransaction.ourReceiveAddresses.toString()}\n`
     log += 'Transaction details:\n'
-    const jsonObj = abcTransaction.otherParams.bcoinTx.getJSON(this.network)
+    const jsonObj = edgeTransaction.otherParams.bcoinTx.getJSON(this.network)
     log += JSON.stringify(jsonObj, null, 2) + '\n'
     log += '------------------------------------------------------------------'
     console.log(`${this.walletId} - ${log}`)
@@ -388,8 +383,8 @@ export class CurrencyEngine {
 
   async startEngine (): Promise<void> {
     const cachedTXs = await this.getTransactions()
-    this.abcCurrencyEngineOptions.callbacks.onTransactionsChanged(cachedTXs)
-    this.abcCurrencyEngineOptions.callbacks.onBalanceChanged(
+    this.callbacks.onTransactionsChanged(cachedTXs)
+    this.callbacks.onBalanceChanged(
       this.currencyInfo.currencyCode,
       this.getBalance()
     )
@@ -440,24 +435,24 @@ export class CurrencyEngine {
     return this.engineState.getNumTransactions(options)
   }
 
-  async getTransactions (options: any): Promise<Array<AbcTransaction>> {
+  async getTransactions (options: any): Promise<Array<EdgeTransaction>> {
     const rawTxs = this.engineState.txCache
-    const abcTransactions = []
+    const edgeTransactions = []
     for (const txid in rawTxs) {
-      const abcTransaction = this.getTransaction(txid)
-      abcTransactions.push(abcTransaction)
+      const edgeTransaction = this.getTransaction(txid)
+      edgeTransactions.push(edgeTransaction)
     }
 
     const startIndex = (options && options.startIndex) || 0
     let endIndex =
-      (options && options.numEntries + startIndex) || abcTransactions.length
-    if (startIndex + endIndex > abcTransactions.length) {
-      endIndex = abcTransactions.length
+      (options && options.numEntries + startIndex) || edgeTransactions.length
+    if (startIndex + endIndex > edgeTransactions.length) {
+      endIndex = edgeTransactions.length
     }
-    return abcTransactions.slice(startIndex, endIndex)
+    return edgeTransactions.slice(startIndex, endIndex)
   }
 
-  getFreshAddress (options: any): AbcFreshAddress {
+  getFreshAddress (options: any): EdgeFreshAddress {
     const publicAddress = this.keyManager.getReceiveAddress()
     const legacyAddress = toLegacyFormat(publicAddress, this.network)
     return { publicAddress, legacyAddress }
@@ -492,19 +487,17 @@ export class CurrencyEngine {
   }
 
   async sweepPrivateKeys (
-    abcSpendInfo: AbcSpendInfo,
+    edgeSpendInfo: EdgeSpendInfo,
     options?: any = {}
-  ): Promise<AbcTransaction> {
+  ): Promise<EdgeTransaction> {
     // $FlowFixMe
-    const privateKeys = abcSpendInfo.privateKeys || []
+    const { privateKeys = [] } = edgeSpendInfo
+    if (!privateKeys.length) throw new Error('No private keys given')
     let success, failure
     const end = new Promise((resolve, reject) => {
       success = resolve
       failure = reject
     })
-    if (!privateKeys.length) {
-      throw (new Error('No private keys given'))
-    }
     const engineStateCallbacks: EngineStateCallbacks = {
       onAddressesChecked: (ratio: number) => {
         if (ratio === 1) {
@@ -517,25 +510,20 @@ export class CurrencyEngine {
           const publicAddress = this.getFreshAddress().publicAddress
           const nativeAmount = engineState.getBalance()
           options.utxos = utxos
-          abcSpendInfo.spendTargets = [{ publicAddress, nativeAmount }]
-          this.makeSpend(abcSpendInfo, options)
+          edgeSpendInfo.spendTargets = [{ publicAddress, nativeAmount }]
+          this.makeSpend(edgeSpendInfo, options)
             .then(tx => success(tx))
             .catch(e => failure(e))
         }
       }
     }
 
-    const io = this.abcCurrencyEngineOptions.optionalSettings
-      ? this.abcCurrencyEngineOptions.optionalSettings.io
-      : null
-
     const engineState = new EngineState({
       files: { txs: '', addresses: '' },
       callbacks: engineStateCallbacks,
-      io: io,
-      localFolder: this.abcCurrencyEngineOptions.walletLocalFolder,
-      encryptedLocalFolder: this.abcCurrencyEngineOptions
-        .walletLocalEncryptedFolder,
+      io: this.io,
+      localFolder: this.walletLocalFolder,
+      encryptedLocalFolder: this.walletLocalEncryptedFolder,
       pluginState: this.pluginState,
       walletId: this.walletId
     })
@@ -561,18 +549,34 @@ export class CurrencyEngine {
     return end
   }
 
+  // $FlowFixMe
+  async getPaymentProtocolInfo (
+    paymentProtocolURL: string
+  ): Promise<EdgePaymentProtocolInfo> {
+    try {
+      if (!this.io || !this.io.fetch) {
+        throw new Error('No io/fetch object')
+      }
+      const result = await this.io.fetch(paymentProtocolURL)
+      const buf = await result.buffer()
+      return parsePayment(buf, this.network, this.currencyInfo.currencyCode)
+    } catch (err) {
+      console.log(`${this.walletId} - ${err.toString()}`)
+    }
+  }
+
   async makeSpend (
-    abcSpendInfo: AbcSpendInfo,
+    edgeSpendInfo: EdgeSpendInfo,
     options?: any = {}
-  ): Promise<AbcTransaction> {
+  ): Promise<EdgeTransaction> {
     // Can't spend without outputs
     if (
       !options.CPFP &&
-      (!abcSpendInfo.spendTargets || abcSpendInfo.spendTargets.length < 1)
+      (!edgeSpendInfo.spendTargets || edgeSpendInfo.spendTargets.length < 1)
     ) {
       throw new Error('Need to provide Spend Targets')
     }
-    const totalAmountToSend = abcSpendInfo.spendTargets.reduce(
+    const totalAmountToSend = edgeSpendInfo.spendTargets.reduce(
       (sum, { nativeAmount }) => bns.add(sum, nativeAmount || '0'),
       '0'
     )
@@ -590,15 +594,15 @@ export class CurrencyEngine {
         await this.updateFeeTable()
       }
       Object.assign(options, {
-        rate: this.getRate(abcSpendInfo),
+        rate: this.getRate(edgeSpendInfo),
         maxFee: this.currencyInfo.defaultSettings.maxFee,
-        outputs: abcSpendInfo.spendTargets,
+        outputs: edgeSpendInfo.spendTargets,
         utxos: options.utxos || this.engineState.getUTXOs(),
         height: this.getBlockHeight()
       })
       const resultedTransaction = await this.keyManager.createTX(options)
-      const sumOfTx = abcSpendInfo.spendTargets.reduce(
-        (s, spendTarget: AbcSpendTarget) => {
+      const sumOfTx = edgeSpendInfo.spendTargets.reduce(
+        (s, spendTarget: EdgeSpendTarget) => {
           if (
             spendTarget.publicAddress &&
             this.engineState.scriptHashes[spendTarget.publicAddress]
@@ -620,11 +624,11 @@ export class CurrencyEngine {
         }
       }
 
-      const abcTransaction: AbcTransaction = {
+      const edgeTransaction: EdgeTransaction = {
         ourReceiveAddresses,
         otherParams: {
           bcoinTx: resultedTransaction,
-          abcSpendInfo,
+          edgeSpendInfo,
           rate: options.rate
         },
         currencyCode: this.currencyInfo.currencyCode,
@@ -635,34 +639,36 @@ export class CurrencyEngine {
         networkFee: `${resultedTransaction.getFee()}`,
         signedTx: ''
       }
-      return abcTransaction
+      return edgeTransaction
     } catch (e) {
       if (e.type === 'FundingError') throw new Error('InsufficientFundsError')
       throw e
     }
   }
 
-  async signTx (abcTransaction: AbcTransaction): Promise<AbcTransaction> {
-    this.logAbcTransaction(abcTransaction, 'Signing')
-    const otherParams = abcTransaction.otherParams
-    const { abcSpendInfo, bcoinTx } = otherParams
-    const { privateKeys = [] } = abcSpendInfo
+  async signTx (edgeTransaction: EdgeTransaction): Promise<EdgeTransaction> {
+    this.logEdgeTransaction(edgeTransaction, 'Signing')
+    const otherParams = edgeTransaction.otherParams
+    const { edgeSpendInfo, bcoinTx } = otherParams
+    const { privateKeys = [] } = edgeSpendInfo
     await this.keyManager.sign(bcoinTx, privateKeys)
-    abcTransaction.date = Date.now() / MILLI_TO_SEC
-    abcTransaction.signedTx = bcoinTx.toRaw().toString('hex')
-    abcTransaction.txid = bcoinTx.rhash()
-    return abcTransaction
+    edgeTransaction.date = Date.now() / MILLI_TO_SEC
+    edgeTransaction.signedTx = bcoinTx.toRaw().toString('hex')
+    edgeTransaction.txid = bcoinTx.rhash()
+    return edgeTransaction
   }
 
-  async broadcastTx (abcTransaction: EdgeTransaction): Promise<AbcTransaction> {
-    if (!abcTransaction.otherParams.bcoinTx) {
-      abcTransaction.otherParams.bcoinTx = bcoin.primitives.TX.fromRaw(
-        abcTransaction.signedTx,
+  async broadcastTx (
+    edgeTransaction: EdgeTransaction
+  ): Promise<EdgeTransaction> {
+    if (!edgeTransaction.otherParams.bcoinTx) {
+      edgeTransaction.otherParams.bcoinTx = bcoin.primitives.TX.fromRaw(
+        edgeTransaction.signedTx,
         'hex'
       )
     }
-    this.logAbcTransaction(abcTransaction, 'Broadcasting')
-    for (const output of abcTransaction.otherParams.bcoinTx.outputs) {
+    this.logEdgeTransaction(edgeTransaction, 'Broadcasting')
+    for (const output of edgeTransaction.otherParams.bcoinTx.outputs) {
       if (output.value <= 0 || output.value === '0') {
         throw new Error('Wrong spend amount')
       }
@@ -670,25 +676,20 @@ export class CurrencyEngine {
 
     // Try APIs
     const broadcasters = []
-    if (this.abcCurrencyEngineOptions.optionalSettings) {
+    if (this.io) {
       for (const f of broadcastFactories) {
-        const broadcaster = f(
-          this.abcCurrencyEngineOptions.optionalSettings.io,
-          abcTransaction.currencyCode
-        )
-        if (broadcaster) {
-          broadcasters.push(broadcaster)
-        }
+        const broadcaster = f(this.io, edgeTransaction.currencyCode)
+        if (broadcaster) broadcasters.push(broadcaster)
       }
     }
 
     const promiseArray = []
 
     for (const broadcaster of broadcasters) {
-      const p = broadcaster(abcTransaction.signedTx)
+      const p = broadcaster(edgeTransaction.signedTx)
       promiseArray.push(p)
     }
-    promiseArray.push(this.engineState.broadcastTx(abcTransaction.signedTx))
+    promiseArray.push(this.engineState.broadcastTx(edgeTransaction.signedTx))
 
     try {
       await promiseAny(promiseArray)
@@ -696,12 +697,12 @@ export class CurrencyEngine {
       throw e
     }
 
-    return abcTransaction
+    return edgeTransaction
   }
 
-  saveTx (abcTransaction: AbcTransaction): Promise<void> {
-    this.logAbcTransaction(abcTransaction, 'Saving')
-    this.engineState.saveTx(abcTransaction.txid, abcTransaction.signedTx)
+  saveTx (edgeTransaction: EdgeTransaction): Promise<void> {
+    this.logEdgeTransaction(edgeTransaction, 'Saving')
+    this.engineState.saveTx(edgeTransaction.txid, edgeTransaction.signedTx)
     return Promise.resolve()
   }
 
@@ -713,8 +714,8 @@ export class CurrencyEngine {
     return this.keyManager ? this.keyManager.getPublicSeed() : null
   }
 
-  dumpData (): AbcDataDump {
-    const dataDump: AbcDataDump = {
+  dumpData (): EdgeDataDump {
+    const dataDump: EdgeDataDump = {
       walletId: this.walletId.split(' - ')[0],
       walletType: this.walletInfo.type,
       pluginType: this.currencyInfo.pluginName,

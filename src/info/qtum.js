@@ -6,12 +6,8 @@ export const qtumInfo: AbcCurrencyInfo = {
   currencyCode: 'QTUM',
   currencyName: 'Qtum',
   pluginName: 'qtum',
-  denominations: [
-    { name: 'QTUM', multiplier: '100000000', symbol: 'Q' }
-  ],
-  walletTypes: [
-    'wallet:qtum-bip44'
-  ],
+  denominations: [{ name: 'QTUM', multiplier: '100000000', symbol: 'Q' }],
+  walletTypes: ['wallet:qtum-bip44'],
 
   // Configuration options:
   defaultSettings: {
@@ -69,8 +65,7 @@ export const qtumInfo: AbcCurrencyInfo = {
   transactionExplorer: 'https://explorer.qtum.org/tx/%s',
 
   // Images:
-  symbolImage:
-    'https://developer.airbitz.co/content/qtum-logo-64.png',
+  symbolImage: 'https://developer.airbitz.co/content/qtum-logo-64.png',
   symbolImageDarkMono:
     'https://developer.airbitz.co/content/qtum-logo-mono-64.png'
 }
