@@ -1,14 +1,14 @@
 {
   "name": "edge-currency-bitcoin",
-  "version": "2.18.0",
+  "version": "2.20.1",
   "description": "Edge Bitcoin currency plugin",
-  "homepage": "https://edgesecure.co",
+  "homepage": "https://edge.app",
   "license": "SEE LICENSE IN LICENSE",
   "author": "Edge",
   "contributors": [
-    "Eliran Zach <eliran@edgesecure.co>",
-    "William Swanson <william@edgesecure.co>",
-    "Paul Puey <paul@edgesecure.co>",
+    "Eliran Zach <eliran@edge.app>",
+    "William Swanson <william@edge.app>",
+    "Paul Puey <paul@edge.app>",
     "Stan Synko <stan@airbitz.co>"
   ],
   "files": [
@@ -57,7 +57,7 @@
     "babel-preset-flow": "^6.23.0",
     "chai": "^4.1.2",
     "disklet": "^0.2.4",
-    "edge-core-js": "^0.6.9",
+    "edge-core-js": "^0.9.0-beta.1",
     "eslint": "4.5.0",
     "eslint-config-standard": "^10.2.1",
     "eslint-plugin-flowtype": "^2.35.0",

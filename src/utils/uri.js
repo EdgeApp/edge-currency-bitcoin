@@ -1,5 +1,9 @@
 // @flow
-import type { EdgeEncodeUri, EdgeParsedUri, EdgeCurrencyInfo } from 'edge-core-js'
+import type {
+  EdgeEncodeUri,
+  EdgeParsedUri,
+  EdgeCurrencyInfo
+} from 'edge-core-js'
 import {
   validAddress,
   sanitizeAddress,

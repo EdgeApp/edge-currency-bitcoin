@@ -491,7 +491,8 @@ export class CurrencyEngine {
     options?: any = {}
   ): Promise<EdgeTransaction> {
     // $FlowFixMe
-    const { privateKeys } = edgeSpendInfo
+    const { privateKeys = [] } = edgeSpendInfo
+    if (!privateKeys.length) throw new Error('No private keys given')
     let success, failure
     const end = new Promise((resolve, reject) => {
       success = resolve
@@ -657,7 +658,9 @@ export class CurrencyEngine {
     return edgeTransaction
   }
 
-  async broadcastTx (edgeTransaction: EdgeTransaction): Promise<EdgeTransaction> {
+  async broadcastTx (
+    edgeTransaction: EdgeTransaction
+  ): Promise<EdgeTransaction> {
     if (!edgeTransaction.otherParams.bcoinTx) {
       edgeTransaction.otherParams.bcoinTx = bcoin.primitives.TX.fromRaw(
         edgeTransaction.signedTx,

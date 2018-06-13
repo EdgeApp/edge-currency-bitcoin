@@ -26,6 +26,7 @@ import type {
   StratumUtxo
 } from '../stratum/stratumMessages.js'
 import { parseTransaction } from './parseTransaction.js'
+import { parse } from 'uri-js/dist/es5/uri.all'
 
 export type UtxoInfo = {
   txid: string, // tx_hash from Stratum
@@ -508,6 +509,16 @@ export class EngineState extends EventEmitter {
       if (!this.serverList.length) break
       const uri = this.serverList.shift()
       if (this.connections[uri]) {
+        continue
+      }
+      // Validate the URI of server to make sure it is valid
+      const parsed = parse(uri)
+      if (
+        !parsed.scheme ||
+        parsed.scheme.length < 3 ||
+        !parsed.host ||
+        !parsed.port
+      ) {
         continue
       }
       chanceToBePicked -= chanceToBePicked > 0.5 ? 0.25 : 0

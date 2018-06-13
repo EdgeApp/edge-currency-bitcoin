@@ -13,10 +13,12 @@ import { bitcoincashInfo } from './info/bitcoincash.js'
 import { bitcoincashTestnetInfo } from './info/bitcoincashtestnet.js'
 import { bitcoinTestnetInfo } from './info/bitcointestnet.js'
 import { dashInfo } from './info/dash.js'
-import { dogecoinInfo } from './info/dogecoin.js'
+// import { dogecoinInfo } from './info/dogecoin.js'
 import { litecoinInfo } from './info/litecoin.js'
 import { zcoinInfo } from './info/zcoin.js'
 import { feathercoinInfo } from './info/feathercoin.js'
+import { ufoInfo } from './info/ufo.js'
+import { qtumInfo } from './info/qtum.js'
 
 // CurrencyPlugin takes a plugin info and creates the plugin
 import { CurrencyPlugin } from './plugin/currencyPlugin.js'
@@ -75,7 +77,7 @@ export const bitcoincashTestnetCurrencyPluginFactory = makePluginFactory(
 export const dashCurrencyPluginFactory = makePluginFactory(dashInfo)
 
 // Such Dogecoin:
-export const dogecoinCurrencyPluginFactory = makePluginFactory(dogecoinInfo)
+// export const dogecoinCurrencyPluginFactory = makePluginFactory(dogecoinInfo)
 
 // Litecoin:
 export const litecoinCurrencyPluginFactory = makePluginFactory(litecoinInfo)
@@ -88,6 +90,10 @@ export const feathercoinCurrencyPluginFactory = makePluginFactory(
   feathercoinInfo
 )
 
+export const qtumCurrencyPluginFactory = makePluginFactory(qtumInfo)
+
+export const ufoCurrencyPluginFactory = makePluginFactory(ufoInfo)
+
 // Legacy uppercased names:
 export {
   bitcoinCurrencyPluginFactory as BitcoinCurrencyPluginFactory,
@@ -95,7 +101,7 @@ export {
   bitcoincashCurrencyPluginFactory as BitcoincashCurrencyPluginFactory,
   bitcoincashTestnetCurrencyPluginFactory as BitcoincashTestnetCurrencyPluginFactory,
   dashCurrencyPluginFactory as DashCurrencyPluginFactory,
-  dogecoinCurrencyPluginFactory as DogecoinCurrencyPluginFactory,
+  // dogecoinCurrencyPluginFactory as DogecoinCurrencyPluginFactory,
   litecoinCurrencyPluginFactory as LitecoinCurrencyPluginFactory,
   zcoinCurrencyPluginFactory as ZcoinCurrencyPluginFactory,
   feathercoinCurrencyPluginFactory as FeathercoinCurrencyPluginFactory

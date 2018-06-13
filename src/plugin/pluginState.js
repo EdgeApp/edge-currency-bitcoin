@@ -197,6 +197,9 @@ export class PluginState extends ServerCache {
     } catch (e) {
       console.log(e)
     }
+    if (!Array.isArray(serverList)) {
+      serverList = this.defaultServers
+    }
     this.serverCacheLoad(this.serverCacheJson, serverList)
     await this.saveServerCache()
 
