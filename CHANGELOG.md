@@ -1,6 +1,6 @@
 # edge-currency-bitcoin
 
-## 2.18.1
+## 2.20.1
 
 * Re-order bitcoin wallet types to put segwit up top
 
