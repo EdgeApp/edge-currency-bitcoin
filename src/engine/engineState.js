@@ -1,5 +1,5 @@
 // @flow
-import type { AbcIo, DiskletFolder } from 'edge-core-js'
+import type { EdgeIo, DiskletFolder } from 'edge-core-js'
 
 import { type PluginState } from '../plugin/pluginState.js'
 // import { scoreServer2 } from '../plugin/pluginState.js'
@@ -368,7 +368,7 @@ export class EngineState extends EventEmitter {
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------
-  io: AbcIo
+  io: EdgeIo
   walletId: string
   txFile: string
   addressFile: string

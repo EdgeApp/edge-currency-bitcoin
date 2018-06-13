@@ -1,5 +1,5 @@
 // @flow
-import type { AbcSpendTarget } from 'edge-core-js'
+import type { EdgeSpendTarget } from 'edge-core-js'
 import type { UtxoInfo, AddressInfo, AddressInfos } from './engineState.js'
 // $FlowFixMe
 import buffer from 'buffer-hack'
@@ -54,7 +54,7 @@ export type RawKeys = {
 }
 
 export type createTxOptions = {
-  outputs: Array<AbcSpendTarget>,
+  outputs: Array<EdgeSpendTarget>,
   utxos: Array<{
     utxo: UtxoInfo,
     tx: any,

@@ -1,14 +1,14 @@
 // @flow
 import type {
-  AbcCorePluginOptions,
-  AbcCurrencyEngine,
-  AbcCurrencyEngineOptions,
-  AbcCurrencyInfo,
-  AbcCurrencyPlugin,
-  AbcIo,
-  AbcWalletInfo,
-  AbcEncodeUri,
-  AbcParsedUri
+  EdgeCorePluginOptions,
+  EdgeCurrencyEngine,
+  EdgeCurrencyEngineOptions,
+  EdgeCurrencyInfo,
+  EdgeCurrencyPlugin,
+  EdgeIo,
+  EdgeWalletInfo,
+  EdgeEncodeUri,
+  EdgeParsedUri
 } from 'edge-core-js'
 
 import bcoin from 'bcoin'
@@ -27,19 +27,19 @@ const { Buffer } = buffer
  * as well as generic (non-wallet) functionality.
  */
 export class CurrencyPlugin {
-  currencyInfo: AbcCurrencyInfo
+  currencyInfo: EdgeCurrencyInfo
   network: string
   pluginName: string
-  io: AbcIo
+  io: EdgeIo
   state: PluginState
 
   // ------------------------------------------------------------------------
   // Private API
   // ------------------------------------------------------------------------
-  constructor (options: AbcCorePluginOptions, currencyInfo: AbcCurrencyInfo) {
-    // Validate that we are a valid AbcCurrencyPlugin:
+  constructor (options: EdgeCorePluginOptions, currencyInfo: EdgeCurrencyInfo) {
+    // Validate that we are a valid EdgeCurrencyPlugin:
     // eslint-disable-next-line no-unused-vars
-    const test: AbcCurrencyPlugin = this
+    const test: EdgeCurrencyPlugin = this
 
     // Public API:
     this.currencyInfo = currencyInfo
@@ -62,7 +62,7 @@ export class CurrencyPlugin {
     }
   }
 
-  async derivePublicKey (walletInfo: AbcWalletInfo) {
+  async derivePublicKey (walletInfo: EdgeWalletInfo) {
     if (!~this.currencyInfo.walletTypes.indexOf(walletInfo.type)) {
       throw new Error('InvalidWalletType')
     }
@@ -85,9 +85,9 @@ export class CurrencyPlugin {
   }
 
   async makeEngine (
-    walletInfo: AbcWalletInfo,
-    options: AbcCurrencyEngineOptions
-  ): Promise<AbcCurrencyEngine> {
+    walletInfo: EdgeWalletInfo,
+    options: EdgeCurrencyEngineOptions
+  ): Promise<EdgeCurrencyEngine> {
     if (!options.optionalSettings) {
       options.optionalSettings = {}
     }
@@ -105,11 +105,11 @@ export class CurrencyPlugin {
     return engine
   }
 
-  parseUri (uri: string): AbcParsedUri {
+  parseUri (uri: string): EdgeParsedUri {
     return parseUri(uri, this.currencyInfo)
   }
 
-  encodeUri (obj: AbcEncodeUri): string {
+  encodeUri (obj: EdgeEncodeUri): string {
     return encodeUri(obj, this.currencyInfo)
   }
 }
