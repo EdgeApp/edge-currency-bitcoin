@@ -1,5 +1,5 @@
 // @flow
-import type { AbcEncodeUri, AbcParsedUri, AbcCurrencyInfo } from 'edge-core-js'
+import type { EdgeEncodeUri, EdgeParsedUri, EdgeCurrencyInfo } from 'edge-core-js'
 import {
   validAddress,
   sanitizeAddress,
@@ -49,9 +49,9 @@ const parsePathname = (pathname: string, network: string) => {
 
 export const parseUri = (
   uri: string,
-  currencyInfo: AbcCurrencyInfo
-): AbcParsedUri => {
-  const result: AbcParsedUri = { metadata: {} }
+  currencyInfo: EdgeCurrencyInfo
+): EdgeParsedUri => {
+  const result: EdgeParsedUri = { metadata: {} }
   const parsedUri = parse(uri, true)
   const { protocol, pathname, query } = parsedUri
   const currencyName = currencyInfo.currencyName.toLowerCase()
@@ -95,8 +95,8 @@ export const parseUri = (
 }
 
 export const encodeUri = (
-  obj: AbcEncodeUri,
-  currencyInfo: AbcCurrencyInfo
+  obj: EdgeEncodeUri,
+  currencyInfo: EdgeCurrencyInfo
 ): string => {
   const { legacyAddress } = obj
   let { publicAddress } = obj

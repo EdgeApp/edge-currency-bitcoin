@@ -21,7 +21,7 @@ describe(`Payment Request`, function () {
       merchant: '',
       domain: 'test.bitpay.com',
       memo: 'Payment request for BitPay invoice CMWpuFsjgmQ2ZLiyGfcF1W',
-      abcSpendTarget: [
+      spendTargets: [
         {
           currencyCode: 'BTC',
           publicAddress: 'mhepzfyk7R9kcvr8AmaK2qSoFUGRL1b581',

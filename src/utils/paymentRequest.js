@@ -2,7 +2,7 @@
 import bcoin from 'bcoin'
 import parse from 'url-parse'
 // $FlowFixMe
-import type { AbcPaymentProtocolInfo } from 'edge-core-js'
+import type { EdgePaymentProtocolInfo } from 'edge-core-js'
 import { toNewFormat } from './addressFormat/addressFormatIndex.js'
 
 // $FlowFixMe
@@ -10,7 +10,7 @@ export const parsePayment = (
   paymentBuffer: Buffer,
   network: string,
   currencyCode: string
-): AbcPaymentProtocolInfo => {
+): EdgePaymentProtocolInfo => {
   const bip70 = bcoin.bip70.PaymentRequest.fromRaw(paymentBuffer)
   const {
     paymentUrl = '',
@@ -19,26 +19,26 @@ export const parsePayment = (
     outputs = []
   } = bip70.paymentDetails
   const domain = parse(paymentUrl, true).hostname
-  const abcSpendTarget = []
+  const spendTargets = []
   let nativeAmount = 0
 
   for (const output of outputs) {
     const jsonObj = output.getJSON(network)
     nativeAmount += jsonObj.value
-    abcSpendTarget.push({
+    spendTargets.push({
       currencyCode: currencyCode,
       publicAddress: toNewFormat(jsonObj.address, network),
       nativeAmount: `${jsonObj.value}`
     })
   }
 
-  const abcPaymentProtocolInfo = {
+  const edgePaymentProtocolInfo = {
     nativeAmount: `${nativeAmount}`,
     merchant: merchantData || '',
     memo: memo || '',
     domain,
-    abcSpendTarget
+    spendTargets
   }
 
-  return abcPaymentProtocolInfo
+  return edgePaymentProtocolInfo
 }
