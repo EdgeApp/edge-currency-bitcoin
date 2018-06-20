@@ -1,5 +1,5 @@
 // @flow
-import type { AbcCurrencyInfo } from 'edge-core-js'
+import type { EdgeCurrencyInfo } from 'edge-core-js'
 
 export const feathercoinInfo: AbcCurrencyInfo = {
   // Basic currency information:

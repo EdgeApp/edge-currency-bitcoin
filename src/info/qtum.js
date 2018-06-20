@@ -1,5 +1,6 @@
 // @flow
-import type { AbcCurrencyInfo } from 'edge-core-js'
+import type { EdgeCurrencyInfo } from 'edge-core-js'
+import { imageServerUrl } from './constants.js'
 
 export const qtumInfo: AbcCurrencyInfo = {
   // Basic currency information:
@@ -70,7 +71,7 @@ export const qtumInfo: AbcCurrencyInfo = {
 
   // Images:
   symbolImage:
-    'https://developer.airbitz.co/content/qtum-logo-64.png',
+    `${imageServerUrl}/qtum-logo-64.png`,
   symbolImageDarkMono:
-    'https://developer.airbitz.co/content/qtum-logo-mono-64.png'
+    `${imageServerUrl}/qtum-logo-mono-64.png`
 }

@@ -1,5 +1,6 @@
 // @flow
 import type { EdgeCurrencyInfo } from 'edge-core-js'
+import { imageServerUrl } from './constants.js'
 
 export const ufoInfo: EdgeCurrencyInfo = {
   // Basic currency information:
@@ -69,7 +70,7 @@ export const ufoInfo: EdgeCurrencyInfo = {
 
   // Images:
   symbolImage:
-    'https://developer.airbitz.co/content/ufo_64_white.png',
+    `${imageServerUrl}/ufo_64_white.png`,
   symbolImageDarkMono:
-    'https://developer.airbitz.co/content/ufo_64_87939D.png'
+    `${imageServerUrl}/ufo_64_87939D.png`
 }
