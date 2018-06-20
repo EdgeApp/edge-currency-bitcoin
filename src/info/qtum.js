@@ -2,7 +2,7 @@
 import type { EdgeCurrencyInfo } from 'edge-core-js'
 import { imageServerUrl } from './constants.js'
 
-export const qtumInfo: AbcCurrencyInfo = {
+export const qtumInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'QTUM',
   currencyName: 'Qtum',

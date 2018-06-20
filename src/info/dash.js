@@ -2,7 +2,7 @@
 import type { EdgeCurrencyInfo } from 'edge-core-js'
 import { imageServerUrl } from './constants.js'
 
-export const dashInfo: AbcCurrencyInfo = {
+export const dashInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'DASH',
   currencyName: 'Dash',

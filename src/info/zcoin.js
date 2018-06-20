@@ -2,7 +2,7 @@
 import type { EdgeCurrencyInfo } from 'edge-core-js'
 import { imageServerUrl } from './constants.js'
 
-export const zcoinInfo: AbcCurrencyInfo = {
+export const zcoinInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'XZC',
   currencyName: 'Zcoin',

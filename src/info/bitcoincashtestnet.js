@@ -2,7 +2,7 @@
 import type { EdgeCurrencyInfo } from 'edge-core-js'
 import { imageServerUrl } from './constants.js'
 
-export const bitcoincashTestnetInfo: AbcCurrencyInfo = {
+export const bitcoincashTestnetInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BCH',
   currencyName: 'BitcoinCashTestnet',
