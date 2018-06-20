@@ -64,9 +64,9 @@ export const ufoInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  addressExplorer: 'https://chainz.cryptoid.info/ufo/address.dws?%s.htm',
-  blockExplorer: 'https://chainz.cryptoid.info/ufo/block.dws?%s.htm',
-  transactionExplorer: 'https://chainz.cryptoid.info/ufo/tx.dws?%s.htm',
+  addressExplorer: 'https://explorer.ufobject.com/address/%s',
+  blockExplorer: 'https://explorer.ufobject.com/blocks/%s',
+  transactionExplorer: 'https://explorer.ufobject.com/tx/%s',
 
   // Images:
   symbolImage:
