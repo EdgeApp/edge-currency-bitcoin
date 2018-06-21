@@ -19,7 +19,7 @@ export const dashInfo: EdgeCurrencyInfo = {
       type: 'dash',
       magic: 0xd9b4bef9,
       keyPrefix: {
-        privkey: 0x80,
+        privkey: 0xcc,
         xpubkey: 0x02fe52cc,
         xprivkey: 0x02fe52f8,
         xpubkey58: 'xpub',

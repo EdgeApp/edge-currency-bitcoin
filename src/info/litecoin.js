@@ -24,7 +24,7 @@ export const litecoinInfo: EdgeCurrencyInfo = {
       type: 'litecoin',
       magic: 0xd9b4bef9,
       keyPrefix: {
-        privkey: 0x80,
+        privkey: 0xb0,
         xpubkey: 0x0488b21e,
         xprivkey: 0x0488ade4,
         xpubkey58: 'xpub',
