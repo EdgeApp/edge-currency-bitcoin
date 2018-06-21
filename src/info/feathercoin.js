@@ -23,7 +23,7 @@ export const feathercoinInfo: EdgeCurrencyInfo = {
       type: 'feathercoin',
       magic: 0xd9b4bef9,
       keyPrefix: {
-        privkey: 0x80,
+        privkey: 0x8e,
         xpubkey: 0x0488bc26,
         xprivkey: 0x0488daee,
         xpubkey58: 'xpub',
