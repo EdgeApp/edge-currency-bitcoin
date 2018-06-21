@@ -1,5 +1,6 @@
 // @flow
 import type { EdgeCurrencyInfo } from 'edge-core-js'
+import { imageServerUrl } from './constants.js'
 
 export const ufoInfo: EdgeCurrencyInfo = {
   // Basic currency information:
@@ -61,11 +62,13 @@ export const ufoInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  addressExplorer: 'https://chainz.cryptoid.info/ufo/address.dws?%s.htm',
-  blockExplorer: 'https://chainz.cryptoid.info/ufo/block.dws?%s.htm',
-  transactionExplorer: 'https://chainz.cryptoid.info/ufo/tx.dws?%s.htm',
+  addressExplorer: 'https://explorer.ufobject.com/address/%s',
+  blockExplorer: 'https://explorer.ufobject.com/blocks/%s',
+  transactionExplorer: 'https://explorer.ufobject.com/tx/%s',
 
   // Images:
-  symbolImage: 'https://developer.airbitz.co/content/ufo_64_white.png',
-  symbolImageDarkMono: 'https://developer.airbitz.co/content/ufo_64_87939D.png'
+  symbolImage:
+    `${imageServerUrl}/ufo_64_white.png`,
+  symbolImageDarkMono:
+    `${imageServerUrl}/ufo_64_87939D.png`
 }

@@ -71,13 +71,29 @@
         "metadata": {},
         "masterPriv": "xprv9twnbyJhBAAVPsntF54SCKCDfJgbBemavSquVwYdFkacHT2U1MHcc4AC9Gxehtv7oFfSUor2b9xomvNCPPgjfXD4FTWcMPUSeC8HEfskehz"
       }],
-      "wif 1": ["L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2", {
+      "wif 1 - Compressed": ["L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2", {
         "metadata": {},
         "privateKeys": [ "L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2"]
       }],
-      "wif 2": ["KzjzkvbBjyaVeECBJFFv5eTwRrsQ4eBg8BNoPpr1z6tjyua6KGEd", {
+      "wif 2 - Compressed": ["KzjzkvbBjyaVeECBJFFv5eTwRrsQ4eBg8BNoPpr1z6tjyua6KGEd", {
         "metadata": {},
         "privateKeys": [ "KzjzkvbBjyaVeECBJFFv5eTwRrsQ4eBg8BNoPpr1z6tjyua6KGEd"]
+      }],
+      "wif 3 - Compressed": ["Kzfwq67yZCotkVShh6tvFZ2WZCZ3C6CLpt9ec2LA3Zdpm17ynXac", {
+        "metadata": {},
+        "privateKeys": [ "Kzfwq67yZCotkVShh6tvFZ2WZCZ3C6CLpt9ec2LA3Zdpm17ynXac"]
+      }],
+      "wif 1 - Non Compressed": ["5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF", {
+        "metadata": {},
+        "privateKeys": [ "5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF"]
+      }],
+      "wif 2 - Non Compressed": ["5Hpu8shonqW1TomfUat1RQBjyabiwyQYqara7nUM3YRGU9hx8Eg", {
+        "metadata": {},
+        "privateKeys": [ "5Hpu8shonqW1TomfUat1RQBjyabiwyQYqara7nUM3YRGU9hx8Eg"]
+      }],
+      "wif 3 - Non Compressed": ["5JJY5LkdXsRSh1X2pLMezk3f11wHkSBJM1AmJ6zKJyzJtQnAe3F", {
+        "metadata": {},
+        "privateKeys": [ "5JJY5LkdXsRSh1X2pLMezk3f11wHkSBJM1AmJ6zKJyzJtQnAe3F"]
       }],
       "backwards compatible bip70": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=0.11&r=https://merchant.com/pay.php?h%3D2a8628fc2fbe", {
         "publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX",
@@ -236,13 +252,29 @@
         "metadata": {},
         "masterPriv": "xprv9twnbyJhBAAVPsntF54SCKCDfJgbBemavSquVwYdFkacHT2U1MHcc4AC9Gxehtv7oFfSUor2b9xomvNCPPgjfXD4FTWcMPUSeC8HEfskehz"
       }],
-      "wif 1": ["L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2", {
+      "wif 1 - Compressed": ["T5t9N5NirTH5Bo65CEm1Z5W7jyu9ezbuMvPzuD2DoPnPGJkmpq8B", {
         "metadata": {},
-        "privateKeys": [ "L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2"]
+        "privateKeys": [ "T5t9N5NirTH5Bo65CEm1Z5W7jyu9ezbuMvPzuD2DoPnPGJkmpq8B"]
       }],
-      "wif 2": ["KzjzkvbBjyaVeECBJFFv5eTwRrsQ4eBg8BNoPpr1z6tjyua6KGEd", {
+      "wif 2 - Compressed": ["T3A5JtqoKrmR4AVEdXdmbB6kGLpt5iWp54cUw3udZuHX3PKLymvR", {
         "metadata": {},
-        "privateKeys": [ "KzjzkvbBjyaVeECBJFFv5eTwRrsQ4eBg8BNoPpr1z6tjyua6KGEd"]
+        "privateKeys": [ "T3A5JtqoKrmR4AVEdXdmbB6kGLpt5iWp54cUw3udZuHX3PKLymvR"]
+      }],
+      "wif 3 - Compressed": ["T4ZYxYMAE85w5moF5FBCiQjLiorr346tyPkz4m8tHCQBXsjL8zm7", {
+        "metadata": {},
+        "privateKeys": [ "T4ZYxYMAE85w5moF5FBCiQjLiorr346tyPkz4m8tHCQBXsjL8zm7"]
+      }],
+      "wif 1 - Non Compressed": ["6vzHEqCk5kUSL8KBZr4XhfiDTwiihLKaMAdb6dhhq34tabicz73", {
+        "metadata": {},
+        "privateKeys": [ "6vzHEqCk5kUSL8KBZr4XhfiDTwiihLKaMAdb6dhhq34tabicz73"]
+      }],
+      "wif 2 - Non Compressed": ["6vNUJU9VXjs79rr9jvqsoXFekNStYnYMnC287mnAovUhnTbA8cF", {
+        "metadata": {},
+        "privateKeys": [ "6vNUJU9VXjs79rr9jvqsoXFekNStYnYMnC287mnAovUhnTbA8cF"]
+      }],
+      "wif 3 - Non Compressed": ["6vusDCJqPM7KVAiMzXL8F27MWTfZ5sw8XJL1XT9wwgDMhfcugVQ", {
+        "metadata": {},
+        "privateKeys": [ "6vusDCJqPM7KVAiMzXL8F27MWTfZ5sw8XJL1XT9wwgDMhfcugVQ"]
       }],
       "backwards compatible bip70": ["litecoin:3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN?amount=0.11&r=https://merchant.com/pay.php?h%3D2a8628fc2fbe", {
         "publicAddress": "MLh6oJm8tWbTNKTXpiREMoAMqE3CbYzgi6",
@@ -394,6 +426,30 @@
         "nativeAmount": "1234567890000",
         "currencyCode": "BCH",
         "legacyAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu"
+      }],
+      "wif 1 - Compressed": ["L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2", {
+        "metadata": {},
+        "privateKeys": [ "L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2"]
+      }],
+      "wif 2 - Compressed": ["KzjzkvbBjyaVeECBJFFv5eTwRrsQ4eBg8BNoPpr1z6tjyua6KGEd", {
+        "metadata": {},
+        "privateKeys": [ "KzjzkvbBjyaVeECBJFFv5eTwRrsQ4eBg8BNoPpr1z6tjyua6KGEd"]
+      }],
+      "wif 3 - Compressed": ["Kzfwq67yZCotkVShh6tvFZ2WZCZ3C6CLpt9ec2LA3Zdpm17ynXac", {
+        "metadata": {},
+        "privateKeys": [ "Kzfwq67yZCotkVShh6tvFZ2WZCZ3C6CLpt9ec2LA3Zdpm17ynXac"]
+      }],
+      "wif 1 - Non Compressed": ["5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF", {
+        "metadata": {},
+        "privateKeys": [ "5Kb8kLf9zgWQnogidDA76MzPL6TsZZY36hWXMssSzNydYXYB9KF"]
+      }],
+      "wif 2 - Non Compressed": ["5Hpu8shonqW1TomfUat1RQBjyabiwyQYqara7nUM3YRGU9hx8Eg", {
+        "metadata": {},
+        "privateKeys": [ "5Hpu8shonqW1TomfUat1RQBjyabiwyQYqara7nUM3YRGU9hx8Eg"]
+      }],
+      "wif 3 - Non Compressed": ["5JJY5LkdXsRSh1X2pLMezk3f11wHkSBJM1AmJ6zKJyzJtQnAe3F", {
+        "metadata": {},
+        "privateKeys": [ "5JJY5LkdXsRSh1X2pLMezk3f11wHkSBJM1AmJ6zKJyzJtQnAe3F"]
       }]
     },
     "encodeUri": {
@@ -486,6 +542,18 @@
         "metadata": {},
         "nativeAmount": "1234567890000",
         "currencyCode": "XZC"
+      }],
+      "wif 1 - Non Compressed": ["83FPakvmYu5GD8v3GzXQmbLRef9WpnuCU7hnkMqdMo8fFSG6TX6", {
+        "metadata": {},
+        "privateKeys": [ "83FPakvmYu5GD8v3GzXQmbLRef9WpnuCU7hnkMqdMo8fFSG6TX6"]
+      }],
+      "wif 2 - Non Compressed": ["84hKkFAhnsnaJiAhceBynC2ZsZegSRXmeaPh7mwtwsTtFWi5xAs", {
+        "metadata": {},
+        "privateKeys": [ "84hKkFAhnsnaJiAhceBynC2ZsZegSRXmeaPh7mwtwsTtFWi5xAs"]
+      }],
+      "wif 3 - Non Compressed": ["83nie713kHUxvPUMzbTXvU7NDA45nK9nQ34PPqmibSumzbqmopG", {
+        "metadata": {},
+        "privateKeys": [ "83nie713kHUxvPUMzbTXvU7NDA45nK9nQ34PPqmibSumzbqmopG"]
       }]
     },
     "encodeUri": {
@@ -581,6 +649,30 @@
         "metadata": {},
         "nativeAmount": "1234567890000",
         "currencyCode": "FTC"
+      }],
+      "wif 1 - Compressed": ["N47FY4qJv91pFpYyFFwryQ6TtnQyZoPwHhxfSnwK7G7hfodE6rhV", {
+        "metadata": {},
+        "privateKeys": [ "N47FY4qJv91pFpYyFFwryQ6TtnQyZoPwHhxfSnwK7G7hfodE6rhV"]
+      }],
+      "wif 2 - Compressed": ["N53U9kfZWsLMZq9o3iPZELGpbdTV3m8xS7MXSPHzqECSfjirLgeg", {
+        "metadata": {},
+        "privateKeys": [ "N53U9kfZWsLMZq9o3iPZELGpbdTV3m8xS7MXSPHzqECSfjirLgeg"]
+      }],
+      "wif 3 - Compressed": ["N4ScbPqYDbVhLJwdM8RZwAkEYbiUvzRds9a9kJr16HMrmkYeVQ5S", {
+        "metadata": {},
+        "privateKeys": [ "N4ScbPqYDbVhLJwdM8RZwAkEYbiUvzRds9a9kJr16HMrmkYeVQ5S"]
+      }],
+      "wif 1 - Non Compressed": ["5mqebQ4pSz8iSRG2qKCozVwreLk9xPqZi8PatU4XhvUR74RsHHX", {
+        "metadata": {},
+        "privateKeys": [ "5mqebQ4pSz8iSRG2qKCozVwreLk9xPqZi8PatU4XhvUR74RsHHX"]
+      }],
+      "wif 2 - Non Compressed": ["5mXfNw2PmToNzMjCVbKHbwkLCLU6rXdxiPGEMXUz4xdQHFocors", {
+        "metadata": {},
+        "privateKeys": [ "5mXfNw2PmToNzMjCVbKHbwkLCLU6rXdxiPGEMXUz4xdQHFocors"]
+      }],
+      "wif 3 - Non Compressed": ["5mYYGU3ixuUq3o55iTbsBLwPonjbToHBqTvXtKzzSqPg3Gpjhvd", {
+        "metadata": {},
+        "privateKeys": [ "5mYYGU3ixuUq3o55iTbsBLwPonjbToHBqTvXtKzzSqPg3Gpjhvd"]
       }]
     },
     "encodeUri": {
