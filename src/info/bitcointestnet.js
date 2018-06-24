@@ -79,8 +79,6 @@ export const bitcoinTestnetInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://test-insight.bitpay.com//tx/%s',
 
   // Images:
-  symbolImage:
-    `${imageServerUrl}/bitcoin-logo-color-64.png`,
-  symbolImageDarkMono:
-    `${imageServerUrl}/bitcoin-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/bitcoin-logo-color-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/bitcoin-logo-grey-64.png`
 }

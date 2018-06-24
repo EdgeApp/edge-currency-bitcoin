@@ -82,8 +82,6 @@ export const bitcoinInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://blockchair.com/bitcoin/transaction/%s',
 
   // Images:
-  symbolImage:
-    `${imageServerUrl}/bitcoin-logo-color-64.png`,
-  symbolImageDarkMono:
-    `${imageServerUrl}/bitcoin-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/bitcoin-logo-color-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/bitcoin-logo-grey-64.png`
 }

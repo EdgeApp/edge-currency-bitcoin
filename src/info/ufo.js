@@ -67,8 +67,6 @@ export const ufoInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://explorer.ufobject.com/tx/%s',
 
   // Images:
-  symbolImage:
-    `${imageServerUrl}/ufo_64_white.png`,
-  symbolImageDarkMono:
-    `${imageServerUrl}/ufo_64_87939D.png`
+  symbolImage: `${imageServerUrl}/ufo_64_white.png`,
+  symbolImageDarkMono: `${imageServerUrl}/ufo_64_87939D.png`
 }
