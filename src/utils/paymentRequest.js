@@ -1,11 +1,9 @@
 // @flow
 import bcoin from 'bcoin'
 import parse from 'url-parse'
-// $FlowFixMe
 import type { EdgePaymentProtocolInfo } from 'edge-core-js'
 import { toNewFormat } from './addressFormat/addressFormatIndex.js'
 
-// $FlowFixMe
 export const parsePayment = (
   paymentBuffer: Buffer,
   network: string,
@@ -32,7 +30,7 @@ export const parsePayment = (
     })
   }
 
-  const edgePaymentProtocolInfo = {
+  const edgePaymentProtocolInfo: EdgePaymentProtocolInfo = {
     nativeAmount: `${nativeAmount}`,
     merchant: merchantData || '',
     memo: memo || '',

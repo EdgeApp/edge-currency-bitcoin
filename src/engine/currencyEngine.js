@@ -5,7 +5,6 @@ import type {
   EdgeCurrencyEngine,
   EdgeCurrencyEngineOptions,
   EdgeCurrencyEngineCallbacks,
-  // $FlowFixMe
   EdgePaymentProtocolInfo,
   EdgeFreshAddress,
   EdgeSpendInfo,
@@ -549,7 +548,6 @@ export class CurrencyEngine {
     return end
   }
 
-  // $FlowFixMe
   async getPaymentProtocolInfo (
     paymentProtocolURL: string
   ): Promise<EdgePaymentProtocolInfo> {
@@ -562,6 +560,7 @@ export class CurrencyEngine {
       return parsePayment(buf, this.network, this.currencyInfo.currencyCode)
     } catch (err) {
       console.log(`${this.walletId} - ${err.toString()}`)
+      throw err
     }
   }
 
