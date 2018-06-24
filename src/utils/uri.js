@@ -56,7 +56,7 @@ export const parseUri = (
   currencyInfo: EdgeCurrencyInfo
 ): EdgeParsedUri => {
   const result: EdgeParsedUri = { metadata: {} }
-  const parsedUri = parse(uri, true)
+  const parsedUri = parse(uri, {}, true)
   const { protocol, pathname, query } = parsedUri
   const currencyName = currencyInfo.currencyName.toLowerCase()
   const network = currencyInfo.defaultSettings.network.type
