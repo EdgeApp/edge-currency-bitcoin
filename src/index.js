@@ -1,9 +1,9 @@
 // @flow
 import type {
-  AbcCorePluginOptions,
-  AbcCurrencyInfo,
-  AbcCurrencyPlugin,
-  AbcCurrencyPluginFactory
+  EdgeCorePluginOptions,
+  EdgeCurrencyInfo,
+  EdgeCurrencyPlugin,
+  EdgeCurrencyPluginFactory
 } from 'edge-core-js'
 import bcoin from 'bcoin'
 
@@ -30,13 +30,13 @@ import { bcoinExtender } from './utils/bcoinExtender'
  * Makes a core plugin factory, given the currencyInfo for that coin.
  */
 function makePluginFactory (
-  currencyInfo: AbcCurrencyInfo
-): AbcCurrencyPluginFactory {
+  currencyInfo: EdgeCurrencyInfo
+): EdgeCurrencyPluginFactory {
   return {
     pluginType: 'currency',
     pluginName: currencyInfo.pluginName,
 
-    makePlugin (options: AbcCorePluginOptions): Promise<AbcCurrencyPlugin> {
+    makePlugin (options: EdgeCorePluginOptions): Promise<EdgeCurrencyPlugin> {
       const plugin = new CurrencyPlugin(options, currencyInfo)
       // Extend bcoin to support this plugin currency info
       // and faster crypto if possible

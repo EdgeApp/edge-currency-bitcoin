@@ -69,8 +69,6 @@ export const bitcoincashTestnetInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://blockchair.com/bitcoin-cash/transaction/%s',
 
   // Images:
-  symbolImage:
-    `${imageServerUrl}/bitcoincash-logo-color-64.png`,
-  symbolImageDarkMono:
-    `${imageServerUrl}/bitcoincash-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/bitcoincash-logo-color-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/bitcoincash-logo-grey-64.png`
 }

@@ -2,7 +2,6 @@
 import EventEmitter from 'events'
 
 import { makeFakeIos } from 'edge-core-js'
-import type { AbcSpendInfo } from 'edge-core-js'
 import { assert } from 'chai'
 import { before, describe, it } from 'mocha'
 import fetch from 'node-fetch'
@@ -123,16 +122,14 @@ for (const fixture of fixtures) {
     })
 
     it('Make Engine', function () {
+      const { id, optionalSettings } = fixture['Make Engine']
       return plugin
         .makeEngine(
-          { type: WALLET_TYPE, keys, id: '1' },
+          { type: WALLET_TYPE, keys, id },
           {
             callbacks,
             walletLocalFolder: walletLocalFolder.folder(DATA_STORE_FOLDER),
-            optionalSettings: {
-              enableOverrideServers: true,
-              electrumServers: [['testnetnode.arihanc.com', '51001']]
-            }
+            optionalSettings
           }
         )
         .then(e => {
@@ -177,68 +174,47 @@ for (const fixture of fixtures) {
   })
 
   describe(`Is Address Used for Wallet type ${WALLET_TYPE} from cache`, function () {
-    it('Checking a wrong formated address', function (done) {
-      try {
-        engine.isAddressUsed('TestErrorWithWrongAddress')
-      } catch (e) {
-        assert(e, 'Should throw')
-        assert.equal(e.message, 'Wrong formatted address')
+    const testCases = fixture['Address used from cache']
+    const wrongFormat = testCases.wrongFormat || []
+    const notInWallet = testCases.notInWallet || []
+    const empty = testCases.empty || {}
+    const nonEmpty = testCases.nonEmpty || {}
+
+    wrongFormat.forEach(address => {
+      it('Checking a wrong formated address', function (done) {
+        try {
+          engine.isAddressUsed(address)
+        } catch (e) {
+          assert(e, 'Should throw')
+          assert.equal(e.message, 'Wrong formatted address')
+          done()
+        }
+      })
+    })
+
+    notInWallet.forEach(address => {
+      it("Checking an address we don't own", function () {
+        try {
+          assert.equal(engine.isAddressUsed(address), false)
+        } catch (e) {
+          assert(e, 'Should throw')
+          assert.equal(e.message, 'Address not found in wallet')
+        }
+      })
+    })
+
+    Object.keys(empty).forEach(test => {
+      it(`Checking an empty ${test}`, function (done) {
+        assert.equal(engine.isAddressUsed(empty[test]), false)
         done()
-      }
+      })
     })
 
-    it("Checking an address we don't own", function () {
-      try {
-        assert.equal(
-          engine.isAddressUsed('mnSmvy2q4dFNKQF18EBsrZrS7WEy6CieEE'),
-          false
-        )
-      } catch (e) {
-        assert(e, 'Should throw')
-        assert.equal(e.message, 'Address not found in wallet')
-      }
-    })
-
-    // it('Checking an empty P2WSH address', function (done) {
-    //   assert.equal(engine.isAddressUsed('tb1qng4wvp6chgm6erdc8hcgn7ewpkv8gqlm6m6ja6'), false)
-    //   done()
-    // })
-
-    // it('Checking a non empty P2WSH address', function (done) {
-    //   assert.equal(engine.isAddressUsed('tb1qprslq433fsq8pjdw3tu3x3ynk5f486ngp8lrxu'), true)
-    //   done()
-    // })
-
-    it('Checking an empty P2SH address', function (done) {
-      assert.equal(
-        engine.isAddressUsed('2N9DbpGaQEeLLZgPQP4gc9oKkrFHdsj5Eew'),
-        false
-      )
-      done()
-    })
-
-    it('Checking a non empty P2SH address 1', function (done) {
-      assert.equal(
-        engine.isAddressUsed('2MwLo2ghJeXTgpDccHGcsTbdS9YVfM3K5GG'),
-        true
-      )
-      done()
-    })
-
-    it('Checking a non empty P2SH address 2', function (done) {
-      assert.equal(
-        engine.isAddressUsed('2MxRjw65NxR4DsRj2z1f5xFnKkU5uMRCsoT'),
-        true
-      )
-      done()
-    })
-
-    it('Checking a non empty P2SH address 3', function (done) {
-      assert.equal(
-        engine.isAddressUsed('2MxvxJh44wq17vhzGqFcAsuYsVmdEJKWuFV'),
-        true
-      )
-      done()
+    Object.keys(nonEmpty).forEach(test => {
+      it(`Checking a non empty ${test}`, function (done) {
+        assert.equal(engine.isAddressUsed(nonEmpty[test]), true)
+        done()
+      })
     })
   })
 
@@ -272,51 +248,55 @@ for (const fixture of fixtures) {
   })
 
   describe('Should Add Gap Limit Addresses', function () {
+    const gapAddresses = fixture['Add Gap Limit']
+    const derived = gapAddresses.derived || []
+    // const future = gapAddresses.future || []
+
     it('Add Empty Array', function (done) {
       engine.addGapLimitAddresses([])
       done()
     })
 
     it('Add Already Derived Addresses', function (done) {
-      engine.addGapLimitAddresses([
-        '2MvNRPakFUtKSe7ZYcyextQd3sfSEKiqUHY',
-        '2MxRjw65NxR4DsRj2z1f5xFnKkU5uMRCsoT'
-      ])
+      engine.addGapLimitAddresses(derived)
       done()
     })
 
     // it('Add Future Addresses', function (done) {
-    //   engine.addGapLimitAddresses([])
+    //   engine.addGapLimitAddresses(future)
     //   done()
     // })
   })
 
   describe('Should start engine', function () {
     it('Get BlockHeight', function (done) {
+      const { uri, defaultHeight } = fixture.BlockHeight
       this.timeout(10000)
-      request.get(
-        'https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY',
-        (err, res, body) => {
-          assert(!err, 'getting block height from a second source')
-          let thirdPartyHeight = parseInt(JSON.parse(body).height)
-          if (!thirdPartyHeight || isNaN(thirdPartyHeight)) {
-            thirdPartyHeight = 1286739
+      const testHeight = () => {
+        emitter.on('onBlockHeightChange', height => {
+          if (height >= heightExpected) {
+            emitter.removeAllListeners('onBlockHeightChange')
+            assert(engine.getBlockHeight() >= heightExpected, 'Block height')
+            done() // Can be "done" since the promise resolves before the event fires but just be on the safe side
           }
-          emitter.on('onBlockHeightChange', height => {
-            if (height >= thirdPartyHeight) {
-              emitter.removeAllListeners('onBlockHeightChange')
-              assert(
-                engine.getBlockHeight() >= thirdPartyHeight,
-                'Block height'
-              )
-              done() // Can be "done" since the promise resolves before the event fires but just be on the safe side
-            }
-          })
-          engine.startEngine().catch(e => {
-            console.log('startEngine error', e, e.message)
-          })
-        }
-      )
+        })
+        engine.startEngine().catch(e => {
+          console.log('startEngine error', e, e.message)
+        })
+      }
+      let heightExpected = defaultHeight
+      if (uri) {
+        request.get(uri, (err, res, body) => {
+          assert(!err, 'getting block height from a second source')
+          const thirdPartyHeight = parseInt(JSON.parse(body).height)
+          if (thirdPartyHeight && !isNaN(thirdPartyHeight)) {
+            heightExpected = thirdPartyHeight
+          }
+          testHeight()
+        })
+      } else {
+        testHeight()
+      }
     })
   })
 
@@ -357,8 +337,11 @@ for (const fixture of fixtures) {
             address.publicAddress
           }?api_key=MY_APIKEY`,
           (err, res, body) => {
-            const code = parseInt(JSON.parse(body).code)
-            if (!err && code !== 429) {
+            let code = null
+            try {
+              code = parseInt(JSON.parse(body).code)
+            } catch (e) {}
+            if (!err && code && code !== 429) {
               const thirdPartyBalance = parseInt(JSON.parse(body).received)
               assert(!err, 'getting address incoming txs from a second source')
               assert(
@@ -383,6 +366,9 @@ for (const fixture of fixtures) {
   })
 
   describe(`Make Spend and Sign for Wallet type ${WALLET_TYPE}`, function () {
+    const spendTests = fixture.Spend || {}
+    const insufficientTests = fixture.InsufficientFundsError || {}
+
     it('Should fail since no spend target is given', function () {
       const abcSpendInfo = {
         networkFeeOption: 'high',
@@ -396,336 +382,62 @@ for (const fixture of fixtures) {
       })
     })
 
-    it('Should build transaction with low fee', function () {
-      // $FlowFixMe
-      const templateSpend: AbcSpendInfo = {
-        networkFeeOption: 'low',
-        metadata: {
-          name: 'Transfer to College Fund',
-          category: 'Transfer:Wallet:College Fund'
-        },
-        spendTargets: [
-          {
-            currencyCode: 'BTC',
-            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
-            nativeAmount: '210000' // 0.021 BTC
-          },
-          {
-            currencyCode: 'BTC',
-            publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
-            nativeAmount: '420000' // 0.042 BTC
-          }
-        ]
-      }
-      // $FlowFixMe
-      return engine
-        .makeSpend(templateSpend)
-        .then(a => {
-          return engine.signTx(a)
-        })
-        .then(a => {
-          // console.log('sign', a)
-        })
+    Object.keys(spendTests).forEach(test => {
+      it(`Should build transaction with ${test}`, function () {
+        this.timeout(10000)
+        // $FlowFixMe
+        const templateSpend = spendTests[test]
+        // $FlowFixMe
+        return engine
+          .makeSpend(templateSpend)
+          .then(a => {
+            return engine.signTx(a)
+          })
+          .then(a => {
+            // console.log('sign', a)
+          })
+      })
     })
 
-    it('Should build transaction with low standard fee', function () {
-      // $FlowFixMe
-      const templateSpend: AbcSpendInfo = {
-        networkFeeOption: 'standard',
-        metadata: {
-          name: 'Transfer to College Fund',
-          category: 'Transfer:Wallet:College Fund'
-        },
-        spendTargets: [
-          {
-            currencyCode: 'BTC',
-            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
-            nativeAmount: '17320'
-          }
-        ]
-      }
-      return engine
-        .makeSpend(templateSpend)
-        .then(a => {
-          return engine.signTx(a)
-        })
-        .then(a => {
-          // console.log('sign', a)
-        })
-    })
-
-    it('Should build transaction with middle standard fee', function () {
-      // $FlowFixMe
-      const templateSpend: AbcSpendInfo = {
-        networkFeeOption: 'standard',
-        metadata: {
-          name: 'Transfer to College Fund',
-          category: 'Transfer:Wallet:College Fund'
-        },
-        spendTargets: [
-          {
-            currencyCode: 'BTC',
-            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
-            nativeAmount: '43350000'
-          }
-        ]
-      }
-      return engine
-        .makeSpend(templateSpend)
-        .then(a => {
-          return engine.signTx(a)
-        })
-        .then(a => {
-          // console.log('sign', a)
-        })
-    })
-
-    it('Should build transaction with high standard fee', function () {
-      // $FlowFixMe
-      const templateSpend: AbcSpendInfo = {
-        networkFeeOption: 'standard',
-        metadata: {
-          name: 'Transfer to College Fund',
-          category: 'Transfer:Wallet:College Fund'
-        },
-        spendTargets: [
-          {
-            currencyCode: 'BTC',
-            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
-            nativeAmount: '86700000'
-          },
-          {
-            currencyCode: 'BTC',
-            publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
-            nativeAmount: '420000' // 0.042 BTC
-          }
-        ]
-      }
-      return engine
-        .makeSpend(templateSpend)
-        .then(a => {
-          return engine.signTx(a)
-        })
-        .then(a => {
-          // console.log('sign', a)
-        })
-    })
-
-    it('Should build transaction with high fee', function () {
-      // $FlowFixMe
-      const templateSpend: AbcSpendInfo = {
-        networkFeeOption: 'high',
-        metadata: {
-          name: 'Transfer to College Fund',
-          category: 'Transfer:Wallet:College Fund'
-        },
-        spendTargets: [
-          {
-            currencyCode: 'BTC',
-            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
-            nativeAmount: '210000' // 0.021 BTC
-          },
-          {
-            currencyCode: 'BTC',
-            publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
-            nativeAmount: '420000' // 0.042 BTC
-          }
-        ]
-      }
-      return engine
-        .makeSpend(templateSpend)
-        .then(a => {
-          return engine.signTx(a)
-        })
-        .then(a => {
-          // console.log('sign', a)
-        })
-    })
-
-    it('Should build transaction with custom fee', function () {
-      const templateSpend: AbcSpendInfo = {
-        networkFeeOption: 'custom',
-        customNetworkFee: { satPerByte: '1000' },
-        metadata: {
-          name: 'Transfer to College Fund',
-          category: 'Transfer:Wallet:College Fund'
-        },
-        spendTargets: [
-          {
-            currencyCode: 'BTC',
-            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
-            nativeAmount: '210000' // 0.021 BTC
-          },
-          {
-            currencyCode: 'BTC',
-            publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
-            nativeAmount: '420000' // 0.042 BTC
-          }
-        ]
-      }
-      // $FlowFixMe
-      return engine
-        .makeSpend(templateSpend)
-        .then(function (a) {
-          // console.log('makeSpend', a)
-          return engine.signTx(a)
-        })
-        .then(function (a) {
-          // console.log('signTx', a)
-          // console.log('signTx', a.otherParams.bcoinTx.inputs)
-        })
-    })
-
-    it('Should throw InsufficientFundsError', function () {
-      // $FlowFixMe
-      const templateSpend: AbcSpendInfo = {
-        networkFeeOption: 'high',
-        metadata: {
-          name: 'Transfer to College Fund',
-          category: 'Transfer:Wallet:College Fund'
-        },
-        spendTargets: [
-          {
-            currencyCode: 'BTC',
-            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
-            nativeAmount: '2100000000' // 0.021 BTC
-          },
-          {
-            currencyCode: 'BTC',
-            publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
-            nativeAmount: '420000' // 0.042 BTC
-          }
-        ]
-      }
-      // $FlowFixMe
-      return engine
-        .makeSpend(templateSpend)
-        .catch(e => assert.equal(e.message, 'InsufficientFundsError'))
-    })
-
-    it('Should throw InsufficientFundsError for a really big amount', function () {
-      // $FlowFixMe
-      const templateSpend: AbcSpendInfo = {
-        networkFeeOption: 'high',
-        metadata: {
-          name: 'Transfer to College Fund',
-          category: 'Transfer:Wallet:College Fund'
-        },
-        spendTargets: [
-          {
-            currencyCode: 'BTC',
-            publicAddress: '2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74',
-            nativeAmount: '9999999999999000000000' // 0.021 BTC
-          },
-          {
-            currencyCode: 'BTC',
-            publicAddress: 'tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q',
-            nativeAmount: '9999999999999000000000' // 0.042 BTC
-          }
-        ]
-      }
-      // $FlowFixMe
-      return engine
-        .makeSpend(templateSpend)
-        .catch(e => assert.equal(e.message, 'InsufficientFundsError'))
+    Object.keys(insufficientTests).forEach(test => {
+      it(`Should throw InsufficientFundsError for ${test}`, function () {
+        // $FlowFixMe
+        const templateSpend = insufficientTests[test]
+        // $FlowFixMe
+        return engine
+          .makeSpend(templateSpend)
+          .catch(e => assert.equal(e.message, 'InsufficientFundsError'))
+      })
     })
   })
 
   describe(`Sweep Keys and Sign for Wallet type ${WALLET_TYPE}`, function () {
-    it('Should build transaction with low fee', function () {
-      // $FlowFixMe
-      const templateSpend: AbcSpendInfo = {
-        networkFeeOption: 'low',
-        metadata: {
-          name: 'Transfer to College Fund',
-          category: 'Transfer:Wallet:College Fund'
-        },
-        privateKeys: ['cQSzMGPwF7uWP2jRcLxndSvgepeVXJ1DLVrDu7gRJS3kZDmHHXsp']
-      }
-      // $FlowFixMe
-      return engine
-        .sweepPrivateKeys(templateSpend)
-        .then(a => {
-          return engine.signTx(a)
-        })
-        .then(a => {
-          // console.log('sign', a)
-        })
-    }).timeout(5000)
+    const sweepTests = fixture.Sweep || {}
 
-    it('Should build transaction with low standard fee', function () {
-      // $FlowFixMe
-      const templateSpend: AbcSpendInfo = {
-        networkFeeOption: 'low',
-        metadata: {
-          name: 'Transfer to College Fund',
-          category: 'Transfer:Wallet:College Fund'
-        },
-        privateKeys: ['cQSzMGPwF7uWP2jRcLxndSvgepeVXJ1DLVrDu7gRJS3kZDmHHXsp']
-      }
-      return engine
-        .sweepPrivateKeys(templateSpend)
-        .then(a => {
-          return engine.signTx(a)
-        })
-        .then(a => {
-          // console.log('sign', a)
-        })
-    }).timeout(5000)
-
-    it('Should build transaction with high fee', function () {
-      // $FlowFixMe
-      const templateSpend: AbcSpendInfo = {
-        networkFeeOption: 'high',
-        metadata: {
-          name: 'Transfer to College Fund',
-          category: 'Transfer:Wallet:College Fund'
-        },
-        privateKeys: ['cQSzMGPwF7uWP2jRcLxndSvgepeVXJ1DLVrDu7gRJS3kZDmHHXsp']
-      }
-      return engine
-        .sweepPrivateKeys(templateSpend)
-        .then(a => {
-          return engine.signTx(a)
-        })
-        .then(a => {
-          // console.log('sign', a)
-        })
-    }).timeout(5000)
-
-    it('Should build transaction with custom fee', function () {
-      const templateSpend: AbcSpendInfo = {
-        networkFeeOption: 'custom',
-        customNetworkFee: { satPerByte: '1000' },
-        metadata: {
-          name: 'Transfer to College Fund',
-          category: 'Transfer:Wallet:College Fund'
-        },
-        privateKeys: ['cQSzMGPwF7uWP2jRcLxndSvgepeVXJ1DLVrDu7gRJS3kZDmHHXsp']
-      }
-      // $FlowFixMe
-      return engine
-        .sweepPrivateKeys(templateSpend)
-        .then(function (a) {
-          // console.log('makeSpend', a)
-          return engine.signTx(a)
-        })
-        .then(function (a) {
-          // console.log('signTx', a)
-          // console.log('signTx', a.otherParams.bcoinTx.inputs)
-        })
-    }).timeout(5000)
+    Object.keys(sweepTests).forEach(test => {
+      it(`Should build transaction with ${test}`, function () {
+        this.timeout(10000)
+        // $FlowFixMe
+        const templateSpend = sweepTests[test]
+        return engine
+          .sweepPrivateKeys(templateSpend)
+          .then(a => {
+            return engine.signTx(a)
+          })
+          .then(a => {
+            // console.log('sign', a)
+          })
+      })
+    })
   })
 
   describe(`Stop Engine for Wallet type ${WALLET_TYPE}`, function () {
     it('dump the wallet data', function (done) {
       const dataDump = engine.dumpData()
-      assert(dataDump.walletId === '1', 'walletId')
-      assert(
-        dataDump.walletType === 'wallet:bitcoin-bip49-testnet',
-        'walletType'
-      )
-      assert(dataDump.pluginType === 'bitcointestnet', 'pluginType')
+      const { id, network } = fixture['Make Engine']
+      assert(dataDump.walletId === id, 'walletId')
+      assert(dataDump.walletType === WALLET_TYPE, 'walletType')
+      assert(dataDump.pluginType === network, 'pluginType')
       done()
     })
 

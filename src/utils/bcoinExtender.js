@@ -1,5 +1,5 @@
 // @flow
-import type { AbcCurrencyInfo } from 'edge-core-js'
+import type { EdgeCurrencyInfo } from 'edge-core-js'
 import { patchBcashTX } from './bcashExtender.js'
 import {
   patchDerivePublic,
@@ -13,7 +13,7 @@ let patchedForCash = false
 
 export const bcoinExtender = (
   bcoin: any,
-  pluginsInfo: AbcCurrencyInfo,
+  pluginsInfo: EdgeCurrencyInfo,
   secp256k1?: any = null,
   pbkdf2?: any = null
 ) => {

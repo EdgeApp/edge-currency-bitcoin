@@ -1,5 +1,5 @@
 // @flow
-import type { AbcCurrencyInfo, AbcIo, DiskletFolder } from 'edge-core-js'
+import type { EdgeCurrencyInfo, EdgeIo, DiskletFolder } from 'edge-core-js'
 import type { EngineState } from '../engine/engineState.js'
 import { ServerCache } from './serverCache.js'
 
@@ -41,7 +41,7 @@ export class PluginState extends ServerCache {
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------
-  io: AbcIo
+  io: EdgeIo
   defaultServers: Array<string>
   infoServerUris: string
 
@@ -52,7 +52,7 @@ export class PluginState extends ServerCache {
   serverCacheJson: Object
   pluginName: string
 
-  constructor (io: AbcIo, currencyInfo: AbcCurrencyInfo) {
+  constructor (io: EdgeIo, currencyInfo: EdgeCurrencyInfo) {
     super()
     this.height = 0
     this.headerCache = {}

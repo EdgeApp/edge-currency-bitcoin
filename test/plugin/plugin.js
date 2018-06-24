@@ -110,31 +110,21 @@ for (const fixture of fixtures) {
 
     before('Plugin', function () {
       CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
-        assert.equal(
-          currencyPlugin.currencyInfo.currencyCode,
-          fixture['Test Currency code']
-        )
         plugin = currencyPlugin
       })
     })
     Object.keys(fixture['parseUri']).forEach(test => {
-      it(test, function () {
-        const parsedUri = plugin.parseUri(fixture['parseUri'][test][0])
-        if (parsedUri.seed) {
-          assert.equal(parsedUri.seed, fixture['parseUri'][test][1])
-        } else if (parsedUri.masterPriv) {
-          assert.equal(parsedUri.masterPriv, fixture['parseUri'][test][1])
-        } else if (parsedUri.privateKeys) {
-          assert.deepEqual(parsedUri.privateKeys, fixture['parseUri'][test][1])
-        } else {
-          assert.equal(parsedUri.publicAddress, fixture['parseUri'][test][1])
-          assert.equal(parsedUri.nativeAmount, fixture['parseUri'][test][2])
-          assert.equal(parsedUri.currencyCode, fixture['parseUri'][test][3])
-          assert.equal(parsedUri.metadata.name, fixture['parseUri'][test][4])
-          assert.equal(parsedUri.metadata.message, fixture['parseUri'][test][5])
-          assert.equal(parsedUri.legacyAddress, fixture['parseUri'][test][6])
-        }
-      })
+      if (fixture['parseUri'][test].length === 2) {
+        it(test, function () {
+          const parsedUri = plugin.parseUri(fixture['parseUri'][test][0])
+          const expectedParsedUri = fixture['parseUri'][test][1]
+          assert.deepEqual(parsedUri, expectedParsedUri)
+        })
+      } else {
+        it(test, function () {
+          assert.throws(() => plugin.parseUri(fixture['parseUri'][test][0]))
+        })
+      }
     })
   })
 
@@ -147,17 +137,17 @@ for (const fixture of fixtures) {
       })
     })
     Object.keys(fixture['encodeUri']).forEach(test => {
-      it(test, function () {
-        if (fixture['encodeUri'][test].length === 2) {
+      if (fixture['encodeUri'][test].length === 2) {
+        it(test, function () {
           const encodedUri = plugin.encodeUri(fixture['encodeUri'][test][0])
-          assert.equal(encodedUri, fixture['encodeUri'][test][1])
-        }
-      })
-    })
-    it('invalid currencyCode', function () {
-      assert.throws(() => {
-        plugin.encodeUri(fixture['encodeUri']['invalid currencyCode'][0])
-      })
+          const expectedEncodeUri = fixture['encodeUri'][test][1]
+          assert.equal(encodedUri, expectedEncodeUri)
+        })
+      } else {
+        it(test, function () {
+          assert.throws(() => plugin.encodeUri(fixture['encodeUri'][test][0]))
+        })
+      }
     })
   })
 }

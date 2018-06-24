@@ -14,46 +14,218 @@
       "type": "shitcoin",
       "keys": { "bitcoinKeyz" :"12345678abcd" }
     },
-    "parseUri": {
-      "address only": ["1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX", "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"],
-      "uri address": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX", "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"],
-      "uri address with amount": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=12345.6789", "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX", "1234567890000", "BTC"],
-      "uri address with amount & label": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.56789&label=Johnny%20Bitcoin", "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX", "123456789000", "BTC", "Johnny Bitcoin"],
-      "uri address with amount, label & message": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.56789&label=Johnny%20Bitcoin&message=Hello%20World,%20I%20miss%20you%20!", "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX", "123456789000", "BTC", "Johnny Bitcoin", "Hello World, I miss you !"],
-      "uri address with unsupported param": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?unsupported=helloworld&amount=12345.6789", "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX", "1234567890000", "BTC"]
+    "Make Engine": {
+      "network": "bitcointestnet",
+      "id": "1",
+      "optionalSettings": {
+        "enableOverrideServers": true,
+        "electrumServers": [["electrum.hsmiths.com", "8080"]]
+      }
     },
-    "encodeUri": {
-      "address only": [{"publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"}, "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX"],
-      "address & amount": [{
-        "publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX",
-        "nativeAmount": "123456780000"
-      }, "bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.5678"],
-      "address, amount, and label": [{
-        "publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX",
-        "nativeAmount": "123456780000",
-        "currencyCode": "BTC",
+    "BlockHeight": {
+      "uri": "https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY",
+      "defaultHeight": 1286739
+    },
+    "Address used from cache": {
+      "wrongFormat": ["TestErrorWithWrongAddress"],
+      "notInWallet": ["mnSmvy2q4dFNKQF18EBsrZrS7WEy6CieEE"],
+      "empty": {
+        "P2SH address": "2N9DbpGaQEeLLZgPQP4gc9oKkrFHdsj5Eew"
+      },
+      "nonEmpty": {
+        "P2SH address 1": "2MwLo2ghJeXTgpDccHGcsTbdS9YVfM3K5GG",
+        "P2SH address 2": "2MxRjw65NxR4DsRj2z1f5xFnKkU5uMRCsoT",
+        "P2SH address 3": "2MxvxJh44wq17vhzGqFcAsuYsVmdEJKWuFV"
+      }
+    },
+    "Add Gap Limit": {
+      "derived": [
+        "2MvNRPakFUtKSe7ZYcyextQd3sfSEKiqUHY",
+        "2MxRjw65NxR4DsRj2z1f5xFnKkU5uMRCsoT"
+      ],
+      "future": []
+    },
+    "Spend": {
+      "low fee": {
+        "networkFeeOption": "low",
         "metadata": {
-          "label": "Johnny Bitcoin"
-        }
-      }, "bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.5678&label=Johnny%20Bitcoin"],
-      "address, amount, label, & message": [{
-        "publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX",
-        "nativeAmount": "123456780000",
-        "currencyCode": "BTC",
+          "name": "Transfer to College Fund",
+          "category": "Transfer:Wallet:College Fund"
+        },
+        "spendTargets": [
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74",
+            "nativeAmount": "210000"
+          },
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q",
+            "nativeAmount": "420000"
+          }
+        ]
+      },
+      "low standard fee": {
+        "networkFeeOption": "standard",
         "metadata": {
-          "label": "Johnny Bitcoin",
-          "message": "Hello World, I miss you !"
-        }
-      }, "bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.5678&label=Johnny%20Bitcoin&message=Hello%20World,%20I%20miss%20you%20!"],
-      "invalid currencyCode": [{
-        "publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX",
-        "nativeAmount": "123456780000",
-        "currencyCode": "INVALID",
+          "name": "Transfer to College Fund",
+          "category": "Transfer:Wallet:College Fund"
+        },
+        "spendTargets": [
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74",
+            "nativeAmount": "17320"
+          }
+        ]
+      },
+      "middle standard fee": {
+        "networkFeeOption": "standard",
         "metadata": {
-          "label": "Johnny Bitcoin",
-          "message": "Hello World, I miss you !"
-        }
-      }]
+          "name": "Transfer to College Fund",
+          "category": "Transfer:Wallet:College Fund"
+        },
+        "spendTargets": [
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74",
+            "nativeAmount": "43350000"
+          }
+        ]
+      },
+      "high standard fee": {
+        "networkFeeOption": "standard",
+        "metadata": {
+          "name": "Transfer to College Fund",
+          "category": "Transfer:Wallet:College Fund"
+        },
+        "spendTargets": [
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74",
+            "nativeAmount": "86700000"
+          },
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q",
+            "nativeAmount": "420000"
+          }
+        ]
+      },
+      "high fee": {
+        "networkFeeOption": "high",
+        "metadata": {
+          "name": "Transfer to College Fund",
+          "category": "Transfer:Wallet:College Fund"
+        },
+        "spendTargets": [
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74",
+            "nativeAmount": "210000"
+          },
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q",
+            "nativeAmount": "420000"
+          }
+        ]
+      },
+      "custom fee": {
+        "networkFeeOption": "custom",
+        "customNetworkFee": { "satPerByte": "1000" },
+        "metadata": {
+          "name": "Transfer to College Fund",
+          "category": "Transfer:Wallet:College Fund"
+        },
+        "spendTargets": [
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74",
+            "nativeAmount": "210000"
+          },
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q",
+            "nativeAmount": "420000"
+          }
+        ]
+      }
+    },
+    "InsufficientFundsError": {
+      "an amount over the balance": {
+        "networkFeeOption": "high",
+        "metadata": {
+          "name": "Transfer to College Fund",
+          "category": "Transfer:Wallet:College Fund"
+        },
+        "spendTargets": [
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74",
+            "nativeAmount": "2100000000"
+          },
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q",
+            "nativeAmount": "420000"
+          }
+        ]
+      },
+      "a really big amount": {
+        "networkFeeOption": "high",
+        "metadata": {
+          "name": "Transfer to College Fund",
+          "category": "Transfer:Wallet:College Fund"
+        },
+        "spendTargets": [
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "2MutAAY6tW2HEyrhSadT1aQhP4KdCAKkC74",
+            "nativeAmount": "9999999999999000000000"
+          },
+          {
+            "currencyCode": "BTC",
+            "publicAddress": "tb1qzu5e2xhmh7lyfs38yq0u7xmem37ufp6tp6uh6q",
+            "nativeAmount": "9999999999999000000000"
+          }
+        ]
+      }
+    },
+    "Sweep": {
+      "low fee": {
+        "networkFeeOption": "low",
+        "metadata": {
+          "name": "Transfer to College Fund",
+          "category": "Transfer:Wallet:College Fund"
+        },
+        "privateKeys": ["cQSzMGPwF7uWP2jRcLxndSvgepeVXJ1DLVrDu7gRJS3kZDmHHXsp"]
+      },
+      "low standard fee": {
+        "networkFeeOption": "low",
+        "metadata": {
+          "name": "Transfer to College Fund",
+          "category": "Transfer:Wallet:College Fund"
+        },
+        "privateKeys": ["cQSzMGPwF7uWP2jRcLxndSvgepeVXJ1DLVrDu7gRJS3kZDmHHXsp"]
+      },
+      "high fee": {
+        "networkFeeOption": "high",
+        "metadata": {
+          "name": "Transfer to College Fund",
+          "category": "Transfer:Wallet:College Fund"
+        },
+        "privateKeys": ["cQSzMGPwF7uWP2jRcLxndSvgepeVXJ1DLVrDu7gRJS3kZDmHHXsp"]
+      },
+      "custom fee": {
+        "networkFeeOption": "custom",
+        "customNetworkFee": { "satPerByte": "1000" },
+        "metadata": {
+          "name": "Transfer to College Fund",
+          "category": "Transfer:Wallet:College Fund"
+        },
+        "privateKeys": ["cQSzMGPwF7uWP2jRcLxndSvgepeVXJ1DLVrDu7gRJS3kZDmHHXsp"]
+      }
     }
   }
 ]

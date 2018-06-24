@@ -55,6 +55,11 @@ export const bitcoinTestnetInfo: EdgeCurrencyInfo = {
       standardFeeHighAmount: '86700000'
     },
     electrumServers: [
+      'electrum://estnet.qtornado.com:51001',
+      'electrum://testnet.hsmiths.com:53011',
+      'electrum://testnet1.bauerj.eu:50001',
+      'electrum://electrum.akinbo.org:51001',
+      'electrum://hsmithsxurybd7uh.onion:53011',
       'electrum://testnetnode.arihanc.com:51001',
       'electrum://electrum.akinbo.org:51001',
       'electrum://testnet1.bauerj.eu:50001',
@@ -74,8 +79,6 @@ export const bitcoinTestnetInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://test-insight.bitpay.com//tx/%s',
 
   // Images:
-  symbolImage:
-    `${imageServerUrl}/bitcoin-logo-color-64.png`,
-  symbolImageDarkMono:
-    `${imageServerUrl}/bitcoin-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/bitcoin-logo-color-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/bitcoin-logo-grey-64.png`
 }

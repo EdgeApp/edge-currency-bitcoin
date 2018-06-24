@@ -69,8 +69,6 @@ export const dashInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://explorer.dash.org/tx/%s',
 
   // Images:
-  symbolImage:
-    `${imageServerUrl}/dash-logo-64.png`,
-  symbolImageDarkMono:
-    `${imageServerUrl}/dash-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/dash-logo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/dash-logo-grey-64.png`
 }

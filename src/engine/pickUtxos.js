@@ -30,7 +30,7 @@ export function pickUtxos (
       for (const utxo: UtxoInfo of addressObj.utxos) {
         // TODO: Need to actually find out if this is confirmed
         const confirmed: boolean = true
-        const bjsUtxo: BjsUtxo = utxoAbcToBjs(utxo)
+        const bjsUtxo: BjsUtxo = utxoEdgeToBjs(utxo)
         utxosAll.push(bjsUtxo)
         if (confirmed) {
           utxosConfirmed.push(bjsUtxo)
@@ -50,25 +50,25 @@ export function pickUtxos (
   // Try unconfirmed funds first
   let selectObj = coinselect(utxosConfirmed, targets, 0)
   if (selectObj.inputs && selectObj.outputs) {
-    out = arrayUtxoBjsToAbc(selectObj.inputs)
+    out = arrayUtxoBjsToEdge(selectObj.inputs)
   } else if (!useOnlyConfirmed) {
     selectObj = coinselect(utxosAll, targets, 0)
     if (selectObj.inputs && selectObj.outputs) {
-      out = arrayUtxoBjsToAbc(selectObj.inputs)
+      out = arrayUtxoBjsToEdge(selectObj.inputs)
     }
   }
   return out
 }
 
-function arrayUtxoBjsToAbc (bjsUtxos: Array<BjsUtxo>): Array<UtxoInfo> {
+function arrayUtxoBjsToEdge (bjsUtxos: Array<BjsUtxo>): Array<UtxoInfo> {
   const utxos: Array<UtxoInfo> = []
   for (const bjsUtxo of bjsUtxos) {
-    utxos.push(utxoBjsToAbc(bjsUtxo))
+    utxos.push(utxoBjsToEdge(bjsUtxo))
   }
   return utxos
 }
 
-function utxoBjsToAbc (bjsUtxo: BjsUtxo) {
+function utxoBjsToEdge (bjsUtxo: BjsUtxo) {
   const utxoObj: UtxoInfo = {
     txid: bjsUtxo.txId,
     index: bjsUtxo.vout,
@@ -77,7 +77,7 @@ function utxoBjsToAbc (bjsUtxo: BjsUtxo) {
   return utxoObj
 }
 
-function utxoAbcToBjs (utxo: UtxoInfo): BjsUtxo {
+function utxoEdgeToBjs (utxo: UtxoInfo): BjsUtxo {
   const bjsUtxo: BjsUtxo = {
     txId: utxo.txid,
     vout: utxo.index,
