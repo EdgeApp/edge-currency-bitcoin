@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 2.21.4
+
+* fix ufo network param
+
 ## 2.21.3
 
 * Re-enable support for Bip70
