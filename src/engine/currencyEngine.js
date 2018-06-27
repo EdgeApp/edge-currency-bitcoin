@@ -555,8 +555,37 @@ export class CurrencyEngine {
       if (!this.io || !this.io.fetch) {
         throw new Error('No io/fetch object')
       }
-      const result = await this.io.fetch(paymentProtocolURL)
-      const buf = await result.buffer()
+
+      // Legacy fetching using XMLHttpRequest
+      // This is for enviroments that don't support 'arrayBuffer'
+      // like some versions of react-native and old browsers
+      const legacyFetch = async (url) => {
+        return new Promise((resolve, reject) => {
+          const req = new window.XMLHttpRequest()
+          req.open('GET', url, true)
+          req.responseType = 'arraybuffer'
+          req.onload = (event) => {
+            const resp = req.response
+            if (resp) {
+              resolve(resp)
+            }
+          }
+          req.send(null)
+        })
+      }
+      let result
+      // Use the modern API if in node or any enviroment which supports it
+      if (typeof window === 'undefined' ||
+        (window.Response && window.Response.prototype.arrayBuffer)
+      ) {
+        result = await this.io.fetch(paymentProtocolURL)
+        result = await result.arrayBuffer()
+      } else if (window && window.XMLHttpRequest) {
+        result = await legacyFetch(paymentProtocolURL)
+      }
+
+      // $FlowFixMe
+      const buf = Buffer.from(result)
       return parsePayment(buf, this.network, this.currencyInfo.currencyCode)
     } catch (err) {
       console.log(`${this.walletId} - ${err.toString()}`)
