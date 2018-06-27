@@ -17,7 +17,7 @@ export const ufoInfo: EdgeCurrencyInfo = {
   defaultSettings: {
     forks: [],
     network: {
-      type: 'uniformfiscalobject',
+      type: 'ufo',
       magic: 0xfcd9b7dd,
       keyPrefix: {
         privkey: 0x9b,
