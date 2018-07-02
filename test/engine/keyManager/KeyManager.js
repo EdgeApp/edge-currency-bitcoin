@@ -3,16 +3,16 @@
 // Coins Plugin Info
 import bcoin from 'bcoin'
 // InfoFiles for networks
-import { bitcoinInfo } from '../../src/info/bitcoin.js'
-import { bitcoincashInfo } from '../../src/info/bitcoincash.js'
+import { bitcoinInfo } from '../../../src/info/bitcoin.js'
+import { bitcoincashInfo } from '../../../src/info/bitcoincash.js'
 
 // Bcoin extender function
-import { bcoinExtender } from '../../src/utils/bcoinExtender'
+import { bcoinExtender } from '../../../src/utils/bcoinExtender/bcoinExtender.js'
 
 import { describe, it } from 'mocha'
 import { assert } from 'chai'
-import { KeyManager } from '../../src/engine/keyManager.js'
-import type { KeyManagerCallbacks } from '../../src/engine/keyManager.js'
+import { KeyManager } from '../../../src/engine/keyManager.js'
+import type { KeyManagerCallbacks } from '../../../src/engine/keyManager.js'
 import fixtures from './fixtures.json'
 
 // Add network to bcoin

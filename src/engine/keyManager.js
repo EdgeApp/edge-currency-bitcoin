@@ -1,17 +1,17 @@
 // @flow
 import type { EdgeSpendTarget } from 'edge-core-js'
 import type { UtxoInfo, AddressInfo, AddressInfos } from './engineState.js'
-// $FlowFixMe
-import buffer from 'buffer-hack'
 import bcoin from 'bcoin'
-import { hash256, reverseBufferToHex } from '../utils/utils.js'
+import {
+  addressToScriptHash,
+  parsePath,
+  getPrivateFromSeed
+} from '../utils/coinUtils.js'
 import {
   toLegacyFormat,
   toNewFormat
 } from '../utils/addressFormat/addressFormatIndex.js'
 
-// $FlowFixMe
-const { Buffer } = buffer
 const GAP_LIMIT = 10
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
 const nop = () => {}
@@ -191,18 +191,12 @@ export class KeyManager {
     this.txInfos = txInfos
 
     // Load addresses from Cache
-    for (const scriptHash in this.addressInfos) {
-      const addressObj: AddressInfo = this.addressInfos[scriptHash]
-      const path = addressObj.path
-      const pathSuffix = path.split(this.masterPath + '/')[1]
-      if (pathSuffix) {
-        let [branch, index] = pathSuffix.split('/')
-        branch = parseInt(branch)
-        index = parseInt(index)
-        const displayAddress = toNewFormat(
-          addressObj.displayAddress,
-          this.network
-        )
+    for (const scriptHash in addressInfos) {
+      const addressObj: AddressInfo = addressInfos[scriptHash]
+      const path = parsePath(addressObj.path, this.masterPath)
+      if (path.length) {
+        const [branch, index] = path
+        const displayAddress = toNewFormat(addressObj.displayAddress, network)
         const address = { displayAddress, scriptHash, index, branch }
         if (branch === 0) {
           this.keys.receive.children.push(address)
@@ -220,23 +214,8 @@ export class KeyManager {
   // /////////////// Public API /////////////////// //
   // ////////////////////////////////////////////// //
   async load () {
-    // If we don't have any master key we will now create it from seed
-    if (!this.keys.master.privKey && !this.keys.master.pubKey) {
-      const privateKey = await this.getPrivateFromSeed(this.seed)
-
-      const result = privateKey.derivePath(this.masterPath)
-      if (typeof result.then === 'function') {
-        this.keys.master.privKey = await Promise.resolve(result)
-      } else {
-        this.keys.master.privKey = result
-      }
-
-      this.keys.master.pubKey = this.keys.master.privKey.toPublic()
-      this.saveKeysToCache()
-    } else if (!this.keys.master.pubKey) {
-      this.keys.master.pubKey = this.keys.master.privKey.toPublic()
-      this.saveKeysToCache()
-    }
+    // If we don't have a public master key we will now create it from seed
+    if (!this.keys.master.pubKey) await this.initMasterKeys()
     await this.setLookAhead(true)
   }
 
@@ -352,36 +331,26 @@ export class KeyManager {
   }
 
   async sign (mtx: any, privateKeys: Array<string> = []) {
-    if (!this.keys.master.privKey && this.seed === '') {
-      throw new Error("Can't sign without private key")
-    }
-    if (!this.keys.master.privKey) {
-      this.keys.master.privKey = await this.getPrivateFromSeed(this.seed)
-      this.saveKeysToCache()
-    }
-    const keys = []
+    const keyRings = []
     for (const key of privateKeys) {
-      const privKey = bcoin.primitives.KeyRing.fromSecret(key, this.network)
-      keys.push(privKey)
+      const privKey = await bcoin.primitives.KeyRing.fromSecret(key, this.network)
+      keyRings.push(privKey)
     }
-    if (!keys.length) {
+    if (!keyRings.length) {
+      if (!this.keys.master.privKey && this.seed === '') {
+        throw new Error("Can't sign without private key")
+      }
+      await this.initMasterKeys()
       for (const input: any of mtx.inputs) {
         const { prevout } = input
         if (prevout) {
           const [branch: number, index: number] = this.utxoToPath(prevout)
           const keyRing = branch === 0 ? this.keys.receive : this.keys.change
-          let { privKey } = keyRing
-          if (!privKey) {
-            const result = this.keys.master.privKey.derive(branch)
-            if (typeof result.then === 'function') {
-              keyRing.privKey = await Promise.resolve(result)
-            } else {
-              keyRing.privKey = result
-            }
-            privKey = keyRing.privKey
+          if (!keyRing.privKey) {
+            keyRing.privKey = await this.keys.master.privKey.derive(branch)
             this.saveKeysToCache()
           }
-          const result = privKey.derive(index)
+          const result = keyRing.privKey.derive(index)
           let privateKey
           if (typeof result.then === 'function') {
             privateKey = await Promise.resolve(result)
@@ -396,14 +365,14 @@ export class KeyManager {
             witness
           })
           key.network = bcoin.network.get(this.network)
-          keys.push(key)
+          keyRings.push(key)
         }
       }
     }
-    await mtx.template(keys)
+    await mtx.template(keyRings)
     if (this.network.includes('bitcoincash')) {
-      mtx.sign(keys, -100)
-    } else mtx.sign(keys)
+      mtx.sign(keyRings, -100)
+    } else mtx.sign(keyRings)
   }
 
   getSeed (): string | null {
@@ -461,21 +430,16 @@ export class KeyManager {
       : addresses[addresses.length - 1].displayAddress
   }
 
-  async getPrivateFromSeed (seed: string) {
-    let privateKey
-    try {
-      const mnemonic = bcoin.hd.Mnemonic.fromPhrase(seed)
-      const result = bcoin.hd.PrivateKey.fromMnemonic(mnemonic, this.network)
-      if (typeof result.then === 'function') {
-        privateKey = await Promise.resolve(result)
-      } else {
-        privateKey = result
-      }
-    } catch (e) {
-      const keyBuffer = Buffer.from(seed, 'base64')
-      privateKey = bcoin.hd.PrivateKey.fromSeed(keyBuffer, this.network)
+  async initMasterKeys () {
+    if (this.keys.master.privKey) {
+      this.keys.master.pubKey = this.keys.master.privKey.toPublic()
+    } else {
+      const privateKey = await getPrivateFromSeed(this.seed, this.network)
+      const privKey = await privateKey.derivePath(this.masterPath)
+      const pubKey = privKey.toPublic()
+      this.keys.master = { ...this.keys.master, privKey, pubKey }
     }
-    return privateKey
+    this.saveKeysToCache()
   }
 
   saveKeysToCache () {
@@ -512,6 +476,11 @@ export class KeyManager {
 
   async deriveNewKeys (keyRing: KeyRing, branch: number, closeGaps: boolean) {
     const { children } = keyRing
+    // If we never derived a public key for this branch before
+    if (!keyRing.pubKey) {
+      keyRing.pubKey = await this.keys.master.pubKey.derive(branch)
+      this.saveKeysToCache()
+    }
 
     // If the chain might have gaps, fill those in:
     if (closeGaps) {
@@ -581,7 +550,7 @@ export class KeyManager {
     })
     key.network = bcoin.network.get(this.network)
     let displayAddress = key.getAddress('base58')
-    const scriptHash = await this.addressToScriptHash(displayAddress)
+    const scriptHash = await addressToScriptHash(displayAddress)
     displayAddress = toNewFormat(displayAddress, this.network)
     this.onNewAddress(
       scriptHash,
@@ -596,13 +565,6 @@ export class KeyManager {
     }
     keyRing.children.push(address)
     return publicKey
-  }
-
-  async addressToScriptHash (address: string): Promise<string> {
-    const scriptRaw = bcoin.script.fromAddress(address).toRaw()
-    const scriptHashRaw = await hash256(scriptRaw)
-    const scriptHash = reverseBufferToHex(scriptHashRaw)
-    return scriptHash
   }
 
   estimateSize (prev: any) {

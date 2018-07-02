@@ -3,7 +3,11 @@
  * @flow
  */
 
-import type { AddressInfos, AddressInfo, UtxoInfo } from './engineState.js'
+import type {
+  AddressInfos,
+  AddressInfo,
+  UtxoInfo
+} from '../engine/engineState.js'
 // import type { HeaderCache } from './pluginState.js'
 import coinselect from 'coinselect'
 

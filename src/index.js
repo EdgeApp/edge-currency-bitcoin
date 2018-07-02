@@ -24,7 +24,7 @@ import { qtumInfo } from './info/qtum.js'
 import { CurrencyPlugin } from './plugin/currencyPlugin.js'
 
 // Bcoin extender function
-import { bcoinExtender } from './utils/bcoinExtender'
+import { bcoinExtender } from './utils/bcoinExtender/bcoinExtender.js'
 
 /**
  * Makes a core plugin factory, given the currencyInfo for that coin.

@@ -25,7 +25,7 @@ import type {
   StratumHistoryRow,
   StratumUtxo
 } from '../stratum/stratumMessages.js'
-import { parseTransaction } from './parseTransaction.js'
+import { parseTransaction } from '../utils/coinUtils.js'
 import { parse } from 'uri-js/dist/es5/uri.all'
 
 export type UtxoInfo = {
