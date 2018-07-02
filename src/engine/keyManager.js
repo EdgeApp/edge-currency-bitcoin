@@ -2,11 +2,8 @@
 import type { EdgeSpendTarget } from 'edge-core-js'
 import type { UtxoInfo, AddressInfo, AddressInfos } from './engineState.js'
 import bcoin from 'bcoin'
-import {
-  addressToScriptHash,
-  parsePath,
-  getPrivateFromSeed
-} from '../utils/coinUtils.js'
+import { FormatSelector } from '../utils/formatSelector.js'
+import { parsePath, getPrivateFromSeed } from '../utils/coinUtils.js'
 import {
   toLegacyFormat,
   toNewFormat
@@ -17,7 +14,6 @@ const RBF_SEQUENCE_NUM = 0xffffffff - 2
 const nop = () => {}
 
 export type Txid = string
-export type WalletType = string
 export type RawTx = string
 export type BlockHeight = number
 
@@ -99,6 +95,7 @@ export class KeyManager {
   seed: string
   gapLimit: number
   network: string
+  fSelector: any
   onNewAddress: (scriptHash: string, address: string, path: string) => void
   onNewKey: (keys: any) => void
   addressInfos: AddressInfos
@@ -124,72 +121,23 @@ export class KeyManager {
       throw new Error('Missing Master Key')
     }
     this.seed = seed
-    // Create KeyRing templates
-    this.keys = {
-      master: {
-        pubKey: null,
-        privKey: null,
-        children: []
-      },
-      receive: {
-        pubKey: null,
-        privKey: null,
-        children: []
-      },
-      change: {
-        pubKey: null,
-        privKey: null,
-        children: []
-      }
-    }
-    // Create Locks
-    this.writeLock = new bcoin.utils.Lock()
-
-    // Try to load as many pubKey/privKey as possible from the cache
-    for (const branch in rawKeys) {
-      if (rawKeys[branch].xpriv) {
-        this.keys[branch].privKey = bcoin.hd.PrivateKey.fromBase58(
-          rawKeys[branch].xpriv,
-          this.network
-        )
-      }
-      if (rawKeys[branch].xpub) {
-        this.keys[branch].pubKey = bcoin.hd.PublicKey.fromBase58(
-          rawKeys[branch].xpub,
-          this.network
-        )
-      }
-    }
-    // Create master derivation path from network and bip type
+    this.gapLimit = gapLimit
     this.network = network
     this.bip = bip
-    if (coinType < 0) {
-      coinType = bcoin.network.get(this.network).keyPrefix.coinType
-    }
-    switch (this.bip) {
-      case 'bip32':
-        this.masterPath = 'm/0'
-        break
-      case 'bip44':
-        this.masterPath = `m/44'/${coinType}'/${account}'`
-        break
-      case 'bip49':
-        this.masterPath = `m/49'/${coinType}'/${account}'`
-        break
-      default:
-        throw new Error('Unknown bip type')
-    }
-
-    // Setup gapLimit
-    this.gapLimit = gapLimit
-
+    this.fSelector = FormatSelector(bip, network)
+    // Create a lock for when deriving addresses
+    this.writeLock = new bcoin.utils.Lock()
+    // Create the master derivation path
+    this.masterPath = this.fSelector.createMasterPath(account, coinType)
     // Set the callbacks with nops as default
     const { onNewAddress = nop, onNewKey = nop } = callbacks
     this.onNewAddress = onNewAddress
     this.onNewKey = onNewKey
+    // Set the addresses and txs state objects
     this.addressInfos = addressInfos
     this.txInfos = txInfos
-
+    // Create KeyRings while tring to load as many of the pubKey/privKey from the cache
+    this.keys = this.fSelector.keysFromRaw(rawKeys)
     // Load addresses from Cache
     for (const scriptHash in addressInfos) {
       const addressObj: AddressInfo = addressInfos[scriptHash]
@@ -307,7 +255,7 @@ export class KeyManager {
       height: height,
       rate: rate,
       maxFee: maxFee,
-      estimate: prev => this.estimateSize(prev)
+      estimate: prev => this.fSelector.estimateSize(prev)
     })
 
     // If TX is RBF mark is by changing the Inputs sequences
@@ -350,21 +298,7 @@ export class KeyManager {
             keyRing.privKey = await this.keys.master.privKey.derive(branch)
             this.saveKeysToCache()
           }
-          const result = keyRing.privKey.derive(index)
-          let privateKey
-          if (typeof result.then === 'function') {
-            privateKey = await Promise.resolve(result)
-          } else {
-            privateKey = result
-          }
-          const nested = this.bip === 'bip49'
-          const witness = this.bip === 'bip49'
-          const key = bcoin.primitives.KeyRing.fromOptions({
-            privateKey,
-            nested,
-            witness
-          })
-          key.network = bcoin.network.get(this.network)
+          const key = await this.fSelector.deriveKeyRing(keyRing.privKey, index)
           keyRings.push(key)
         }
       }
@@ -377,10 +311,8 @@ export class KeyManager {
 
   getSeed (): string | null {
     if (this.seed && this.seed !== '') {
-      if (this.bip !== 'bip32') return this.seed
       try {
-        const keyBuffer = Buffer.from(this.seed, 'base64')
-        return keyBuffer.toString('hex')
+        return this.fSelector.parseSeed(this.seed)
       } catch (e) {
         console.log(e)
         return null
@@ -463,10 +395,10 @@ export class KeyManager {
   async setLookAhead (closeGaps: boolean = false) {
     const unlock = await this.writeLock.lock()
     try {
-      if (this.bip !== 'bip32') {
-        await this.deriveNewKeys(this.keys.change, 1, closeGaps)
+      const { branches } = this.fSelector
+      for (let i = 0; i < branches.length; i++) {
+        await this.deriveNewKeys(this.keys[branches[i]], i, closeGaps)
       }
-      await this.deriveNewKeys(this.keys.receive, 0, closeGaps)
     } catch (e) {
       console.log(e)
     } finally {
@@ -514,87 +446,18 @@ export class KeyManager {
   }
 
   /**
-   * Derives an address at the specified branch and index,
+   * Derives an address at the specified branch and index from the keyRing,
    * and adds it to the state.
    * @param keyRing The KeyRing corresponding to the selected branch.
    */
   async deriveAddress (keyRing: KeyRing, branch: number, index: number) {
-    if (!keyRing.pubKey) {
-      const result = this.keys.master.pubKey.derive(branch)
-      if (typeof result.then === 'function') {
-        keyRing.pubKey = await Promise.resolve(result)
-      } else {
-        keyRing.pubKey = result
-      }
-      this.saveKeysToCache()
-    }
-    let publicKey
-
-    const result = keyRing.pubKey.derive(index)
-    if (typeof result.then === 'function') {
-      publicKey = await Promise.resolve(result)
-    } else {
-      publicKey = result
-    }
-
-    let nested = false
-    let witness = false
-    if (this.bip === 'bip49') {
-      nested = true
-      witness = true
-    }
-    const key = bcoin.primitives.KeyRing.fromOptions({
-      publicKey,
-      nested,
-      witness
-    })
-    key.network = bcoin.network.get(this.network)
-    let displayAddress = key.getAddress('base58')
-    const scriptHash = await addressToScriptHash(displayAddress)
-    displayAddress = toNewFormat(displayAddress, this.network)
-    this.onNewAddress(
-      scriptHash,
-      displayAddress,
-      `${this.masterPath}/${branch}/${index}`
+    const { address, scriptHash } = await this.fSelector.deriveAddress(
+      keyRing.pubKey,
+      index
     )
-    const address = {
-      displayAddress,
-      scriptHash,
-      index,
-      branch
-    }
-    keyRing.children.push(address)
-    return publicKey
-  }
-
-  estimateSize (prev: any) {
-    const scale = bcoin.consensus.WITNESS_SCALE_FACTOR
-    const address = prev.getAddress()
-    if (!address) return -1
-
-    let size = 0
-
-    if (prev.isScripthash()) {
-      if (this.bip === 'bip49') {
-        size += 23 // redeem script
-        size *= 4 // vsize
-        // Varint witness items length.
-        size += 1
-        // Calculate vsize
-        size = ((size + scale - 1) / scale) | 0
-      }
-    }
-
-    // P2PKH
-    if (this.bip !== 'bip49') {
-      // varint script size
-      size += 1
-      // OP_PUSHDATA0 [signature]
-      size += 1 + 73
-      // OP_PUSHDATA0 [key]
-      size += 1 + 33
-    }
-
-    return size || -1
+    const displayAddress = toNewFormat(address, this.network)
+    const keyPath = `${this.masterPath}/${branch}/${index}`
+    keyRing.children.push({ displayAddress, scriptHash, index, branch })
+    this.onNewAddress(scriptHash, displayAddress, keyPath)
   }
 }

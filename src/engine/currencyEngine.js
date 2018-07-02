@@ -26,6 +26,7 @@ import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import { broadcastFactories } from './broadcastApi.js'
 import { bns } from 'biggystring'
+import { getAllAddresses } from '../utils/formatSelector.js'
 import {
   addressToScriptHash,
   keysFromWalletInfo,
@@ -36,7 +37,6 @@ import {
   toNewFormat,
   validAddress
 } from '../utils/addressFormat/addressFormatIndex.js'
-import bcoin from 'bcoin'
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000
@@ -515,22 +515,11 @@ export class CurrencyEngine {
       walletId: this.walletId
     })
 
-    await this.engineState.load()
-
-    for (const key of privateKeys) {
-      const privKey = bcoin.primitives.KeyRing.fromSecret(key, this.network)
-      const keyAddress = privKey.getAddress('base58')
-      privKey.nested = true
-      privKey.witness = true
-      const nestedAddress = privKey.getAddress('base58')
-      const keyHash = await addressToScriptHash(keyAddress)
-      const nestedHash = await addressToScriptHash(
-        nestedAddress
-      )
-      engineState.addAddress(keyHash, keyAddress)
-      engineState.addAddress(nestedHash, nestedAddress)
-    }
-
+    await engineState.load()
+    const addresses = await getAllAddresses(privateKeys, this.network)
+    addresses.forEach(({ address, scriptHash }) =>
+      engineState.addAddress(scriptHash, address)
+    )
     engineState.connect()
 
     return end
