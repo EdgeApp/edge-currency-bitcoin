@@ -370,9 +370,7 @@ export class KeyManager {
       }
     }
     await mtx.template(keyRings)
-    if (this.network.includes('bitcoincash')) {
-      mtx.sign(keyRings, -100)
-    } else mtx.sign(keyRings)
+    mtx.sign(keyRings, bcoin.networks[this.network].replayProtaction)
   }
 
   getSeed (): string | null {
