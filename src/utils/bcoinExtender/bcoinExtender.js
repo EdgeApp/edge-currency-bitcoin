@@ -1,15 +1,10 @@
 // @flow
 import type { EdgeCurrencyInfo } from 'edge-core-js'
 import { patchBcashTX } from './bcashExtender.js'
-import {
-  patchDerivePublic,
-  patchDerivePrivate,
-  patchDerivePath,
-  patchPrivateFromMnemonic
-} from './deriveExtender.js'
+import { secp256k1Patch, pbkdf2Patch } from './asyncCrypto.js'
 
-let cryptoReplaced = false
 let patchedForCash = false
+let cryptoPatched = false
 
 export const bcoinExtender = (
   bcoin: any,
@@ -32,16 +27,14 @@ export const bcoinExtender = (
     patchBcashTX(bcoin)
     patchedForCash = true
   }
-  if (!cryptoReplaced) {
+  if (!cryptoPatched) {
     if (secp256k1) {
-      patchDerivePublic(bcoin, secp256k1)
-      patchDerivePrivate(bcoin, secp256k1)
-      patchDerivePath(bcoin)
-      cryptoReplaced = true
+      secp256k1Patch(bcoin, secp256k1)
+      cryptoPatched = true
     }
     if (pbkdf2) {
-      patchPrivateFromMnemonic(bcoin, pbkdf2)
-      cryptoReplaced = true
+      pbkdf2Patch(bcoin, pbkdf2)
+      cryptoPatched = true
     }
   }
 }
