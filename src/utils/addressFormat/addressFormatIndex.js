@@ -2,7 +2,7 @@
 
 import bcoin from 'bcoin'
 import { toCashAddress, cashAddressToHash } from './cashAddress'
-import * as base32 from '../base32'
+import * as base32 from './base32.js'
 
 const bitcoincashLegacy = (address, network) => {
   if (typeof address !== 'string' || !address.includes(`${network}`)) {

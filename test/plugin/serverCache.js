@@ -6,7 +6,7 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import { ServerCache } from '../src/plugin/serverCache.js'
+import { ServerCache } from '../../src/plugin/serverCache.js'
 
 describe(`ServerCache`, function () {
   it('Score only', function () {

@@ -1,12 +1,12 @@
 // @flow
 import { makeFakeIos } from 'edge-core-js'
 import { describe, it, before } from 'mocha'
-import * as Factories from '../../src/index.js'
+import * as Factories from '../../../../src/index.js'
 import { assert } from 'chai'
 import {
   toLegacyFormat,
   toNewFormat
-} from '../../src/utils/addressFormat/addressFormatIndex.js'
+} from '../../../../src/utils/addressFormat/addressFormatIndex.js'
 import fixtures from './fixtures.json'
 
 for (const fixture of fixtures) {
@@ -22,10 +22,10 @@ for (const fixture of fixtures) {
     })
   }
 
-  describe(`Info for Wallet type ${WALLET_TYPE}`, function () {
+  describe(`Address format for Wallet type ${WALLET_TYPE}`, function () {
     let plugin
 
-    before('Plugin', function (done) {
+    before('Create Plugin', function (done) {
       CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
         plugin = currencyPlugin
         done()

@@ -5,7 +5,7 @@
 
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
-import { parsePayment } from '../src/utils/paymentRequest.js'
+import { parsePayment } from '../../src/engine/paymentRequest.js'
 
 const validRequests = [
   // [

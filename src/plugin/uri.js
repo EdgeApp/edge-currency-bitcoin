@@ -9,7 +9,8 @@ import {
   sanitizeAddress,
   dirtyAddress,
   toNewFormat
-} from './addressFormat/addressFormatIndex.js'
+} from '../utils/addressFormat/addressFormatIndex.js'
+import { verifyWIF } from '../utils/coinUtils.js'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
 import { bns } from 'biggystring'
@@ -28,7 +29,7 @@ const parsePathname = (pathname: string, network: string) => {
   } catch (e) {}
   // Check if the pathname type is a wif
   try {
-    bcoin.primitives.KeyRing.fromSecret(pathname, network)
+    verifyWIF(pathname, network)
     return { privateKeys: [pathname] }
   } catch (e) {}
   // If the pathname is non of the above, then assume it's an address and check for validity
