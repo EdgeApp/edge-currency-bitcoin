@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 2.21.7
+
+* Fix headers for bip70 payment request
+
 ## 2.21.6
 
 * update the lock file to get the new bcoin with bip70
