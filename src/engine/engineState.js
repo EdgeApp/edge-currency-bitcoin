@@ -350,13 +350,13 @@ export class EngineState extends EventEmitter {
       const utxoLength = this.addressInfos[scriptHash].utxos.length
       for (let i = 0; i < utxoLength; i++) {
         const utxo = this.addressInfos[scriptHash].utxos[i]
-        const { txid } = utxo
+        const { txid, index } = utxo
         let height = -1
         if (this.txHeightCache[txid]) {
           height = this.txHeightCache[txid].height
         }
         const tx = this.parsedTxs[txid] || {}
-        utxos.push({ utxo, tx, height })
+        utxos.push({ index, tx, height })
       }
     }
     return utxos

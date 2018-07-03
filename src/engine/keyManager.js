@@ -1,11 +1,13 @@
 // @flow
 import type { EdgeSpendTarget } from 'edge-core-js'
-import type { UtxoInfo, AddressInfo, AddressInfos } from './engineState.js'
+import type { AddressInfo, AddressInfos } from './engineState.js'
+import type { Utxo, BlockHeight } from '../utils/coinUtils.js'
 import bcoin from 'bcoin'
 import {
   addressToScriptHash,
   parsePath,
-  getPrivateFromSeed
+  getPrivateFromSeed,
+  sumUtxos
 } from '../utils/coinUtils.js'
 import {
   toLegacyFormat,
@@ -19,7 +21,6 @@ const nop = () => {}
 export type Txid = string
 export type WalletType = string
 export type RawTx = string
-export type BlockHeight = number
 
 export type Address = {
   displayAddress: string,
@@ -55,11 +56,7 @@ export type RawKeys = {
 
 export type createTxOptions = {
   outputs: Array<EdgeSpendTarget>,
-  utxos: Array<{
-    utxo: UtxoInfo,
-    tx: any,
-    height: BlockHeight
-  }>,
+  utxos: Array<Utxo>,
   height: BlockHeight,
   rate: number,
   maxFee: number,
@@ -276,19 +273,19 @@ export class KeyManager {
     const changeAddress = toLegacyFormat(this.getChangeAddress(), this.network)
 
     if (CPFP) {
-      utxos = utxos.filter(({ utxo }) => utxo.txid === CPFP)
+      utxos = utxos.filter(({ tx }) => tx.txid() === CPFP)
       // If not outputs are given try and build the most efficient TX
       if (!mtx.outputs || mtx.outputs.length === 0) {
         // Sort the UTXOs by size
-        utxos = utxos.sort(
-          (a, b) => parseInt(b.utxo.value) - parseInt(a.utxo.value)
-        )
+        utxos = utxos.sort((a, b) =>
+          parseInt(b.tx.outputs[b.index]) -
+          parseInt(a.tx.outputs[a.index]))
         // Try and get only the biggest UTXO unless the limit is 0 which means take all
         if (CPFPlimit) utxos = utxos.slice(0, CPFPlimit)
         // CPFP transactions will try to not have change
         // by subtracting moving all the value from the UTXOs
         // and subtracting the fee from the total output value
-        const value = utxos.reduce((s, { utxo }) => s + utxo.value, 0)
+        const value = sumUtxos(utxos)
         subtractFee = true
         // CPFP transactions will add the change address as a single output
         const script = bcoin.script.fromAddress(changeAddress)
@@ -296,9 +293,8 @@ export class KeyManager {
       }
     }
 
-    const coins = utxos.map(({ tx, utxo, height }) => {
-      return bcoin.primitives.Coin.fromTX(tx, utxo.index, height)
-    })
+    const coins = utxos.map(({ tx, index, height }) =>
+      bcoin.primitives.Coin.fromTX(tx, index, height))
 
     await mtx.fund(coins, {
       selection: 'value',

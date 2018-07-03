@@ -7,6 +7,14 @@ import { hash256, hash256Sync, reverseBufferToHex } from './utils.js'
 // $FlowFixMe
 const { Buffer } = buffer
 
+export type BlockHeight = number
+
+export type Utxo = {
+  index: number,
+  tx: any,
+  height: BlockHeight
+}
+
 export const keysFromWalletInfo = (
   network: string,
   { keys = {}, type }: any = {}, // walletInfo
@@ -84,3 +92,6 @@ export const parsePath = (path: string = '', masterPath: string) =>
     .split('/')
     .filter(i => i !== '')
     .map(i => parseInt(i))
+
+export const sumUtxos = (utxos: Array<Utxo>) =>
+  utxos.reduce((s, { tx, index }) => s + parseInt(tx.outputs[index].value), 0)

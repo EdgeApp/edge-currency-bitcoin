@@ -29,7 +29,8 @@ import { bns } from 'biggystring'
 import {
   addressToScriptHash,
   keysFromWalletInfo,
-  verifyTxAmount
+  verifyTxAmount,
+  sumUtxos
 } from '../utils/coinUtils.js'
 import {
   toLegacyFormat,
@@ -597,9 +598,8 @@ export class CurrencyEngine {
       '0'
     )
 
-    const balance = options.utxos
-      ? options.utxos.reduce((sum, { utxo }) => sum + utxo.value, 0)
-      : this.getBalance()
+    const { utxos } = options
+    const balance = utxos ? sumUtxos(utxos) : this.getBalance()
 
     if (bns.gt(totalAmountToSend, `${balance}`)) {
       throw new Error('InsufficientFundsError')
@@ -613,7 +613,7 @@ export class CurrencyEngine {
         rate: this.getRate(edgeSpendInfo),
         maxFee: this.currencyInfo.defaultSettings.maxFee,
         outputs: edgeSpendInfo.spendTargets,
-        utxos: options.utxos || this.engineState.getUTXOs(),
+        utxos: utxos || this.engineState.getUTXOs(),
         height: this.getBlockHeight()
       })
       const resultedTransaction = await this.keyManager.createTX(options)
