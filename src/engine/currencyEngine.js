@@ -556,6 +556,7 @@ export class CurrencyEngine {
         throw new Error('No io/fetch object')
       }
 
+      const headers = { 'Accept': 'application/bitcoin-paymentrequest' }
       // Legacy fetching using XMLHttpRequest
       // This is for enviroments that don't support 'arrayBuffer'
       // like some versions of react-native and old browsers
@@ -563,6 +564,9 @@ export class CurrencyEngine {
         return new Promise((resolve, reject) => {
           const req = new window.XMLHttpRequest()
           req.open('GET', url, true)
+          for (const header in headers) {
+            req.setRequestHeader(header, headers[header])
+          }
           req.responseType = 'arraybuffer'
           req.onload = (event) => {
             const resp = req.response
@@ -578,7 +582,7 @@ export class CurrencyEngine {
       if (typeof window === 'undefined' ||
         (window.Response && window.Response.prototype.arrayBuffer)
       ) {
-        result = await this.io.fetch(paymentProtocolURL)
+        result = await this.io.fetch(paymentProtocolURL, { headers })
         result = await result.arrayBuffer()
       } else if (window && window.XMLHttpRequest) {
         result = await legacyFetch(paymentProtocolURL)
