@@ -1,11 +1,12 @@
 // @flow
-import type { EdgeSpendTarget } from 'edge-core-js'
-import type { UtxoInfo, AddressInfo, AddressInfos } from './engineState.js'
+import type { AddressInfo, AddressInfos } from './engineState.js'
+import type { Utxo, BlockHeight, TxOptions, Output } from '../utils/coinUtils.js'
 import bcoin from 'bcoin'
 import {
   addressToScriptHash,
   parsePath,
-  getPrivateFromSeed
+  getPrivateFromSeed,
+  createTX
 } from '../utils/coinUtils.js'
 import {
   toLegacyFormat,
@@ -13,13 +14,10 @@ import {
 } from '../utils/addressFormat/addressFormatIndex.js'
 
 const GAP_LIMIT = 10
-const RBF_SEQUENCE_NUM = 0xffffffff - 2
 const nop = () => {}
 
-export type Txid = string
 export type WalletType = string
 export type RawTx = string
-export type BlockHeight = number
 
 export type Address = {
   displayAddress: string,
@@ -54,20 +52,12 @@ export type RawKeys = {
 }
 
 export type createTxOptions = {
-  outputs: Array<EdgeSpendTarget>,
-  utxos: Array<{
-    utxo: UtxoInfo,
-    tx: any,
-    height: BlockHeight
-  }>,
+  outputs?: Array<Output>,
+  utxos: Array<Utxo>,
   height: BlockHeight,
   rate: number,
   maxFee: number,
-  subtractFee?: boolean,
-  setRBF?: boolean,
-  RBFraw?: RawTx,
-  CPFP?: Txid,
-  CPFPlimit?: number
+  txOptions: TxOptions
 }
 
 export interface KeyManagerCallbacks {
@@ -235,99 +225,13 @@ export class KeyManager {
     return this.getNextAvailable(this.keys.change.children)
   }
 
-  async createTX ({
-    outputs,
-    utxos,
-    height,
-    rate,
-    maxFee,
-    subtractFee = false,
-    setRBF = false,
-    RBFraw = '',
-    CPFP = '',
-    CPFPlimit = 1
-  }: createTxOptions): any {
-    // If it's not a CPFP transaction it has to have outputs
-    // CPFP transactions can receive an empty outputs array
-    if (outputs.length === 0 && CPFP !== '') {
-      throw new Error('No outputs available.')
-    }
-
-    // If it's not a CPFP transaction it has to have outputs
-    const mtx = new bcoin.primitives.MTX()
-    // Add the outputs
-    for (const spendTarget of outputs) {
-      if (!spendTarget.publicAddress || !spendTarget.nativeAmount) continue
-      if (typeof spendTarget.publicAddress !== 'string') {
-        // $FlowFixMe
-        spendTarget.publicAddress = spendTarget.publicAddress.toString()
-      }
-      const value = parseInt(spendTarget.nativeAmount)
-      const legacyAddress = toLegacyFormat(
-        // $FlowFixMe
-        spendTarget.publicAddress,
-        this.network
-      )
-      const script = bcoin.script.fromAddress(legacyAddress)
-      mtx.addOutput(script, value)
-    }
-
+  async createTX (options: createTxOptions): any {
     // Get the Change Address
     const changeAddress = toLegacyFormat(this.getChangeAddress(), this.network)
-
-    if (CPFP) {
-      utxos = utxos.filter(({ utxo }) => utxo.txid === CPFP)
-      // If not outputs are given try and build the most efficient TX
-      if (!mtx.outputs || mtx.outputs.length === 0) {
-        // Sort the UTXOs by size
-        utxos = utxos.sort(
-          (a, b) => parseInt(b.utxo.value) - parseInt(a.utxo.value)
-        )
-        // Try and get only the biggest UTXO unless the limit is 0 which means take all
-        if (CPFPlimit) utxos = utxos.slice(0, CPFPlimit)
-        // CPFP transactions will try to not have change
-        // by subtracting moving all the value from the UTXOs
-        // and subtracting the fee from the total output value
-        const value = utxos.reduce((s, { utxo }) => s + utxo.value, 0)
-        subtractFee = true
-        // CPFP transactions will add the change address as a single output
-        const script = bcoin.script.fromAddress(changeAddress)
-        mtx.addOutput(script, value)
-      }
-    }
-
-    const coins = utxos.map(({ tx, utxo, height }) => {
-      return bcoin.primitives.Coin.fromTX(tx, utxo.index, height)
-    })
-
-    await mtx.fund(coins, {
-      selection: 'value',
-      changeAddress: changeAddress,
-      subtractFee: subtractFee,
-      height: height,
-      rate: rate,
-      maxFee: maxFee,
-      estimate: prev => this.estimateSize(prev)
-    })
-
-    // If TX is RBF mark is by changing the Inputs sequences
-    if (setRBF) {
-      for (const input of mtx.inputs) {
-        input.sequence = RBF_SEQUENCE_NUM
-      }
-    }
-
-    // Check consensus rules for fees and outputs
-    if (!mtx.isSane()) {
-      throw new Error('TX failed sanity check.')
-    }
-
-    // Check consensus rules for inputs
-    if (!mtx.verifyInputs(height)) {
-      throw new Error('TX failed context check.')
-    }
-
-    return mtx
+    // Create our custom estimate function
+    const estimate = prev => this.estimateSize(prev)
+    // Create the transaction by merging options with changeAddress & estimate
+    return createTX({ ...options, changeAddress, estimate })
   }
 
   async sign (mtx: any, privateKeys: Array<string> = []) {
