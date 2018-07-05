@@ -6,6 +6,43 @@ import { hash256, hash256Sync, reverseBufferToHex } from './utils.js'
 
 // $FlowFixMe
 const { Buffer } = buffer
+const RBF_SEQUENCE_NUM = 0xffffffff - 2
+
+export type RawTx = string
+export type BlockHeight = number
+export type Txid = string
+
+export type Output = {
+  address: string,
+  value: number
+}
+
+export type Utxo = {
+  tx: any,
+  index: number,
+  height?: BlockHeight
+}
+
+export type TxOptions = {
+  utxos?: Array<Utxo>,
+  setRBF?: boolean,
+  RBFraw?: RawTx,
+  CPFP?: Txid,
+  CPFPlimit?: number,
+  selection?: string,
+  subtractFee?: boolean
+}
+
+export type CreateTxOptions = {
+  utxos: Array<Utxo>,
+  rate: number,
+  maxFee: number,
+  changeAddress: string,
+  outputs?: Array<Output>,
+  height?: BlockHeight,
+  estimate?: Function,
+  txOptions: TxOptions
+}
 
 export const keysFromWalletInfo = (
   network: string,
@@ -50,6 +87,92 @@ export const setKeyType = (
     primitives.KeyRing.fromOptions({ ...key, nested, witness })
   ).then(clone => Object.assign(clone, { network: Network.get(network) }))
 
+export const createTX = async ({
+  utxos,
+  outputs = [],
+  changeAddress,
+  rate,
+  maxFee,
+  height = -1,
+  estimate,
+  txOptions: {
+    selection = 'value',
+    RBFraw = '',
+    CPFP = '',
+    CPFPlimit = 1,
+    subtractFee = false,
+    setRBF = false
+  }
+}: CreateTxOptions) => {
+  // Create the Mutable Transaction
+  const mtx = new primitives.MTX()
+
+  // Check for CPFP condition
+  if (CPFP !== '') {
+    utxos = utxos.filter(({ tx }) => tx.txid() === CPFP)
+    // If not outputs are given try and build the most efficient TX
+    if (!mtx.outputs || mtx.outputs.length === 0) {
+      // Sort the UTXOs by size
+      utxos = utxos.sort((a, b) =>
+        parseInt(b.tx.outputs[b.index]) -
+        parseInt(a.tx.outputs[a.index]))
+      // Try and get only the biggest UTXO unless the limit is 0 which means take all
+      if (CPFPlimit) utxos = utxos.slice(0, CPFPlimit)
+      // CPFP transactions will try to not have change
+      // by subtracting moving all the value from the UTXOs
+      // and subtracting the fee from the total output value
+      const value = sumUtxos(utxos)
+      subtractFee = true
+      // CPFP transactions will add the change address as a single output
+      outputs.push({ address: changeAddress, value })
+    }
+  }
+
+  if (outputs.length === 0) {
+    throw new Error('No outputs available.')
+  }
+
+  // Add the outputs
+  outputs.forEach(({ address, value }) => {
+    const addressScript = script.fromAddress(address)
+    mtx.addOutput(addressScript, value)
+  })
+
+  // Create coins
+  const coins = utxos.map(({ tx, index, height }) =>
+    primitives.Coin.fromTX(tx, index, height))
+
+  // Try to fund the transaction
+  await mtx.fund(coins, {
+    selection,
+    changeAddress,
+    subtractFee,
+    height,
+    rate,
+    maxFee,
+    estimate
+  })
+
+  // If TX is RBF mark is by changing the Inputs sequences
+  if (setRBF) {
+    for (const input of mtx.inputs) {
+      input.sequence = RBF_SEQUENCE_NUM
+    }
+  }
+
+  // Check consensus rules for fees and outputs
+  if (!mtx.isSane()) {
+    throw new Error('TX failed sanity check.')
+  }
+
+  // Check consensus rules for inputs
+  if (height !== -1 && !mtx.verifyInputs(height)) {
+    throw new Error('TX failed context check.')
+  }
+
+  return mtx
+}
+
 export const getPrivateFromSeed = async (seed: string, network: string) => {
   try {
     const mnemonic = hd.Mnemonic.fromPhrase(seed)
@@ -84,3 +207,6 @@ export const parsePath = (path: string = '', masterPath: string) =>
     .split('/')
     .filter(i => i !== '')
     .map(i => parseInt(i))
+
+export const sumUtxos = (utxos: Array<Utxo>) =>
+  utxos.reduce((s, { tx, index }) => s + parseInt(tx.outputs[index].value), 0)

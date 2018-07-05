@@ -20,6 +20,7 @@ import { KeyManager } from './keyManager'
 import type { EngineStateCallbacks } from './engineState.js'
 import type { KeyManagerCallbacks } from './keyManager'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
+import type { TxOptions } from '../utils/coinUtils.js'
 import { validateObject, promiseAny } from '../utils/utils.js'
 import { parsePayment } from './paymentRequest.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
@@ -30,7 +31,8 @@ import { getAllAddresses } from '../utils/formatSelector.js'
 import {
   addressToScriptHash,
   keysFromWalletInfo,
-  verifyTxAmount
+  verifyTxAmount,
+  sumUtxos
 } from '../utils/coinUtils.js'
 import {
   toLegacyFormat,
@@ -533,6 +535,7 @@ export class CurrencyEngine {
         throw new Error('No io/fetch object')
       }
 
+      const headers = { 'Accept': 'application/bitcoin-paymentrequest' }
       // Legacy fetching using XMLHttpRequest
       // This is for enviroments that don't support 'arrayBuffer'
       // like some versions of react-native and old browsers
@@ -540,6 +543,9 @@ export class CurrencyEngine {
         return new Promise((resolve, reject) => {
           const req = new window.XMLHttpRequest()
           req.open('GET', url, true)
+          for (const header in headers) {
+            req.setRequestHeader(header, headers[header])
+          }
           req.responseType = 'arraybuffer'
           req.onload = (event) => {
             const resp = req.response
@@ -555,7 +561,7 @@ export class CurrencyEngine {
       if (typeof window === 'undefined' ||
         (window.Response && window.Response.prototype.arrayBuffer)
       ) {
-        result = await this.io.fetch(paymentProtocolURL)
+        result = await this.io.fetch(paymentProtocolURL, { headers })
         result = await result.arrayBuffer()
       } else if (window && window.XMLHttpRequest) {
         result = await legacyFetch(paymentProtocolURL)
@@ -572,25 +578,20 @@ export class CurrencyEngine {
 
   async makeSpend (
     edgeSpendInfo: EdgeSpendInfo,
-    options?: any = {}
+    txOptions?: TxOptions = {}
   ): Promise<EdgeTransaction> {
+    const { spendTargets } = edgeSpendInfo
     // Can't spend without outputs
-    if (
-      !options.CPFP &&
-      (!edgeSpendInfo.spendTargets || edgeSpendInfo.spendTargets.length < 1)
-    ) {
+    if (!txOptions.CPFP && (!spendTargets || spendTargets.length < 1)) {
       throw new Error('Need to provide Spend Targets')
     }
-    const totalAmountToSend = edgeSpendInfo.spendTargets.reduce(
-      (sum, { nativeAmount }) => bns.add(sum, nativeAmount || '0'),
-      '0'
-    )
-
-    const balance = options.utxos
-      ? options.utxos.reduce((sum, { utxo }) => sum + utxo.value, 0)
-      : this.getBalance()
-
-    if (bns.gt(totalAmountToSend, `${balance}`)) {
+    // Calculate the total amount to send
+    const totalAmountToSend = spendTargets.reduce(
+      (sum, { nativeAmount }) => bns.add(sum, nativeAmount || '0'), '0')
+    // Try and get UTXOs from `txOptions`, if unsuccessful use our own utxo's
+    const { utxos = this.engineState.getUTXOs() } = txOptions
+    // Test if we have enough to spend
+    if (bns.gt(totalAmountToSend, `${sumUtxos(utxos)}`)) {
       throw new Error('InsufficientFundsError')
     }
     try {
@@ -598,50 +599,55 @@ export class CurrencyEngine {
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
         await this.updateFeeTable()
       }
-      Object.assign(options, {
-        rate: this.getRate(edgeSpendInfo),
+      // Get the rate according to the latest fee
+      const rate = this.getRate(edgeSpendInfo)
+      // Create outputs from spendTargets
+      const outputs = spendTargets
+        .filter(({ publicAddress, nativeAmount }) =>
+          publicAddress && nativeAmount)
+        .map(({ publicAddress = '', nativeAmount = 0 }) => ({
+          address: typeof publicAddress !== 'string'
+            ? toLegacyFormat(publicAddress.toString(), this.network)
+            : toLegacyFormat(publicAddress, this.network),
+          value: parseInt(nativeAmount)
+        }))
+
+      const bcoinTx = await this.keyManager.createTX({
+        outputs,
+        utxos,
+        rate,
+        txOptions,
         maxFee: this.currencyInfo.defaultSettings.maxFee,
-        outputs: edgeSpendInfo.spendTargets,
-        utxos: options.utxos || this.engineState.getUTXOs(),
         height: this.getBlockHeight()
       })
-      const resultedTransaction = await this.keyManager.createTX(options)
-      const sumOfTx = edgeSpendInfo.spendTargets.reduce(
-        (s, spendTarget: EdgeSpendTarget) => {
-          if (
-            spendTarget.publicAddress &&
-            this.engineState.scriptHashes[spendTarget.publicAddress]
-          ) {
-            return s
-          } else return s - parseInt(spendTarget.nativeAmount)
-        },
-        0
-      )
+
+      const { scriptHashes } = this.engineState
+      const sumOfTx = spendTargets.reduce((s, {
+        publicAddress,
+        nativeAmount
+      }: EdgeSpendTarget) => (publicAddress && scriptHashes[publicAddress])
+        ? s : s - parseInt(nativeAmount), 0)
 
       const ourReceiveAddresses = []
-      for (const i in resultedTransaction.outputs) {
-        let address = resultedTransaction.outputs[i]
+      for (const i in bcoinTx.outputs) {
+        let address = bcoinTx.outputs[i]
           .getAddress()
           .toString(this.network)
         address = toNewFormat(address, this.network)
-        if (address && this.engineState.scriptHashes[address]) {
+        if (address && scriptHashes[address]) {
           ourReceiveAddresses.push(address)
         }
       }
 
       const edgeTransaction: EdgeTransaction = {
         ourReceiveAddresses,
-        otherParams: {
-          bcoinTx: resultedTransaction,
-          edgeSpendInfo,
-          rate: options.rate
-        },
+        otherParams: { bcoinTx, edgeSpendInfo, rate },
         currencyCode: this.currencyInfo.currencyCode,
         txid: '',
         date: 0,
         blockHeight: 0,
-        nativeAmount: `${sumOfTx - parseInt(resultedTransaction.getFee())}`,
-        networkFee: `${resultedTransaction.getFee()}`,
+        nativeAmount: `${sumOfTx - parseInt(bcoinTx.getFee())}`,
+        networkFee: `${bcoinTx.getFee()}`,
         signedTx: ''
       }
       return edgeTransaction

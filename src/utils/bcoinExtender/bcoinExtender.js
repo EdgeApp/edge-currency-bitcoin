@@ -1,15 +1,15 @@
 // @flow
 import type { EdgeCurrencyInfo } from 'edge-core-js'
-import { patchBcashTX } from './bcashExtender.js'
 import {
   patchDerivePublic,
   patchDerivePrivate,
   patchDerivePath,
   patchPrivateFromMnemonic
 } from './deriveExtender.js'
+import { patchTransaction } from './replayProtaction.js'
 
 let cryptoReplaced = false
-let patchedForCash = false
+let replayProtactionPatched = false
 
 export const bcoinExtender = (
   bcoin: any,
@@ -21,16 +21,11 @@ export const bcoinExtender = (
   const type = network.type
   if (bcoin.networks.types.indexOf(type) === -1) {
     bcoin.networks.types.push(type)
-    for (const param in bcoin.networks.main) {
-      if (!network[param]) {
-        network[param] = bcoin.networks.main[param]
-      }
-    }
-    bcoin.networks[type] = network
+    bcoin.networks[type] = { ...bcoin.networks.main, ...network }
   }
-  if (!patchedForCash && type && type.includes('bitcoincash')) {
-    patchBcashTX(bcoin)
-    patchedForCash = true
+  if (!replayProtactionPatched && network.replayProtaction) {
+    patchTransaction(bcoin)
+    replayProtactionPatched = true
   }
   if (!cryptoReplaced) {
     if (secp256k1) {
