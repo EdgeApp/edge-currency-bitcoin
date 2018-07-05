@@ -27,6 +27,15 @@ export const secp256k1Patch = function (bcoin, secp256k1) {
     return this
   }
 
+  keyRing.fromPublic = async function (key, network) {
+    assert(Buffer.isBuffer(key), 'Public key must be a buffer.')
+    const validKey = await secp256k1.publicKeyVerify(key)
+    assert(validKey, 'Not a valid public key.')
+    this.network = bcoin.network.get(network)
+    this.publicKey = key
+    return this
+  }
+
   // Patch Derive to use async version of secp256k1
   privateKey.derive = async function (index, hardened) {
     assert(typeof index === 'number')
