@@ -350,13 +350,7 @@ export class KeyManager {
             keyRing.privKey = await this.keys.master.privKey.derive(branch)
             this.saveKeysToCache()
           }
-          const result = keyRing.privKey.derive(index)
-          let privateKey
-          if (typeof result.then === 'function') {
-            privateKey = await Promise.resolve(result)
-          } else {
-            privateKey = result
-          }
+          const privateKey = await keyRing.privKey.derive(index)
           const nested = this.bip === 'bip49'
           const witness = this.bip === 'bip49'
           const key = await bcoin.primitives.KeyRing.fromOptions({
@@ -518,22 +512,10 @@ export class KeyManager {
    */
   async deriveAddress (keyRing: KeyRing, branch: number, index: number) {
     if (!keyRing.pubKey) {
-      const result = this.keys.master.pubKey.derive(branch)
-      if (typeof result.then === 'function') {
-        keyRing.pubKey = await Promise.resolve(result)
-      } else {
-        keyRing.pubKey = result
-      }
+      keyRing.pubKey = await this.keys.master.pubKey.derive(branch)
       this.saveKeysToCache()
     }
-    let publicKey
-
-    const result = keyRing.pubKey.derive(index)
-    if (typeof result.then === 'function') {
-      publicKey = await Promise.resolve(result)
-    } else {
-      publicKey = result
-    }
+    const publicKey = await keyRing.pubKey.derive(index)
 
     let nested = false
     let witness = false
