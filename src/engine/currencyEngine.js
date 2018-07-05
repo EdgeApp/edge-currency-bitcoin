@@ -518,15 +518,13 @@ export class CurrencyEngine {
     await this.engineState.load()
 
     for (const key of privateKeys) {
-      const privKey = bcoin.primitives.KeyRing.fromSecret(key, this.network)
+      const privKey = await bcoin.primitives.KeyRing.fromSecret(key, this.network)
       const keyAddress = privKey.getAddress('base58')
       privKey.nested = true
       privKey.witness = true
       const nestedAddress = privKey.getAddress('base58')
       const keyHash = await addressToScriptHash(keyAddress)
-      const nestedHash = await addressToScriptHash(
-        nestedAddress
-      )
+      const nestedHash = await addressToScriptHash(nestedAddress)
       engineState.addAddress(keyHash, keyAddress)
       engineState.addAddress(nestedHash, nestedAddress)
     }

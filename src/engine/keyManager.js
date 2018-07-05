@@ -359,7 +359,7 @@ export class KeyManager {
           }
           const nested = this.bip === 'bip49'
           const witness = this.bip === 'bip49'
-          const key = bcoin.primitives.KeyRing.fromOptions({
+          const key = await bcoin.primitives.KeyRing.fromOptions({
             privateKey,
             nested,
             witness
@@ -541,7 +541,7 @@ export class KeyManager {
       nested = true
       witness = true
     }
-    const key = bcoin.primitives.KeyRing.fromOptions({
+    const key = await bcoin.primitives.KeyRing.fromOptions({
       publicKey,
       nested,
       witness
