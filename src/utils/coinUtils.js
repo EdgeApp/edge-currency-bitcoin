@@ -210,3 +210,8 @@ export const parsePath = (path: string = '', masterPath: string) =>
 
 export const sumUtxos = (utxos: Array<Utxo>) =>
   utxos.reduce((s, { tx, index }) => s + parseInt(tx.outputs[index].value), 0)
+
+export const seedFromEntropy = (entropy: Buffer) =>
+  hd.Mnemonic.fromEntropy(entropy).getPhrase()
+
+export const getLock = () => new utils.Lock()

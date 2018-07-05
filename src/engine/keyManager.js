@@ -1,12 +1,11 @@
 // @flow
 import type { AddressInfo, AddressInfos } from './engineState.js'
 import type { Utxo, BlockHeight, TxOptions, Output } from '../utils/coinUtils.js'
-import bcoin from 'bcoin'
 import { FormatSelector } from '../utils/formatSelector.js'
 import {
   parsePath,
-  getPrivateFromSeed,
-  createTX
+  createTX,
+  getLock
 } from '../utils/coinUtils.js'
 import {
   toLegacyFormat,
@@ -117,7 +116,7 @@ export class KeyManager {
     this.bip = bip
     this.fSelector = FormatSelector(bip, network)
     // Create a lock for when deriving addresses
-    this.writeLock = new bcoin.utils.Lock()
+    this.writeLock = getLock()
     // Create the master derivation path
     this.masterPath = this.fSelector.createMasterPath(account, coinType)
     // Set the callbacks with nops as default
@@ -183,10 +182,10 @@ export class KeyManager {
     return createTX({ ...options, changeAddress, estimate })
   }
 
-  async sign (mtx: any, privateKeys: Array<string> = []) {
+  async sign (tx: any, privateKeys: Array<string> = []) {
     const keyRings = []
     for (const key of privateKeys) {
-      const privKey = await bcoin.primitives.KeyRing.fromSecret(key, this.network)
+      const privKey = await this.fSelector.keyFromSecret(key)
       keyRings.push(privKey)
     }
     if (!keyRings.length) {
@@ -194,13 +193,14 @@ export class KeyManager {
         throw new Error("Can't sign without private key")
       }
       await this.initMasterKeys()
-      for (const input: any of mtx.inputs) {
+      const { branches } = this.fSelector
+      for (const input: any of tx.inputs) {
         const { prevout } = input
         if (prevout) {
           const [branch: number, index: number] = this.utxoToPath(prevout)
-          const keyRing = branch === 0 ? this.keys.receive : this.keys.change
+          const keyRing = this.keys[branches[branch]]
           if (!keyRing.privKey) {
-            keyRing.privKey = await this.keys.master.privKey.derive(branch)
+            keyRing.privKey = await this.fSelector.deriveHdKey(this.keys.master.privKey, branch)
             this.saveKeysToCache()
           }
           const key = await this.fSelector.deriveKeyRing(keyRing.privKey, index)
@@ -208,8 +208,7 @@ export class KeyManager {
         }
       }
     }
-    await mtx.template(keyRings)
-    mtx.sign(keyRings, bcoin.networks[this.network].replayProtaction)
+    return this.fSelector.sign(tx, keyRings)
   }
 
   getSeed (): string | null {
@@ -266,14 +265,12 @@ export class KeyManager {
   }
 
   async initMasterKeys () {
-    if (this.keys.master.privKey) {
-      this.keys.master.pubKey = this.keys.master.privKey.toPublic()
-    } else {
-      const privateKey = await getPrivateFromSeed(this.seed, this.network)
-      const privKey = await privateKey.derivePath(this.masterPath)
-      const pubKey = privKey.toPublic()
-      this.keys.master = { ...this.keys.master, privKey, pubKey }
-    }
+    const keys = await this.fSelector.getMasterKeys(
+      this.seed,
+      this.masterPath,
+      this.keys.master.privKey
+    )
+    this.keys.master = { ...this.keys.master, ...keys }
     this.saveKeysToCache()
   }
 
@@ -313,7 +310,7 @@ export class KeyManager {
     const { children } = keyRing
     // If we never derived a public key for this branch before
     if (!keyRing.pubKey) {
-      keyRing.pubKey = await this.keys.master.pubKey.derive(branch)
+      keyRing.pubKey = await this.fSelector.deriveHdKey(this.keys.master.pubKey, branch)
       this.saveKeysToCache()
     }
 

@@ -659,14 +659,10 @@ export class CurrencyEngine {
 
   async signTx (edgeTransaction: EdgeTransaction): Promise<EdgeTransaction> {
     this.logEdgeTransaction(edgeTransaction, 'Signing')
-    const otherParams = edgeTransaction.otherParams
-    const { edgeSpendInfo, bcoinTx } = otherParams
+    const { edgeSpendInfo, bcoinTx } = edgeTransaction.otherParams || {}
     const { privateKeys = [] } = edgeSpendInfo
-    await this.keyManager.sign(bcoinTx, privateKeys)
-    edgeTransaction.date = Date.now() / MILLI_TO_SEC
-    edgeTransaction.signedTx = bcoinTx.toRaw().toString('hex')
-    edgeTransaction.txid = bcoinTx.rhash()
-    return edgeTransaction
+    const { signedTx, txid } = await this.keyManager.sign(bcoinTx, privateKeys)
+    return { ...edgeTransaction, signedTx, txid, date: Date.now() / MILLI_TO_SEC }
   }
 
   async broadcastTx (
