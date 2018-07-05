@@ -6,7 +6,103 @@ const { Buffer } = buffer
 
 export const patchTransaction = function (bcoin) {
   const txProto = bcoin.primitives.TX.prototype
+  const mtxProto = bcoin.primitives.MTX.prototype
   const defaultHashType = bcoin.script.hashType
+
+  mtxProto.sign = async function (ring, type) {
+    if (Array.isArray(ring)) {
+      let total = 0
+      for (const key of ring) total += await this.sign(key, type)
+      return total
+    }
+
+    assert(ring.privateKey, 'No private key available.')
+
+    let total = 0
+
+    for (let i = 0; i < this.inputs.length; i++) {
+      const {prevout} = this.inputs[i]
+      const coin = this.view.getOutput(prevout)
+
+      if (!coin) continue
+      if (!ring.ownOutput(coin)) continue
+      // Build script for input
+      if (!this.scriptInput(i, coin, ring)) continue
+      // Sign input
+      const signed = await this.signInput(i, coin, ring, type)
+      if (!signed) continue
+
+      total++
+    }
+
+    return total
+  }
+
+  mtxProto.signInput = async function (index, coin, ring, type) {
+    const input = this.inputs[index]
+    const key = ring.privateKey
+
+    assert(input, 'Input does not exist.')
+    assert(coin, 'No coin passed.')
+
+    // Get the previous output's script
+    const value = coin.value
+    let prev = coin.script
+    let vector = input.script
+    let version = 0
+    let redeem = false
+
+    // Grab regular p2sh redeem script.
+    if (prev.isScripthash()) {
+      prev = input.script.getRedeem()
+      if (!prev) throw new Error('Input has not been templated.')
+      redeem = true
+    }
+
+    // If the output script is a witness program,
+    // we have to switch the vector to the witness
+    // and potentially alter the length. Note that
+    // witnesses are stack items, so the `dummy`
+    // _has_ to be an empty buffer (what OP_0
+    // pushes onto the stack).
+    if (prev.isWitnessScripthash()) {
+      prev = input.witness.getRedeem()
+      if (!prev) throw new Error('Input has not been templated.')
+      vector = input.witness
+      redeem = true
+      version = 1
+    } else {
+      const wpkh = prev.getWitnessPubkeyhash()
+      if (wpkh) {
+        prev = bcoin.script.fromPubkeyhash(wpkh)
+        vector = input.witness
+        redeem = false
+        version = 1
+      }
+    }
+
+    // Create our signature.
+    const sig = this.signatureProtected
+      ? await this.signatureProtected(index, prev, value, key, type, version)
+      : await this.signature(index, prev, value, key, type, version)
+
+    if (redeem) {
+      const stack = vector.toStack()
+      const redeem = stack.pop()
+      const result = this.signVector(prev, stack, sig, ring)
+      if (!result) return false
+      result.push(redeem)
+      vector.fromStack(result)
+      return true
+    }
+
+    const stack = vector.toStack()
+    const result = this.signVector(prev, stack, sig, ring)
+    if (!result) return false
+    vector.fromStack(result)
+
+    return true
+  }
 
   // Patch `signature` to recive `hashType` as either a number or a Fork Object
   // The fork object can have the following props (all are optional):
@@ -16,7 +112,7 @@ export const patchTransaction = function (bcoin) {
   //   forkId = 0x00,
   //   type = null
   // }
-  txProto.signature = function (index, prev, value, key, hashType, version) {
+  txProto.signatureProtected = function (index, prev, value, key, hashType, version) {
     const {
       SIGHASH_FORKID = 0x00,
       forcedMinVersion = 0,
@@ -47,6 +143,9 @@ export const patchTransaction = function (bcoin) {
       version,
       forkedHashType
     )
+
+    if (this.signatureAsync) return this.signatureAsync(hash, key, forkedType)
+
     const sig = bcoin.crypto.secp256k1.sign(hash, key)
     const bw = new bcoin.utils.StaticWriter(sig.length + 1)
 

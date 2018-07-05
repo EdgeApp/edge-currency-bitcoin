@@ -11,6 +11,7 @@ export const secp256k1Patch = function (bcoin, secp256k1) {
   const publicKey = bcoin.hd.PublicKey.prototype
   const privateKey = bcoin.hd.PrivateKey.prototype
   const keyRing = bcoin.primitives.KeyRing.prototype
+  const tx = bcoin.primitives.TX.prototype
 
   // Patch From Private to use async version of secp256k1
   keyRing.fromPrivate = async function (key, compress, network) {
@@ -200,6 +201,25 @@ export const secp256k1Patch = function (bcoin, secp256k1) {
     bcoin.hd.common.cache.set(id, child)
 
     return child
+  }
+
+  tx.signature = async function (index, prev, value, key, type, version) {
+    if (type == null) type = bcoin.script.hashType.ALL
+
+    if (version == null) version = 0
+
+    const hash = this.signatureHash(index, prev, value, type, version)
+    return this.signatureAsync(hash, key, type)
+  }
+
+  tx.signatureAsync = async function (hash, key, type) {
+    console.warn('tx.signatureAsync - type', type)
+    const sig = await secp256k1.sign(hash, key)
+    const bw = new bcoin.utils.StaticWriter(sig.length + 1)
+
+    bw.writeBytes(sig)
+    bw.writeU8(type)
+    return bw.render()
   }
 }
 

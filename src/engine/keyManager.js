@@ -364,7 +364,7 @@ export class KeyManager {
       }
     }
     await mtx.template(keyRings)
-    mtx.sign(keyRings, bcoin.networks[this.network].replayProtaction)
+    await mtx.sign(keyRings, bcoin.networks[this.network].replayProtaction)
   }
 
   getSeed (): string | null {
