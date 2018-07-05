@@ -6,7 +6,7 @@ import { assert } from 'chai'
 import { before, describe, it } from 'mocha'
 import fetch from 'node-fetch'
 import request from 'request'
-
+import bcoin from 'bcoin'
 import * as Factories from '../../../src/index.js'
 import dummyAddressData from './dummyAddressData.json'
 import dummyHeadersData from './dummyHeadersData.json'
@@ -27,6 +27,8 @@ for (const fixture of fixtures) {
   const opts = {
     io: Object.assign(fakeIo, {
       random: size => fixture['key'],
+      secp256k1: bcoin.crypto.secp256k1,
+      pbkdf2: bcoin.crypto.pbkdf2,
       Socket: require('net').Socket,
       TLSSocket: require('tls').TLSSocket,
       fetch: fetch
