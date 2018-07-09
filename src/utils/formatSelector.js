@@ -2,7 +2,9 @@
 // $FlowFixMe
 import buffer from 'buffer-hack'
 import { hd, primitives, consensus, network as Network } from 'bcoin'
-import { addressToScriptHash, setKeyType } from '../utils/coinUtils.js'
+import { getPrivateFromSeed, addressToScriptHash, setKeyType } from '../utils/coinUtils.js'
+
+export const SUPPORTED_BIPS = ['bip32', 'bip44', 'bip49', 'bip84']
 
 // $FlowFixMe
 const { Buffer } = buffer
@@ -15,14 +17,28 @@ export const getAllAddresses = (
   const addressesPromises = []
   for (const bip of SUPPORTED_BIPS) {
     for (const key of privateKeys) {
-      const dSelector = FormatSelector(bip, network)
-      addressesPromises.push(dSelector.addressFromSecret(key))
+      const fSelector = FormatSelector(bip, network)
+      addressesPromises.push(
+        fSelector.keyFromSecret(key).then(fSelector.addressFromKey)
+      )
     }
   }
   return Promise.all(addressesPromises)
 }
 
-export const SUPPORTED_BIPS = ['bip32', 'bip44', 'bip49', 'bip84']
+export const getXPubFromSeed = async ({
+  seed,
+  bip = 'bip32',
+  network = 'main',
+  account = 0,
+  coinType = 0
+}: any) => {
+  const masterKey = await getPrivateFromSeed(seed, network)
+  const fSelector = FormatSelector(bip, network)
+  const masterPath = fSelector.createMasterPath(0, coinType)
+  const privateKey = await masterKey.derivePath(masterPath)
+  return privateKey.xpubkey()
+}
 
 export const FormatSelector = (
   bipStr: string = 'bip32',
@@ -37,6 +53,8 @@ export const FormatSelector = (
   const witness = bip === 49 || bip === 84
 
   const setKeyTypeWrap = (key: any) => setKeyType(key, nested, witness, network)
+  const deriveHdKey = (parentKey: any, index: number): Promise<any> =>
+    Promise.resolve(parentKey.derive(index))
   const addressFromKey = (key: any) =>
     setKeyTypeWrap(key).then(key => {
       const address = key.getAddress().toString()
@@ -51,9 +69,24 @@ export const FormatSelector = (
     branches: branches.slice(1),
     setKeyType: setKeyTypeWrap,
 
-    addressFromSecret: (key: any): Promise<any> => Promise
-      .resolve(primitives.KeyRing.fromSecret(key, network))
-      .then(keyObj => addressFromKey(keyObj)),
+    sign: (tx: any, keys: Array<any>): Promise<{txid: string, signedTx: string}> =>
+      Promise.resolve(tx.template(keys))
+        .then(() => tx.sign(keys, Network.get(network).replayProtaction))
+        .then(() => ({
+          txid: tx.rhash(),
+          signedTx: tx.toRaw().toString('hex')
+        })),
+
+    getMasterKeys: async (seed: string, masterPath: string, privKey?: any) => {
+      if (!privKey) {
+        const privateKey = await getPrivateFromSeed(seed, network)
+        privKey = await privateKey.derivePath(masterPath)
+      }
+      return { privKey, pubKey: privKey.toPublic() }
+    },
+
+    keyFromSecret: (key: any): Promise<any> =>
+      Promise.resolve(primitives.KeyRing.fromSecret(key, network)),
 
     parseSeed:
       bip === 32
@@ -67,13 +100,12 @@ export const FormatSelector = (
           coinType >= 0 ? coinType : Network.get(network).keyPrefix.coinType
         }'/${account}'`,
 
+    deriveHdKey,
     deriveAddress: (parentKey: any, index: number): Promise<any> =>
-      Promise.resolve(parentKey.derive(index)).then(key => addressFromKey(key)),
+      deriveHdKey(parentKey, index).then(key => addressFromKey(key)),
 
     deriveKeyRing: (parentKey: any, index: number): Promise<any> =>
-      Promise.resolve(parentKey.derive(index)).then(derivedKey =>
-        setKeyTypeWrap(derivedKey)
-      ),
+      deriveHdKey(parentKey, index).then(derivedKey => setKeyTypeWrap(derivedKey)),
 
     keysFromRaw: (rawKeys: any = {}) =>
       branches.reduce((keyRings, branch) => {

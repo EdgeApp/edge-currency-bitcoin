@@ -11,14 +11,13 @@ import type {
   EdgeParsedUri
 } from 'edge-core-js'
 
-import bcoin from 'bcoin'
 // $FlowFixMe
 import buffer from 'buffer-hack'
 import { CurrencyEngine } from '../engine/currencyEngine.js'
 import { PluginState } from './pluginState.js'
 import { parseUri, encodeUri } from './uri.js'
-import { FormatSelector } from '../utils/formatSelector.js'
-import { getPrivateFromSeed, keysFromWalletInfo } from '../utils/coinUtils.js'
+import { getXPubFromSeed } from '../utils/formatSelector.js'
+import { seedFromEntropy, keysFromWalletInfo } from '../utils/coinUtils.js'
 
 // $FlowFixMe
 const { Buffer } = buffer
@@ -58,10 +57,7 @@ export class CurrencyPlugin {
   // ------------------------------------------------------------------------
   createPrivateKey (walletType: string) {
     const randomBuffer = Buffer.from(this.io.random(32))
-    const mnemonic = bcoin.hd.Mnemonic.fromEntropy(randomBuffer)
-    return {
-      [`${this.network}Key`]: mnemonic.getPhrase()
-    }
+    return { [`${this.network}Key`]: seedFromEntropy(randomBuffer) }
   }
 
   async derivePublicKey (walletInfo: EdgeWalletInfo) {
@@ -69,15 +65,13 @@ export class CurrencyPlugin {
       throw new Error('InvalidWalletType')
     }
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
-    const { seed, bip, coinType } = keysFromWalletInfo(this.network, walletInfo)
+    const network = this.network
+    const { seed, bip, coinType } = keysFromWalletInfo(network, walletInfo)
     if (!seed) throw new Error('InvalidKeyName')
-    const masterKey = await getPrivateFromSeed(seed, this.network)
-    const fSelector = FormatSelector(bip, this.network)
-    const masterPath = fSelector.createMasterPath(0, coinType)
-    const privateKey = await masterKey.derivePath(masterPath)
+    const xpub = await getXPubFromSeed({ seed, bip, coinType, network })
     return {
-      [`${this.network}Key`]: walletInfo.keys[`${this.network}Key`],
-      [`${this.network}Xpub`]: privateKey.xpubkey()
+      [`${network}Key`]: walletInfo.keys[`${network}Key`],
+      [`${network}Xpub`]: xpub
     }
   }
 
