@@ -44,7 +44,7 @@ export const bitcoincashTestnetInfo: EdgeCurrencyInfo = {
         witnessscripthash: null,
         prefix: 'bchtest'
       },
-      replayProtaction: {
+      replayProtection: {
         SIGHASH_FORKID: 0x40,
         forcedMinVersion: 1,
         forkId: 0

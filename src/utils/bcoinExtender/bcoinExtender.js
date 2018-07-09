@@ -6,10 +6,10 @@ import {
   patchDerivePath,
   patchPrivateFromMnemonic
 } from './deriveExtender.js'
-import { patchTransaction } from './replayProtaction.js'
+import { patchTransaction } from './replayProtection.js'
 
 let cryptoReplaced = false
-let replayProtactionPatched = false
+let replayProtectionPatched = false
 
 export const bcoinExtender = (
   bcoin: any,
@@ -23,9 +23,9 @@ export const bcoinExtender = (
     bcoin.networks.types.push(type)
     bcoin.networks[type] = { ...bcoin.networks.main, ...network }
   }
-  if (!replayProtactionPatched && network.replayProtaction) {
+  if (!replayProtectionPatched && network.replayProtection) {
     patchTransaction(bcoin)
-    replayProtactionPatched = true
+    replayProtectionPatched = true
   }
   if (!cryptoReplaced) {
     if (secp256k1) {

@@ -71,7 +71,7 @@ export const FormatSelector = (
 
     sign: (tx: any, keys: Array<any>): Promise<{txid: string, signedTx: string}> =>
       Promise.resolve(tx.template(keys))
-        .then(() => tx.sign(keys, Network.get(network).replayProtaction))
+        .then(() => tx.sign(keys, Network.get(network).replayProtection))
         .then(() => ({
           txid: tx.rhash(),
           signedTx: tx.toRaw().toString('hex')

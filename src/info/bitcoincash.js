@@ -41,7 +41,7 @@ export const bitcoincashInfo: EdgeCurrencyInfo = {
         witnessscripthash: null,
         prefix: 'bitcoincash'
       },
-      replayProtaction: {
+      replayProtection: {
         SIGHASH_FORKID: 0x40,
         forcedMinVersion: 1,
         forkId: 0
