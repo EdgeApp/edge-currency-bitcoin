@@ -479,7 +479,6 @@ export class CurrencyEngine {
     edgeSpendInfo: EdgeSpendInfo,
     options?: any = {}
   ): Promise<EdgeTransaction> {
-    // $FlowFixMe
     const { privateKeys = [] } = edgeSpendInfo
     if (!privateKeys.length) throw new Error('No private keys given')
     let success, failure
@@ -556,7 +555,7 @@ export class CurrencyEngine {
           req.send(null)
         })
       }
-      let result
+      let result = Buffer.alloc(0)
       // Use the modern API if in node or any enviroment which supports it
       if (typeof window === 'undefined' ||
         (window.Response && window.Response.prototype.arrayBuffer)
@@ -566,8 +565,6 @@ export class CurrencyEngine {
       } else if (window && window.XMLHttpRequest) {
         result = await legacyFetch(paymentProtocolURL)
       }
-
-      // $FlowFixMe
       const buf = Buffer.from(result)
       return parsePayment(buf, this.network, this.currencyInfo.currencyCode)
     } catch (err) {
