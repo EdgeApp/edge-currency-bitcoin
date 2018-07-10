@@ -534,11 +534,11 @@ export class CurrencyEngine {
         throw new Error('No io/fetch object')
       }
 
-      const headers = { 'Accept': 'application/bitcoin-paymentrequest' }
+      const headers = { Accept: 'application/bitcoin-paymentrequest' }
       // Legacy fetching using XMLHttpRequest
       // This is for enviroments that don't support 'arrayBuffer'
       // like some versions of react-native and old browsers
-      const legacyFetch = async (url) => {
+      const legacyFetch = async url => {
         return new Promise((resolve, reject) => {
           const req = new window.XMLHttpRequest()
           req.open('GET', url, true)
@@ -546,7 +546,7 @@ export class CurrencyEngine {
             req.setRequestHeader(header, headers[header])
           }
           req.responseType = 'arraybuffer'
-          req.onload = (event) => {
+          req.onload = event => {
             const resp = req.response
             if (resp) {
               resolve(resp)
@@ -557,7 +557,8 @@ export class CurrencyEngine {
       }
       let result = Buffer.alloc(0)
       // Use the modern API if in node or any enviroment which supports it
-      if (typeof window === 'undefined' ||
+      if (
+        typeof window === 'undefined' ||
         (window.Response && window.Response.prototype.arrayBuffer)
       ) {
         result = await this.io.fetch(paymentProtocolURL, { headers })
@@ -584,7 +585,9 @@ export class CurrencyEngine {
     }
     // Calculate the total amount to send
     const totalAmountToSend = spendTargets.reduce(
-      (sum, { nativeAmount }) => bns.add(sum, nativeAmount || '0'), '0')
+      (sum, { nativeAmount }) => bns.add(sum, nativeAmount || '0'),
+      '0'
+    )
     // Try and get UTXOs from `txOptions`, if unsuccessful use our own utxo's
     const { utxos = this.engineState.getUTXOs() } = txOptions
     // Test if we have enough to spend
@@ -600,12 +603,14 @@ export class CurrencyEngine {
       const rate = this.getRate(edgeSpendInfo)
       // Create outputs from spendTargets
       const outputs = spendTargets
-        .filter(({ publicAddress, nativeAmount }) =>
-          publicAddress && nativeAmount)
+        .filter(
+          ({ publicAddress, nativeAmount }) => publicAddress && nativeAmount
+        )
         .map(({ publicAddress = '', nativeAmount = 0 }) => ({
-          address: typeof publicAddress !== 'string'
-            ? toLegacyFormat(publicAddress.toString(), this.network)
-            : toLegacyFormat(publicAddress, this.network),
+          address:
+            typeof publicAddress !== 'string'
+              ? toLegacyFormat(publicAddress.toString(), this.network)
+              : toLegacyFormat(publicAddress, this.network),
           value: parseInt(nativeAmount)
         }))
 
@@ -619,17 +624,17 @@ export class CurrencyEngine {
       })
 
       const { scriptHashes } = this.engineState
-      const sumOfTx = spendTargets.reduce((s, {
-        publicAddress,
-        nativeAmount
-      }: EdgeSpendTarget) => (publicAddress && scriptHashes[publicAddress])
-        ? s : s - parseInt(nativeAmount), 0)
+      const sumOfTx = spendTargets.reduce(
+        (s, { publicAddress, nativeAmount }: EdgeSpendTarget) =>
+          publicAddress && scriptHashes[publicAddress]
+            ? s
+            : s - parseInt(nativeAmount),
+        0
+      )
 
       const ourReceiveAddresses = []
       for (const i in bcoinTx.outputs) {
-        let address = bcoinTx.outputs[i]
-          .getAddress()
-          .toString(this.network)
+        let address = bcoinTx.outputs[i].getAddress().toString(this.network)
         address = toNewFormat(address, this.network)
         if (address && scriptHashes[address]) {
           ourReceiveAddresses.push(address)
@@ -659,7 +664,12 @@ export class CurrencyEngine {
     const { edgeSpendInfo, bcoinTx } = edgeTransaction.otherParams || {}
     const { privateKeys = [] } = edgeSpendInfo
     const { signedTx, txid } = await this.keyManager.sign(bcoinTx, privateKeys)
-    return { ...edgeTransaction, signedTx, txid, date: Date.now() / MILLI_TO_SEC }
+    return {
+      ...edgeTransaction,
+      signedTx,
+      txid,
+      date: Date.now() / MILLI_TO_SEC
+    }
   }
 
   async broadcastTx (

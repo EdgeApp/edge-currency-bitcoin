@@ -2,7 +2,11 @@
 // $FlowFixMe
 import buffer from 'buffer-hack'
 import { hd, primitives, consensus, network as Network } from 'bcoin'
-import { getPrivateFromSeed, addressToScriptHash, setKeyType } from '../utils/coinUtils.js'
+import {
+  getPrivateFromSeed,
+  addressToScriptHash,
+  setKeyType
+} from '../utils/coinUtils.js'
 
 export const SUPPORTED_BIPS = ['bip32', 'bip44', 'bip49', 'bip84']
 
@@ -68,7 +72,10 @@ export const FormatSelector = (
     branches: branches.slice(1),
     setKeyType: setKeyTypeWrap,
 
-    sign: (tx: any, keys: Array<any>): Promise<{txid: string, signedTx: string}> =>
+    sign: (
+      tx: any,
+      keys: Array<any>
+    ): Promise<{ txid: string, signedTx: string }> =>
       Promise.resolve(tx.template(keys))
         .then(() => tx.sign(keys, Network.get(network).replayProtection))
         .then(() => ({
@@ -104,7 +111,9 @@ export const FormatSelector = (
       deriveHdKey(parentKey, index).then(key => addressFromKey(key)),
 
     deriveKeyRing: (parentKey: any, index: number): Promise<any> =>
-      deriveHdKey(parentKey, index).then(derivedKey => setKeyTypeWrap(derivedKey)),
+      deriveHdKey(parentKey, index).then(derivedKey =>
+        setKeyTypeWrap(derivedKey)
+      ),
 
     keysFromRaw: (rawKeys: any = {}) =>
       branches.reduce((keyRings, branch) => {

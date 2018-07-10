@@ -92,7 +92,8 @@ export const parseUri = (
       const { multiplier = '1' } = denomination
       const t = bns.mul(amount, multiplier.toString())
       Object.assign(parsedUri, {
-        currencyCode, nativeAmount: bns.toFixed(t, 0, 0)
+        currencyCode,
+        nativeAmount: bns.toFixed(t, 0, 0)
       })
     }
   }

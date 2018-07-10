@@ -25,7 +25,8 @@ const validRequests = [
   // ],
   [
     '080112046e6f6e651a00226a0a046d61696e121f08a08d06121976a9148415560b205ed9b2be9bc450ed9c3acb86437a0d88ac18db94cbd90520ebb0cbd9052a1a6d65726368616e742073657276657220736179732068656c6c6f3219687474703a2f2f6c6f63616c686f73743a343536372f61636b2a8002739f74547c06ef32e8754de4bb7d22a4a6e899ef999ecd15f3fd8b77331de367a0b4d49f929058f4dc6f8acaac36d16147edd71dafed352877500c9e4c699b30a1ae8f5f307e2f1e8b30120c2f7861031dd3682922848f9b3a9fdf64a6852dd92a719617ef7d44bed84069d3155b6b72a8b8b2ff8cc7195174b5a3a4416aeb8d6f50dd50dc9113ecc03bc4a6f750cd06a9d80613b2a35770116715b96b0b22dad48ecfc9d5e1f0f9ee09ab55210bde27b0399356e737bf2bcec1ea5d0d7651e2d61d664478d4e9936ff44374a30e77280fb8e95cb67e93aca72186ad2a530bc323e857bb442acf769286692e8b72367efd5982c90c64afc6227832b2537cd971',
-    { nativeAmount: '100000',
+    {
+      nativeAmount: '100000',
       merchant: '',
       memo: 'merchant server says hello',
       domain: 'localhost',
@@ -61,7 +62,7 @@ const currencyCode = 'BTC'
 describe(`Payment Request`, function () {
   validRequests.forEach(validRequest => {
     it('should parse a valid payment request', function () {
-      const [ request, response ] = validRequest
+      const [request, response] = validRequest
       const buf = Buffer.from(request, 'hex')
       const paymentRequest = parsePayment(buf, network, currencyCode)
       assert.deepEqual(paymentRequest, response)
