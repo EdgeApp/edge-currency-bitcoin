@@ -5,7 +5,7 @@ import { imageServerUrl } from './constants.js'
 export const ufoInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'UFO',
-  currencyName: 'UFO Coin',
+  currencyName: 'UFO',
   pluginName: 'ufo',
   denominations: [
     { name: 'UFO', multiplier: '100000000', symbol: 'U' },
