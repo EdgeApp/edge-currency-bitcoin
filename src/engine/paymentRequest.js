@@ -1,12 +1,8 @@
 // @flow
-// $FlowFixMe
-// import buffer from 'buffer-hack'
 import bcoin from 'bcoin'
 import parse from 'url-parse'
 import type { EdgePaymentProtocolInfo } from 'edge-core-js'
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
-// $FlowFixMe
-// const { Buffer } = buffer
 
 export function parsePayment (
   paymentBuffer: Buffer,

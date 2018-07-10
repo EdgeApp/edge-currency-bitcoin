@@ -6,7 +6,6 @@ import { getPrivateFromSeed, addressToScriptHash, setKeyType } from '../utils/co
 
 export const SUPPORTED_BIPS = ['bip32', 'bip44', 'bip49', 'bip84']
 
-// $FlowFixMe
 const { Buffer } = buffer
 const witScale = consensus.WITNESS_SCALE_FACTOR
 

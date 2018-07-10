@@ -4,7 +4,6 @@ import buffer from 'buffer-hack'
 import { utils, hd, primitives, script, network as Network } from 'bcoin'
 import { hash256, hash256Sync, reverseBufferToHex } from './utils.js'
 
-// $FlowFixMe
 const { Buffer } = buffer
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
 
