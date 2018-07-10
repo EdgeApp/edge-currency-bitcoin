@@ -56,9 +56,8 @@ export const parseUri = (
   uri: string,
   currencyInfo: EdgeCurrencyInfo
 ): EdgeParsedUri => {
-  const result: EdgeParsedUri = { metadata: {} }
-  const parsedUri = parse(uri, {}, true)
-  const { protocol, pathname, query } = parsedUri
+  const uriObj = parse(uri, {}, true)
+  const { protocol, pathname, query } = uriObj
   const currencyName = currencyInfo.currencyName.toLowerCase()
   const network = currencyInfo.defaultSettings.network.type
   const currencyCode = protocol && protocol.replace(':', '')
@@ -70,21 +69,21 @@ export const parseUri = (
   const { label, message, amount, r } = query
   // If we don't have a pathname or a paymentProtocolURL uri then we bail
   if (!pathname && !r) throw new Error('InvalidUriError')
+  // Create the returned object
+  const parsedUri = {}
   // Parse the pathname and add it to the result object
   if (pathname) {
     // Test if the currency code
     const parsedPath = parsePathname(pathname, network)
     if (!parsedPath) throw new Error('InvalidUriError')
-    // $FlowFixMe
-    Object.assign(result, parsedPath)
+    Object.assign(parsedUri, parsedPath)
   }
-  // Assign the query params to the result object
-  // $FlowFixMe
-  if (label) result.metadata.name = label
-  // $FlowFixMe
-  if (message) result.metadata.message = message
-  // $FlowFixMe
-  if (r) result.paymentProtocolURL = r
+  // Assign the query params to the parsedUri object
+  const metadata = {}
+  if (label) Object.assign(metadata, { name: label })
+  if (message) Object.assign(metadata, { message })
+  if (r) parsedUri.paymentProtocolURL = r
+  Object.assign(parsedUri, { metadata })
   // Get amount in native denomination if exists
   if (amount && typeof amount === 'string') {
     const { denominations, currencyCode } = currencyInfo
@@ -92,56 +91,58 @@ export const parseUri = (
     if (denomination) {
       const { multiplier = '1' } = denomination
       const t = bns.mul(amount, multiplier.toString())
-      result.nativeAmount = bns.toFixed(t, 0, 0)
-      result.currencyCode = currencyCode
+      Object.assign(parsedUri, {
+        currencyCode, nativeAmount: bns.toFixed(t, 0, 0)
+      })
     }
   }
-  return result
+  return parsedUri
 }
 
 export const encodeUri = (
   obj: EdgeEncodeUri,
   currencyInfo: EdgeCurrencyInfo
 ): string => {
-  const { legacyAddress } = obj
-  let { publicAddress } = obj
+  const { legacyAddress, publicAddress } = obj
+  let address = publicAddress
   const network = currencyInfo.defaultSettings.network.type
   if (
     legacyAddress &&
     validAddress(toNewFormat(legacyAddress, network), network)
   ) {
-    publicAddress = legacyAddress
+    address = legacyAddress
   } else if (publicAddress && validAddress(publicAddress, network)) {
-    publicAddress = dirtyAddress(publicAddress, network)
+    address = dirtyAddress(publicAddress, network)
   } else {
     throw new Error('InvalidPublicAddressError')
   }
-  if (!obj.nativeAmount && !obj.metadata) return publicAddress
-  publicAddress = sanitizeAddress(publicAddress, network)
+  if (!obj.nativeAmount && !obj.metadata) return address
+  const metadata = obj.metadata || {}
+  const currencyCode = obj.currencyCode || ''
+  const nativeAmount = obj.nativeAmount || ''
   let queryString = ''
-  if (obj.nativeAmount) {
-    const code = obj.currencyCode || currencyInfo.currencyCode
+  if (nativeAmount) {
+    const code = currencyCode || currencyInfo.currencyCode
     const denomination: any = currencyInfo.denominations.find(
       e => e.name === code
     )
     const multiplier: string = denomination.multiplier.toString()
-    // $FlowFixMe
-    const amount = bns.div(obj.nativeAmount, multiplier, 8)
+    const amount = bns.div(nativeAmount, multiplier, 8)
     queryString += 'amount=' + amount.toString() + '&'
   }
-  if (obj.metadata) {
-    // $FlowFixMe
-    if (obj.metadata.name) queryString += `label=${obj.metadata.name}&`
-    if (obj.metadata.message) {
-      // $FlowFixMe
-      queryString += `message=${obj.metadata.message}&`
+  if (typeof metadata === 'object') {
+    if (typeof metadata.name === 'string') {
+      queryString += `label=${metadata.name}&`
+    }
+    if (typeof metadata.message === 'string') {
+      queryString += `message=${metadata.message}&`
     }
   }
   queryString = queryString.substr(0, queryString.length - 1)
 
   return serialize({
     scheme: currencyInfo.currencyName.toLowerCase(),
-    path: publicAddress,
+    path: sanitizeAddress(address, network),
     query: queryString
   })
 }
