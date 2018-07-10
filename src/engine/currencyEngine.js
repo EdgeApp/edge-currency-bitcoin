@@ -708,36 +708,15 @@ export class CurrencyEngine {
   }
 
   dumpData (): EdgeDataDump {
-    const dataDump: EdgeDataDump = {
+    return {
       walletId: this.walletId.split(' - ')[0],
       walletType: this.walletInfo.type,
       pluginType: this.currencyInfo.pluginName,
       fees: this.fees,
-      data: {}
+      data: {
+        ...this.pluginState.dumpData(),
+        ...this.engineState.dumpData()
+      }
     }
-    const add = (cache, obj) => {
-      // $FlowFixMe
-      dataDump.data[`${obj}.${cache}`] = this[obj][cache]
-    }
-
-    const engineCache = [
-      'addressCache',
-      'addressInfos',
-      'scriptHashes',
-      'usedAddresses',
-      'txCache',
-      'txHeightCache',
-      'missingHeaders',
-      'serverStates',
-      'fetchingTxs',
-      'missingTxs',
-      'fetchingHeaders'
-    ]
-    const pluginCache = ['headerCache', 'serverCache', 'servers_']
-
-    engineCache.forEach(c => add(c, 'engineState'))
-    pluginCache.forEach(c => add(c, 'pluginState'))
-
-    return dataDump
   }
 }

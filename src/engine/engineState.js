@@ -366,6 +366,22 @@ export class EngineState extends EventEmitter {
     return Object.keys(this.txCache).length
   }
 
+  dumpData (): any {
+    return {
+      'engineState.addressCache': this.addressCache,
+      'engineState.addressInfos': this.addressInfos,
+      'engineState.scriptHashes': this.scriptHashes,
+      'engineState.usedAddresses': this.usedAddresses,
+      'engineState.txCache': this.txCache,
+      'engineState.txHeightCache': this.txHeightCache,
+      'engineState.missingHeaders': this.missingHeaders,
+      'engineState.serverStates': this.serverStates,
+      'engineState.fetchingTxs': this.fetchingTxs,
+      'engineState.missingTxs': this.missingTxs,
+      'engineState.fetchingHeader': this.fetchingHeaders
+    }
+  }
+
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------
