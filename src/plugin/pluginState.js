@@ -38,6 +38,14 @@ export class PluginState extends ServerCache {
     this.engines = this.engines.filter(engine => engine !== engineState)
   }
 
+  dumpData (): any {
+    return {
+      'pluginState.headerCache': this.headerCache,
+      'pluginState.serverCache': this.serverCache,
+      'pluginState.servers_': this.servers_
+    }
+  }
+
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------

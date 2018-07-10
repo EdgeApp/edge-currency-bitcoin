@@ -19,7 +19,6 @@ import { parseUri, encodeUri } from './uri.js'
 import { getXPubFromSeed } from '../utils/formatSelector.js'
 import { seedFromEntropy, keysFromWalletInfo } from '../utils/coinUtils.js'
 
-// $FlowFixMe
 const { Buffer } = buffer
 
 /**

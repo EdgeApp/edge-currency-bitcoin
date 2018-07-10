@@ -1,9 +1,7 @@
 'use strict'
 
 import BN from 'bn.js'
-// $FlowFixMe
 import buffer from 'buffer-hack'
-// $FlowFixMe
 const { Buffer } = buffer
 
 const reversebuf = function (buf) {

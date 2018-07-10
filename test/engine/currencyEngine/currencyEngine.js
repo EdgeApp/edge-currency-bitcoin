@@ -385,9 +385,7 @@ for (const fixture of fixtures) {
     Object.keys(spendTests).forEach(test => {
       it(`Should build transaction with ${test}`, function () {
         this.timeout(10000)
-        // $FlowFixMe
         const templateSpend = spendTests[test]
-        // $FlowFixMe
         return engine
           .makeSpend(templateSpend)
           .then(a => {
@@ -401,9 +399,7 @@ for (const fixture of fixtures) {
 
     Object.keys(insufficientTests).forEach(test => {
       it(`Should throw InsufficientFundsError for ${test}`, function () {
-        // $FlowFixMe
         const templateSpend = insufficientTests[test]
-        // $FlowFixMe
         return engine
           .makeSpend(templateSpend)
           .catch(e => assert.equal(e.message, 'InsufficientFundsError'))
@@ -417,7 +413,6 @@ for (const fixture of fixtures) {
     Object.keys(sweepTests).forEach(test => {
       it(`Should build transaction with ${test}`, function () {
         this.timeout(10000)
-        // $FlowFixMe
         const templateSpend = sweepTests[test]
         return engine
           .sweepPrivateKeys(templateSpend)

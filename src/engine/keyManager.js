@@ -1,12 +1,13 @@
 // @flow
 import type { AddressInfo, AddressInfos } from './engineState.js'
-import type { Utxo, BlockHeight, TxOptions, Output } from '../utils/coinUtils.js'
-import { FormatSelector } from '../utils/formatSelector.js'
-import {
-  parsePath,
-  createTX,
-  getLock
+import type {
+  Utxo,
+  BlockHeight,
+  TxOptions,
+  Output
 } from '../utils/coinUtils.js'
+import { FormatSelector } from '../utils/formatSelector.js'
+import { parsePath, createTX, getLock } from '../utils/coinUtils.js'
 import {
   toLegacyFormat,
   toNewFormat
@@ -200,7 +201,10 @@ export class KeyManager {
           const [branch: number, index: number] = this.utxoToPath(prevout)
           const keyRing = this.keys[branches[branch]]
           if (!keyRing.privKey) {
-            keyRing.privKey = await this.fSelector.deriveHdKey(this.keys.master.privKey, branch)
+            keyRing.privKey = await this.fSelector.deriveHdKey(
+              this.keys.master.privKey,
+              branch
+            )
             this.saveKeysToCache()
           }
           const key = await this.fSelector.deriveKeyRing(keyRing.privKey, index)
@@ -310,7 +314,10 @@ export class KeyManager {
     const { children } = keyRing
     // If we never derived a public key for this branch before
     if (!keyRing.pubKey) {
-      keyRing.pubKey = await this.fSelector.deriveHdKey(this.keys.master.pubKey, branch)
+      keyRing.pubKey = await this.fSelector.deriveHdKey(
+        this.keys.master.pubKey,
+        branch
+      )
       this.saveKeysToCache()
     }
 

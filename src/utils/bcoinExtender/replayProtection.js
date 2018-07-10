@@ -1,7 +1,6 @@
 import assert from 'assert'
-// $FlowFixMe
 import buffer from 'buffer-hack'
-// $FlowFixMe
+
 const { Buffer } = buffer
 
 export const patchTransaction = function (bcoin) {

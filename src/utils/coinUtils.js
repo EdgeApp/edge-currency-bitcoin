@@ -4,7 +4,6 @@ import buffer from 'buffer-hack'
 import { utils, hd, primitives, script, network as Network } from 'bcoin'
 import { hash256, hash256Sync, reverseBufferToHex } from './utils.js'
 
-// $FlowFixMe
 const { Buffer } = buffer
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
 
@@ -61,7 +60,9 @@ export const keysFromWalletInfo = (
   bip:
     typeof keys.format === 'string'
       ? keys.format
-      : typeof type === 'string' ? type.split('-')[1] : ''
+      : typeof type === 'string'
+        ? type.split('-')[1]
+        : ''
 })
 
 export const verifyWIF = (data: any, network: string) => {
@@ -113,9 +114,10 @@ export const createTX = async ({
     // If not outputs are given try and build the most efficient TX
     if (!mtx.outputs || mtx.outputs.length === 0) {
       // Sort the UTXOs by size
-      utxos = utxos.sort((a, b) =>
-        parseInt(b.tx.outputs[b.index]) -
-        parseInt(a.tx.outputs[a.index]))
+      utxos = utxos.sort(
+        (a, b) =>
+          parseInt(b.tx.outputs[b.index]) - parseInt(a.tx.outputs[a.index])
+      )
       // Try and get only the biggest UTXO unless the limit is 0 which means take all
       if (CPFPlimit) utxos = utxos.slice(0, CPFPlimit)
       // CPFP transactions will try to not have change
@@ -140,7 +142,8 @@ export const createTX = async ({
 
   // Create coins
   const coins = utxos.map(({ tx, index, height }) =>
-    primitives.Coin.fromTX(tx, index, height))
+    primitives.Coin.fromTX(tx, index, height)
+  )
 
   // Try to fund the transaction
   await mtx.fund(coins, {
