@@ -6,7 +6,7 @@ import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcoingoldtestnet',
   magic: 0x0709110b,
-  formats: ['bip49', 'bip44', 'bip32'],
+  formats: ['bip84', 'bip49', 'bip44', 'bip32'],
   keyPrefix: {
     privkey: 0xef,
     xpubkey: 0x043587cf,
@@ -64,6 +64,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: [
+    'wallet:bitcoingold-bip84-testnet',
     'wallet:bitcoingold-bip49-testnet',
     'wallet:bitcoingold-bip44-testnet',
     'wallet:bitcoingold-testnet'

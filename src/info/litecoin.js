@@ -7,7 +7,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'litecoin',
   magic: 0xd9b4bef9,
-  formats: ['bip49', 'bip44', 'bip32'],
+  formats: ['bip84', 'bip49', 'bip44', 'bip32'],
   keyPrefix: {
     privkey: 0xb0,
     xpubkey: 0x0488b21e,
@@ -59,6 +59,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: [
+    'wallet:litecoin-bip84',
     'wallet:litecoin-bip49',
     'wallet:litecoin-bip44',
     'wallet:litecoin'

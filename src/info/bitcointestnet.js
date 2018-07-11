@@ -7,7 +7,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcointestnet',
   magic: 0x0709110b,
-  formats: ['bip49', 'bip44', 'bip32'],
+  formats: ['bip84', 'bip49', 'bip44', 'bip32'],
   forks: ['bitcoincash', 'bitcoingold', 'bitcoindiamond'],
   keyPrefix: {
     privkey: 0xef,
@@ -61,6 +61,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: [
+    'wallet:bitcoin-bip84-testnet',
     'wallet:bitcoin-bip49-testnet',
     'wallet:bitcoin-bip44-testnet',
     'wallet:bitcoin-testnet'

@@ -6,7 +6,7 @@ import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'feathercoin',
   magic: 0xd9b4bef9,
-  formats: ['bip49', 'bip44', 'bip32'],
+  formats: ['bip84', 'bip49', 'bip44', 'bip32'],
   keyPrefix: {
     privkey: 0x8e,
     xpubkey: 0x0488bc26,
@@ -56,6 +56,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: [
+    'wallet:feathercoin-bip84',
     'wallet:feathercoin-bip49',
     'wallet:feathercoin-bip44',
     'wallet:feathercoin'
