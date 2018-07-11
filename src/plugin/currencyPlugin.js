@@ -18,6 +18,8 @@ import { PluginState } from './pluginState.js'
 import { parseUri, encodeUri } from './uri.js'
 import { getXPubFromSeed } from '../utils/formatSelector.js'
 import { seedFromEntropy, keysFromWalletInfo } from '../utils/coinUtils.js'
+import { bcoinExtender } from '../utils/bcoinExtender/bcoinExtender.js'
+import bcoin from 'bcoin'
 
 const { Buffer } = buffer
 
@@ -101,5 +103,28 @@ export class CurrencyPlugin {
 
   encodeUri (obj: EdgeEncodeUri): string {
     return encodeUri(obj, this.currencyInfo)
+  }
+}
+
+export class CurrencyPluginFactory {
+  pluginType: string
+  pluginName: string
+  currencyInfo: EdgeCurrencyInfo
+
+  constructor (currencyInfo: EdgeCurrencyInfo) {
+    this.pluginType = 'currency'
+    this.currencyInfo = currencyInfo
+    this.pluginName = currencyInfo.pluginName
+  }
+
+  async makePlugin (options: EdgeCorePluginOptions): Promise<EdgeCurrencyPlugin> {
+    // Create a core plugin given the currencyInfo and plugin options
+    const plugin = new CurrencyPlugin(options, this.currencyInfo)
+    // Extend bcoin to support this plugin currency info
+    // and faster crypto if possible
+    const { io: { secp256k1, pbkdf2 } = {} } = options
+    bcoinExtender(bcoin, this.currencyInfo, secp256k1, pbkdf2)
+    // Return the plugin when after it finished loading it's cache
+    return plugin.state.load().then(() => plugin)
   }
 }
