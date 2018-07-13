@@ -32,42 +32,40 @@ for (const fixture of fixtures) {
       })
     })
 
-    it('test valid addresses', function () {
-      for (const address of fixture['valid']) {
+    fixture['valid'].forEach(address => {
+      it(`test valid for ${address}`, function () {
         plugin.encodeUri({ publicAddress: address })
-      }
+      })
     })
 
-    it('test invalid addresses', function () {
-      for (const address of fixture['inValid']) {
+    fixture['inValid'].forEach(address => {
+      it(`test invalid for ${address}`, function () {
         assert.throws(() => {
           plugin.encodeUri({ publicAddress: address })
         }, 'InvalidPublicAddressError')
-      }
+      })
     })
 
-    it('get legacy format', function () {
-      for (const address of fixture['toLegacy']) {
-        console.log(address)
+    fixture['toLegacy'].forEach(([address, expected]) => {
+      it(`get legacy format for ${address}`, function () {
         assert(
           toLegacyFormat(
-            address[0],
+            address,
             fixture['WALLET_TYPE'].split('wallet:')[1]
-          ) === address[1]
+          ) === expected
         )
-      }
+      })
     })
 
-    it('get new format', function () {
-      for (const address of fixture['toNewFormat']) {
-        console.log(address)
+    fixture['toNewFormat'].forEach(([address, expected]) => {
+      it(`get new format for ${address}`, function () {
         assert(
           toNewFormat(
-            address[0],
+            address,
             fixture['WALLET_TYPE'].split('wallet:')[1]
-          ) === address[1]
+          ) === expected
         )
-      }
+      })
     })
   })
 }
