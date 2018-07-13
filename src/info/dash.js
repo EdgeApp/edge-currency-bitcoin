@@ -64,9 +64,9 @@ export const dashInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  addressExplorer: 'https://explorer.dash.org/address/%s',
-  blockExplorer: 'https://explorer.dash.org/block/%s',
-  transactionExplorer: 'https://explorer.dash.org/tx/%s',
+  addressExplorer: 'https://live.blockcypher.com/dash/address/%s',
+  blockExplorer: 'https://live.blockcypher.com/dash/block/%s',
+  transactionExplorer: 'https://live.blockcypher.com/dash/tx/%s',
 
   // Images:
   symbolImage: `${imageServerUrl}/dash-logo-64.png`,

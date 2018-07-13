@@ -63,7 +63,7 @@ export const ufoInfo: EdgeCurrencyInfo = {
 
   // Explorers:
   addressExplorer: 'https://explorer.ufobject.com/address/%s',
-  blockExplorer: 'https://explorer.ufobject.com/blocks/%s',
+  blockExplorer: 'https://explorer.ufobject.com/block/%s',
   transactionExplorer: 'https://explorer.ufobject.com/tx/%s',
 
   // Images:

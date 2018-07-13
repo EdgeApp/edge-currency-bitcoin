@@ -74,9 +74,9 @@ export const bitcoinTestnetInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  blockExplorer: 'https://test-insight.bitpay.com//block/%s',
-  addressExplorer: 'https://test-insight.bitpay.com//address/%s',
-  transactionExplorer: 'https://test-insight.bitpay.com//tx/%s',
+  blockExplorer: 'https://live.blockcypher.com/btc-testnet/block/%s',
+  addressExplorer: 'https://live.blockcypher.com/btc-testnet/address/%s',
+  transactionExplorer: 'https://live.blockcypher.com/btc-testnet/tx/%s',
 
   // Images:
   symbolImage: `${imageServerUrl}/bitcoin-logo-color-64.png`,
