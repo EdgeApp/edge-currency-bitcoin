@@ -33,6 +33,7 @@ const engineInfo: EngineCurrencyInfo = {
   feeUpdateInterval: 60000,
   feeInfoServer: '',
   infoServer: '',
+  customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '30',
     lowFee: '5',

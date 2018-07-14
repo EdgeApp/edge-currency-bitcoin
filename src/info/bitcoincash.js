@@ -35,6 +35,7 @@ const engineInfo: EngineCurrencyInfo = {
   defaultFee: 10000,
   feeUpdateInterval: 60000,
   infoServer: 'https://info1.edgesecure.co:8444/v1',
+  customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '20',
     lowFee: '3',

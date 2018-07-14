@@ -51,6 +51,7 @@ export type EngineCurrencyInfo = {
   maxFee: number,
   defaultFee: number,
   feeUpdateInterval: number,
+  customFeeSettings: Array<string>,
   simpleFeeSettings: {
     highFee: string,
     lowFee: string,
@@ -333,8 +334,7 @@ export class CurrencyEngine {
     networkFeeOption = 'standard',
     customNetworkFee = {}
   }: EdgeSpendInfo): number {
-    const customFeeSetting = this.currencyInfo.defaultSettings
-      .customFeeSettings[0]
+    const customFeeSetting = this.engineInfo.customFeeSettings[0]
     const customFeeAmount = customNetworkFee[customFeeSetting] || '0'
     if (networkFeeOption === 'custom' && customFeeAmount !== '0') {
       // customNetworkFee is in sat/Bytes in need to be converted to sat/KB

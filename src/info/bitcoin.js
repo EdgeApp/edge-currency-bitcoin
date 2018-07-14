@@ -34,6 +34,7 @@ const engineInfo: EngineCurrencyInfo = {
   feeUpdateInterval: 60000,
   feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
   infoServer: 'https://info1.edgesecure.co:8444/v1',
+  customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '150',
     lowFee: '20',
