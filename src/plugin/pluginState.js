@@ -1,5 +1,5 @@
 // @flow
-import type { EdgeCurrencyInfo, EdgeIo, DiskletFolder } from 'edge-core-js'
+import type { EdgeIo, DiskletFolder } from 'edge-core-js'
 import type { EngineState } from '../engine/engineState.js'
 import { ServerCache } from './serverCache.js'
 
@@ -73,28 +73,26 @@ export class PluginState extends ServerCache {
   serverCacheJson: Object
   pluginName: string
 
-  constructor (io: EdgeIo, currencyInfo: EdgeCurrencyInfo) {
+  constructor ({
+    io,
+    defaultSettings,
+    infoServer,
+    currencyCode,
+    pluginName
+  }: PluginStateSettings) {
     super()
     this.height = 0
     this.headerCache = {}
     this.io = io
-    this.defaultServers = []
-    this.infoServerUris = ''
-    if (currencyInfo.defaultSettings) {
-      const { electrumServers, infoServer } = currencyInfo.defaultSettings
-      let { currencyCode } = currencyInfo
-      // Rename the bitcoin currencyCode to get the new version of the server list
-      if (currencyCode === 'BTC') {
-        currencyCode = 'BC1'
-      }
-      this.defaultServers = electrumServers || []
-      this.infoServerUris = infoServer
-        ? `${infoServer}/electrumServers/${currencyCode}`
-        : ''
-    }
+    this.defaultServers = defaultSettings.electrumServers
+    // Rename the bitcoin currencyCode to get the new version of the server list
+    const fixedCode = currencyCode === 'BTC' ? 'BC1' : currencyCode
+    this.infoServerUris = infoServer
+      ? `${infoServer}/electrumServers/${fixedCode}`
+      : ''
     this.engines = []
-    this.folder = io.folder.folder('plugins').folder(currencyInfo.pluginName)
-    this.pluginName = currencyInfo.pluginName
+    this.folder = io.folder.folder('plugins').folder(pluginName)
+    this.pluginName = pluginName
     this.headerCacheDirty = false
     this.serverCacheJson = {}
   }

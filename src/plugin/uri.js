@@ -54,17 +54,17 @@ const parsePathname = (pathname: string, network: string) => {
 
 export const parseUri = (
   uri: string,
-  currencyInfo: EdgeCurrencyInfo
+  network: string,
+  {currencyName, currencyCode, denominations}: EdgeCurrencyInfo
 ): EdgeParsedUri => {
+  currencyName = currencyName.toLowerCase()
   const uriObj = parse(uri, {}, true)
   const { protocol, pathname, query } = uriObj
-  const currencyName = currencyInfo.currencyName.toLowerCase()
-  const network = currencyInfo.defaultSettings.network.type
-  const currencyCode = protocol && protocol.replace(':', '')
   // If the currency URI belongs to the wrong network then error
-  if (currencyCode && currencyCode.toLowerCase() !== currencyName) {
-    throw new Error('InvalidUriError')
-  }
+  if (
+    protocol &&
+    protocol.replace(':', '').toLowerCase() !== currencyName
+  ) throw new Error('InvalidUriError')
   // Get all posible query params
   const { label, message, amount, r } = query
   // If we don't have a pathname or a paymentProtocolURL uri then we bail
@@ -86,7 +86,6 @@ export const parseUri = (
   Object.assign(parsedUri, { metadata })
   // Get amount in native denomination if exists
   if (amount && typeof amount === 'string') {
-    const { denominations, currencyCode } = currencyInfo
     const denomination = denominations.find(e => e.name === currencyCode)
     if (denomination) {
       const { multiplier = '1' } = denomination
@@ -102,11 +101,11 @@ export const parseUri = (
 
 export const encodeUri = (
   obj: EdgeEncodeUri,
-  currencyInfo: EdgeCurrencyInfo
+  network: string,
+  {currencyName, currencyCode, denominations}: EdgeCurrencyInfo
 ): string => {
   const { legacyAddress, publicAddress } = obj
   let address = publicAddress
-  const network = currencyInfo.defaultSettings.network.type
   if (
     legacyAddress &&
     validAddress(toNewFormat(legacyAddress, network), network)
@@ -119,13 +118,12 @@ export const encodeUri = (
   }
   if (!obj.nativeAmount && !obj.metadata) return address
   const metadata = obj.metadata || {}
-  const currencyCode = obj.currencyCode || ''
   const nativeAmount = obj.nativeAmount || ''
   let queryString = ''
   if (nativeAmount) {
-    const code = currencyCode || currencyInfo.currencyCode
-    const denomination: any = currencyInfo.denominations.find(
-      e => e.name === code
+    if (typeof obj.currencyCode === 'string') currencyCode = obj.currencyCode
+    const denomination: any = denominations.find(
+      e => e.name === currencyCode
     )
     const multiplier: string = denomination.multiplier.toString()
     const amount = bns.div(nativeAmount, multiplier, 8)
@@ -142,7 +140,7 @@ export const encodeUri = (
   queryString = queryString.substr(0, queryString.length - 1)
 
   return serialize({
-    scheme: currencyInfo.currencyName.toLowerCase(),
+    scheme: currencyName.toLowerCase(),
     path: sanitizeAddress(address, network),
     query: queryString
   })
