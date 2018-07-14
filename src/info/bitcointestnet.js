@@ -1,8 +1,49 @@
 // @flow
 import type { EdgeCurrencyInfo } from 'edge-core-js'
+import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
+import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
 
-export const bitcoinTestnetInfo: EdgeCurrencyInfo = {
+const bcoinInfo: BcoinCurrencyInfo = {
+  type: 'bitcointestnet',
+  magic: 0x0709110b,
+  keyPrefix: {
+    privkey: 0xef,
+    xpubkey: 0x043587cf,
+    xprivkey: 0x04358394,
+    xpubkey58: 'tpub',
+    xprivkey58: 'tprv',
+    coinType: 1
+  },
+  addressPrefix: {
+    pubkeyhash: 0x6f,
+    scripthash: 0xc4,
+    witnesspubkeyhash: 0x03,
+    witnessscripthash: 0x28,
+    bech32: 'tb'
+  }
+}
+
+const engineInfo: EngineCurrencyInfo = {
+  network: 'bitcointestnet',
+  currencyCode: 'BTC',
+  gapLimit: 10,
+  maxFee: 1000000,
+  defaultFee: 1000,
+  feeUpdateInterval: 60000,
+  feeInfoServer: '',
+  infoServer: '',
+  simpleFeeSettings: {
+    highFee: '30',
+    lowFee: '5',
+    standardFeeLow: '10',
+    standardFeeHigh: '15',
+    standardFeeLowAmount: '17320',
+    standardFeeHighAmount: '86700000'
+  }
+}
+
+const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BTC',
   currencyName: 'BitcoinTestnet',
@@ -20,40 +61,7 @@ export const bitcoinTestnetInfo: EdgeCurrencyInfo = {
 
   // Configuration options:
   defaultSettings: {
-    network: {
-      type: 'bitcointestnet',
-      magic: 0x0709110b,
-      keyPrefix: {
-        privkey: 0xef,
-        xpubkey: 0x043587cf,
-        xprivkey: 0x04358394,
-        xpubkey58: 'tpub',
-        xprivkey58: 'tprv',
-        coinType: 1
-      },
-      addressPrefix: {
-        pubkeyhash: 0x6f,
-        scripthash: 0xc4,
-        witnesspubkeyhash: 0x03,
-        witnessscripthash: 0x28,
-        bech32: 'tb'
-      }
-    },
     customFeeSettings: ['satPerByte'],
-    gapLimit: 10,
-    maxFee: 1000000,
-    defaultFee: 1000,
-    feeUpdateInterval: 60000,
-    feeInfoServer: '',
-    infoServer: '',
-    simpleFeeSettings: {
-      highFee: '30',
-      lowFee: '5',
-      standardFeeLow: '10',
-      standardFeeHigh: '15',
-      standardFeeLowAmount: '17320',
-      standardFeeHighAmount: '86700000'
-    },
     electrumServers: [
       'electrum://estnet.qtornado.com:51001',
       'electrum://testnet.hsmiths.com:53011',
@@ -69,7 +77,8 @@ export const bitcoinTestnetInfo: EdgeCurrencyInfo = {
       'electrums://testnet.qtornado.com:51002',
       'electrums://electrum.akinbo.org:51002',
       'electrum://testnetnode.arihanc.com:51001'
-    ]
+    ],
+    disableFetchingServers: true
   },
   metaTokens: [],
 
@@ -82,3 +91,5 @@ export const bitcoinTestnetInfo: EdgeCurrencyInfo = {
   symbolImage: `${imageServerUrl}/bitcoin-logo-color-64.png`,
   symbolImageDarkMono: `${imageServerUrl}/bitcoin-logo-grey-64.png`
 }
+
+export const bitcoinTestnet = { bcoinInfo, engineInfo, currencyInfo }

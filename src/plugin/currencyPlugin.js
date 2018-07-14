@@ -23,6 +23,17 @@ import bcoin from 'bcoin'
 
 const { Buffer } = buffer
 
+export type CurrencyPluginFactorySettings = {
+  currencyInfo: EdgeCurrencyInfo,
+  engineInfo: EngineCurrencyInfo,
+  bcoinInfo: BcoinCurrencyInfo
+}
+
+export type CurrencyPluginSettings = {
+  currencyInfo: EdgeCurrencyInfo,
+  engineInfo: EngineCurrencyInfo
+}
+
 /**
  * The core currency plugin.
  * Provides information about the currency,

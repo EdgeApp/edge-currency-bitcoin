@@ -1,8 +1,51 @@
 // @flow
 import type { EdgeCurrencyInfo } from 'edge-core-js'
+import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
+import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
 
-export const bitcoincashInfo: EdgeCurrencyInfo = {
+const bcoinInfo: BcoinCurrencyInfo = {
+  type: 'bitcoincash',
+  magic: 0xd9b4bef9,
+  keyPrefix: {
+    privkey: 0x80,
+    xpubkey: 0x0488b21e,
+    xprivkey: 0x0488ade4,
+    xpubkey58: 'xpub',
+    xprivkey58: 'xprv',
+    coinType: 145
+  },
+  addressPrefix: {
+    pubkeyhash: 0x00,
+    scripthash: 0x05,
+    cashAddress: 'bitcoincash'
+  },
+  replayProtection: {
+    SIGHASH_FORKID: 0x40,
+    forcedMinVersion: 1,
+    forkId: 0
+  }
+}
+
+const engineInfo: EngineCurrencyInfo = {
+  network: 'bitcoincash',
+  currencyCode: 'BCH',
+  gapLimit: 10,
+  maxFee: 1000000,
+  defaultFee: 10000,
+  feeUpdateInterval: 60000,
+  infoServer: 'https://info1.edgesecure.co:8444/v1',
+  simpleFeeSettings: {
+    highFee: '20',
+    lowFee: '3',
+    standardFeeLow: '5',
+    standardFeeHigh: '10',
+    standardFeeLowAmount: '1000000',
+    standardFeeHighAmount: '65000000'
+  }
+}
+
+const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BCH',
   currencyName: 'BitcoinCash',
@@ -16,52 +59,7 @@ export const bitcoincashInfo: EdgeCurrencyInfo = {
 
   // Configuration options:
   defaultSettings: {
-    network: {
-      type: 'bitcoincash',
-      magic: 0xd9b4bef9,
-      keyPrefix: {
-        privkey: 0x80,
-        xpubkey: 0x0488b21e,
-        xprivkey: 0x0488ade4,
-        xpubkey58: 'xpub',
-        xprivkey58: 'xprv',
-        coinType: 145
-      },
-      addressPrefix: {
-        pubkeyhash: 0x00,
-        scripthash: 0x05,
-        witnesspubkeyhash: null,
-        witnessscripthash: null,
-        bech32: null
-      },
-      newAddressFormat: {
-        pubkeyhash: 0x00,
-        scripthash: 0x05,
-        witnesspubkeyhash: null,
-        witnessscripthash: null,
-        prefix: 'bitcoincash'
-      },
-      replayProtection: {
-        SIGHASH_FORKID: 0x40,
-        forcedMinVersion: 1,
-        forkId: 0
-      }
-    },
     customFeeSettings: ['satPerByte'],
-    gapLimit: 10,
-    maxFee: 1000000,
-    defaultFee: 10000,
-    feeUpdateInterval: 60000,
-    feeInfoServer: '',
-    infoServer: 'https://info1.edgesecure.co:8444/v1',
-    simpleFeeSettings: {
-      highFee: '20',
-      lowFee: '3',
-      standardFeeLow: '5',
-      standardFeeHigh: '10',
-      standardFeeLowAmount: '1000000',
-      standardFeeHighAmount: '65000000'
-    },
     electrumServers: [
       'electrum://abc1.hsmiths.com:60001',
       'electrums://electroncash.bitcoinplug.com:50002',
@@ -91,7 +89,8 @@ export const bitcoincashInfo: EdgeCurrencyInfo = {
       'electrums://electrumx-cash.itmettke.de:50002',
       'electrums://electrumx-bch.adminsehow.com:50012',
       'electrum://electrumx-bch.adminsehow.com:50011'
-    ]
+    ],
+    disableFetchingServers: true
   },
   metaTokens: [],
 
@@ -104,3 +103,5 @@ export const bitcoincashInfo: EdgeCurrencyInfo = {
   symbolImage: `${imageServerUrl}/bitcoincash-logo-color-64.png`,
   symbolImageDarkMono: `${imageServerUrl}/bitcoincash-logo-grey-64.png`
 }
+
+export const bitcoincash = { bcoinInfo, engineInfo, currencyInfo }

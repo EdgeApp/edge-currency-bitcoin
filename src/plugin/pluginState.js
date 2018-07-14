@@ -3,10 +3,23 @@ import type { EdgeCurrencyInfo, EdgeIo, DiskletFolder } from 'edge-core-js'
 import type { EngineState } from '../engine/engineState.js'
 import { ServerCache } from './serverCache.js'
 
+export type CurrencySettings = {
+  customFeeSettings: Array<string>,
+  electrumServers: Array<string>,
+  disableFetchingServers?: boolean
+}
+
 /**
  * This object holds the plugin-wide per-currency caches.
  * Engine plugins are responsible for keeping it up to date.
  */
+export type PluginStateSettings = {
+  io: EdgeIo,
+  defaultSettings: CurrencySettings,
+  infoServer: string,
+  currencyCode: string,
+  pluginName: string
+}
 export class PluginState extends ServerCache {
   // On-disk header information:
   height: number

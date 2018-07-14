@@ -7,6 +7,33 @@ import {
   patchPrivateFromMnemonic
 } from './deriveExtender.js'
 import { patchTransaction } from './replayProtection.js'
+export type BcoinCurrencyInfo = {
+  type: string,
+  magic: number,
+  keyPrefix: {
+    privkey: number,
+    xpubkey: number,
+    xprivkey: number,
+    xpubkey58: string,
+    xprivkey58: string,
+    coinType: number
+  },
+  addressPrefix: {
+    pubkeyhash: number,
+    scripthash: number,
+    cashAddress?: string,
+    pubkeyhashLegacy?: number,
+    scripthashLegacy?: number,
+    witnesspubkeyhash?: number,
+    witnessscripthash?: number,
+    bech32?: string
+  },
+  replayProtection?: {
+    SIGHASH_FORKID: number,
+    forcedMinVersion: number,
+    forkId: number
+  }
+}
 
 let cryptoReplaced = false
 let replayProtectionPatched = false

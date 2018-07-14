@@ -1,8 +1,50 @@
 // @flow
 import type { EdgeCurrencyInfo } from 'edge-core-js'
+import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
+import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
 
-export const bitcoinInfo: EdgeCurrencyInfo = {
+const bcoinInfo: BcoinCurrencyInfo = {
+  type: 'bitcoin',
+  magic: 0xd9b4bef9,
+  keyPrefix: {
+    privkey: 0x80,
+    xpubkey: 0x0488b21e,
+    xprivkey: 0x0488ade4,
+    xpubkey58: 'xpub',
+    xprivkey58: 'xprv',
+    coinType: 0
+  },
+  addressPrefix: {
+    pubkeyhash: 0x00,
+    scripthash: 0x05,
+    witnesspubkeyhash: 0x06,
+    witnessscripthash: 0x0a,
+    bech32: 'bc'
+  }
+}
+
+const engineInfo: EngineCurrencyInfo = {
+  network: 'bitcoin',
+  currencyCode: 'BTC',
+  forks: ['bitcoincash', 'bitcoingold', 'bitcoindiamond'],
+  gapLimit: 10,
+  maxFee: 1000000,
+  defaultFee: 1000,
+  feeUpdateInterval: 60000,
+  feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
+  infoServer: 'https://info1.edgesecure.co:8444/v1',
+  simpleFeeSettings: {
+    highFee: '150',
+    lowFee: '20',
+    standardFeeLow: '50',
+    standardFeeHigh: '100',
+    standardFeeLowAmount: '173200',
+    standardFeeHighAmount: '8670000'
+  }
+}
+
+const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BTC',
   currencyName: 'Bitcoin',
@@ -20,40 +62,7 @@ export const bitcoinInfo: EdgeCurrencyInfo = {
 
   // Configuration options:
   defaultSettings: {
-    network: {
-      type: 'bitcoin',
-      magic: 0xd9b4bef9,
-      keyPrefix: {
-        privkey: 0x80,
-        xpubkey: 0x0488b21e,
-        xprivkey: 0x0488ade4,
-        xpubkey58: 'xpub',
-        xprivkey58: 'xprv',
-        coinType: 0
-      },
-      addressPrefix: {
-        pubkeyhash: 0x00,
-        scripthash: 0x05,
-        witnesspubkeyhash: 0x06,
-        witnessscripthash: 0x0a,
-        bech32: 'bc'
-      }
-    },
     customFeeSettings: ['satPerByte'],
-    gapLimit: 10,
-    maxFee: 1000000,
-    defaultFee: 1000,
-    feeUpdateInterval: 60000,
-    feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
-    infoServer: 'https://info1.edgesecure.co:8444/v1',
-    simpleFeeSettings: {
-      highFee: '150',
-      lowFee: '20',
-      standardFeeLow: '50',
-      standardFeeHigh: '100',
-      standardFeeLowAmount: '173200',
-      standardFeeHighAmount: '8670000'
-    },
     electrumServers: [
       'electrums://electrum-bc-az-eusa.airbitz.co:50002',
       'electrum://electrum-bc-az-eusa.airbitz.co:50001',
@@ -72,7 +81,8 @@ export const bitcoinInfo: EdgeCurrencyInfo = {
       'electrum://electrum.hsmiths.com:50001',
       'electrums://electrumx.westeurope.cloudapp.azure.com:50002',
       'electrum://electrumx.westeurope.cloudapp.azure.com:50001'
-    ]
+    ],
+    disableFetchingServers: true
   },
   metaTokens: [],
 
@@ -85,3 +95,5 @@ export const bitcoinInfo: EdgeCurrencyInfo = {
   symbolImage: `${imageServerUrl}/bitcoin-logo-color-64.png`,
   symbolImageDarkMono: `${imageServerUrl}/bitcoin-logo-grey-64.png`
 }
+
+export const bitcoin = { bcoinInfo, engineInfo, currencyInfo }

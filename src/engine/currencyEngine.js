@@ -42,6 +42,37 @@ import {
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000
+
+export type EngineCurrencyInfo = {
+  // Required Settings
+  network: string, // The offical network in lower case - Needs to match the Bitcoin Lib Network Type
+  currencyCode: string, // The offical currency code in upper case - Needs to match the EdgeCurrencyInfo currencyCode
+  gapLimit: number,
+  maxFee: number,
+  defaultFee: number,
+  feeUpdateInterval: number,
+  simpleFeeSettings: {
+    highFee: string,
+    lowFee: string,
+    standardFeeLow: string,
+    standardFeeHigh: string,
+    standardFeeLowAmount: string,
+    standardFeeHighAmount: string
+  },
+
+  // Optional Settings
+  forks?: Array<string>,
+  feeInfoServer?: string,
+  infoServer?: string
+}
+
+export type CurrencyEngineSettings = {
+  walletInfo: EdgeWalletInfo,
+  engineInfo: EngineCurrencyInfo,
+  pluginState: PluginState,
+  options: EdgeCurrencyEngineOptions,
+  io: EdgeIo
+}
 /**
  * The core currency plugin.
  * Provides information about the currency,

@@ -1,8 +1,44 @@
 // @flow
 import type { EdgeCurrencyInfo } from 'edge-core-js'
+import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
+import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
 
-export const zcoinInfo: EdgeCurrencyInfo = {
+const bcoinInfo: BcoinCurrencyInfo = {
+  type: 'zcoin',
+  magic: 0xd9b4bef9,
+  keyPrefix: {
+    privkey: 0xd2,
+    xpubkey: 0x0488b21e,
+    xprivkey: 0x0488ade4,
+    xpubkey58: 'xpub',
+    xprivkey58: 'xprv',
+    coinType: 136
+  },
+  addressPrefix: {
+    pubkeyhash: 0x52,
+    scripthash: 0x7
+  }
+}
+
+const engineInfo: EngineCurrencyInfo = {
+  network: 'zcoin',
+  currencyCode: 'XZC',
+  gapLimit: 10,
+  maxFee: 1000000,
+  defaultFee: 1000,
+  feeUpdateInterval: 60000,
+  simpleFeeSettings: {
+    highFee: '150',
+    lowFee: '20',
+    standardFeeLow: '50',
+    standardFeeHigh: '100',
+    standardFeeLowAmount: '173200',
+    standardFeeHighAmount: '8670000'
+  }
+}
+
+const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'XZC',
   currencyName: 'Zcoin',
@@ -15,41 +51,7 @@ export const zcoinInfo: EdgeCurrencyInfo = {
 
   // Configuration options:
   defaultSettings: {
-    forks: [],
-    network: {
-      type: 'zcoin',
-      magic: 0xd9b4bef9,
-      keyPrefix: {
-        privkey: 0xd2,
-        xpubkey: 0x0488b21e,
-        xprivkey: 0x0488ade4,
-        xpubkey58: 'xpub',
-        xprivkey58: 'xprv',
-        coinType: 136
-      },
-      addressPrefix: {
-        pubkeyhash: 0x52,
-        scripthash: 0x7,
-        witnesspubkeyhash: null,
-        witnessscripthash: null,
-        bech32: null
-      }
-    },
     customFeeSettings: ['satPerByte'],
-    gapLimit: 10,
-    maxFee: 1000000,
-    defaultFee: 1000,
-    feeUpdateInterval: 60000,
-    feeInfoServer: '',
-    infoServer: '',
-    simpleFeeSettings: {
-      highFee: '150',
-      lowFee: '20',
-      standardFeeLow: '50',
-      standardFeeHigh: '100',
-      standardFeeLowAmount: '173200',
-      standardFeeHighAmount: '8670000'
-    },
     electrumServers: [
       'electrum://51.15.82.184:50001',
       'electrum://45.63.92.224:50001',
@@ -57,7 +59,8 @@ export const zcoinInfo: EdgeCurrencyInfo = {
       'electrums://51.15.82.184:50002',
       'electrums://45.63.92.224:50002',
       'electrums://47.75.76.176:50002'
-    ]
+    ],
+    disableFetchingServers: true
   },
   metaTokens: [],
 
@@ -70,3 +73,5 @@ export const zcoinInfo: EdgeCurrencyInfo = {
   symbolImage: `${imageServerUrl}/zcoin-logo-color-64.png`,
   symbolImageDarkMono: `${imageServerUrl}/zcoin-logo-grey-64.png`
 }
+
+export const zcoin = { bcoinInfo, engineInfo, currencyInfo }
