@@ -61,8 +61,9 @@ for (const fixture of fixtures) {
         )
         plugin = currencyPlugin
         // Hack for now until we change all the dummy data to represent the new derivation path
-        plugin.currencyInfo.defaultSettings.network.keyPrefix.coinType = 0
-        keys = plugin.createPrivateKey(WALLET_TYPE)
+        keys = Object.assign(plugin.createPrivateKey(WALLET_TYPE), {
+          coinType: 0
+        })
         plugin.derivePublicKey({ type: WALLET_TYPE, keys }).then(result => {
           keys = result
           done()

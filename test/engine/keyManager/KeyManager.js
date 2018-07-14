@@ -1,13 +1,11 @@
 // @flow
 
-// Coins Plugin Info
-import bcoin from 'bcoin'
 // InfoFiles for networks
-import { bitcoinInfo } from '../../../src/info/bitcoin.js'
-import { bitcoincashInfo } from '../../../src/info/bitcoincash.js'
+import { bitcoin } from '../../../src/info/bitcoin.js'
+import { bitcoincash } from '../../../src/info/bitcoincash.js'
 
 // Bcoin extender function
-import { bcoinExtender } from '../../../src/utils/bcoinExtender/bcoinExtender.js'
+import { addNetwork } from '../../../src/utils/bcoinExtender/bcoinExtender.js'
 
 import { describe, it } from 'mocha'
 import { assert } from 'chai'
@@ -16,8 +14,8 @@ import type { KeyManagerCallbacks } from '../../../src/engine/keyManager.js'
 import fixtures from './fixtures.json'
 
 // Add network to bcoin
-bcoinExtender(bcoin, bitcoinInfo)
-bcoinExtender(bcoin, bitcoincashInfo)
+addNetwork(bitcoin.engineInfo)
+addNetwork(bitcoincash.engineInfo)
 
 for (const fixture of fixtures) {
   const keyManagerCallbacks: KeyManagerCallbacks = {
