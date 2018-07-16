@@ -1,7 +1,7 @@
 // @flow
 // $FlowFixMe
 import buffer from 'buffer-hack'
-import { hd, primitives, consensus, network as Network } from 'bcoin'
+import { hd, primitives, consensus, networks } from 'bcoin'
 import {
   getPrivateFromSeed,
   addressToScriptHash,
@@ -77,7 +77,7 @@ export const FormatSelector = (
       keys: Array<any>
     ): Promise<{ txid: string, signedTx: string }> =>
       Promise.resolve(tx.template(keys))
-        .then(() => tx.sign(keys, Network.get(network).replayProtection))
+        .then(() => tx.sign(keys, networks[network].replayProtection))
         .then(() => ({
           txid: tx.rhash(),
           signedTx: tx.toRaw().toString('hex')
@@ -103,7 +103,7 @@ export const FormatSelector = (
       bip === 32
         ? 'm/0'
         : `m/${bip}'/${
-          coinType >= 0 ? coinType : Network.get(network).keyPrefix.coinType
+          coinType >= 0 ? coinType : networks[network].keyPrefix.coinType
         }'/${account}'`,
 
     deriveHdKey,

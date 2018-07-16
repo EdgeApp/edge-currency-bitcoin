@@ -41,7 +41,7 @@ patchTransaction(bcoin)
 
 export const addNetwork = (bcoinInfo: BcoinCurrencyInfo) => {
   const type = bcoinInfo.type
-  console.warn('bcoinInfo', bcoinInfo)
+
   if (bcoin.networks.types.indexOf(type) === -1) {
     bcoin.networks.types.push(type)
     bcoin.networks[type] = { ...bcoin.networks.main, ...bcoinInfo }
