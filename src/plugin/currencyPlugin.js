@@ -13,7 +13,10 @@ import type {
 
 // $FlowFixMe
 import buffer from 'buffer-hack'
-import { CurrencyEngine, type EngineCurrencyInfo } from '../engine/currencyEngine.js'
+import {
+  CurrencyEngine,
+  type EngineCurrencyInfo
+} from '../engine/currencyEngine.js'
 import { PluginState } from './pluginState.js'
 import { parseUri, encodeUri } from './uri.js'
 import { getXPubFromSeed } from '../utils/formatSelector.js'
@@ -23,7 +26,11 @@ import {
   getFromatsForNetwork,
   getForksForNetwork
 } from '../utils/coinUtils.js'
-import { addNetwork, patchCrypto, type BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import {
+  addNetwork,
+  patchCrypto,
+  type BcoinCurrencyInfo
+} from '../utils/bcoinExtender/bcoinExtender.js'
 
 const { Buffer } = buffer
 
@@ -54,7 +61,10 @@ export class CurrencyPlugin {
   // ------------------------------------------------------------------------
   // Private API
   // ------------------------------------------------------------------------
-  constructor ({ io }: EdgeCorePluginOptions, { currencyInfo, engineInfo }: CurrencyPluginSettings) {
+  constructor (
+    { io }: EdgeCorePluginOptions,
+    { currencyInfo, engineInfo }: CurrencyPluginSettings
+  ) {
     // Validate that we are a valid EdgeCurrencyPlugin:
     // eslint-disable-next-line no-unused-vars
     const test: EdgeCurrencyPlugin = this
@@ -69,7 +79,13 @@ export class CurrencyPlugin {
     this.network = engineInfo.network
     const { defaultSettings, pluginName, currencyCode } = this.currencyInfo
     const { infoServer = '' } = engineInfo
-    this.state = new PluginState({ io, defaultSettings, infoServer, currencyCode, pluginName })
+    this.state = new PluginState({
+      io,
+      defaultSettings,
+      infoServer,
+      currencyCode,
+      pluginName
+    })
   }
 
   // ------------------------------------------------------------------------
@@ -135,7 +151,9 @@ export const makeCurrencyPluginFactory = ({
     pluginType: 'currency',
     currencyInfo: currencyInfo,
     pluginName: currencyInfo.pluginName,
-    makePlugin: async (options: EdgeCorePluginOptions): Promise<EdgeCurrencyPlugin> => {
+    makePlugin: async (
+      options: EdgeCorePluginOptions
+    ): Promise<EdgeCurrencyPlugin> => {
       // Create a core plugin given the currencyInfo and plugin options
       const plugin = new CurrencyPlugin(options, { currencyInfo, engineInfo })
       // Extend bcoin to support this plugin currency info

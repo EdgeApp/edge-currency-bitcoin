@@ -1,7 +1,14 @@
 // @flow
 // $FlowFixMe
 import buffer from 'buffer-hack'
-import { utils, hd, primitives, script, networks, network as Network } from 'bcoin'
+import {
+  utils,
+  hd,
+  primitives,
+  script,
+  networks,
+  network as Network
+} from 'bcoin'
 import { hash256, hash256Sync, reverseBufferToHex } from './utils.js'
 
 const { Buffer } = buffer

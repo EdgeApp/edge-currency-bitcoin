@@ -162,7 +162,9 @@ export class CurrencyEngine {
 
     console.log(
       `${this.walletId} - Created Wallet Type ${bip} for Currency Plugin ${
-        this.pluginState.pluginName}`)
+        this.pluginState.pluginName
+      }`
+    )
 
     this.keyManager = new KeyManager({
       seed: seed,

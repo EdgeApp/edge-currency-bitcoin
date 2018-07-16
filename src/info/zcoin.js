@@ -53,10 +53,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:zcoin-bip44',
-    'wallet:zcoin'
-  ],
+  walletTypes: ['wallet:zcoin-bip44', 'wallet:zcoin'],
 
   // Configuration options:
   defaultSettings: {

@@ -55,16 +55,15 @@ const parsePathname = (pathname: string, network: string) => {
 export const parseUri = (
   uri: string,
   network: string,
-  {currencyName, currencyCode, denominations}: EdgeCurrencyInfo
+  { currencyName, currencyCode, denominations }: EdgeCurrencyInfo
 ): EdgeParsedUri => {
   currencyName = currencyName.toLowerCase()
   const uriObj = parse(uri, {}, true)
   const { protocol, pathname, query } = uriObj
   // If the currency URI belongs to the wrong network then error
-  if (
-    protocol &&
-    protocol.replace(':', '').toLowerCase() !== currencyName
-  ) throw new Error('InvalidUriError')
+  if (protocol && protocol.replace(':', '').toLowerCase() !== currencyName) {
+    throw new Error('InvalidUriError')
+  }
   // Get all posible query params
   const { label, message, amount, r } = query
   // If we don't have a pathname or a paymentProtocolURL uri then we bail
@@ -102,7 +101,7 @@ export const parseUri = (
 export const encodeUri = (
   obj: EdgeEncodeUri,
   network: string,
-  {currencyName, currencyCode, denominations}: EdgeCurrencyInfo
+  { currencyName, currencyCode, denominations }: EdgeCurrencyInfo
 ): string => {
   const { legacyAddress, publicAddress } = obj
   let address = publicAddress
@@ -122,9 +121,7 @@ export const encodeUri = (
   let queryString = ''
   if (nativeAmount) {
     if (typeof obj.currencyCode === 'string') currencyCode = obj.currencyCode
-    const denomination: any = denominations.find(
-      e => e.name === currencyCode
-    )
+    const denomination: any = denominations.find(e => e.name === currencyCode)
     const multiplier: string = denomination.multiplier.toString()
     const amount = bns.div(nativeAmount, multiplier, 8)
     queryString += 'amount=' + amount.toString() + '&'

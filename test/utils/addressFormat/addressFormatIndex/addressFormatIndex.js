@@ -60,10 +60,8 @@ for (const fixture of fixtures) {
     fixture['toNewFormat'].forEach(([address, expected]) => {
       it(`get new format for ${address}`, function () {
         assert(
-          toNewFormat(
-            address,
-            fixture['WALLET_TYPE'].split('wallet:')[1]
-          ) === expected
+          toNewFormat(address, fixture['WALLET_TYPE'].split('wallet:')[1]) ===
+            expected
         )
       })
     })

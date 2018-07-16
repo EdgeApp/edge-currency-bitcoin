@@ -57,10 +57,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:ufo-bip84',
-    'wallet:ufo-bip49'
-  ],
+  walletTypes: ['wallet:ufo-bip84', 'wallet:ufo-bip49'],
 
   // Configuration options:
   defaultSettings: {
