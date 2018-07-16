@@ -8,6 +8,7 @@ import fixtures from './fixtures.json'
 for (const fixture of fixtures) {
   const CurrencyPluginFactory = Factories[fixture['factory']]
   const WALLET_TYPE = fixture['WALLET_TYPE']
+  const WALLET_FORMAT = fixture['WALLET_FORMAT']
   const keyName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Key'
   const xpubName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Xpub'
   let plugin, keys
@@ -70,7 +71,10 @@ for (const fixture of fixtures) {
       plugin
         .derivePublicKey({
           type: WALLET_TYPE,
-          keys: { [keyName]: keys[keyName] }
+          keys: {
+            [keyName]: keys[keyName],
+            format: WALLET_FORMAT
+          }
         })
         .then(keys => {
           assert.equal(keys[xpubName], fixture['xpub'])
@@ -120,6 +124,16 @@ for (const fixture of fixtures) {
           assert.throws(() => plugin.encodeUri(fixture['encodeUri'][test][0]))
         })
       }
+    })
+  })
+
+  describe(`getSplittableTypes for Wallet type ${WALLET_TYPE}`, function () {
+    const getSplittableTypes = fixture['getSplittableTypes'] || []
+    Object.keys(getSplittableTypes).forEach(format => {
+      it(`Test for the wallet type ${format}`, function () {
+        const walletTypes = plugin.getSplittableTypes({ keys: { format } })
+        assert.deepEqual(walletTypes, getSplittableTypes[format])
+      })
     })
   })
 }

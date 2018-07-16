@@ -14,8 +14,8 @@ import type { KeyManagerCallbacks } from '../../../src/engine/keyManager.js'
 import fixtures from './fixtures.json'
 
 // Add network to bcoin
-addNetwork(bitcoin.engineInfo)
-addNetwork(bitcoincash.engineInfo)
+addNetwork(bitcoin.bcoinInfo)
+addNetwork(bitcoincash.bcoinInfo)
 
 for (const fixture of fixtures) {
   const keyManagerCallbacks: KeyManagerCallbacks = {

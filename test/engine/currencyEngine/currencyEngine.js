@@ -17,6 +17,7 @@ const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 
 for (const fixture of fixtures) {
   const CurrencyPluginFactory = Factories[fixture['factory']]
+  const WALLET_FORMAT = fixture['WALLET_FORMAT']
   const WALLET_TYPE = fixture['WALLET_TYPE']
   const TX_AMOUNT = fixture['TX_AMOUNT']
 
@@ -62,7 +63,8 @@ for (const fixture of fixtures) {
         plugin = currencyPlugin
         // Hack for now until we change all the dummy data to represent the new derivation path
         keys = Object.assign(plugin.createPrivateKey(WALLET_TYPE), {
-          coinType: 0
+          coinType: 0,
+          format: WALLET_FORMAT
         })
         plugin.derivePublicKey({ type: WALLET_TYPE, keys }).then(result => {
           keys = result
@@ -433,6 +435,7 @@ for (const fixture of fixtures) {
       const { id, network } = fixture['Make Engine']
       assert(dataDump.walletId === id, 'walletId')
       assert(dataDump.walletType === WALLET_TYPE, 'walletType')
+      assert(dataDump.walletFormat === WALLET_FORMAT, 'walletFormat')
       assert(dataDump.pluginType === network, 'pluginType')
       done()
     })
