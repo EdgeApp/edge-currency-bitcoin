@@ -116,18 +116,13 @@ export class CurrencyPlugin {
     return encodeUri(obj, this.network, this.currencyInfo)
   }
 
-  // getSplittableTypes (walletInfo: AbcWalletInfo) {
-  //   let format = walletInfo.type.split('-')[1]
-  //   if (!format || format === '') {
-  //     format = walletInfo.keys && walletInfo.keys.format
-  //   }
-  //   const allowed = this.currencyInfo.splittableTypes.filter(type => {
-  //     return format === '' || !format || format === 'bip32'
-  //       ? !type.includes('bip')
-  //       : type.includes(format)
-  //   })
-  //   return allowed
-  // }
+  getSplittableTypes (walletInfo: EdgeWalletInfo): Array<string> {
+    const { keys: { format = 'bip32' } = {} } = walletInfo
+    const forks = getForksForNetwork(this.network)
+    return forks
+      .filter(network => getFromatsForNetwork(network).includes(format))
+      .map(network => `wallet:${network}`)
+  }
 }
 
 export const makeCurrencyPluginFactory = ({

@@ -8,6 +8,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcoin',
   magic: 0xd9b4bef9,
   formats: ['bip49', 'bip44', 'bip32'],
+  forks: ['bitcoincash', 'bitcoingold', 'bitcoindiamond'],
   keyPrefix: {
     privkey: 0x80,
     xpubkey: 0x0488b21e,
@@ -28,7 +29,6 @@ const bcoinInfo: BcoinCurrencyInfo = {
 const engineInfo: EngineCurrencyInfo = {
   network: 'bitcoin',
   currencyCode: 'BTC',
-  forks: ['bitcoincash', 'bitcoingold', 'bitcoindiamond'],
   gapLimit: 10,
   maxFee: 1000000,
   defaultFee: 1000,
