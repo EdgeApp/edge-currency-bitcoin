@@ -7,6 +7,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'zcoin',
   magic: 0xd9b4bef9,
+  formats: ['bip44', 'bip32'],
   keyPrefix: {
     privkey: 0xd2,
     xpubkey: 0x0488b21e,
@@ -48,7 +49,14 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'XZC', multiplier: '100000000', symbol: 'Z' },
     { name: 'mXZC', multiplier: '100000', symbol: 'mZ' }
   ],
-  walletTypes: ['wallet:zcoin', 'wallet:zcoin-bip44'],
+
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  walletTypes: [
+    'wallet:zcoin-bip44',
+    'wallet:zcoin'
+  ],
 
   // Configuration options:
   defaultSettings: {

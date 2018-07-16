@@ -7,6 +7,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcoincash',
   magic: 0xd9b4bef9,
+  formats: ['bip44', 'bip32'],
   keyPrefix: {
     privkey: 0x80,
     xpubkey: 0x0488b21e,
@@ -56,6 +57,10 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'mBCH', multiplier: '100000', symbol: 'm₿' },
     { name: 'cash', multiplier: '100', symbol: 'ƀ' }
   ],
+
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: ['wallet:bitcoincash-bip44', 'wallet:bitcoincash'],
 
   // Configuration options:

@@ -7,6 +7,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'uniformfiscalobject',
   magic: 0xfcd9b7dd,
+  formats: ['bip49', 'bip44', 'bip32'],
   keyPrefix: {
     privkey: 0x9b,
     xpubkey: 0x0488b21e,
@@ -52,6 +53,10 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'UFO', multiplier: '100000000', symbol: 'U' },
     { name: 'kUFO', multiplier: '100000000000', symbol: 'kU' }
   ],
+
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: ['wallet:ufo-bip49'],
 
   // Configuration options:

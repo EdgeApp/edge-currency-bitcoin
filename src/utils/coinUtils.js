@@ -1,7 +1,7 @@
 // @flow
 // $FlowFixMe
 import buffer from 'buffer-hack'
-import { utils, hd, primitives, script, network as Network } from 'bcoin'
+import { utils, hd, primitives, script, networks, network as Network } from 'bcoin'
 import { hash256, hash256Sync, reverseBufferToHex } from './utils.js'
 
 const { Buffer } = buffer
@@ -57,12 +57,7 @@ export const keysFromWalletInfo = (
       xpub: master.xpub || keys[`${network}Xpub`]
     }
   },
-  bip:
-    typeof keys.format === 'string'
-      ? keys.format
-      : typeof type === 'string'
-        ? type.split('-')[1]
-        : ''
+  bip: keys.format
 })
 
 export const verifyWIF = (data: any, network: string) => {
@@ -218,3 +213,9 @@ export const seedFromEntropy = (entropy: Buffer) =>
   hd.Mnemonic.fromEntropy(entropy).getPhrase()
 
 export const getLock = () => new utils.Lock()
+
+export const getForksForNetwork = (network: string) =>
+  networks[network] ? networks[network].forks : []
+
+export const getFromatsForNetwork = (network: string) =>
+  networks[network] ? networks[network].formats : []

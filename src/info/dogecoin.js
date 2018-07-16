@@ -6,6 +6,7 @@ import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'dogecoin',
   magic: 0x00000000,
+  formats: ['bip44', 'bip32'],
   keyPrefix: {
     privkey: 0x9e,
     xpubkey: 0x02facafd,
@@ -44,6 +45,10 @@ const currencyInfo: EdgeCurrencyInfo = {
   currencyName: 'Dogecoin',
   pluginName: 'dogecoin',
   denominations: [{ name: 'DOGE', multiplier: '100000000', symbol: 'Ð' }],
+
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: ['wallet:dogecoin-bip44'],
 
   // Configuration options:

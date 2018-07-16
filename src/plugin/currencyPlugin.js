@@ -17,7 +17,12 @@ import { CurrencyEngine, type EngineCurrencyInfo } from '../engine/currencyEngin
 import { PluginState } from './pluginState.js'
 import { parseUri, encodeUri } from './uri.js'
 import { getXPubFromSeed } from '../utils/formatSelector.js'
-import { seedFromEntropy, keysFromWalletInfo } from '../utils/coinUtils.js'
+import {
+  seedFromEntropy,
+  keysFromWalletInfo,
+  getFromatsForNetwork,
+  getForksForNetwork
+} from '../utils/coinUtils.js'
 import { addNetwork, patchCrypto, type BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 
 const { Buffer } = buffer
@@ -76,11 +81,12 @@ export class CurrencyPlugin {
   }
 
   async derivePublicKey (walletInfo: EdgeWalletInfo) {
-    if (!~this.currencyInfo.walletTypes.indexOf(walletInfo.type)) {
-      throw new Error('InvalidWalletType')
-    }
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
     const network = this.network
+    const format = walletInfo.keys.format
+    if (!format || !getFromatsForNetwork(network).includes(format)) {
+      throw new Error('InvalidWalletType')
+    }
     const { seed, bip, coinType } = keysFromWalletInfo(network, walletInfo)
     if (!seed) throw new Error('InvalidKeyName')
     const xpub = await getXPubFromSeed({ seed, bip, coinType, network })

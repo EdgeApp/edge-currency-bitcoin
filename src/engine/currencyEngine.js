@@ -122,11 +122,6 @@ export class CurrencyEngine {
     this.network = this.engineInfo.network
 
     this.fees = { ...engineInfo.simpleFeeSettings, timestamp: 0 }
-    console.log(
-      `${this.walletId} - Created Wallet Type ${
-        this.walletInfo.type
-      } for Currency Plugin ${this.pluginState.pluginName}`
-    )
   }
 
   async load (): Promise<any> {
@@ -164,6 +159,10 @@ export class CurrencyEngine {
       this.walletInfo,
       cachedRawKeys
     )
+
+    console.log(
+      `${this.walletId} - Created Wallet Type ${bip} for Currency Plugin ${
+        this.pluginState.pluginName}`)
 
     this.keyManager = new KeyManager({
       seed: seed,
@@ -711,6 +710,7 @@ export class CurrencyEngine {
     return {
       walletId: this.walletId.split(' - ')[0],
       walletType: this.walletInfo.type,
+      walletFormat: this.walletInfo.keys && this.walletInfo.keys.format,
       pluginType: this.pluginState.pluginName,
       fees: this.fees,
       data: {
