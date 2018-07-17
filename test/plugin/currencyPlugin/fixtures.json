@@ -149,7 +149,7 @@
       "bip32": ["wallet:bitcoincash", "wallet:bitcoingold"], 
       "bip44": ["wallet:bitcoincash", "wallet:bitcoingold"],
       "bip49": ["wallet:bitcoingold"],
-      "bip84": []
+      "bip84": ["wallet:bitcoingold"]
     }
   },
   {
