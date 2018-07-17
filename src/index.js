@@ -1,108 +1,27 @@
-// @flow
-import type {
-  EdgeCorePluginOptions,
-  EdgeCurrencyInfo,
-  EdgeCurrencyPlugin,
-  EdgeCurrencyPluginFactory
-} from 'edge-core-js'
-import bcoin from 'bcoin'
+import { makeCurrencyPluginFactory } from './plugin/currencyPlugin.js'
 
-// Coins Plugin Info
-import { bitcoinInfo } from './info/bitcoin.js'
-import { bitcoincashInfo } from './info/bitcoincash.js'
-import { bitcoincashTestnetInfo } from './info/bitcoincashtestnet.js'
-import { bitcoinTestnetInfo } from './info/bitcointestnet.js'
-import { dashInfo } from './info/dash.js'
-// import { dogecoinInfo } from './info/dogecoin.js'
-import { litecoinInfo } from './info/litecoin.js'
-import { zcoinInfo } from './info/zcoin.js'
-import { feathercoinInfo } from './info/feathercoin.js'
-import { ufoInfo } from './info/ufo.js'
-import { qtumInfo } from './info/qtum.js'
+import { bitcoin } from './info/bitcoin'
+import { bitcoinTestnet } from './info/bitcointestnet'
+import { bitcoincash } from './info/bitcoincash'
+import { bitcoincashTestnet } from './info/bitcoincashtestnet'
+import { bitcoingold } from './info/bitcoingold'
+import { bitcoingoldTestnet } from './info/bitcoingoldtestnet'
+import { litecoin } from './info/litecoin'
+import { dash } from './info/dash'
+import { feathercoin } from './info/feathercoin'
+import { qtum } from './info/qtum'
+import { ufo } from './info/ufo'
+import { zcoin } from './info/zcoin'
 
-// CurrencyPlugin takes a plugin info and creates the plugin
-import { CurrencyPlugin } from './plugin/currencyPlugin.js'
-
-// Bcoin extender function
-import { bcoinExtender } from './utils/bcoinExtender/bcoinExtender.js'
-
-/**
- * Makes a core plugin factory, given the currencyInfo for that coin.
- */
-function makePluginFactory (
-  currencyInfo: EdgeCurrencyInfo
-): EdgeCurrencyPluginFactory {
-  return {
-    pluginType: 'currency',
-    pluginName: currencyInfo.pluginName,
-
-    makePlugin (options: EdgeCorePluginOptions): Promise<EdgeCurrencyPlugin> {
-      const plugin = new CurrencyPlugin(options, currencyInfo)
-      // Extend bcoin to support this plugin currency info
-      // and faster crypto if possible
-      let secp256k1 = null
-      let pbkdf2 = null
-      if (options.io && options.io.secp256k1) {
-        secp256k1 = options.io.secp256k1
-      }
-      if (options.io && options.io.pbkdf2) {
-        pbkdf2 = options.io.pbkdf2
-      }
-
-      bcoinExtender(bcoin, currencyInfo, secp256k1, pbkdf2)
-      return plugin.state.load().then(() => plugin)
-    }
-  }
-}
-
-// Bitcoin:
-export const bitcoinCurrencyPluginFactory = makePluginFactory(bitcoinInfo)
-
-// Bitcoin Testnet:
-export const bitcoinTestnetCurrencyPluginFactory = makePluginFactory(
-  bitcoinTestnetInfo
-)
-
-// Bitcoin Cash:
-export const bitcoincashCurrencyPluginFactory = makePluginFactory(
-  bitcoincashInfo
-)
-
-// Bitcoin Cash Testnet:
-export const bitcoincashTestnetCurrencyPluginFactory = makePluginFactory(
-  bitcoincashTestnetInfo
-)
-
-// Dash:
-export const dashCurrencyPluginFactory = makePluginFactory(dashInfo)
-
-// Such Dogecoin:
-// export const dogecoinCurrencyPluginFactory = makePluginFactory(dogecoinInfo)
-
-// Litecoin:
-export const litecoinCurrencyPluginFactory = makePluginFactory(litecoinInfo)
-
-// Zcoin:
-export const zcoinCurrencyPluginFactory = makePluginFactory(zcoinInfo)
-
-// Feathercoin:
-export const feathercoinCurrencyPluginFactory = makePluginFactory(
-  feathercoinInfo
-)
-
-export const qtumCurrencyPluginFactory = makePluginFactory(qtumInfo)
-
-export const ufoCurrencyPluginFactory = makePluginFactory(ufoInfo)
-
-// Legacy uppercased names:
-export {
-  bitcoinCurrencyPluginFactory as BitcoinCurrencyPluginFactory,
-  bitcoinTestnetCurrencyPluginFactory as BitcoinTestnetCurrencyPluginFactory,
-  bitcoincashCurrencyPluginFactory as BitcoincashCurrencyPluginFactory,
-  bitcoincashTestnetCurrencyPluginFactory as BitcoincashTestnetCurrencyPluginFactory,
-  dashCurrencyPluginFactory as DashCurrencyPluginFactory,
-  // dogecoinCurrencyPluginFactory as DogecoinCurrencyPluginFactory,
-  litecoinCurrencyPluginFactory as LitecoinCurrencyPluginFactory,
-  zcoinCurrencyPluginFactory as ZcoinCurrencyPluginFactory,
-  feathercoinCurrencyPluginFactory as FeathercoinCurrencyPluginFactory
-}
+export const bitcoinCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoin)
+export const bitcoinTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoinTestnet)
+export const bitcoincashCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoincash)
+export const bitcoincashTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoincashTestnet)
+export const bitcoingoldCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoingold)
+export const bitcoingoldTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoingoldTestnet)
+export const litecoinCurrencyPluginFactory = makeCurrencyPluginFactory(litecoin)
+export const dashCurrencyPluginFactory = makeCurrencyPluginFactory(dash)
+export const feathercoinCurrencyPluginFactory = makeCurrencyPluginFactory(feathercoin)
+export const qtumCurrencyPluginFactory = makeCurrencyPluginFactory(qtum)
+export const ufoCurrencyPluginFactory = makeCurrencyPluginFactory(ufo)
+export const zcoinCurrencyPluginFactory = makeCurrencyPluginFactory(zcoin)

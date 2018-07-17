@@ -8,8 +8,10 @@ import fixtures from './fixtures.json'
 for (const fixture of fixtures) {
   const CurrencyPluginFactory = Factories[fixture['factory']]
   const WALLET_TYPE = fixture['WALLET_TYPE']
+  const WALLET_FORMAT = fixture['WALLET_FORMAT']
   const keyName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Key'
   const xpubName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Xpub'
+  let plugin, keys
 
   const [fakeIo] = makeFakeIos(1)
   const opts = {
@@ -21,11 +23,13 @@ for (const fixture of fixtures) {
   }
 
   describe(`Info for Wallet type ${WALLET_TYPE}`, function () {
-    let plugin
-
     before('Plugin', function (done) {
       CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
         plugin = currencyPlugin
+        assert.equal(
+          currencyPlugin.currencyInfo.currencyCode,
+          fixture['Test Currency code']
+        )
         done()
       })
     })
@@ -39,8 +43,6 @@ for (const fixture of fixtures) {
   })
 
   describe(`createPrivateKey for Wallet type ${WALLET_TYPE}`, function () {
-    let plugin
-
     before('Plugin', function (done) {
       CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
         plugin = currencyPlugin
@@ -56,7 +58,7 @@ for (const fixture of fixtures) {
     })
 
     it('Create valid key', function () {
-      const keys = plugin.createPrivateKey(WALLET_TYPE)
+      keys = plugin.createPrivateKey(WALLET_TYPE)
       assert.equal(!keys, false)
       assert.equal(typeof keys[keyName], 'string')
       const length = keys[keyName].split(' ').length
@@ -65,26 +67,14 @@ for (const fixture of fixtures) {
   })
 
   describe(`derivePublicKey for Wallet type ${WALLET_TYPE}`, function () {
-    let plugin
-    let keys
-
-    before('Plugin', function (done) {
-      CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
-        assert.equal(
-          currencyPlugin.currencyInfo.currencyCode,
-          fixture['Test Currency code']
-        )
-        plugin = currencyPlugin
-        keys = plugin.createPrivateKey(WALLET_TYPE)
-        done()
-      })
-    })
-
     it('Valid private key', function (done) {
       plugin
         .derivePublicKey({
           type: WALLET_TYPE,
-          keys: { [keyName]: keys[keyName] }
+          keys: {
+            [keyName]: keys[keyName],
+            format: WALLET_FORMAT
+          }
         })
         .then(keys => {
           assert.equal(keys[xpubName], fixture['xpub'])
@@ -106,13 +96,6 @@ for (const fixture of fixtures) {
   })
 
   describe(`parseUri for Wallet type ${WALLET_TYPE}`, function () {
-    let plugin
-
-    before('Plugin', function () {
-      CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
-        plugin = currencyPlugin
-      })
-    })
     Object.keys(fixture['parseUri']).forEach(test => {
       if (fixture['parseUri'][test].length === 2) {
         it(test, function () {
@@ -129,13 +112,6 @@ for (const fixture of fixtures) {
   })
 
   describe(`encodeUri for Wallet type ${WALLET_TYPE}`, function () {
-    let plugin
-
-    before('Plugin', function () {
-      CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
-        plugin = currencyPlugin
-      })
-    })
     Object.keys(fixture['encodeUri']).forEach(test => {
       if (fixture['encodeUri'][test].length === 2) {
         it(test, function () {
@@ -148,6 +124,16 @@ for (const fixture of fixtures) {
           assert.throws(() => plugin.encodeUri(fixture['encodeUri'][test][0]))
         })
       }
+    })
+  })
+
+  describe(`getSplittableTypes for Wallet type ${WALLET_TYPE}`, function () {
+    const getSplittableTypes = fixture['getSplittableTypes'] || []
+    Object.keys(getSplittableTypes).forEach(format => {
+      it(`Test for the wallet type ${format}`, function () {
+        const walletTypes = plugin.getSplittableTypes({ keys: { format } })
+        assert.deepEqual(walletTypes, getSplittableTypes[format])
+      })
     })
   })
 }

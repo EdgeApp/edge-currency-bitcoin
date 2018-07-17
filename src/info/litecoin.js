@@ -1,8 +1,51 @@
 // @flow
 import type { EdgeCurrencyInfo } from 'edge-core-js'
+import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
+import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
 
-export const litecoinInfo: EdgeCurrencyInfo = {
+const bcoinInfo: BcoinCurrencyInfo = {
+  type: 'litecoin',
+  magic: 0xd9b4bef9,
+  formats: ['bip84', 'bip49', 'bip44', 'bip32'],
+  keyPrefix: {
+    privkey: 0xb0,
+    xpubkey: 0x0488b21e,
+    xprivkey: 0x0488ade4,
+    xpubkey58: 'xpub',
+    xprivkey58: 'xprv',
+    coinType: 2
+  },
+  addressPrefix: {
+    pubkeyhash: 0x30,
+    scripthash: 0x32,
+    scripthashLegacy: 0x05,
+    witnesspubkeyhash: 0x06,
+    witnessscripthash: 0x0a,
+    bech32: 'lc'
+  }
+}
+
+const engineInfo: EngineCurrencyInfo = {
+  network: 'litecoin',
+  currencyCode: 'LTC',
+  gapLimit: 10,
+  maxFee: 1000000,
+  defaultFee: 50000,
+  feeUpdateInterval: 60000,
+  infoServer: 'https://info1.edgesecure.co:8444/v1',
+  customFeeSettings: ['satPerByte'],
+  simpleFeeSettings: {
+    highFee: '300',
+    lowFee: '100',
+    standardFeeLow: '150',
+    standardFeeHigh: '200',
+    standardFeeLowAmount: '20000000',
+    standardFeeHighAmount: '981000000'
+  }
+}
+
+const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'LTC',
   currencyName: 'Litecoin',
@@ -11,7 +54,12 @@ export const litecoinInfo: EdgeCurrencyInfo = {
     { name: 'LTC', multiplier: '100000000', symbol: 'Ł' },
     { name: 'mLTC', multiplier: '100000', symbol: 'mŁ' }
   ],
+
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
+  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: [
+    'wallet:litecoin-bip84',
     'wallet:litecoin-bip49',
     'wallet:litecoin-bip44',
     'wallet:litecoin'
@@ -19,42 +67,7 @@ export const litecoinInfo: EdgeCurrencyInfo = {
 
   // Configuration options:
   defaultSettings: {
-    forks: [],
-    network: {
-      type: 'litecoin',
-      magic: 0xd9b4bef9,
-      keyPrefix: {
-        privkey: 0xb0,
-        xpubkey: 0x0488b21e,
-        xprivkey: 0x0488ade4,
-        xpubkey58: 'xpub',
-        xprivkey58: 'xprv',
-        coinType: 2
-      },
-      addressPrefix: {
-        pubkeyhash: 0x30,
-        scripthash: 0x32,
-        legacy: 0x05,
-        witnesspubkeyhash: 0x06,
-        witnessscripthash: 0x0a,
-        bech32: 'lc'
-      }
-    },
     customFeeSettings: ['satPerByte'],
-    gapLimit: 10,
-    maxFee: 1000000,
-    defaultFee: 50000,
-    feeUpdateInterval: 60000,
-    feeInfoServer: '',
-    infoServer: 'https://info1.edgesecure.co:8444/v1',
-    simpleFeeSettings: {
-      highFee: '300',
-      lowFee: '100',
-      standardFeeLow: '150',
-      standardFeeHigh: '200',
-      standardFeeLowAmount: '20000000',
-      standardFeeHighAmount: '981000000'
-    },
     electrumServers: [
       'electrum://electrum-ltc.festivaldelhumor.org:60001',
       'electrum://electrum-ltc.petrkr.net:60001',
@@ -86,7 +99,8 @@ export const litecoinInfo: EdgeCurrencyInfo = {
       'electrum://e-3.claudioboxx.com:50003',
       'electrums://node.ispol.sk:50004',
       'electrums://electrumx.nmdps.net:9434'
-    ]
+    ],
+    disableFetchingServers: true
   },
   metaTokens: [],
 
@@ -99,3 +113,5 @@ export const litecoinInfo: EdgeCurrencyInfo = {
   symbolImage: `${imageServerUrl}/litecoin-logo-64.png`,
   symbolImageDarkMono: `${imageServerUrl}/litecoin-logo-64.png`
 }
+
+export const litecoin = { bcoinInfo, engineInfo, currencyInfo }
