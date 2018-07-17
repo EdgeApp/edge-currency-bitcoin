@@ -1,5 +1,4 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
 import {
   patchDerivePublic,
   patchDerivePrivate,
@@ -7,26 +6,49 @@ import {
   patchPrivateFromMnemonic
 } from './deriveExtender.js'
 import { patchTransaction } from './replayProtection.js'
+import bcoin from 'bcoin'
+
+export type BcoinCurrencyInfo = {
+  type: string,
+  magic: number,
+  keyPrefix: {
+    privkey: number,
+    xpubkey: number,
+    xprivkey: number,
+    xpubkey58: string,
+    xprivkey58: string,
+    coinType: number
+  },
+  addressPrefix: {
+    pubkeyhash: number,
+    scripthash: number,
+    cashAddress?: string,
+    pubkeyhashLegacy?: number,
+    scripthashLegacy?: number,
+    witnesspubkeyhash?: number,
+    witnessscripthash?: number,
+    bech32?: string
+  },
+  replayProtection?: {
+    SIGHASH_FORKID: number,
+    forcedMinVersion: number,
+    forkId: number
+  }
+}
 
 let cryptoReplaced = false
-let replayProtectionPatched = false
+patchTransaction(bcoin)
 
-export const bcoinExtender = (
-  bcoin: any,
-  pluginsInfo: EdgeCurrencyInfo,
-  secp256k1?: any = null,
-  pbkdf2?: any = null
-) => {
-  const network = pluginsInfo.defaultSettings.network
-  const type = network.type
+export const addNetwork = (bcoinInfo: BcoinCurrencyInfo) => {
+  const type = bcoinInfo.type
+
   if (bcoin.networks.types.indexOf(type) === -1) {
     bcoin.networks.types.push(type)
-    bcoin.networks[type] = { ...bcoin.networks.main, ...network }
+    bcoin.networks[type] = { ...bcoin.networks.main, ...bcoinInfo }
   }
-  if (!replayProtectionPatched && network.replayProtection) {
-    patchTransaction(bcoin)
-    replayProtectionPatched = true
-  }
+}
+
+export const patchCrypto = (secp256k1?: any = null, pbkdf2?: any = null) => {
   if (!cryptoReplaced) {
     if (secp256k1) {
       patchDerivePublic(bcoin, secp256k1)

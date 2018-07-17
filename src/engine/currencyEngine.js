@@ -8,9 +8,9 @@ import type {
   EdgePaymentProtocolInfo,
   EdgeFreshAddress,
   EdgeSpendInfo,
-  EdgeCurrencyInfo,
   EdgeSpendTarget,
   EdgeDataDump,
+  EdgeIo,
   DiskletFolder
 } from 'edge-core-js'
 
@@ -42,6 +42,38 @@ import {
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000
+
+export type EngineCurrencyInfo = {
+  // Required Settings
+  network: string, // The offical network in lower case - Needs to match the Bitcoin Lib Network Type
+  currencyCode: string, // The offical currency code in upper case - Needs to match the EdgeCurrencyInfo currencyCode
+  gapLimit: number,
+  maxFee: number,
+  defaultFee: number,
+  feeUpdateInterval: number,
+  customFeeSettings: Array<string>,
+  simpleFeeSettings: {
+    highFee: string,
+    lowFee: string,
+    standardFeeLow: string,
+    standardFeeHigh: string,
+    standardFeeLowAmount: string,
+    standardFeeHighAmount: string
+  },
+
+  // Optional Settings
+  forks?: Array<string>,
+  feeInfoServer?: string,
+  infoServer?: string
+}
+
+export type CurrencyEngineSettings = {
+  walletInfo: EdgeWalletInfo,
+  engineInfo: EngineCurrencyInfo,
+  pluginState: PluginState,
+  options: EdgeCurrencyEngineOptions,
+  io: EdgeIo
+}
 /**
  * The core currency plugin.
  * Provides information about the currency,
@@ -50,18 +82,16 @@ const MILLI_TO_SEC = 1000
 export class CurrencyEngine {
   walletInfo: EdgeWalletInfo
   walletId: string
-  currencyInfo: EdgeCurrencyInfo
+  engineInfo: EngineCurrencyInfo
+  currencyCode: string
+  network: string
   keyManager: KeyManager
   engineState: EngineState
   pluginState: PluginState
-  edgeCurrencyEngineOptions: EdgeCurrencyEngineOptions
   callbacks: EdgeCurrencyEngineCallbacks
   walletLocalFolder: DiskletFolder
   walletLocalEncryptedFolder: DiskletFolder
-  io: any
-  network: string
-  infoServer: string
-  feeInfoServer: string
+  io: EdgeIo
   feeUpdateInterval: number
   feeTimer: any
   fees: BitcoinFees
@@ -69,52 +99,29 @@ export class CurrencyEngine {
   // ------------------------------------------------------------------------
   // Private API
   // ------------------------------------------------------------------------
-  constructor (
-    walletInfo: EdgeWalletInfo,
-    currencyInfo: EdgeCurrencyInfo,
-    pluginState: PluginState,
-    options: EdgeCurrencyEngineOptions
-  ) {
+  constructor ({
+    walletInfo,
+    engineInfo,
+    pluginState,
+    options,
+    io
+  }: CurrencyEngineSettings) {
     // Validate that we are a valid EdgeCurrencyEngine:
     // eslint-disable-next-line no-unused-vars
     const test: EdgeCurrencyEngine = this
-
     this.walletInfo = walletInfo
     this.walletId = walletInfo.id || ''
-    this.currencyInfo = currencyInfo
     this.pluginState = pluginState
-    this.edgeCurrencyEngineOptions = options
-    this.callbacks = this.edgeCurrencyEngineOptions.callbacks
-    this.walletLocalFolder = this.edgeCurrencyEngineOptions.walletLocalFolder
-    this.walletLocalEncryptedFolder = this.edgeCurrencyEngineOptions.walletLocalEncryptedFolder
-    this.io = null
-    if (this.edgeCurrencyEngineOptions.optionalSettings) {
-      this.io = this.edgeCurrencyEngineOptions.optionalSettings.io
-    }
-    this.network = this.currencyInfo.defaultSettings.network.type
-    this.infoServer = this.currencyInfo.defaultSettings.infoServer
-    this.feeInfoServer = this.currencyInfo.defaultSettings.feeInfoServer
-    this.feeUpdateInterval = this.currencyInfo.defaultSettings.feeUpdateInterval
-    this.fees = {
-      highFee: '',
-      lowFee: '',
-      standardFeeLow: '',
-      standardFeeHigh: '',
-      standardFeeLowAmount: '',
-      standardFeeHighAmount: '',
-      timestamp: 0
-    }
-    if (this.currencyInfo.defaultSettings.simpleFeeSettings) {
-      Object.assign(
-        this.fees,
-        this.currencyInfo.defaultSettings.simpleFeeSettings
-      )
-    }
-    console.log(
-      `${this.walletId} - Created Wallet Type ${
-        this.walletInfo.type
-      } for Currency Plugin ${this.currencyInfo.pluginName}`
-    )
+    this.callbacks = options.callbacks
+    this.walletLocalFolder = options.walletLocalFolder
+    this.walletLocalEncryptedFolder = options.walletLocalEncryptedFolder
+    this.io = io
+    this.engineInfo = engineInfo
+    this.feeUpdateInterval = this.engineInfo.feeUpdateInterval
+    this.currencyCode = this.engineInfo.currencyCode
+    this.network = this.engineInfo.network
+
+    this.fees = { ...engineInfo.simpleFeeSettings, timestamp: 0 }
   }
 
   async load (): Promise<any> {
@@ -153,13 +160,19 @@ export class CurrencyEngine {
       cachedRawKeys
     )
 
+    console.log(
+      `${this.walletId} - Created Wallet Type ${bip} for Currency Plugin ${
+        this.pluginState.pluginName
+      }`
+    )
+
     this.keyManager = new KeyManager({
       seed: seed,
       bip: bip,
       coinType: coinType,
       rawKeys: rawKeys,
       callbacks: callbacks,
-      gapLimit: this.currencyInfo.defaultSettings.gapLimit,
+      gapLimit: this.engineInfo.gapLimit,
       network: this.network,
       addressInfos: this.engineState.addressInfos,
       txInfos: this.engineState.parsedTxs
@@ -170,10 +183,7 @@ export class CurrencyEngine {
     }
 
     this.engineState.onBalanceChanged = () => {
-      this.callbacks.onBalanceChanged(
-        this.currencyInfo.currencyCode,
-        this.getBalance()
-      )
+      this.callbacks.onBalanceChanged(this.currencyCode, this.getBalance())
     }
 
     await this.keyManager.load()
@@ -259,7 +269,7 @@ export class CurrencyEngine {
     const fee = totalInputAmount ? totalInputAmount - totalOutputAmount : 0
     const edgeTransaction: EdgeTransaction = {
       ourReceiveAddresses,
-      currencyCode: this.currencyInfo.currencyCode,
+      currencyCode: this.currencyCode,
       otherParams: {},
       txid: txid,
       date: date,
@@ -272,18 +282,14 @@ export class CurrencyEngine {
   }
 
   async updateFeeTable () {
+    const { infoServer } = this.engineInfo
     try {
-      if (!this.io || !this.io.fetch) {
-        throw new Error('No io/fetch object')
-      }
       await this.fetchFee()
-      if (!this.infoServer) {
+      if (!infoServer) {
         throw new Error('infoServer not set')
       }
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        const url = `${this.infoServer}/networkFees/${
-          this.currencyInfo.currencyCode
-        }`
+        const url = `${infoServer}/networkFees/${this.currencyCode}`
         const feesResponse = await this.io.fetch(url)
         const feesJson = await feesResponse.json()
         if (validateObject(feesJson, InfoServerFeesSchema)) {
@@ -299,16 +305,14 @@ export class CurrencyEngine {
   }
 
   async fetchFee () {
-    if (!this.feeInfoServer || this.feeInfoServer === '') {
+    const { feeInfoServer } = this.engineInfo
+    if (!feeInfoServer || feeInfoServer === '') {
       clearTimeout(this.feeTimer)
       return
     }
     try {
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        if (!this.io || !this.io.fetch) {
-          throw new Error('No io/fetch object')
-        }
-        const results = await this.io.fetch(this.feeInfoServer)
+        const results = await this.io.fetch(feeInfoServer)
         if (results.status !== 200) {
           throw new Error(results.body)
         }
@@ -331,8 +335,7 @@ export class CurrencyEngine {
     networkFeeOption = 'standard',
     customNetworkFee = {}
   }: EdgeSpendInfo): number {
-    const customFeeSetting = this.currencyInfo.defaultSettings
-      .customFeeSettings[0]
+    const customFeeSetting = this.engineInfo.customFeeSettings[0]
     const customFeeAmount = customNetworkFee[customFeeSetting] || '0'
     if (networkFeeOption === 'custom' && customFeeAmount !== '0') {
       // customNetworkFee is in sat/Bytes in need to be converted to sat/KB
@@ -373,10 +376,7 @@ export class CurrencyEngine {
   async startEngine (): Promise<void> {
     const cachedTXs = await this.getTransactions()
     this.callbacks.onTransactionsChanged(cachedTXs)
-    this.callbacks.onBalanceChanged(
-      this.currencyInfo.currencyCode,
-      this.getBalance()
-    )
+    this.callbacks.onBalanceChanged(this.currencyCode, this.getBalance())
     this.updateFeeTable()
     return this.engineState.connect()
   }
@@ -530,10 +530,6 @@ export class CurrencyEngine {
     paymentProtocolURL: string
   ): Promise<EdgePaymentProtocolInfo> {
     try {
-      if (!this.io || !this.io.fetch) {
-        throw new Error('No io/fetch object')
-      }
-
       const headers = { Accept: `application/${this.network}-paymentrequest` }
       // Legacy fetching using XMLHttpRequest
       // This is for enviroments that don't support 'arrayBuffer'
@@ -567,7 +563,7 @@ export class CurrencyEngine {
         result = await legacyFetch(paymentProtocolURL)
       }
       const buf = Buffer.from(result)
-      return parsePayment(buf, this.network, this.currencyInfo.currencyCode)
+      return parsePayment(buf, this.network, this.currencyCode)
     } catch (err) {
       console.log(`${this.walletId} - ${err.toString()}`)
       throw err
@@ -607,10 +603,7 @@ export class CurrencyEngine {
           ({ publicAddress, nativeAmount }) => publicAddress && nativeAmount
         )
         .map(({ publicAddress = '', nativeAmount = 0 }) => ({
-          address:
-            typeof publicAddress !== 'string'
-              ? toLegacyFormat(publicAddress.toString(), this.network)
-              : toLegacyFormat(publicAddress, this.network),
+          address: toLegacyFormat(publicAddress.toString(), this.network),
           value: parseInt(nativeAmount)
         }))
 
@@ -619,7 +612,7 @@ export class CurrencyEngine {
         utxos,
         rate,
         txOptions,
-        maxFee: this.currencyInfo.defaultSettings.maxFee,
+        maxFee: this.engineInfo.maxFee,
         height: this.getBlockHeight()
       })
 
@@ -644,7 +637,7 @@ export class CurrencyEngine {
       const edgeTransaction: EdgeTransaction = {
         ourReceiveAddresses,
         otherParams: { bcoinTx, edgeSpendInfo, rate },
-        currencyCode: this.currencyInfo.currencyCode,
+        currencyCode: this.currencyCode,
         txid: '',
         date: 0,
         blockHeight: 0,
@@ -683,11 +676,9 @@ export class CurrencyEngine {
 
     // Try APIs
     const promiseArray = []
-    if (this.io && this.io.fetch) {
-      for (const broadcastFactory of broadcastFactories) {
-        const broadcaster = broadcastFactory(this.io, currencyCode)
-        if (broadcaster) promiseArray.push(broadcaster(signedTx))
-      }
+    for (const broadcastFactory of broadcastFactories) {
+      const broadcaster = broadcastFactory(this.io, currencyCode)
+      if (broadcaster) promiseArray.push(broadcaster(signedTx))
     }
     promiseArray.push(this.engineState.broadcastTx(signedTx))
 
@@ -718,7 +709,8 @@ export class CurrencyEngine {
     return {
       walletId: this.walletId.split(' - ')[0],
       walletType: this.walletInfo.type,
-      pluginType: this.currencyInfo.pluginName,
+      walletFormat: this.walletInfo.keys && this.walletInfo.keys.format,
+      pluginType: this.pluginState.pluginName,
       fees: this.fees,
       data: {
         ...this.pluginState.dumpData(),

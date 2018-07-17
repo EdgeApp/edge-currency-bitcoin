@@ -13,13 +13,37 @@ import type {
 
 // $FlowFixMe
 import buffer from 'buffer-hack'
-import { CurrencyEngine } from '../engine/currencyEngine.js'
+import {
+  CurrencyEngine,
+  type EngineCurrencyInfo
+} from '../engine/currencyEngine.js'
 import { PluginState } from './pluginState.js'
 import { parseUri, encodeUri } from './uri.js'
 import { getXPubFromSeed } from '../utils/formatSelector.js'
-import { seedFromEntropy, keysFromWalletInfo } from '../utils/coinUtils.js'
+import {
+  seedFromEntropy,
+  keysFromWalletInfo,
+  getFromatsForNetwork,
+  getForksForNetwork
+} from '../utils/coinUtils.js'
+import {
+  addNetwork,
+  patchCrypto,
+  type BcoinCurrencyInfo
+} from '../utils/bcoinExtender/bcoinExtender.js'
 
 const { Buffer } = buffer
+
+export type CurrencyPluginFactorySettings = {
+  currencyInfo: EdgeCurrencyInfo,
+  engineInfo: EngineCurrencyInfo,
+  bcoinInfo: BcoinCurrencyInfo
+}
+
+export type CurrencyPluginSettings = {
+  currencyInfo: EdgeCurrencyInfo,
+  engineInfo: EngineCurrencyInfo
+}
 
 /**
  * The core currency plugin.
@@ -28,6 +52,7 @@ const { Buffer } = buffer
  */
 export class CurrencyPlugin {
   currencyInfo: EdgeCurrencyInfo
+  engineInfo: EngineCurrencyInfo
   network: string
   pluginName: string
   io: EdgeIo
@@ -36,19 +61,31 @@ export class CurrencyPlugin {
   // ------------------------------------------------------------------------
   // Private API
   // ------------------------------------------------------------------------
-  constructor (options: EdgeCorePluginOptions, currencyInfo: EdgeCurrencyInfo) {
+  constructor (
+    { io }: EdgeCorePluginOptions,
+    { currencyInfo, engineInfo }: CurrencyPluginSettings
+  ) {
     // Validate that we are a valid EdgeCurrencyPlugin:
     // eslint-disable-next-line no-unused-vars
     const test: EdgeCurrencyPlugin = this
 
     // Public API:
     this.currencyInfo = currencyInfo
-    this.network = this.currencyInfo.defaultSettings.network.type
-    this.pluginName = this.currencyInfo.pluginName
+    this.pluginName = currencyInfo.pluginName
     console.log(`Creating Currency Plugin for ${this.pluginName}`)
     // Private API:
-    this.io = options.io
-    this.state = new PluginState(this.io, currencyInfo)
+    this.io = io
+    this.engineInfo = engineInfo
+    this.network = engineInfo.network
+    const { defaultSettings, pluginName, currencyCode } = this.currencyInfo
+    const { infoServer = '' } = engineInfo
+    this.state = new PluginState({
+      io,
+      defaultSettings,
+      infoServer,
+      currencyCode,
+      pluginName
+    })
   }
 
   // ------------------------------------------------------------------------
@@ -60,46 +97,71 @@ export class CurrencyPlugin {
   }
 
   async derivePublicKey (walletInfo: EdgeWalletInfo) {
-    if (!~this.currencyInfo.walletTypes.indexOf(walletInfo.type)) {
-      throw new Error('InvalidWalletType')
-    }
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
     const network = this.network
+    const format = walletInfo.keys.format
+    if (!format || !getFromatsForNetwork(network).includes(format)) {
+      throw new Error('InvalidWalletType')
+    }
     const { seed, bip, coinType } = keysFromWalletInfo(network, walletInfo)
     if (!seed) throw new Error('InvalidKeyName')
     const xpub = await getXPubFromSeed({ seed, bip, coinType, network })
-    return {
-      [`${network}Key`]: walletInfo.keys[`${network}Key`],
-      [`${network}Xpub`]: xpub
-    }
+    return { ...walletInfo.keys, [`${network}Xpub`]: xpub }
   }
 
   async makeEngine (
     walletInfo: EdgeWalletInfo,
     options: EdgeCurrencyEngineOptions
   ): Promise<EdgeCurrencyEngine> {
-    if (!options.optionalSettings) {
-      options.optionalSettings = {}
-    }
-    options.optionalSettings.io = this.io
-    if (!options.walletLocalFolder) {
-      throw new Error('Cannot create an engine without a local folder')
-    }
-    const engine = new CurrencyEngine(
+    const engine = new CurrencyEngine({
       walletInfo,
-      this.currencyInfo,
-      this.state,
-      options
-    )
+      engineInfo: this.engineInfo,
+      pluginState: this.state,
+      options,
+      io: this.io
+    })
     await engine.load()
     return engine
   }
 
   parseUri (uri: string): EdgeParsedUri {
-    return parseUri(uri, this.currencyInfo)
+    return parseUri(uri, this.network, this.currencyInfo)
   }
 
   encodeUri (obj: EdgeEncodeUri): string {
-    return encodeUri(obj, this.currencyInfo)
+    return encodeUri(obj, this.network, this.currencyInfo)
+  }
+
+  getSplittableTypes (walletInfo: EdgeWalletInfo): Array<string> {
+    const { keys: { format = 'bip32' } = {} } = walletInfo
+    const forks = getForksForNetwork(this.network)
+    return forks
+      .filter(network => getFromatsForNetwork(network).includes(format))
+      .map(network => `wallet:${network}`)
+  }
+}
+
+export const makeCurrencyPluginFactory = ({
+  currencyInfo,
+  engineInfo,
+  bcoinInfo
+}: CurrencyPluginFactorySettings) => {
+  addNetwork(bcoinInfo)
+  return {
+    pluginType: 'currency',
+    currencyInfo: currencyInfo,
+    pluginName: currencyInfo.pluginName,
+    makePlugin: async (
+      options: EdgeCorePluginOptions
+    ): Promise<EdgeCurrencyPlugin> => {
+      // Create a core plugin given the currencyInfo and plugin options
+      const plugin = new CurrencyPlugin(options, { currencyInfo, engineInfo })
+      // Extend bcoin to support this plugin currency info
+      // and faster crypto if possible
+      const { io: { secp256k1, pbkdf2 } = {} } = options
+      patchCrypto(secp256k1, pbkdf2)
+      // Return the plugin after it finished loading from cache
+      return plugin.state.load().then(() => plugin)
+    }
   }
 }
