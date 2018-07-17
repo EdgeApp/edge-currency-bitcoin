@@ -534,7 +534,7 @@ export class CurrencyEngine {
         throw new Error('No io/fetch object')
       }
 
-      const headers = { Accept: 'application/bitcoin-paymentrequest' }
+      const headers = { Accept: `application/${this.network}-paymentrequest` }
       // Legacy fetching using XMLHttpRequest
       // This is for enviroments that don't support 'arrayBuffer'
       // like some versions of react-native and old browsers
