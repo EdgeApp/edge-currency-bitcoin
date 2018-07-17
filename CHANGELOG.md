@@ -1,5 +1,20 @@
 # edge-currency-bitcoin
 
+## 2.22.0
+
+* Full support for the SIGHASH_FORKID two-way replay protection scheme (For forks like bcash and bgold)
+* Full support for bip84 wallets.
+* Removed all of the $FlowFixMe (except for the one for 'buffer-hack') from the code.
+* Refactored the code so that almost all (around 90%) of the references to bcoin and its' implementation details are hidden inside a utility function (in the utils folder) and not spread all over the code base.
+
+## 2.21.9
+
+* Use a different network specific header for fetching paymentRequests
+
+## 2.21.8
+
+* Changed currency name for ufo from 'UFO Coin' to 'UFO'
+
 ## 2.21.7
 
 * Fix headers for bip70 payment request
