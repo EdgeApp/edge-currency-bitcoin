@@ -145,8 +145,9 @@ export class KeyManager {
       }
     }
     // Cache is not sorted so sort addresses according to derivation index
-    this.keys.receive.children.sort((a, b) => a.index - b.index)
-    this.keys.change.children.sort((a, b) => a.index - b.index)
+    for (const branch in this.keys) {
+      this.keys[branch].children.sort((a, b) => a.index - b.index)
+    }
   }
 
   // ////////////////////////////////////////////// //
