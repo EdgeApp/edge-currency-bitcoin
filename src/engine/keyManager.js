@@ -130,6 +130,7 @@ export class KeyManager {
     // Create KeyRings while tring to load as many of the pubKey/privKey from the cache
     this.keys = this.fSelector.keysFromRaw(rawKeys)
     // Load addresses from Cache
+    const { branches } = this.fSelector
     for (const scriptHash in addressInfos) {
       const addressObj: AddressInfo = addressInfos[scriptHash]
       const path = parsePath(addressObj.path, this.masterPath)
@@ -137,11 +138,7 @@ export class KeyManager {
         const [branch, index] = path
         const displayAddress = toNewFormat(addressObj.displayAddress, network)
         const address = { displayAddress, scriptHash, index, branch }
-        if (branch === 0) {
-          this.keys.receive.children.push(address)
-        } else {
-          this.keys.change.children.push(address)
-        }
+        this.keys[branches[branch]].children.push(address)
       }
     }
     // Cache is not sorted so sort addresses according to derivation index
