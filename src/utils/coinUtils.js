@@ -218,3 +218,11 @@ export const seedFromEntropy = (entropy: Buffer) =>
   hd.Mnemonic.fromEntropy(entropy).getPhrase()
 
 export const getLock = () => new utils.Lock()
+
+export const addressFromKey = (key: any): Promise<any> => {
+  const address = key.getAddress().toString()
+  return addressToScriptHash(address).then(scriptHash => ({
+    address,
+    scriptHash
+  }))
+}
