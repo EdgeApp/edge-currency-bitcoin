@@ -1,5 +1,42 @@
 # edge-currency-bitcoin
 
+## 3.0.0
+
+### BREAKING CHANGES
+
+* Stop supporting receiving the wallet format as type of the wallet type.
+  For example, `wallet:bitcoin-bip44` is not supported anymore.
+  The CORRECT way to pass in the wallet format is inside the keys object which is in the walletInfo.
+  Example:
+
+  ```js
+  walletInfo = {
+    keys: {
+      seed: 'whatever whatever whatever whatever whatever whatever whatever',
+      format: 'bip49'
+    }
+  }
+  ```
+
+* Split each currency Info into 3 different config objects depends on the where and how they are going to be used:
+  1. bcoinInfo - The data needed to extend Bcoin into supporting the currency
+  2. engineInfo - The hard coded data needed to configure the engine for the currency
+  3. currencyInfo - The original EdgeCurrencyInfo needed to be passed on to core/gui according to the API specs - This got ALOT cleaner
+
+  Also typed everything so no more using `defaultSettings` which was typed as Any as a garbage hole where we stuffed everything we didn't know where to put.
+  Everything is now strongly typed so keep it like that.
+
+### New Features
+
+* `getSplittableTypes` API to the plugin.
+* bip84 wallet type as default to the networks that supports it.
+* Settings and factories for `BitcoinGold` and `BitcoinGoldTestnet`.
+
+### Fix
+
+* Two Way Replay Protection scheme.
+* `sweepPrivateKey` only signed with a key corresponding to the wallet type. Now we try all possible combinations.
+
 ## 2.22.0
 
 * Full support for the SIGHASH_FORKID two-way replay protection scheme (For forks like bcash and bgold)
