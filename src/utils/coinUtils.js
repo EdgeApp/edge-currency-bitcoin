@@ -226,3 +226,11 @@ export const getForksForNetwork = (network: string) =>
 
 export const getFromatsForNetwork = (network: string) =>
   networks[network] ? networks[network].formats : []
+
+export const addressFromKey = (key: any): Promise<any> => {
+  const address = key.getAddress().toString()
+  return addressToScriptHash(address).then(scriptHash => ({
+    address,
+    scriptHash
+  }))
+}

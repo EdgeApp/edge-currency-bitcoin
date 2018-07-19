@@ -6,7 +6,7 @@ import type {
   TxOptions,
   Output
 } from '../utils/coinUtils.js'
-import { FormatSelector } from '../utils/formatSelector.js'
+import { getAllKeyRings, FormatSelector } from '../utils/formatSelector.js'
 import { parsePath, createTX, getLock } from '../utils/coinUtils.js'
 import {
   toLegacyFormat,
@@ -182,11 +182,7 @@ export class KeyManager {
   }
 
   async sign (tx: any, privateKeys: Array<string> = []) {
-    const keyRings = []
-    for (const key of privateKeys) {
-      const privKey = await this.fSelector.keyFromSecret(key)
-      keyRings.push(privKey)
-    }
+    const keyRings = await getAllKeyRings(privateKeys, this.network)
     if (!keyRings.length) {
       if (!this.keys.master.privKey && this.seed === '') {
         throw new Error("Can't sign without private key")

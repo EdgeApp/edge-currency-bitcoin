@@ -4,7 +4,7 @@ import buffer from 'buffer-hack'
 import { hd, primitives, consensus, networks } from 'bcoin'
 import {
   getPrivateFromSeed,
-  addressToScriptHash,
+  addressFromKey,
   setKeyType
 } from '../utils/coinUtils.js'
 
@@ -13,21 +13,26 @@ export const SUPPORTED_BIPS = ['bip32', 'bip44', 'bip49', 'bip84']
 const { Buffer } = buffer
 const witScale = consensus.WITNESS_SCALE_FACTOR
 
-export const getAllAddresses = (
+export const getAllKeyRings = (
   privateKeys: Array<string>,
   network: string
-) => {
-  const addressesPromises = []
+): Promise<any[]> => {
+  const keysPromises = []
   for (const bip of SUPPORTED_BIPS) {
     for (const key of privateKeys) {
       const fSelector = FormatSelector(bip, network)
-      addressesPromises.push(
-        fSelector.keyFromSecret(key).then(fSelector.addressFromKey)
-      )
+      const keyRing = primitives.KeyRing.fromSecret(key, network)
+      keysPromises.push(Promise.resolve(keyRing).then(fSelector.setKeyType))
     }
   }
-  return Promise.all(addressesPromises)
+  return Promise.all(keysPromises)
 }
+
+export const getAllAddresses = (
+  privateKeys: Array<string>,
+  network: string
+): Promise<any[]> => getAllKeyRings(privateKeys, network).then(keyRings =>
+  Promise.all(keyRings.map(addressFromKey)))
 
 export const getXPubFromSeed = async ({
   seed,
@@ -58,17 +63,8 @@ export const FormatSelector = (
   const setKeyTypeWrap = (key: any) => setKeyType(key, nested, witness, network)
   const deriveHdKey = (parentKey: any, index: number): Promise<any> =>
     Promise.resolve(parentKey.derive(index))
-  const addressFromKey = (key: any) =>
-    setKeyTypeWrap(key).then(key => {
-      const address = key.getAddress().toString()
-      return addressToScriptHash(address).then(scriptHash => ({
-        address,
-        scriptHash
-      }))
-    })
 
   return {
-    addressFromKey,
     branches: branches.slice(1),
     setKeyType: setKeyTypeWrap,
 
@@ -91,9 +87,6 @@ export const FormatSelector = (
       return { privKey, pubKey: privKey.toPublic() }
     },
 
-    keyFromSecret: (key: any): Promise<any> =>
-      Promise.resolve(primitives.KeyRing.fromSecret(key, network)),
-
     parseSeed:
       bip === 32
         ? (seed: string) => Buffer.from(seed, 'base64').toString('hex')
@@ -108,7 +101,9 @@ export const FormatSelector = (
 
     deriveHdKey,
     deriveAddress: (parentKey: any, index: number): Promise<any> =>
-      deriveHdKey(parentKey, index).then(key => addressFromKey(key)),
+      deriveHdKey(parentKey, index)
+        .then(key => setKeyTypeWrap(key))
+        .then(key => addressFromKey(key)),
 
     deriveKeyRing: (parentKey: any, index: number): Promise<any> =>
       deriveHdKey(parentKey, index).then(derivedKey =>
