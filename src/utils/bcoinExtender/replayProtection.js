@@ -18,7 +18,7 @@ export const patchTransaction = function (bcoin) {
         forkId = 0x00,
         type: forkedType = bcoin.script.hashType.ALL
       } = type
-      type = forkedType | SIGHASH_FORKID | forkId * 256
+      type = forkedType | SIGHASH_FORKID | (forkId * 256)
       if (forcedMinVersion) version = forcedMinVersion
     }
 

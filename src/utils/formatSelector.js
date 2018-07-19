@@ -31,8 +31,10 @@ export const getAllKeyRings = (
 export const getAllAddresses = (
   privateKeys: Array<string>,
   network: string
-): Promise<any[]> => getAllKeyRings(privateKeys, network).then(keyRings =>
-  Promise.all(keyRings.map(addressFromKey)))
+): Promise<any[]> =>
+  getAllKeyRings(privateKeys, network).then(keyRings =>
+    Promise.all(keyRings.map(addressFromKey))
+  )
 
 export const getXPubFromSeed = async ({
   seed,
