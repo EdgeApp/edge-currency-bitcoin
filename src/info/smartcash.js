@@ -58,7 +58,14 @@ const currencyInfo: EdgeCurrencyInfo = {
   defaultSettings: {
     customFeeSettings: ['satPerByte'],
     electrumServers: [
-      'electrums://144.202.47.131:50002'
+      'electrum://electrum1.smartcash.cc:50001',
+      'electrum://electrum2.smartcash.cc:50001',
+      'electrum://electrum3.smartcash.cc:50001',
+      'electrum://electrum4.smartcash.cc:50001',
+      'electrums://electrum1.smartcash.cc:50002',
+      'electrums://electrum2.smartcash.cc:50002',
+      'electrums://electrum3.smartcash.cc:50002',
+      'electrums://electrum4.smartcash.cc:50002'
     ],
     disableFetchingServers: true
   },
