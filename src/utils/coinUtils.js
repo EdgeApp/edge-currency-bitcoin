@@ -222,7 +222,7 @@ export const seedFromEntropy = (entropy: Buffer) =>
 export const getLock = () => new utils.Lock()
 
 export const getForksForNetwork = (network: string) =>
-  networks[network] ? networks[network].forks : []
+  networks[network] && networks[network].forks ? networks[network].forks : []
 
 export const getFromatsForNetwork = (network: string) =>
   networks[network] ? networks[network].formats : []
