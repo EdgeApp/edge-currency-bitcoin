@@ -26,7 +26,7 @@ const engineInfo: EngineCurrencyInfo = {
   currencyCode: 'SMART',
   gapLimit: 10,
   maxFee: 1000000,
-  defaultFee: 1000,
+  defaultFee: 100000,
   feeUpdateInterval: 60000,
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
