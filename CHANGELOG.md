@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 3.0.1
+
+* allow `forks` to be optional inside bcoinInfo
+
 ## 3.0.0
 
 ### BREAKING CHANGES
