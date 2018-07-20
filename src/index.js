@@ -12,6 +12,7 @@ import { feathercoin } from './info/feathercoin'
 import { qtum } from './info/qtum'
 import { ufo } from './info/ufo'
 import { zcoin } from './info/zcoin'
+import { smartcash } from './info/smartcash'
 
 export const bitcoinCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoin)
 export const bitcoinTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoinTestnet)
@@ -25,3 +26,4 @@ export const feathercoinCurrencyPluginFactory = makeCurrencyPluginFactory(feathe
 export const qtumCurrencyPluginFactory = makeCurrencyPluginFactory(qtum)
 export const ufoCurrencyPluginFactory = makeCurrencyPluginFactory(ufo)
 export const zcoinCurrencyPluginFactory = makeCurrencyPluginFactory(zcoin)
+export const smartcashCurrencyPluginFactory = makeCurrencyPluginFactory(smartcash)
