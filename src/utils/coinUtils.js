@@ -50,12 +50,12 @@ export type CreateTxOptions = {
   txOptions: TxOptions
 }
 
-export const keysFromEntropy = (entropy: Buffer, network: string) => {
+export const keysFromEntropy = (entropy: Buffer, network: string, opts: any = {}) => {
   const { formats = [], keyPrefix = {} } = networks[network] || {}
   return {
     [`${network}Key`]: hd.Mnemonic.fromEntropy(entropy).getPhrase(),
-    format: formats[0] || 'bip44',
-    coinType: keyPrefix.coinType || 0
+    format: opts.format || formats[0] || 'bip44',
+    coinType: opts.coinType || keyPrefix.coinType || 0
   }
 }
 

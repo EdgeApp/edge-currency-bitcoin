@@ -1,5 +1,6 @@
 // @flow
 import type {
+  EdgeCreatePrivateKeyOptions,
   EdgeCorePluginOptions,
   EdgeCurrencyEngine,
   EdgeCurrencyEngineOptions,
@@ -42,12 +43,6 @@ export type CurrencyPluginFactorySettings = {
 export type CurrencyPluginSettings = {
   currencyInfo: EdgeCurrencyInfo,
   engineInfo: EngineCurrencyInfo
-}
-
-export type PrivateKeys = {
-  networkKey?: string,
-  format?: string,
-  coinType?: number
 }
 
 /**
@@ -96,9 +91,9 @@ export class CurrencyPlugin {
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
-  createPrivateKey (walletType: string) {
+  createPrivateKey (walletType: string, opts?: EdgeCreatePrivateKeyOptions) {
     const randomBuffer = Buffer.from(this.io.random(32))
-    return keysFromEntropy(randomBuffer, this.network)
+    return keysFromEntropy(randomBuffer, this.network, opts)
   }
 
   async derivePublicKey (walletInfo: EdgeWalletInfo) {
