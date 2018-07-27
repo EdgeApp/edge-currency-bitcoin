@@ -30,7 +30,6 @@ import { bns } from 'biggystring'
 import { getAllAddresses } from '../utils/formatSelector.js'
 import {
   addressToScriptHash,
-  keysFromWalletInfo,
   verifyTxAmount,
   sumUtxos
 } from '../utils/coinUtils.js'
@@ -154,21 +153,22 @@ export class CurrencyEngine {
     }
 
     const cachedRawKeys = await this.engineState.loadKeys()
-    const { seed, bip, coinType, rawKeys } = keysFromWalletInfo(
-      this.network,
-      this.walletInfo,
-      cachedRawKeys
-    )
+    const { master = {}, ...otherKeys } = cachedRawKeys || {}
+    const keys = this.walletInfo.keys || {}
+    const { format, coinType = -1 } = keys
+    const seed = keys[`${this.network}Key`]
+    const xpub = keys[`${this.network}Xpub`]
+    const rawKeys = { ...otherKeys, master: { xpub, ...master } }
 
     console.log(
-      `${this.walletId} - Created Wallet Type ${bip} for Currency Plugin ${
+      `${this.walletId} - Created Wallet Type ${format} for Currency Plugin ${
         this.pluginState.pluginName
       }`
     )
 
     this.keyManager = new KeyManager({
       seed: seed,
-      bip: bip,
+      bip: format,
       coinType: coinType,
       rawKeys: rawKeys,
       callbacks: callbacks,

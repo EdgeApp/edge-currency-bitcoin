@@ -7,7 +7,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcointestnet',
   magic: 0x0709110b,
-  formats: ['bip84', 'bip49', 'bip44', 'bip32'],
+  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
   forks: ['bitcoincash', 'bitcoingold', 'bitcoindiamond'],
   keyPrefix: {
     privkey: 0xef,
