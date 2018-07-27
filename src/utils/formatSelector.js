@@ -38,24 +38,24 @@ export const getAllAddresses = (
 
 export const getXPubFromSeed = async ({
   seed,
-  bip = 'bip32',
+  format = 'bip32',
   network = 'main',
   account = 0,
   coinType = 0
 }: any) => {
   const masterKey = await getPrivateFromSeed(seed, network)
-  const fSelector = FormatSelector(bip, network)
-  const masterPath = fSelector.createMasterPath(0, coinType)
+  const fSelector = FormatSelector(format, network)
+  const masterPath = fSelector.createMasterPath(account, coinType)
   const privateKey = await masterKey.derivePath(masterPath)
   return privateKey.xpubkey()
 }
 
 export const FormatSelector = (
-  bipStr: string = 'bip32',
+  format: string = 'bip32',
   network: string = 'main'
 ) => {
-  if (!SUPPORTED_BIPS.includes(bipStr)) throw new Error('Unknown bip type')
-  const bip = parseInt(bipStr.split('bip')[1])
+  if (!SUPPORTED_BIPS.includes(format)) throw new Error('Unknown bip type')
+  const bip = parseInt(format.split('bip')[1])
 
   const branches = ['master', 'receive']
   if (bip !== 32) branches.push('change')

@@ -50,22 +50,14 @@ export type CreateTxOptions = {
   txOptions: TxOptions
 }
 
-export const keysFromWalletInfo = (
-  network: string,
-  { keys = {}, type }: any = {}, // walletInfo
-  { master = {}, ...otherKeys }: any = {} // cachedRawKeys
-) => ({
-  seed: keys[`${network}Key`] || '',
-  coinType: typeof keys.coinType === 'number' ? keys.coinType : -1,
-  rawKeys: {
-    ...otherKeys,
-    master: {
-      ...master,
-      xpub: master.xpub || keys[`${network}Xpub`]
-    }
-  },
-  bip: keys.format
-})
+export const keysFromEntropy = (entropy: Buffer, network: string) => {
+  const { formats = [], keyPrefix = {} } = networks[network] || {}
+  return {
+    [`${network}Key`]: hd.Mnemonic.fromEntropy(entropy).getPhrase(),
+    format: formats[0] || 'bip44',
+    coinType: keyPrefix.coinType || 0
+  }
+}
 
 export const verifyWIF = (data: any, network: string) => {
   const base58 = utils.base58
@@ -215,9 +207,6 @@ export const parsePath = (path: string = '', masterPath: string) =>
 
 export const sumUtxos = (utxos: Array<Utxo>) =>
   utxos.reduce((s, { tx, index }) => s + parseInt(tx.outputs[index].value), 0)
-
-export const seedFromEntropy = (entropy: Buffer) =>
-  hd.Mnemonic.fromEntropy(entropy).getPhrase()
 
 export const getLock = () => new utils.Lock()
 

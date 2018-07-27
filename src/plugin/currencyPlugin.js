@@ -21,8 +21,7 @@ import { PluginState } from './pluginState.js'
 import { parseUri, encodeUri } from './uri.js'
 import { getXPubFromSeed } from '../utils/formatSelector.js'
 import {
-  seedFromEntropy,
-  keysFromWalletInfo,
+  keysFromEntropy,
   getFromatsForNetwork,
   getForksForNetwork
 } from '../utils/coinUtils.js'
@@ -43,6 +42,12 @@ export type CurrencyPluginFactorySettings = {
 export type CurrencyPluginSettings = {
   currencyInfo: EdgeCurrencyInfo,
   engineInfo: EngineCurrencyInfo
+}
+
+export type PrivateKeys = {
+  networkKey?: string,
+  format?: string,
+  coinType?: number
 }
 
 /**
@@ -93,19 +98,19 @@ export class CurrencyPlugin {
   // ------------------------------------------------------------------------
   createPrivateKey (walletType: string) {
     const randomBuffer = Buffer.from(this.io.random(32))
-    return { [`${this.network}Key`]: seedFromEntropy(randomBuffer) }
+    return keysFromEntropy(randomBuffer, this.network)
   }
 
   async derivePublicKey (walletInfo: EdgeWalletInfo) {
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
     const network = this.network
-    const format = walletInfo.keys.format
+    const { format, coinType = -1 } = walletInfo.keys
     if (!format || !getFromatsForNetwork(network).includes(format)) {
       throw new Error('InvalidWalletType')
     }
-    const { seed, bip, coinType } = keysFromWalletInfo(network, walletInfo)
+    const seed = walletInfo.keys[`${network}Key`] || ''
     if (!seed) throw new Error('InvalidKeyName')
-    const xpub = await getXPubFromSeed({ seed, bip, coinType, network })
+    const xpub = await getXPubFromSeed({ seed, network, format, coinType })
     return { ...walletInfo.keys, [`${network}Xpub`]: xpub }
   }
 
