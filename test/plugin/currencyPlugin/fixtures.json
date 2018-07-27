@@ -562,6 +562,18 @@
         "nativeAmount": "1234567890000",
         "currencyCode": "XZC"
       }],
+      "wif 1 - Compressed": ["YBHu5hraCFjDhXqGoWDzC8hZ9TfKaCe4VQU4nSuTPqRM1n8Nwvu4", {
+        "metadata": {},
+        "privateKeys": [ "YBHu5hraCFjDhXqGoWDzC8hZ9TfKaCe4VQU4nSuTPqRM1n8Nwvu4"]
+      }],
+      "wif 2 - Compressed": ["YBfH26UnzrLqkosKnERVUg9xgxueanZbjiiZEMCrNQbiBeKe7mDW", {
+        "metadata": {},
+        "privateKeys": [ "YBfH26UnzrLqkosKnERVUg9xgxueanZbjiiZEMCrNQbiBeKe7mDW"]
+      }],
+      "wif 3 - Compressed": ["YCH6gkpCwGmUb7uG1HMjLrPh3K8gT4wmwtzPyNwysJSekncHqRxG", {
+        "metadata": {},
+        "privateKeys": [ "YCH6gkpCwGmUb7uG1HMjLrPh3K8gT4wmwtzPyNwysJSekncHqRxG"]
+      }],
       "wif 1 - Non Compressed": ["83FPakvmYu5GD8v3GzXQmbLRef9WpnuCU7hnkMqdMo8fFSG6TX6", {
         "metadata": {},
         "privateKeys": [ "83FPakvmYu5GD8v3GzXQmbLRef9WpnuCU7hnkMqdMo8fFSG6TX6"]
