@@ -1,5 +1,11 @@
 # edge-currency-bitcoin
 
+## 3.1.0
+
+* Pass in optional params to createPrivateKeys
+* Add legacy address to UFO coin
+* Generelize the legacy and cashAddress mechanisms
+
 ## 3.0.1
 
 * allow `forks` to be optional inside bcoinInfo
