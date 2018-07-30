@@ -1,5 +1,11 @@
 # edge-currency-bitcoin
 
+## 3.2.0
+
+* Add Vertcoin
+* Add Dodgecoin
+* Add Digibyte
+
 ## 3.1.1
 
 * Add missing default wallet type to QTUM
