@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 3.1.1
+
+* Add missing default wallet type to QTUM
+
 ## 3.1.0
 
 * Pass in optional params to createPrivateKeys
