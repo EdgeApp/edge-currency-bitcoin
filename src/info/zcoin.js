@@ -46,8 +46,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   currencyName: 'Zcoin',
   pluginName: 'zcoin',
   denominations: [
-    { name: 'XZC', multiplier: '100000000', symbol: 'Z' },
-    { name: 'mXZC', multiplier: '100000', symbol: 'mZ' }
+    { name: 'XZC', multiplier: '100000000', symbol: 'Ƶ' },
+    { name: 'mXZC', multiplier: '100000', symbol: 'mƵ' }
   ],
 
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
