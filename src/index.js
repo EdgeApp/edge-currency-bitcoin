@@ -17,7 +17,6 @@ import { vertcoin } from './info/vertcoin'
 import { zcoin } from './info/zcoin'
 import { eboost } from './info/eboost'
 
-
 export const bitcoinCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoin)
 export const bitcoinTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoinTestnet)
 export const bitcoincashCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoincash)
@@ -34,4 +33,3 @@ export const ufoCurrencyPluginFactory = makeCurrencyPluginFactory(ufo)
 export const vertcoinCurrencyPluginFactory = makeCurrencyPluginFactory(vertcoin)
 export const zcoinCurrencyPluginFactory = makeCurrencyPluginFactory(zcoin)
 export const eboostCurrencyPluginFactory = makeCurrencyPluginFactory(eboost)
-
