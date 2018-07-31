@@ -199,7 +199,7 @@ export const parseTransaction = (
     output.scriptHash = reverseBufferToHex(hash256Sync(output.script.toRaw()))
   }) && bcoinTx
 
-export const parsePath = (path: string = '', masterPath: string) =>
+export const parsePath = (path: string = '', masterPath: string): Array<number> =>
   (path.split(`${masterPath}`)[1] || '')
     .split('/')
     .filter(i => i !== '')

@@ -65,9 +65,9 @@ export const FormatSelector = (
   const setKeyTypeWrap = (key: any) => setKeyType(key, nested, witness, network)
   const deriveHdKey = (parentKey: any, index: number): Promise<any> =>
     Promise.resolve(parentKey.derive(index))
-
+  const children: Array<string> = branches.slice(1)
   return {
-    branches: branches.slice(1),
+    branches: children,
     setKeyType: setKeyTypeWrap,
 
     sign: (

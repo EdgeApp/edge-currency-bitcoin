@@ -115,11 +115,14 @@ export const encodeUri = (
   } else {
     throw new Error('InvalidPublicAddressError')
   }
+  // $FlowFixMe
   if (!obj.nativeAmount && !obj.metadata) return address
+  // $FlowFixMe
   const metadata = obj.metadata || {}
   const nativeAmount = obj.nativeAmount || ''
   let queryString = ''
   if (nativeAmount) {
+    // $FlowFixMe
     if (typeof obj.currencyCode === 'string') currencyCode = obj.currencyCode
     const denomination: any = denominations.find(e => e.name === currencyCode)
     const multiplier: string = denomination.multiplier.toString()
