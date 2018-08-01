@@ -57,12 +57,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:vertcoin',
-    'wallet:vertcoin-bip84',
-    'wallet:vertcoin-bip49',
-    'wallet:vertcoin-bip44'
-  ],
+  walletTypes: ['wallet:vertcoin'],
 
   // Configuration options:
   defaultSettings: {

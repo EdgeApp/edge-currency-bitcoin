@@ -57,12 +57,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:digibyte',
-    'wallet:digibyte-bip84',
-    'wallet:digibyte-bip49',
-    'wallet:digibyte-bip44'
-  ],
+  walletTypes: ['wallet:digibyte'],
 
   // Configuration options:
   defaultSettings: {

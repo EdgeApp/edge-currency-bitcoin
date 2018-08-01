@@ -57,10 +57,10 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: [
+    'wallet:feathercoin',
     'wallet:feathercoin-bip84',
     'wallet:feathercoin-bip49',
-    'wallet:feathercoin-bip44',
-    'wallet:feathercoin'
+    'wallet:feathercoin-bip44'
   ],
 
   // Configuration options:

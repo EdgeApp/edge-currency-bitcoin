@@ -61,10 +61,10 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: [
+    'wallet:bitcoin-testnet',
     'wallet:bitcoin-bip84-testnet',
     'wallet:bitcoin-bip49-testnet',
-    'wallet:bitcoin-bip44-testnet',
-    'wallet:bitcoin-testnet'
+    'wallet:bitcoin-bip44-testnet'
   ],
 
   // Configuration options:

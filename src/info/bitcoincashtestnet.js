@@ -62,8 +62,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: [
-    'wallet:bitcoincash-bip44-testnet',
-    'wallet:bitcoincash-testnet'
+    'wallet:bitcoincash-testnet',
+    'wallet:bitcoincash-bip44-testnet'
   ],
 
   // Configuration options:

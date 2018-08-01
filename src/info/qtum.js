@@ -51,7 +51,10 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:qtum-bip44', 'wallet:qtum'],
+  walletTypes: [
+    'wallet:qtum',
+    'wallet:qtum-bip44'
+  ],
 
   // Configuration options:
   defaultSettings: {

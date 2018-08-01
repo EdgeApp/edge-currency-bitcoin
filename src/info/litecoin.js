@@ -59,10 +59,10 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: [
+    'wallet:litecoin',
     'wallet:litecoin-bip84',
     'wallet:litecoin-bip49',
-    'wallet:litecoin-bip44',
-    'wallet:litecoin'
+    'wallet:litecoin-bip44'
   ],
 
   // Configuration options:
