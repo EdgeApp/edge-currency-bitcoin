@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+## 3.2.2
+
+* changed dogecoin icon to an URI
+* updated edge-core-js
+
 ## 3.2.1
 
 * reordered the walletTypes before we will completly remove them
