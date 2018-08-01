@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 3.2.1
+
+* reordered the walletTypes before we will completly remove them
+
 ## 3.2.0
 
 * Add Vertcoin
