@@ -25,7 +25,11 @@ const toBase58 = (address: any, prefix: number) => {
   return bcoin.utils.base58.encode(bw.render())
 }
 
-export const switchLegacy = (address: string, network: string, mode: string) => {
+export const switchLegacy = (
+  address: string,
+  network: string,
+  mode: string
+) => {
   const { addressPrefix = {} } = bcoin.networks[network] || {}
   if (addressPrefix.cashAddress) {
     if (mode === 'toLegacy') return cashAddressToLegacy(address, network)
@@ -110,7 +114,10 @@ export const validAddress = (address: string, network: string) => {
 
 export const sanitizeAddress = (address: string, network: string) => {
   const { addressPrefix = {} } = bcoin.networks[network] || {}
-  if (addressPrefix.cashAddress && address.includes(addressPrefix.cashAddress)) {
+  if (
+    addressPrefix.cashAddress &&
+    address.includes(addressPrefix.cashAddress)
+  ) {
     return address.split(':')[1]
   }
   return address
@@ -118,7 +125,10 @@ export const sanitizeAddress = (address: string, network: string) => {
 
 export const dirtyAddress = (address: string, network: string) => {
   const { addressPrefix = {} } = bcoin.networks[network] || {}
-  if (addressPrefix.cashAddress && !address.includes(addressPrefix.cashAddress)) {
+  if (
+    addressPrefix.cashAddress &&
+    !address.includes(addressPrefix.cashAddress)
+  ) {
     return `${addressPrefix.cashAddress}:${address}`
   }
   return address

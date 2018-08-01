@@ -50,7 +50,11 @@ export type CreateTxOptions = {
   txOptions: TxOptions
 }
 
-export const keysFromEntropy = (entropy: Buffer, network: string, opts: any = {}) => {
+export const keysFromEntropy = (
+  entropy: Buffer,
+  network: string,
+  opts: any = {}
+) => {
   const { formats = [], keyPrefix = {} } = networks[network] || {}
   return {
     [`${network}Key`]: hd.Mnemonic.fromEntropy(entropy).getPhrase(),
@@ -199,7 +203,10 @@ export const parseTransaction = (
     output.scriptHash = reverseBufferToHex(hash256Sync(output.script.toRaw()))
   }) && bcoinTx
 
-export const parsePath = (path: string = '', masterPath: string): Array<number> =>
+export const parsePath = (
+  path: string = '',
+  masterPath: string
+): Array<number> =>
   (path.split(`${masterPath}`)[1] || '')
     .split('/')
     .filter(i => i !== '')
