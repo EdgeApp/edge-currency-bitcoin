@@ -74,7 +74,7 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrums://electrum3.eboost.fun:50002',
       'electrum://electrum1.eboost.fun:50001',
       'electrum://electrum2.eboost.fun:50001',
-      'electrum://electrum3.eboost.fun:50001',
+      'electrum://electrum3.eboost.fun:50001'
     ],
     disableFetchingServers: true
   },
