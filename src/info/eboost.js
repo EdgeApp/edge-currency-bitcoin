@@ -69,9 +69,12 @@ const currencyInfo: EdgeCurrencyInfo = {
   defaultSettings: {
     customFeeSettings: ['satPerByte'],
     electrumServers: [
-      'electrums://electrum1.eboost.org:50001',
-      'electrums://electrum2.eboost.org:50001',
-      'electrums://electrum3.eboost.org:50001'
+      'electrums://electrum1.eboost.fun:50002',
+      'electrums://electrum2.eboost.fun:50002',
+      'electrums://electrum3.eboost.fun:50002',
+      'electrum://electrum1.eboost.fun:50001',
+      'electrum://electrum2.eboost.fun:50001',
+      'electrum://electrum3.eboost.fun:50001',
     ],
     disableFetchingServers: true
   },
