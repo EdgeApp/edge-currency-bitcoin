@@ -46,7 +46,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   currencyCode: 'QTUM',
   currencyName: 'Qtum',
   pluginName: 'qtum',
-  denominations: [{ name: 'QTUM', multiplier: '100000000', symbol: 'Ꝗ' }],
+  denominations: [{ name: 'QTUM', multiplier: '100000000', symbol: 'Q' }],
 
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
