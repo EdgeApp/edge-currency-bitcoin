@@ -28,13 +28,12 @@ const bcoinInfo: BcoinCurrencyInfo = {
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'bitcointestnet',
-  currencyCode: 'BTC',
+  currencyCode: 'TBTC',
   gapLimit: 10,
   maxFee: 1000000,
   defaultFee: 1000,
   feeUpdateInterval: 60000,
   feeInfoServer: '',
-  infoServer: '',
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '30',
@@ -48,12 +47,12 @@ const engineInfo: EngineCurrencyInfo = {
 
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
-  currencyCode: 'BTC',
+  currencyCode: 'TBTC',
   currencyName: 'BitcoinTestnet',
   pluginName: 'bitcointestnet',
   denominations: [
-    { name: 'BTC', multiplier: '100000000', symbol: '₿' },
-    { name: 'mBTC', multiplier: '100000', symbol: 'm₿' },
+    { name: 'TBTC', multiplier: '100000000', symbol: '₿' },
+    { name: 'mTBTC', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
 

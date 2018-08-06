@@ -78,11 +78,9 @@ export class CurrencyPlugin {
     this.engineInfo = engineInfo
     this.network = engineInfo.network
     const { defaultSettings, pluginName, currencyCode } = this.currencyInfo
-    const { infoServer = '' } = engineInfo
     this.state = new PluginState({
       io,
       defaultSettings,
-      infoServer,
       currencyCode,
       pluginName
     })
