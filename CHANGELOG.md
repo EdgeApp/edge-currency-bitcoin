@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 3.2.4
+
+* Made all currency query the infoServer for electrum servers and fee info.
+
 ## 3.2.3
 
 * Allow get headers electrum call to return nonce of number or string
