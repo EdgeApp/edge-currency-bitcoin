@@ -28,6 +28,7 @@ import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import { broadcastFactories } from './broadcastApi.js'
 import { bns } from 'biggystring'
 import { getAllAddresses } from '../utils/formatSelector.js'
+import { InfoServer } from '../info/constants'
 import {
   addressToScriptHash,
   verifyTxAmount,
@@ -62,8 +63,7 @@ export type EngineCurrencyInfo = {
 
   // Optional Settings
   forks?: Array<string>,
-  feeInfoServer?: string,
-  infoServer?: string
+  feeInfoServer?: string
 }
 
 export type CurrencyEngineSettings = {
@@ -282,14 +282,10 @@ export class CurrencyEngine {
   }
 
   async updateFeeTable () {
-    const { infoServer } = this.engineInfo
     try {
       await this.fetchFee()
-      if (!infoServer) {
-        throw new Error('infoServer not set')
-      }
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        const url = `${infoServer}/networkFees/${this.currencyCode}`
+        const url = `${InfoServer}/networkFees/${this.currencyCode}`
         const feesResponse = await this.io.fetch(url)
         const feesJson = await feesResponse.json()
         if (validateObject(feesJson, InfoServerFeesSchema)) {

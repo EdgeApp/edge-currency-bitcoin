@@ -1,6 +1,7 @@
 // @flow
 import type { EdgeIo, DiskletFolder } from 'edge-core-js'
 import type { EngineState } from '../engine/engineState.js'
+import { InfoServer } from '../info/constants'
 import { ServerCache } from './serverCache.js'
 
 export type CurrencySettings = {
@@ -16,7 +17,6 @@ export type CurrencySettings = {
 export type PluginStateSettings = {
   io: EdgeIo,
   defaultSettings: CurrencySettings,
-  infoServer: string,
   currencyCode: string,
   pluginName: string
 }
@@ -76,7 +76,6 @@ export class PluginState extends ServerCache {
   constructor ({
     io,
     defaultSettings,
-    infoServer,
     currencyCode,
     pluginName
   }: PluginStateSettings) {
@@ -87,9 +86,7 @@ export class PluginState extends ServerCache {
     this.defaultServers = defaultSettings.electrumServers
     // Rename the bitcoin currencyCode to get the new version of the server list
     const fixedCode = currencyCode === 'BTC' ? 'BC1' : currencyCode
-    this.infoServerUris = infoServer
-      ? `${infoServer}/electrumServers/${fixedCode}`
-      : ''
+    this.infoServerUris = `${InfoServer}/electrumServers/${fixedCode}`
     this.engines = []
     this.folder = io.folder.folder('plugins').folder(pluginName)
     this.pluginName = pluginName
@@ -201,17 +198,15 @@ export class PluginState extends ServerCache {
     console.log(`${this.pluginName} - GET ${this.infoServerUris}`)
     let serverList = this.defaultServers
     try {
-      if (this.infoServerUris !== '') {
-        const result = await io.fetch(this.infoServerUris)
-        if (!result.ok) {
-          console.log(
-            `${this.pluginName} - Fetching ${this.infoServerUris} failed with ${
-              result.status
-            }`
-          )
-        } else {
-          serverList = await result.json()
-        }
+      const result = await io.fetch(this.infoServerUris)
+      if (!result.ok) {
+        console.log(
+          `${this.pluginName} - Fetching ${this.infoServerUris} failed with ${
+            result.status
+          }`
+        )
+      } else {
+        serverList = await result.json()
       }
     } catch (e) {
       console.log(e)
