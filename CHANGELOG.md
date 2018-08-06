@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 3.2.3
+
+* Allow get headers electrum call to return nonce of number or string
+
 ## 3.2.2
 
 * changed dogecoin icon to an URI
