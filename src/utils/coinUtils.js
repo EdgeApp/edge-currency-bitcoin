@@ -1,6 +1,7 @@
 // @flow
 // $FlowFixMe
 import buffer from 'buffer-hack'
+import wifsmartcash from 'wif-smart'
 import {
   utils,
   hd,
@@ -67,9 +68,18 @@ export const keysFromWalletInfo = (
   bip: keys.format
 })
 
+export const decodeBase58 = (data: any, network: string) => {
+  switch (network) {
+    case 'smartcash':
+      return wifsmartcash.decode(data, 1).privateKey
+    default:
+      const base58 = utils.base58
+      return base58.decode(data)
+  }
+}
+
 export const verifyWIF = (data: any, network: string) => {
-  const base58 = utils.base58
-  const br = new utils.BufferReader(base58.decode(data), true)
+  const br = new utils.BufferReader(decodeBase58(data, network), true)
   const version = br.readU8()
   network = Network.fromWIF(version, network)
   br.readBytes(32)

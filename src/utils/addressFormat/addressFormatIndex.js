@@ -1,6 +1,7 @@
 // @flow
 
 import bcoin from 'bcoin'
+import smartcashjs from 'smartcashjs-lib'
 import { toCashAddress, cashAddressToHash } from './cashAddress'
 import * as base32 from './base32.js'
 
@@ -102,7 +103,7 @@ export const validAddress = (address: string, network: string) => {
     }
   }
   try {
-    const prefix = bcoin.primitives.Address.fromBase58(address).getPrefix()
+    const prefix = getPrefix(address, network)
     const { pubkeyhash, scripthash } = bcoin.networks[network].addressPrefix
     if (prefix !== pubkeyhash && prefix !== scripthash) return false
   } catch (e) {
@@ -115,6 +116,15 @@ export const validAddress = (address: string, network: string) => {
     }
   }
   return true
+}
+
+export const getPrefix = (address: string, network: string) => {
+  switch (network) {
+    case 'smartcash':
+      return smartcashjs.address.fromBase58Check(address).version
+    default:
+      return bcoin.primitives.Address.fromBase58(address).getPrefix()
+  }
 }
 
 export const sanitizeAddress = (address: string, network: string) => {

@@ -79,7 +79,9 @@
     "rollup-plugin-babel": "^3.0.5",
     "rollup-plugin-json": "^3.0.0",
     "rollup-plugin-multi-entry": "^2.0.2",
-    "updot": "^1.1.7"
+    "smartcashjs-lib": "^3.3.4",
+    "updot": "^1.1.7",
+    "wif-smart": "^2.0.0"
   },
   "importSort": {
     ".js, .es": {
