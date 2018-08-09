@@ -795,17 +795,17 @@
         "nativeAmount": "1234567890000",
         "currencyCode": "SMART"
       }],      
-      "wif 1 - Non Compressed": ["7RZbQN6QuauiWpy2KgJ6H8rNQemprN6wAtnuQVpKEwPa7qYKLDS", {
+      "wif 1 - Non Compressed": ["VLqHRdvdNPgspEjPM6ee5CcLKc4CFBvafN183pevjxXKX1uZGe1m", {
         "metadata": {},
-        "privateKeys": [ "7RZbQN6QuauiWpy2KgJ6H8rNQemprN6wAtnuQVpKEwPa7qYKLDS"]
+        "privateKeys": [ "VLqHRdvdNPgspEjPM6ee5CcLKc4CFBvafN183pevjxXKX1uZGe1m"]
       }],
-      "wif 2 - Non Compressed": ["7RSCxuXjEYzajaMVrUiMu1w9knk77whpxoCdrRTy9gu4jgFmgNu", {
+      "wif 2 - Non Compressed": ["VMmoBs8yPgCuxFXpdtFfvKvFyPVd2sBzPX2qfnLvL2F98RtF2eY6", {
         "metadata": {},
-        "privateKeys": [ "7RSCxuXjEYzajaMVrUiMu1w9knk77whpxoCdrRTy9gu4jgFmgNu"]
+        "privateKeys": [ "VMmoBs8yPgCuxFXpdtFfvKvFyPVd2sBzPX2qfnLvL2F98RtF2eY6"]
       }],
-      "wif 3 - Non Compressed": ["7REcqKEi8Jm7fZGCZjmX2Ci5arggbb34wQefHWUKNzeSd982NNb", {
+      "wif 3 - Non Compressed": ["VPVHLd9Yw2gr8DX2UcJHwKEHLEZZpLyv2ZBGyNRXdBuKjieCWv45", {
         "metadata": {},
-        "privateKeys": [ "7REcqKEi8Jm7fZGCZjmX2Ci5arggbb34wQefHWUKNzeSd982NNb"]
+        "privateKeys": [ "VPVHLd9Yw2gr8DX2UcJHwKEHLEZZpLyv2ZBGyNRXdBuKjieCWv45"]
       }]
     },
     "encodeUri": {

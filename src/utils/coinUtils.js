@@ -68,26 +68,27 @@ export const keysFromWalletInfo = (
   bip: keys.format
 })
 
-export const decodeBase58 = (data: any, network: string) => {
-  switch (network) {
-    case 'smartcash':
-      return wifsmartcash.decode(data, 1).privateKey
-    default:
-      const base58 = utils.base58
-      return base58.decode(data)
-  }
+export const vefiryWIFSmartcash = (data: any) => {
+  const wif = wifsmartcash.decode(data, 191)
+  return wif.version === 191
 }
 
 export const verifyWIF = (data: any, network: string) => {
-  const br = new utils.BufferReader(decodeBase58(data, network), true)
-  const version = br.readU8()
-  network = Network.fromWIF(version, network)
-  br.readBytes(32)
-  if (br.left() > 4 && br.readU8() !== 1) {
-    throw new Error('Bad compression flag.')
+  switch (network) {
+    case 'smartcash':
+      return vefiryWIFSmartcash(data)
+    default:
+      const base58 = utils.base58
+      const br = new utils.BufferReader(base58.decode(data), true)
+      const version = br.readU8()
+      network = Network.fromWIF(version, network)
+      br.readBytes(32)
+      if (br.left() > 4 && br.readU8() !== 1) {
+        throw new Error('Bad compression flag.')
+      }
+      br.verifyChecksum()
+      return true
   }
-  br.verifyChecksum()
-  return true
 }
 
 export const setKeyType = (
