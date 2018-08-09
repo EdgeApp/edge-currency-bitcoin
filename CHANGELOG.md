@@ -1,5 +1,42 @@
 # edge-currency-bitcoin
 
+## 3.2.4
+
+* Made all currency query the infoServer for electrum servers and fee info.
+
+## 3.2.3
+
+* Allow get headers electrum call to return nonce of number or string
+
+## 3.2.2
+
+* changed dogecoin icon to an URI
+* updated edge-core-js
+
+## 3.2.1
+
+* reordered the walletTypes before we will completly remove them
+
+## 3.2.0
+
+* Add Vertcoin
+* Add Dodgecoin
+* Add Digibyte
+
+## 3.1.1
+
+* Add missing default wallet type to QTUM
+
+## 3.1.0
+
+* Pass in optional params to createPrivateKeys
+* Add legacy address to UFO coin
+* Generelize the legacy and cashAddress mechanisms
+
+## 3.0.1
+
+* allow `forks` to be optional inside bcoinInfo
+
 ## 3.0.0
 
 ### BREAKING CHANGES

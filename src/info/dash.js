@@ -29,7 +29,6 @@ const engineInfo: EngineCurrencyInfo = {
   maxFee: 100000,
   defaultFee: 10000,
   feeUpdateInterval: 60000,
-  infoServer: 'https://info1.edgesecure.co:8444/v1',
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '300',
@@ -47,14 +46,14 @@ const currencyInfo: EdgeCurrencyInfo = {
   currencyName: 'Dash',
   pluginName: 'dash',
   denominations: [
-    { name: 'DASH', multiplier: '100000000', symbol: 'D' },
-    { name: 'mDASH', multiplier: '100000', symbol: 'mD' }
+    { name: 'DASH', multiplier: '100000000', symbol: 'Ð' },
+    { name: 'mDASH', multiplier: '100000', symbol: 'mÐ' }
   ],
 
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:dash-bip44', 'wallet:dash'],
+  walletTypes: ['wallet:dash', 'wallet:dash-bip44'],
 
   // Configuration options:
   defaultSettings: {

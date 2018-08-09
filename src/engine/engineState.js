@@ -400,7 +400,7 @@ export class EngineState extends EventEmitter {
 
   addressCacheDirty: boolean
   txCacheDirty: boolean
-  reconnectTimer: number
+  reconnectTimer: TimeoutID
   reconnectCounter: number
   progressRatio: number
   txCacheInitSize: number

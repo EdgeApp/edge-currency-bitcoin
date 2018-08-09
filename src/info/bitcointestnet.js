@@ -7,7 +7,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcointestnet',
   magic: 0x0709110b,
-  formats: ['bip84', 'bip49', 'bip44', 'bip32'],
+  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
   forks: ['bitcoincash', 'bitcoingold', 'bitcoindiamond'],
   keyPrefix: {
     privkey: 0xef,
@@ -28,13 +28,12 @@ const bcoinInfo: BcoinCurrencyInfo = {
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'bitcointestnet',
-  currencyCode: 'BTC',
+  currencyCode: 'TBTC',
   gapLimit: 10,
   maxFee: 1000000,
   defaultFee: 1000,
   feeUpdateInterval: 60000,
   feeInfoServer: '',
-  infoServer: '',
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '30',
@@ -48,12 +47,12 @@ const engineInfo: EngineCurrencyInfo = {
 
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
-  currencyCode: 'BTC',
+  currencyCode: 'TBTC',
   currencyName: 'BitcoinTestnet',
   pluginName: 'bitcointestnet',
   denominations: [
-    { name: 'BTC', multiplier: '100000000', symbol: '₿' },
-    { name: 'mBTC', multiplier: '100000', symbol: 'm₿' },
+    { name: 'TBTC', multiplier: '100000000', symbol: '₿' },
+    { name: 'mTBTC', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
 
@@ -61,21 +60,19 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: [
+    'wallet:bitcoin-testnet',
     'wallet:bitcoin-bip84-testnet',
     'wallet:bitcoin-bip49-testnet',
-    'wallet:bitcoin-bip44-testnet',
-    'wallet:bitcoin-testnet'
+    'wallet:bitcoin-bip44-testnet'
   ],
 
   // Configuration options:
   defaultSettings: {
     customFeeSettings: ['satPerByte'],
     electrumServers: [
-      'electrum://estnet.qtornado.com:51001',
       'electrum://testnet.hsmiths.com:53011',
       'electrum://testnet1.bauerj.eu:50001',
       'electrum://electrum.akinbo.org:51001',
-      'electrum://hsmithsxurybd7uh.onion:53011',
       'electrum://testnetnode.arihanc.com:51001',
       'electrum://electrum.akinbo.org:51001',
       'electrum://testnet1.bauerj.eu:50001',

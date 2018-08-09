@@ -2,6 +2,7 @@
 import type { EdgeCurrencyInfo } from 'edge-core-js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'dogecoin',
@@ -24,7 +25,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
 const engineInfo: EngineCurrencyInfo = {
   network: 'dogecoin',
   currencyCode: 'DOGE',
-  gapLimit: 25,
+  gapLimit: 10,
   maxFee: 1000000,
   defaultFee: 1000,
   feeUpdateInterval: 10000,
@@ -49,12 +50,16 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:dogecoin-bip44'],
+  walletTypes: ['wallet:dogecoin'],
 
   // Configuration options:
   defaultSettings: {
     customFeeSettings: ['satPerByte'],
-    electrumServers: [],
+    electrumServers: [
+      'electrum://electrum-alts-wusa2-az.edge.app:50011',
+      'electrum://electrum-alts-weuro-az.edge.app:50011',
+      'electrum://electrum-alts-ejapan-az.edge.app:50011'
+    ],
     disableFetchingServers: true
   },
   metaTokens: [],
@@ -65,7 +70,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://live.blockcypher.com/doge/tx/%s',
 
   // Images:
-  symbolImage: ''
+  symbolImage: `${imageServerUrl}/dogecoin-logo-color-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/dogecoin-logo-grey-64.png`
 }
 
 export const dogecoin = { bcoinInfo, engineInfo, currencyInfo }

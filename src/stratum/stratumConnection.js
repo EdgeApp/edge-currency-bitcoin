@@ -154,7 +154,7 @@ export class StratumConnection {
   lastKeepAlive: number
   partialMessage: string
   socket: net$Socket | void
-  timer: number
+  timer: TimeoutID
   error: Error
   sigkill: boolean
 

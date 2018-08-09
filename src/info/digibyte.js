@@ -5,26 +5,30 @@ import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'zcoin',
+  type: 'digibyte',
   magic: 0xd9b4bef9,
-  formats: ['bip44', 'bip32'],
+  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
+  forks: [],
   keyPrefix: {
-    privkey: 0xd2,
+    privkey: 0x80,
     xpubkey: 0x0488b21e,
     xprivkey: 0x0488ade4,
     xpubkey58: 'xpub',
     xprivkey58: 'xprv',
-    coinType: 136
+    coinType: 20
   },
   addressPrefix: {
-    pubkeyhash: 0x52,
-    scripthash: 0x7
+    pubkeyhash: 0x1e,
+    scripthash: 0x05,
+    witnesspubkeyhash: 0x06,
+    witnessscripthash: 0x0a,
+    bech32: 'dgb'
   }
 }
 
 const engineInfo: EngineCurrencyInfo = {
-  network: 'zcoin',
-  currencyCode: 'XZC',
+  network: 'digibyte',
+  currencyCode: 'DGB',
   gapLimit: 10,
   maxFee: 1000000,
   defaultFee: 1000,
@@ -42,42 +46,39 @@ const engineInfo: EngineCurrencyInfo = {
 
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
-  currencyCode: 'XZC',
-  currencyName: 'Zcoin',
-  pluginName: 'zcoin',
+  currencyCode: 'DGB',
+  currencyName: 'Digibyte',
+  pluginName: 'digibyte',
   denominations: [
-    { name: 'XZC', multiplier: '100000000', symbol: 'Ƶ' },
-    { name: 'mXZC', multiplier: '100000', symbol: 'mƵ' }
+    { name: 'DGB', multiplier: '100000000', symbol: 'Ð' },
+    { name: 'mDGB', multiplier: '100000', symbol: 'mÐ' }
   ],
 
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:zcoin', 'wallet:zcoin-bip44'],
+  walletTypes: ['wallet:digibyte'],
 
   // Configuration options:
   defaultSettings: {
     customFeeSettings: ['satPerByte'],
     electrumServers: [
-      'electrum://51.15.82.184:50001',
-      'electrum://45.63.92.224:50001',
-      'electrum://47.75.76.176:50001',
-      'electrums://51.15.82.184:50002',
-      'electrums://45.63.92.224:50002',
-      'electrums://47.75.76.176:50002'
+      'electrum://electrum-alts-wusa2-az.edge.app:50021',
+      'electrum://electrum-alts-weuro-az.edge.app:50021',
+      'electrum://electrum-alts-ejapan-az.edge.app:50021'
     ],
     disableFetchingServers: true
   },
   metaTokens: [],
 
   // Explorers:
-  addressExplorer: 'https://insight.zcoin.io/address/%s',
-  blockExplorer: 'https://insight.zcoin.io/block/%s',
-  transactionExplorer: 'https://insight.zcoin.io/tx/%s',
+  blockExplorer: 'https://digiexplorer.info/block/%s',
+  addressExplorer: 'https://digiexplorer.info/address/%s',
+  transactionExplorer: 'https://digiexplorer.info/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/zcoin-logo-color-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/zcoin-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/digibyte-logo-color-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/digibyte-logo-grey-64.png`
 }
 
-export const zcoin = { bcoinInfo, engineInfo, currencyInfo }
+export const digibyte = { bcoinInfo, engineInfo, currencyInfo }

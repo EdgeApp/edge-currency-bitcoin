@@ -64,6 +64,7 @@ import type {
     if (protocol && protocol.replace(':', '').toLowerCase() !== currencyName) {
       throw new Error('InvalidUriError')
     }
+    
     // Get all posible query params
     const { label, message, amount, r } = query
     // If we don't have a pathname or a paymentProtocolURL uri then we bail
@@ -76,62 +77,44 @@ import type {
       const parsedPath = parsePathname(pathname, network)
       if (!parsedPath) throw new Error('InvalidUriError')
       Object.assign(parsedUri, parsedPath)
-    }
-    // Assign the query params to the parsedUri object
-    const metadata = {}
-    if (label) Object.assign(metadata, { name: label })
-    if (message) Object.assign(metadata, { message })
-    if (r) parsedUri.paymentProtocolURL = r
-    Object.assign(parsedUri, { metadata })
-    // Get amount in native denomination if exists
-    if (amount && typeof amount === 'string') {
-      const denomination = denominations.find(e => e.name === currencyCode)
-      if (denomination) {
-        const { multiplier = '1' } = denomination
-        const t = bns.mul(amount, multiplier.toString())
-        Object.assign(parsedUri, {
-          currencyCode,
-          nativeAmount: bns.toFixed(t, 0, 0)
-        })
-      }
-    }
-    return parsedUri
   }
-  
-  export const encodeUri = (
-    obj: EdgeEncodeUri,
-    network: string,
-    { currencyName, currencyCode, denominations }: EdgeCurrencyInfo
-  ): string => {
-    const { legacyAddress, publicAddress } = obj
-    let address = publicAddress
-    if (
-      legacyAddress &&
-      validAddress(toNewFormat(legacyAddress, network), network)
-    ) {
-      address = legacyAddress
-    } else if (publicAddress && validAddress(publicAddress, network)) {
-      address = dirtyAddress(publicAddress, network)
-    } else {
-      throw new Error('InvalidPublicAddressError')
-    }
+  return parsedUri
+}
+
+export const encodeUri = (
+  obj: EdgeEncodeUri,
+  network: string,
+  { currencyName, currencyCode, denominations }: EdgeCurrencyInfo
+): string => {
+  const { legacyAddress, publicAddress } = obj
+  let address = publicAddress
+  if (
+    legacyAddress &&
+    validAddress(toNewFormat(legacyAddress, network), network)
+  ) {
+    address = legacyAddress
+  } else if (publicAddress && validAddress(publicAddress, network)) {
+    address = dirtyAddress(publicAddress, network)
+  } else {
+    throw new Error('InvalidPublicAddressError')
+  }
+  // $FlowFixMe
+  if (!obj.nativeAmount && !obj.metadata) return address
+  // $FlowFixMe
+  const metadata = obj.metadata || {}
+  const nativeAmount = obj.nativeAmount || ''
+  let queryString = ''
+  if (nativeAmount) {
     // $FlowFixMe
-    if (!obj.nativeAmount && !obj.metadata) return address
-    // $FlowFixMe
-    const metadata = obj.metadata || {}
-    const nativeAmount = obj.nativeAmount || ''
-    let queryString = ''
-    if (nativeAmount) {
-      // $FlowFixMe
-      if (typeof obj.currencyCode === 'string') currencyCode = obj.currencyCode
-      const denomination: any = denominations.find(e => e.name === currencyCode)
-      const multiplier: string = denomination.multiplier.toString()
-      const amount = bns.div(nativeAmount, multiplier, 8)
-      queryString += 'amount=' + amount.toString() + '&'
-    }
-    if (typeof metadata === 'object') {
-      if (typeof metadata.name === 'string') {
-        queryString += `label=${metadata.name}&`
+    if (typeof obj.currencyCode === 'string') currencyCode = obj.currencyCode
+    const denomination: any = denominations.find(e => e.name === currencyCode)
+    const multiplier: string = denomination.multiplier.toString()
+    const amount = bns.div(nativeAmount, multiplier, 8)
+    queryString += 'amount=' + amount.toString() + '&'
+  }
+  if (typeof metadata === 'object') {
+    if (typeof metadata.name === 'string') {
+      queryString += `label=${metadata.name}&`
       }
       if (typeof metadata.message === 'string') {
         queryString += `message=${metadata.message}&`

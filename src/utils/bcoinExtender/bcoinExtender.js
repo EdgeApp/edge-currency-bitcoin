@@ -11,6 +11,8 @@ import bcoin from 'bcoin'
 export type BcoinCurrencyInfo = {
   type: string,
   magic: number,
+  formats: Array<string>,
+  forks?: Array<string>,
   keyPrefix: {
     privkey: number,
     xpubkey: number,

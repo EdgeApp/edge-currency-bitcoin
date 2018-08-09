@@ -1,5 +1,6 @@
 // @flow
 import type {
+  EdgeCreatePrivateKeyOptions,
   EdgeCorePluginOptions,
   EdgeCurrencyEngine,
   EdgeCurrencyEngineOptions,
@@ -21,8 +22,7 @@ import { PluginState } from './pluginState.js'
 import { parseUri, encodeUri } from './uri.js'
 import { getXPubFromSeed } from '../utils/formatSelector.js'
 import {
-  seedFromEntropy,
-  keysFromWalletInfo,
+  keysFromEntropy,
   getFromatsForNetwork,
   getForksForNetwork
 } from '../utils/coinUtils.js'
@@ -78,11 +78,9 @@ export class CurrencyPlugin {
     this.engineInfo = engineInfo
     this.network = engineInfo.network
     const { defaultSettings, pluginName, currencyCode } = this.currencyInfo
-    const { infoServer = '' } = engineInfo
     this.state = new PluginState({
       io,
       defaultSettings,
-      infoServer,
       currencyCode,
       pluginName
     })
@@ -91,21 +89,21 @@ export class CurrencyPlugin {
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
-  createPrivateKey (walletType: string) {
+  createPrivateKey (walletType: string, opts?: EdgeCreatePrivateKeyOptions) {
     const randomBuffer = Buffer.from(this.io.random(32))
-    return { [`${this.network}Key`]: seedFromEntropy(randomBuffer) }
+    return keysFromEntropy(randomBuffer, this.network, opts)
   }
 
   async derivePublicKey (walletInfo: EdgeWalletInfo) {
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
     const network = this.network
-    const format = walletInfo.keys.format
+    const { format, coinType = -1 } = walletInfo.keys
     if (!format || !getFromatsForNetwork(network).includes(format)) {
       throw new Error('InvalidWalletType')
     }
-    const { seed, bip, coinType } = keysFromWalletInfo(network, walletInfo)
+    const seed = walletInfo.keys[`${network}Key`] || ''
     if (!seed) throw new Error('InvalidKeyName')
-    const xpub = await getXPubFromSeed({ seed, bip, coinType, network })
+    const xpub = await getXPubFromSeed({ seed, network, format, coinType })
     return { ...walletInfo.keys, [`${network}Xpub`]: xpub }
   }
 

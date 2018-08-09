@@ -30,7 +30,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'bitcoincashtestnet',
-  currencyCode: 'BCH',
+  currencyCode: 'TBCH',
   gapLimit: 10,
   maxFee: 1000000,
   defaultFee: 10000,
@@ -49,12 +49,12 @@ const engineInfo: EngineCurrencyInfo = {
 
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
-  currencyCode: 'BCH',
+  currencyCode: 'TBCH',
   currencyName: 'BitcoinCashTestnet',
   pluginName: 'bitcoincashtestnet',
   denominations: [
-    { name: 'BCH', multiplier: '100000000', symbol: '₿' },
-    { name: 'mBCH', multiplier: '100000', symbol: 'm₿' },
+    { name: 'TBCH', multiplier: '100000000', symbol: '₿' },
+    { name: 'mTBCH', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
 
@@ -62,8 +62,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: [
-    'wallet:bitcoincash-bip44-testnet',
-    'wallet:bitcoincash-testnet'
+    'wallet:bitcoincash-testnet',
+    'wallet:bitcoincash-bip44-testnet'
   ],
 
   // Configuration options:

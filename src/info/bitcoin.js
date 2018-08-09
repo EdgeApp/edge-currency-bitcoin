@@ -7,7 +7,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcoin',
   magic: 0xd9b4bef9,
-  formats: ['bip84', 'bip49', 'bip44', 'bip32'],
+  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
   forks: ['bitcoincash', 'bitcoingold', 'bitcoindiamond'],
   keyPrefix: {
     privkey: 0x80,
@@ -34,7 +34,6 @@ const engineInfo: EngineCurrencyInfo = {
   defaultFee: 1000,
   feeUpdateInterval: 60000,
   feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
-  infoServer: 'https://info1.edgesecure.co:8444/v1',
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '150',
@@ -61,10 +60,10 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   walletTypes: [
+    'wallet:bitcoin',
     'wallet:bitcoin-bip84',
     'wallet:bitcoin-bip49',
-    'wallet:bitcoin-bip44',
-    'wallet:bitcoin'
+    'wallet:bitcoin-bip44'
   ],
 
   // Configuration options:

@@ -35,7 +35,6 @@ const engineInfo: EngineCurrencyInfo = {
   maxFee: 1000000,
   defaultFee: 10000,
   feeUpdateInterval: 60000,
-  infoServer: 'https://info1.edgesecure.co:8444/v1',
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '20',
@@ -61,7 +60,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:bitcoincash-bip44', 'wallet:bitcoincash'],
+  walletTypes: ['wallet:bitcoincash', 'wallet:bitcoincash-bip44'],
 
   // Configuration options:
   defaultSettings: {

@@ -5,13 +5,72 @@ import smartcashjs from 'smartcashjs-lib'
 import { toCashAddress, cashAddressToHash } from './cashAddress'
 import * as base32 from './base32.js'
 
-const bitcoincashLegacy = (address, network) => {
-  if (typeof address !== 'string' || !address.includes(`${network}`)) {
+const legacyToCashAddress = (address: string, network: string) => {
+  if (validAddress(address, network)) return dirtyAddress(address, network)
+  const { cashAddress } = bcoin.networks[network].addressPrefix
+  const addressObj = bcoin.primitives.Address.fromBase58(address)
+  const type = addressObj.getType()
+  const newAddress = toCashAddress(addressObj.hash, type, cashAddress)
+  return newAddress
+}
+
+const toBase58 = (address: any, prefix: number) => {
+  const bw = new bcoin.utils.StaticWriter(address.getSize())
+  bw.writeU8(prefix)
+  if (address.version !== -1) {
+    bw.writeU8(address.version)
+    bw.writeU8(0)
+  }
+  bw.writeBytes(address.hash)
+  bw.writeChecksum()
+  return bcoin.utils.base58.encode(bw.render())
+}
+
+export const switchLegacy = (
+  address: string,
+  network: string,
+  mode: string
+) => {
+  const { addressPrefix = {} } = bcoin.networks[network] || {}
+  if (addressPrefix.cashAddress) {
+    if (mode === 'toLegacy') return cashAddressToLegacy(address, network)
+    if (mode === 'toNew') return legacyToCashAddress(address, network)
+  }
+  try {
+    const addressObj = bcoin.primitives.Address.fromBase58(address)
+    const type = addressObj.getType()
+    const legacyPrefix = addressPrefix[`${type}Legacy`]
+    if (!legacyPrefix) return address
+    const prefix = addressObj.getPrefix()
+    const newPrefix = addressPrefix[type]
+    if (mode === 'toLegacy' && prefix === newPrefix) {
+      return toBase58(addressObj, legacyPrefix)
+    }
+    if (mode === 'toNew' && prefix === legacyPrefix) {
+      return toBase58(addressObj, newPrefix)
+    }
+    return address
+  } catch (e) {
+    return address
+  }
+}
+
+export const toLegacyFormat = (address: string, network: string): string => {
+  return switchLegacy(address, network, 'toLegacy')
+}
+
+export const toNewFormat = (address: string, network: string): string => {
+  return switchLegacy(address, network, 'toNew')
+}
+
+const cashAddressToLegacy = (address: string, network: string) => {
+  const { addressPrefix = {} } = bcoin.networks[network] || {}
+  if (!address.includes(`${addressPrefix.cashAddress}`)) {
     try {
       bcoin.primitives.Address.fromBase58(address)
       return address
     } catch (e) {
-      address = `bitcoincash:${address}`
+      address = `${addressPrefix.cashAddress}:${address}`
     }
   }
   // Convert the Address string into hash, network and type
@@ -25,79 +84,15 @@ const bitcoincashLegacy = (address, network) => {
   ).toBase58()
 }
 
-const bitcoincashNewFormat = (address, network) => {
-  if (validAddress(address, network)) return dirtyAddress(address, network)
-  const { cashAddress } = bcoin.networks[network].addressPrefix
-  const addressObj = bcoin.primitives.Address.fromBase58(address)
-  const type = addressObj.getType()
-  const newAddress = toCashAddress(addressObj.hash, type, cashAddress)
-  return newAddress
-}
-
-const toBase58 = (address, prefix) => {
-  const bw = new bcoin.utils.StaticWriter(address.getSize())
-  bw.writeU8(prefix)
-  if (address.version !== -1) {
-    bw.writeU8(address.version)
-    bw.writeU8(0)
-  }
-  bw.writeBytes(address.hash)
-  bw.writeChecksum()
-  return bcoin.utils.base58.encode(bw.render())
-}
-
-export const toLegacyFormat = (address: string, network: string): string => {
-  switch (network) {
-    case 'bitcoincash':
-      return bitcoincashLegacy(address, network)
-    case 'bitcoincashtestnet':
-      return bitcoincashLegacy(address, network)
-    case 'litecoin':
-      const addressObj = bcoin.primitives.Address.fromBase58(address)
-      const { addressPrefix } = bcoin.networks[network]
-      const prefix = addressObj.getPrefix()
-      const type = addressObj.getType()
-      const legacyPrefix = addressPrefix[`${type}Legacy`]
-      const newPrefix = addressPrefix[type]
-      if (legacyPrefix && prefix === newPrefix) {
-        return toBase58(addressObj, legacyPrefix)
-      }
-      return address
-    default:
-      return address
-  }
-}
-
-export const toNewFormat = (address: string, network: string): string => {
-  switch (network) {
-    case 'bitcoincash':
-      return bitcoincashNewFormat(address, network)
-    case 'bitcoincashtestnet':
-      return bitcoincashNewFormat(address, network)
-    case 'litecoin':
-      const addressObj = bcoin.primitives.Address.fromBase58(address)
-      const { addressPrefix } = bcoin.networks[network]
-      const prefix = addressObj.getPrefix()
-      const type = addressObj.getType()
-      const legacyPrefix = addressPrefix[`${type}Legacy`]
-      const newPrefix = addressPrefix[type]
-      if (prefix === legacyPrefix) {
-        return toBase58(addressObj, newPrefix)
-      }
-      return address
-    default:
-      return address
-  }
-}
-
 export const validAddress = (address: string, network: string) => {
-  if (network.includes('bitcoincash')) {
+  const { addressPrefix = {} } = bcoin.networks[network] || {}
+  if (addressPrefix.cashAddress) {
     try {
       if (!address.includes(`${network}`)) {
         base32.decode(address)
-        address = `bitcoincash:${address}`
+        address = `${addressPrefix.cashAddress}:${address}`
       }
-      address = bitcoincashLegacy(address, network)
+      address = cashAddressToLegacy(address, network)
     } catch (e) {
       return false
     }
@@ -128,15 +123,23 @@ export const getPrefix = (address: string, network: string) => {
 }
 
 export const sanitizeAddress = (address: string, network: string) => {
-  if (network.includes('bitcoincash') && address.includes(':')) {
+  const { addressPrefix = {} } = bcoin.networks[network] || {}
+  if (
+    addressPrefix.cashAddress &&
+    address.includes(addressPrefix.cashAddress)
+  ) {
     return address.split(':')[1]
   }
   return address
 }
 
 export const dirtyAddress = (address: string, network: string) => {
-  if (network.includes('bitcoincash') && !address.includes(':')) {
-    return `${network}:${address}`
+  const { addressPrefix = {} } = bcoin.networks[network] || {}
+  if (
+    addressPrefix.cashAddress &&
+    !address.includes(addressPrefix.cashAddress)
+  ) {
+    return `${addressPrefix.cashAddress}:${address}`
   }
   return address
 }

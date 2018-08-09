@@ -12,6 +12,7 @@ import dummyAddressData from './dummyAddressData.json'
 import dummyHeadersData from './dummyHeadersData.json'
 import dummyTransactionsData from './dummyTransactionsData.json'
 import fixtures from './fixtures.json'
+import bcoin from 'bcoin'
 
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 
@@ -27,6 +28,8 @@ for (const fixture of fixtures) {
   const walletLocalFolder = fakeIo.folder
   const opts = {
     io: Object.assign(fakeIo, {
+      secp256k1: bcoin.crypto.secp256k1,
+      pbkdf2: bcoin.crypto.pbkdf2,
       random: size => fixture['key'],
       Socket: require('net').Socket,
       TLSSocket: require('tls').TLSSocket,

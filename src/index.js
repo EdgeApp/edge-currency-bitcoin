@@ -8,9 +8,12 @@ import { bitcoingold } from './info/bitcoingold'
 import { bitcoingoldTestnet } from './info/bitcoingoldtestnet'
 import { litecoin } from './info/litecoin'
 import { dash } from './info/dash'
+import { digibyte } from './info/digibyte'
+import { dogecoin } from './info/dogecoin'
 import { feathercoin } from './info/feathercoin'
 import { qtum } from './info/qtum'
 import { ufo } from './info/ufo'
+import { vertcoin } from './info/vertcoin'
 import { zcoin } from './info/zcoin'
 import { smartcash } from './info/smartcash'
 
@@ -22,8 +25,11 @@ export const bitcoingoldCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoi
 export const bitcoingoldTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoingoldTestnet)
 export const litecoinCurrencyPluginFactory = makeCurrencyPluginFactory(litecoin)
 export const dashCurrencyPluginFactory = makeCurrencyPluginFactory(dash)
+export const digibyteCurrencyPluginFactory = makeCurrencyPluginFactory(digibyte)
+export const dogecoinCurrencyPluginFactory = makeCurrencyPluginFactory(dogecoin)
 export const feathercoinCurrencyPluginFactory = makeCurrencyPluginFactory(feathercoin)
 export const qtumCurrencyPluginFactory = makeCurrencyPluginFactory(qtum)
 export const ufoCurrencyPluginFactory = makeCurrencyPluginFactory(ufo)
+export const vertcoinCurrencyPluginFactory = makeCurrencyPluginFactory(vertcoin)
 export const zcoinCurrencyPluginFactory = makeCurrencyPluginFactory(zcoin)
 export const smartcashCurrencyPluginFactory = makeCurrencyPluginFactory(smartcash)

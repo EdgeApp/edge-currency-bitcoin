@@ -7,7 +7,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'uniformfiscalobject',
   magic: 0xfcd9b7dd,
-  formats: ['bip84', 'bip49', 'bip44', 'bip32'],
+  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
   keyPrefix: {
     privkey: 0x9b,
     xpubkey: 0x0488b21e,
@@ -19,6 +19,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
   addressPrefix: {
     pubkeyhash: 0x1b,
     scripthash: 0x44,
+    scripthashLegacy: 0x05,
     witnesspubkeyhash: 0x06,
     witnessscripthash: 0x0a,
     bech32: 'uf'
@@ -32,7 +33,6 @@ const engineInfo: EngineCurrencyInfo = {
   maxFee: 1000000,
   defaultFee: 50000,
   feeUpdateInterval: 60000,
-  infoServer: 'https://info1.edgesecure.co:8444/v1',
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '2250',
@@ -50,14 +50,14 @@ const currencyInfo: EdgeCurrencyInfo = {
   currencyName: 'UFO',
   pluginName: 'ufo',
   denominations: [
-    { name: 'UFO', multiplier: '100000000', symbol: 'U' },
-    { name: 'kUFO', multiplier: '100000000000', symbol: 'kU' }
+    { name: 'UFO', multiplier: '100000000', symbol: 'Ʉ' },
+    { name: 'kUFO', multiplier: '100000000000', symbol: 'kɄ' }
   ],
 
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:ufo-bip84', 'wallet:ufo-bip49'],
+  walletTypes: ['wallet:ufo', 'wallet:ufo-bip84', 'wallet:ufo-bip49'],
 
   // Configuration options:
   defaultSettings: {

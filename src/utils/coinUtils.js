@@ -51,22 +51,18 @@ export type CreateTxOptions = {
   txOptions: TxOptions
 }
 
-export const keysFromWalletInfo = (
+export const keysFromEntropy = (
+  entropy: Buffer,
   network: string,
-  { keys = {}, type }: any = {}, // walletInfo
-  { master = {}, ...otherKeys }: any = {} // cachedRawKeys
-) => ({
-  seed: keys[`${network}Key`] || '',
-  coinType: typeof keys.coinType === 'number' ? keys.coinType : -1,
-  rawKeys: {
-    ...otherKeys,
-    master: {
-      ...master,
-      xpub: master.xpub || keys[`${network}Xpub`]
-    }
-  },
-  bip: keys.format
-})
+  opts: any = {}
+) => {
+  const { formats = [], keyPrefix = {} } = networks[network] || {}
+  return {
+    [`${network}Key`]: hd.Mnemonic.fromEntropy(entropy).getPhrase(),
+    format: opts.format || formats[0] || 'bip44',
+    coinType: opts.coinType || keyPrefix.coinType || 0
+  }
+}
 
 export const vefiryWIFSmartcash = (data: any) => {
   const wif = wifsmartcash.decode(data, 191)
@@ -218,7 +214,10 @@ export const parseTransaction = (
     output.scriptHash = reverseBufferToHex(hash256Sync(output.script.toRaw()))
   }) && bcoinTx
 
-export const parsePath = (path: string = '', masterPath: string) =>
+export const parsePath = (
+  path: string = '',
+  masterPath: string
+): Array<number> =>
   (path.split(`${masterPath}`)[1] || '')
     .split('/')
     .filter(i => i !== '')
@@ -227,13 +226,10 @@ export const parsePath = (path: string = '', masterPath: string) =>
 export const sumUtxos = (utxos: Array<Utxo>) =>
   utxos.reduce((s, { tx, index }) => s + parseInt(tx.outputs[index].value), 0)
 
-export const seedFromEntropy = (entropy: Buffer) =>
-  hd.Mnemonic.fromEntropy(entropy).getPhrase()
-
 export const getLock = () => new utils.Lock()
 
 export const getForksForNetwork = (network: string) =>
-  networks[network] ? networks[network].forks : []
+  networks[network] && networks[network].forks ? networks[network].forks : []
 
 export const getFromatsForNetwork = (network: string) =>
   networks[network] ? networks[network].formats : []
