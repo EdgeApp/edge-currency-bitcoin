@@ -530,8 +530,7 @@
     ]
   },
   {
-    "factory": "smartcashCurrencyPluginFactory",
-    "WALLET_TYPE": "wallet:smartcash",
+    "network": "smartcash",
     "valid": [
       "8McpLRgVVbV2YpMVsJzqskvuqHfvRTbLHY",
       "8URqccz4fadG1vS8k9hkFYNgBMsyZsZ1G6",
