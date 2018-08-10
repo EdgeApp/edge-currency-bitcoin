@@ -118,7 +118,7 @@ export const electrumFetchHeaderSchema = {
     merkle_root: { type: 'string' },
     timestamp: { type: 'number' },
     bits: { type: 'number' },
-    nonce: { type: 'number' }
+    nonce: { type: ['number', 'string'] }
   },
   required: [
     'block_height',
