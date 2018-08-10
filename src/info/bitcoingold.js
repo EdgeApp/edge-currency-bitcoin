@@ -23,7 +23,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
     witnessscripthash: 0x0a,
     bech32: 'btg'
   },
-  replayProtaction: {
+  replayProtection: {
     SIGHASH_FORKID: 64,
     forcedMinVersion: 1,
     forkId: 79
