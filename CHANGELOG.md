@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 3.2.6
+
+* fix a bug in the throttling of updateFee
+
 ## 3.2.5
 
 * fixed minor bitcoin gold issues
