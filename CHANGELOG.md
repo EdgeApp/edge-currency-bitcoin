@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+## 3.2.5
+
+* fixed minor bitcoin gold issues
+* disable support for bip70 for bitcoincash for now
+
 ## 3.2.4
 
 * Made all currency query the infoServer for electrum servers and fee info.
