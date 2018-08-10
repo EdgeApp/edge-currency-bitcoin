@@ -288,9 +288,9 @@ export class CurrencyEngine {
         const url = `${InfoServer}/networkFees/${this.currencyCode}`
         const feesResponse = await this.io.fetch(url)
         const feesJson = await feesResponse.json()
+        this.fees.timestamp = Date.now()
         if (validateObject(feesJson, InfoServerFeesSchema)) {
           this.fees = feesJson
-          this.fees.timestamp = Date.now()
         } else {
           throw new Error('Fetched invalid networkFees')
         }
