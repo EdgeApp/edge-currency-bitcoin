@@ -178,7 +178,7 @@ export class KeyManager {
     // Create our custom estimate function
     const estimate = prev => this.fSelector.estimateSize(prev)
     // Create the transaction by merging options with changeAddress & estimate
-    return createTX({ ...options, changeAddress, estimate })
+    return createTX({ ...options, changeAddress, estimate, network: this.network })
   }
 
   async sign (tx: any, privateKeys: Array<string> = []) {

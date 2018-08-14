@@ -44,6 +44,7 @@ export type CreateTxOptions = {
   rate: number,
   maxFee: number,
   changeAddress: string,
+  network: string,
   outputs?: Array<Output>,
   height?: BlockHeight,
   estimate?: Function,
@@ -94,6 +95,7 @@ export const createTX = async ({
   maxFee,
   height = -1,
   estimate,
+  network,
   txOptions: {
     selection = 'value',
     RBFraw = '',
@@ -134,7 +136,8 @@ export const createTX = async ({
 
   // Add the outputs
   outputs.forEach(({ address, value }) => {
-    const addressScript = script.fromAddress(address)
+    const addressObj = primitives.Address.fromString(address, network)
+    const addressScript = script.fromAddress(addressObj)
     mtx.addOutput(addressScript, value)
   })
 
