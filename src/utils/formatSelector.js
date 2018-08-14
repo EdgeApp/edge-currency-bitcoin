@@ -18,7 +18,8 @@ export const getAllKeyRings = (
   network: string
 ): Promise<any[]> => {
   const keysPromises = []
-  for (const bip of SUPPORTED_BIPS) {
+  const { formats } = networks[network]
+  for (const bip of formats) {
     for (const key of privateKeys) {
       const fSelector = FormatSelector(bip, network)
       const keyRing = primitives.KeyRing.fromSecret(key, network)

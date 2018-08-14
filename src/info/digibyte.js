@@ -10,7 +10,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
   formats: ['bip49', 'bip84', 'bip44', 'bip32'],
   forks: [],
   keyPrefix: {
-    privkey: 0x80,
+    privkey: 0x9e,
     xpubkey: 0x0488b21e,
     xprivkey: 0x0488ade4,
     xpubkey58: 'xpub',
