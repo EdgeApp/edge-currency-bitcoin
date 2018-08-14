@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+## 3.2.7
+
+* Fix a param on digibyte
+* Fix issues with sweeping private keys on networks without segwit
+
 ## 3.2.6
 
 * fix a bug in the throttling of updateFee
