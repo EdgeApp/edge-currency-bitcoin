@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+## 3.2.8
+
+* Fixed issues when sweeping bitcoin gold
+* Fixed an issues with sweeping private keys from non compressed private keys
+
 ## 3.2.7
 
 * Fix a param on digibyte
