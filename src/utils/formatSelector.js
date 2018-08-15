@@ -34,7 +34,7 @@ export const getAllAddresses = (
   network: string
 ): Promise<any[]> =>
   getAllKeyRings(privateKeys, network).then(keyRings =>
-    Promise.all(keyRings.map(addressFromKey))
+    Promise.all(keyRings.map(key => addressFromKey(key, network)))
   )
 
 export const getXPubFromSeed = async ({
@@ -106,7 +106,7 @@ export const FormatSelector = (
     deriveAddress: (parentKey: any, index: number): Promise<any> =>
       deriveHdKey(parentKey, index)
         .then(key => setKeyTypeWrap(key))
-        .then(key => addressFromKey(key)),
+        .then(key => addressFromKey(key, network)),
 
     deriveKeyRing: (parentKey: any, index: number): Promise<any> =>
       deriveHdKey(parentKey, index).then(derivedKey =>

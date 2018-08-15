@@ -51,6 +51,11 @@ export type CreateTxOptions = {
   txOptions: TxOptions
 }
 
+export const isCompressed = (key: any): boolean =>
+  Buffer.isBuffer(key) &&
+  key.length === 33 &&
+  (key[0] === 0x02 || key[0] === 0x03)
+
 export const keysFromEntropy = (
   entropy: Buffer,
   network: string,
@@ -84,8 +89,14 @@ export const setKeyType = (
   network: string
 ): Promise<any> =>
   Promise.resolve(
-    primitives.KeyRing.fromOptions({ ...key, nested, witness })
-  ).then(clone => Object.assign(clone, { network: Network.get(network) }))
+    primitives.KeyRing.fromKey(
+      key.privateKey || key.publicKey,
+      isCompressed(key.publicKey),
+      network
+    )
+  ).then(clone =>
+    Object.assign(clone, { nested, witness, network: Network.get(network) })
+  )
 
 export const createTX = async ({
   utxos,
@@ -187,10 +198,15 @@ export const getPrivateFromSeed = async (seed: string, network: string) => {
   }
 }
 
-export const addressToScriptHash = (address: string): Promise<string> =>
-  Promise.resolve(script.fromAddress(address).toRaw())
+export const addressToScriptHash = (
+  address: string,
+  network: string
+): Promise<string> => {
+  const addressObj = primitives.Address.fromString(address, network)
+  return Promise.resolve(script.fromAddress(addressObj).toRaw())
     .then(scriptRaw => hash256(scriptRaw))
     .then(scriptHashRaw => reverseBufferToHex(scriptHashRaw))
+}
 
 export const verifyTxAmount = (
   rawTx: string,
@@ -226,9 +242,9 @@ export const getForksForNetwork = (network: string) =>
 export const getFromatsForNetwork = (network: string) =>
   networks[network] ? networks[network].formats : []
 
-export const addressFromKey = (key: any): Promise<any> => {
+export const addressFromKey = (key: any, network: string): Promise<any> => {
   const address = key.getAddress().toString()
-  return addressToScriptHash(address).then(scriptHash => ({
+  return addressToScriptHash(address, network).then(scriptHash => ({
     address,
     scriptHash
   }))
