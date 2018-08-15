@@ -51,6 +51,11 @@ export type CreateTxOptions = {
   txOptions: TxOptions
 }
 
+export const isCompressed = (key: any): boolean =>
+  Buffer.isBuffer(key) &&
+  key.length === 33 &&
+  (key[0] === 0x02 || key[0] === 0x03)
+
 export const keysFromEntropy = (
   entropy: Buffer,
   network: string,
@@ -84,8 +89,14 @@ export const setKeyType = (
   network: string
 ): Promise<any> =>
   Promise.resolve(
-    primitives.KeyRing.fromOptions({ ...key, nested, witness })
-  ).then(clone => Object.assign(clone, { network: Network.get(network) }))
+    primitives.KeyRing.fromKey(
+      key.privateKey || key.publicKey,
+      isCompressed(key.publicKey),
+      network
+    )
+  ).then(clone =>
+    Object.assign(clone, { nested, witness, network: Network.get(network) })
+  )
 
 export const createTX = async ({
   utxos,
