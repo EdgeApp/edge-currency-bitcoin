@@ -447,7 +447,7 @@ export class CurrencyEngine {
     const scriptHashPromises = addresses.map(address => {
       const scriptHash = this.engineState.scriptHashes[address]
       if (typeof scriptHash === 'string') return Promise.resolve(scriptHash)
-      else return addressToScriptHash(address)
+      else return addressToScriptHash(address, this.network)
     })
     Promise.all(scriptHashPromises)
       .then((scriptHashs: Array<string>) => {

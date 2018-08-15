@@ -187,10 +187,15 @@ export const getPrivateFromSeed = async (seed: string, network: string) => {
   }
 }
 
-export const addressToScriptHash = (address: string): Promise<string> =>
-  Promise.resolve(script.fromAddress(address).toRaw())
+export const addressToScriptHash = (
+  address: string,
+  network: string
+): Promise<string> => {
+  const addressObj = primitives.Address.fromString(address, network)
+  return Promise.resolve(script.fromAddress(addressObj).toRaw())
     .then(scriptRaw => hash256(scriptRaw))
     .then(scriptHashRaw => reverseBufferToHex(scriptHashRaw))
+}
 
 export const verifyTxAmount = (
   rawTx: string,
@@ -226,9 +231,9 @@ export const getForksForNetwork = (network: string) =>
 export const getFromatsForNetwork = (network: string) =>
   networks[network] ? networks[network].formats : []
 
-export const addressFromKey = (key: any): Promise<any> => {
+export const addressFromKey = (key: any, network: string): Promise<any> => {
   const address = key.getAddress().toString()
-  return addressToScriptHash(address).then(scriptHash => ({
+  return addressToScriptHash(address, network).then(scriptHash => ({
     address,
     scriptHash
   }))
