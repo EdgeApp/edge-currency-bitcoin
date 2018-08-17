@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 3.2.9
+
+* Fixed an issue when trying to send money to a network that has both Segwit and a legacy address format (like Litecoin or UFO).
+
 ## 3.2.8
 
 * Fixed issues when sweeping bitcoin gold
