@@ -10,6 +10,7 @@ import {
   network as Network
 } from 'bcoin'
 import { hash256, hash256Sync, reverseBufferToHex } from './utils.js'
+import { toLegacyFormat, toNewFormat } from './addressFormat/addressFormatIndex.js'
 
 const { Buffer } = buffer
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
@@ -145,9 +146,18 @@ export const createTX = async ({
     throw new Error('No outputs available.')
   }
 
+  // Convert an address to the correct format that bcoin supports
+  const toBcoinFormat = (address: string, network: string): string => {
+    const { addressPrefix = {} } = networks[network] || {}
+    return addressPrefix.cashAddress
+      ? toLegacyFormat(address, network)
+      : toNewFormat(address, network)
+  }
+
   // Add the outputs
   outputs.forEach(({ address, value }) => {
-    const addressObj = primitives.Address.fromString(address, network)
+    const bcoinAddress = toBcoinFormat(address, network)
+    const addressObj = primitives.Address.fromString(bcoinAddress, network)
     const addressScript = script.fromAddress(addressObj)
     mtx.addOutput(addressScript, value)
   })
@@ -160,7 +170,7 @@ export const createTX = async ({
   // Try to fund the transaction
   await mtx.fund(coins, {
     selection,
-    changeAddress,
+    changeAddress: toBcoinFormat(changeAddress, network),
     subtractFee,
     height,
     rate,

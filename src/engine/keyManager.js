@@ -8,10 +8,7 @@ import type {
 } from '../utils/coinUtils.js'
 import { getAllKeyRings, FormatSelector } from '../utils/formatSelector.js'
 import { parsePath, createTX, getLock } from '../utils/coinUtils.js'
-import {
-  toLegacyFormat,
-  toNewFormat
-} from '../utils/addressFormat/addressFormatIndex.js'
+import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 
 const GAP_LIMIT = 10
 const nop = () => {}
@@ -173,15 +170,10 @@ export class KeyManager {
   }
 
   async createTX (options: createTxOptions): any {
-    // Get the Change Address
-    const changeAddress = toLegacyFormat(this.getChangeAddress(), this.network)
-    // Create our custom estimate function
-    const estimate = prev => this.fSelector.estimateSize(prev)
-    // Create the transaction by merging options with changeAddress & estimate
     return createTX({
       ...options,
-      changeAddress,
-      estimate,
+      changeAddress: this.getChangeAddress(),
+      estimate: prev => this.fSelector.estimateSize(prev),
       network: this.network
     })
   }

@@ -599,7 +599,7 @@ export class CurrencyEngine {
           ({ publicAddress, nativeAmount }) => publicAddress && nativeAmount
         )
         .map(({ publicAddress = '', nativeAmount = 0 }) => ({
-          address: toLegacyFormat(publicAddress.toString(), this.network),
+          address: publicAddress.toString(),
           value: parseInt(nativeAmount)
         }))
 
