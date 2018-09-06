@@ -50,8 +50,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   currencyName: 'Digibyte',
   pluginName: 'digibyte',
   denominations: [
-    { name: 'DGB', multiplier: '100000000', symbol: 'Ð' },
-    { name: 'mDGB', multiplier: '100000', symbol: 'mÐ' }
+    { name: 'DGB', multiplier: '100000000', symbol: 'Ɗ' },
+    { name: 'mDGB', multiplier: '100000', symbol: 'mƊ' }
   ],
 
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
