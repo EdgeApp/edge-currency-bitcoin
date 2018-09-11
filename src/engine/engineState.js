@@ -26,7 +26,7 @@ import type {
   StratumUtxo
 } from '../stratum/stratumMessages.js'
 import { parseTransaction } from '../utils/coinUtils.js'
-import { parse } from 'uri-js/dist/es5/uri.all'
+import { parse } from 'uri-js'
 
 export type UtxoInfo = {
   txid: string, // tx_hash from Stratum

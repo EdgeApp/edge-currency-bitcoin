@@ -34,20 +34,31 @@ pipeline {
     stage ("Test Module") {
       steps {
         sh "npm test"
-        publishHTML (target: [
-          allowMissing: false,
-          alwaysLinkToLastBuild: false,
-          keepAll: true,
-          reportDir: "coverage",
-          reportFiles: "index.html",
-          reportName: "Istanbul Report"
-        ])
+        // Publish test report
+        junit healthScaleFactor: 100.0, testResults: '**/coverage/junit.xml'
+        // Publish code coverage report
+        cobertura(
+          coberturaReportFile: '**/coverage/cobertura-coverage.xml',
+          failUnstable: false,
+          conditionalCoverageTargets: '70, 0, 0',
+          lineCoverageTargets: '70, 0, 0',
+          methodCoverageTargets: '70, 0, 0',
+          maxNumberOfBuilds: 0,
+          onlyStable: false,
+          sourceEncoding: 'ASCII',
+          zoomCoverageChart: false
+        )
       }
     }
   }
 
   post {
     always {
+      echo 'Setting the build version'
+      script {
+        def packageJson = readJSON file: "./package.json"
+        currentBuild.description = "[version] ${packageJson.version}"
+      }
       echo 'Cleaning the workspace'
       deleteDir()
     }

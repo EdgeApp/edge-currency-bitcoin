@@ -1,10 +1,11 @@
-import assert from 'assert'
+
+import { assert } from 'chai'
 import { nfkd } from 'unorm'
 
 export const patchDerivePublic = function (bcoin, secp256k1) {
   const publicKey = bcoin.hd.PublicKey.prototype
   publicKey.derive = async function (index, hardened) {
-    assert(typeof index === 'number')
+    assert.equal(typeof index, 'number')
 
     if (index >>> 0 !== index) {
       throw new Error('Index out of range.')
@@ -69,7 +70,7 @@ export const patchDerivePublic = function (bcoin, secp256k1) {
 export const patchDerivePrivate = function (bcoin, secp256k1) {
   const privateKey = bcoin.hd.PrivateKey.prototype
   privateKey.derive = async function (index, hardened) {
-    assert(typeof index === 'number')
+    assert.equal(typeof index, 'number')
 
     if (index >>> 0 !== index) {
       throw new Error('Index out of range.')
