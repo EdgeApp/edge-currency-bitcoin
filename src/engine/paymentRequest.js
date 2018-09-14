@@ -73,7 +73,8 @@ export const parsePayment = (
   const paymentRequest = bip70.PaymentRequest.fromRaw(paymentBuffer)
   const { paymentDetails } = paymentRequest
   const { paymentUrl = '', memo = '', outputs = [] } = paymentDetails
-  const merchantData = paymentDetails.getData('json') || paymentDetails.merchantData
+  const merchantData =
+    paymentDetails.getData('json') || paymentDetails.merchantData
   const domain = parse(paymentUrl, {}).hostname
   const spendTargets = []
   let nativeAmount = 0

@@ -22,7 +22,11 @@ import type { KeyManagerCallbacks } from './keyManager'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import type { TxOptions } from '../utils/coinUtils.js'
 import { validateObject, promiseAny } from '../utils/utils.js'
-import { getPaymentDetails, createPayment, sendPayment } from './paymentRequest.js'
+import {
+  getPaymentDetails,
+  createPayment,
+  sendPayment
+} from './paymentRequest.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import { broadcastFactories } from './broadcastApi.js'
@@ -634,7 +638,7 @@ export class CurrencyEngine {
         memo: paymentProtocolInfo.memo,
         merchantData: paymentProtocolInfo.merchant,
         refundTo: [{ address, value }],
-        transactions: [ signedTx ]
+        transactions: [signedTx]
       })
       Object.assign(edgeTransaction.otherParams, {
         paymentProtocolInfo: { ...paymentProtocolInfo, payment }
@@ -661,7 +665,11 @@ export class CurrencyEngine {
         paymentProtocolInfo.paymentUrl,
         paymentProtocolInfo.payment
       )
-      if (!paymentAck) throw new Error(`Error when sending to ${paymentProtocolInfo.paymentUrl}`)
+      if (!paymentAck) {
+        throw new Error(
+          `Error when sending to ${paymentProtocolInfo.paymentUrl}`
+        )
+      }
     }
 
     const tx = verifyTxAmount(signedTx, bcoinTx)
