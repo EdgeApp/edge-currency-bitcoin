@@ -10,7 +10,10 @@ import {
   network as Network
 } from 'bcoin'
 import { hash256, hash256Sync, reverseBufferToHex } from './utils.js'
-import { toLegacyFormat, toNewFormat } from './addressFormat/addressFormatIndex.js'
+import {
+  toLegacyFormat,
+  toNewFormat
+} from './addressFormat/addressFormatIndex.js'
 
 const { Buffer } = buffer
 const RBF_SEQUENCE_NUM = 0xffffffff - 2

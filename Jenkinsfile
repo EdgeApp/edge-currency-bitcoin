@@ -34,20 +34,6 @@ pipeline {
     stage ("Test Module") {
       steps {
         sh "npm test"
-        // Publish test report
-        junit healthScaleFactor: 100.0, testResults: '**/coverage/junit.xml'
-        // Publish code coverage report
-        cobertura(
-          coberturaReportFile: '**/coverage/cobertura-coverage.xml',
-          failUnstable: false,
-          conditionalCoverageTargets: '70, 0, 0',
-          lineCoverageTargets: '70, 0, 0',
-          methodCoverageTargets: '70, 0, 0',
-          maxNumberOfBuilds: 0,
-          onlyStable: false,
-          sourceEncoding: 'ASCII',
-          zoomCoverageChart: false
-        )
       }
     }
   }
@@ -59,6 +45,21 @@ pipeline {
         def packageJson = readJSON file: "./package.json"
         currentBuild.description = "[version] ${packageJson.version}"
       }
+      echo 'Trying to publish the test report'
+      junit healthScaleFactor: 100.0, testResults: '**/coverage/junit.xml', allowEmptyResults: true
+      echo 'Trying to publish the code coverage report'
+      cobertura(
+        coberturaReportFile: '**/coverage/cobertura-coverage.xml',
+        failNoReports: false,
+        failUnstable: false,
+        onlyStable: false,
+        zoomCoverageChart: false,
+        conditionalCoverageTargets: '70, 0, 0',
+        lineCoverageTargets: '70, 0, 0',
+        methodCoverageTargets: '70, 0, 0',
+        maxNumberOfBuilds: 0,
+        sourceEncoding: 'ASCII'
+      )
       echo 'Cleaning the workspace'
       deleteDir()
     }
