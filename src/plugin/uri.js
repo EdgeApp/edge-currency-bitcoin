@@ -82,8 +82,6 @@ export const parseUri = (
   if (label) Object.assign(metadata, { name: label })
   if (message) Object.assign(metadata, { message })
   if (r) parsedUri.paymentProtocolURL = r
-  // HACK FOR NOW UNTIL WE FIX THE ISSUE WITH THIS $#%$%$ BIP70 AND THOSE %$*$@$! BITPAY
-  if (r && network === 'bitcoincash') throw new Error('InvalidUriError')
   Object.assign(parsedUri, { metadata })
   // Get amount in native denomination if exists
   if (amount && typeof amount === 'string') {
