@@ -627,7 +627,8 @@ export class CurrencyEngine {
     const { paymentProtocolInfo } = otherParams
     const { signedTx, txid } = await this.keyManager.sign(bcoinTx, privateKeys)
     if (paymentProtocolInfo) {
-      const address = this.getFreshAddress().publicAddress
+      const publicAddress = this.getFreshAddress().publicAddress
+      const address = toLegacyFormat(publicAddress, this.network)
       const value = parseInt(paymentProtocolInfo.nativeAmount)
       const payment = createPayment({
         memo: paymentProtocolInfo.memo,
