@@ -30,6 +30,7 @@ const validRequests = [
       merchant: '',
       memo: 'merchant server says hello',
       domain: 'localhost',
+      paymentUrl: 'http://localhost:4567/ack',
       spendTargets: [
         {
           currencyCode: 'BTC',
@@ -46,6 +47,7 @@ const validRequests = [
       merchant: '',
       domain: 'test.bitpay.com',
       memo: 'Payment request for BitPay invoice CMWpuFsjgmQ2ZLiyGfcF1W',
+      paymentUrl: 'https://test.bitpay.com/i/CMWpuFsjgmQ2ZLiyGfcF1W',
       spendTargets: [
         {
           currencyCode: 'BTC',
