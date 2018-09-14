@@ -111,12 +111,12 @@ export async function getPaymentDetails (
   return parsePayment(buf, network, currencyCode)
 }
 
-export async function createPayment ({
+export function createPayment ({
   transactions,
   refundTo,
   memo,
   merchantData
-}: Payment): Promise<Buffer> {
+}: Payment): Buffer {
   const paymentBuffer = bip70.Payment.fromOptions({
     transactions: transactions.map(tx => primitives.TX.fromRaw(tx, 'hex')),
     refundTo: refundTo.map(refund => primitives.Output.fromOptions(refund)),
