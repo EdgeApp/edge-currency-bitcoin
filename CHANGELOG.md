@@ -1,5 +1,12 @@
 # edge-currency-bitcoin
 
+## 3.3.0
+
+* bip70 is working for both Bitcoin and Bitcoin cash (in fact it should work for ALL coins now)
+* Change Digibyte symbol from `Ð` to `Ɗ`
+* All of the dependencies are now up to date
+* Improved Jenkinsfile
+
 ## 3.2.9
 
 * Fixed an issue when trying to send money to a network that has both Segwit and a legacy address format (like Litecoin or UFO).
