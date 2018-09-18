@@ -633,13 +633,7 @@ export class CurrencyEngine {
     if (paymentProtocolInfo) {
       const publicAddress = this.getFreshAddress().publicAddress
       const address = toLegacyFormat(publicAddress, this.network)
-      const value = parseInt(paymentProtocolInfo.nativeAmount)
-      const payment = createPayment({
-        memo: paymentProtocolInfo.memo,
-        merchantData: paymentProtocolInfo.merchant,
-        refundTo: [{ address, value }],
-        transactions: [signedTx]
-      })
+      const payment = createPayment(paymentProtocolInfo, address, signedTx)
       Object.assign(edgeTransaction.otherParams, {
         paymentProtocolInfo: { ...paymentProtocolInfo, payment }
       })
