@@ -146,10 +146,11 @@ export async function getPaymentDetails (
 export function createPayment (
   paymentDetails: EdgePaymentProtocolInfo,
   refundAddress: string,
-  tx: string
+  tx: string,
+  currencyCode: string
 ): any {
   if (paymentDetails.domain === 'bitpay.com') {
-    return { currency: paymentDetails.currency, transactions: [tx] }
+    return { currency: currencyCode, transactions: [tx] }
   } else {
     const refundOutput = primitives.Output.fromOptions({ value: paymentDetails.nativeAmount, address: refundAddress })
     const txObj = primitives.TX.fromRaw(tx, 'hex')
