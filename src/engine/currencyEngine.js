@@ -333,8 +333,11 @@ export class CurrencyEngine {
   getRate ({
     spendTargets,
     networkFeeOption = 'standard',
-    customNetworkFee = {}
+    customNetworkFee = {},
+    otherParams
   }: EdgeSpendInfo): number {
+    const requiredFeeRate = otherParams?.paymentProtocolInfo?.merchant?.requiredFeeRate
+    if (requiredFeeRate) return parseInt(requiredFeeRate) * BYTES_TO_KB * 1.5
     const customFeeSetting = this.engineInfo.customFeeSettings[0]
     const customFeeAmount = customNetworkFee[customFeeSetting] || '0'
     if (networkFeeOption === 'custom' && customFeeAmount !== '0') {
@@ -633,13 +636,7 @@ export class CurrencyEngine {
     if (paymentProtocolInfo) {
       const publicAddress = this.getFreshAddress().publicAddress
       const address = toLegacyFormat(publicAddress, this.network)
-      const value = parseInt(paymentProtocolInfo.nativeAmount)
-      const payment = createPayment({
-        memo: paymentProtocolInfo.memo,
-        merchantData: paymentProtocolInfo.merchant,
-        refundTo: [{ address, value }],
-        transactions: [signedTx]
-      })
+      const payment = createPayment(paymentProtocolInfo, address, signedTx, this.currencyCode)
       Object.assign(edgeTransaction.otherParams, {
         paymentProtocolInfo: { ...paymentProtocolInfo, payment }
       })

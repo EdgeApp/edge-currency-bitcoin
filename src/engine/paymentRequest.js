@@ -4,16 +4,9 @@ import buffer from 'buffer-hack'
 import { primitives, bip70 } from 'bcoin'
 import parse from 'url-parse'
 import type { EdgePaymentProtocolInfo } from 'edge-core-js'
-import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
+import { toNewFormat, toLegacyFormat } from '../utils/addressFormat/addressFormatIndex.js'
 
 const { Buffer } = buffer
-
-type Payment = {
-  transactions: Array<string>,
-  refundTo: Array<{ address: string, value: number }>,
-  merchantData: any,
-  memo?: string
-}
 
 type FetchOptions = {
   method: string,
@@ -65,6 +58,53 @@ const fetchBuffer = async (
   return Buffer.from(result)
 }
 
+const getSpendTargets = (outputs: Array<any>, network: string, currencyCode: string) => {
+  let nativeAmount = 0
+  const spendTargets = []
+  for (const output of outputs) {
+    const jsonObj = output.getJSON(network)
+    nativeAmount += jsonObj.value
+    spendTargets.push({
+      currencyCode: currencyCode,
+      publicAddress: toNewFormat(jsonObj.address, network),
+      nativeAmount: `${jsonObj.value}`
+    })
+  }
+  return { nativeAmount, spendTargets }
+}
+
+const getBitPayPayment = async (
+  paymentProtocolURL: string,
+  network: string,
+  fetch: any
+): Promise<EdgePaymentProtocolInfo> => {
+  const headers = { Accept: 'application/payment-request' }
+  const result = await fetch(paymentProtocolURL, { headers })
+  if (parseInt(result.status) !== 200) {
+    const error = await result.text()
+    throw new Error(error)
+  }
+  const paymentRequest = await result.json()
+  const { outputs, memo, paymentUrl, paymentId, requiredFeeRate, currency } = paymentRequest
+  const parsedOutputs = outputs.map(({ amount, address }) => {
+    const legacyAddress = toLegacyFormat(address, network)
+    return primitives.Output.fromOptions({ value: amount, address: legacyAddress })
+  })
+  const { nativeAmount, spendTargets } = getSpendTargets(parsedOutputs, network, currency)
+  const domain = parse(paymentUrl, {}).hostname
+  // $FlowFixMe
+  const edgePaymentProtocolInfo: EdgePaymentProtocolInfo = {
+    nativeAmount: `${nativeAmount}`,
+    merchant: { paymentId, requiredFeeRate },
+    memo,
+    domain,
+    spendTargets,
+    paymentUrl
+  }
+
+  return edgePaymentProtocolInfo
+}
+
 export const parsePayment = (
   paymentBuffer: Buffer,
   network: string,
@@ -76,18 +116,7 @@ export const parsePayment = (
   const merchantData =
     paymentDetails.getData('json') || paymentDetails.merchantData
   const domain = parse(paymentUrl, {}).hostname
-  const spendTargets = []
-  let nativeAmount = 0
-
-  for (const output of outputs) {
-    const jsonObj = output.getJSON(network)
-    nativeAmount += jsonObj.value
-    spendTargets.push({
-      currencyCode: currencyCode,
-      publicAddress: toNewFormat(jsonObj.address, network),
-      nativeAmount: `${jsonObj.value}`
-    })
-  }
+  const { nativeAmount, spendTargets } = getSpendTargets(outputs, network, currencyCode)
 
   const edgePaymentProtocolInfo: EdgePaymentProtocolInfo = {
     nativeAmount: `${nativeAmount}`,
@@ -107,39 +136,56 @@ export async function getPaymentDetails (
   currencyCode: string,
   fetch: any
 ): Promise<EdgePaymentProtocolInfo> {
+  const domain = parse(paymentProtocolURL, {}).hostname
+  if (domain === 'bitpay.com') return getBitPayPayment(paymentProtocolURL, network, fetch)
   const headers = { Accept: `application/${network}-paymentrequest` }
   const buf = await fetchBuffer(fetch, paymentProtocolURL, 'GET', headers, null)
   return parsePayment(buf, network, currencyCode)
 }
 
-export function createPayment ({
-  transactions,
-  refundTo,
-  memo,
-  merchantData
-}: Payment): Buffer {
-  const paymentBuffer = bip70.Payment.fromOptions({
-    transactions: transactions.map(tx => primitives.TX.fromRaw(tx, 'hex')),
-    refundTo: refundTo.map(refund => primitives.Output.fromOptions(refund)),
-    memo,
-    merchantData
-  }).toRaw()
-
-  return paymentBuffer
+export function createPayment (
+  paymentDetails: EdgePaymentProtocolInfo,
+  refundAddress: string,
+  tx: string,
+  currencyCode: string
+): any {
+  if (paymentDetails.domain === 'bitpay.com') {
+    return { currency: currencyCode, transactions: [tx] }
+  } else {
+    const refundOutput = primitives.Output.fromOptions({ value: paymentDetails.nativeAmount, address: refundAddress })
+    const txObj = primitives.TX.fromRaw(tx, 'hex')
+    return bip70.Payment.fromOptions({
+      transactions: [txObj],
+      refundTo: [refundOutput],
+      memo: paymentDetails.memo,
+      merchantData: paymentDetails.merchant
+    }).toRaw()
+  }
 }
 
 export async function sendPayment (
   fetch: any,
   network: string,
   paymentUrl: string,
-  payment: Buffer
+  payment: any
 ): Promise<any> {
-  const headers = {
-    'Content-Type': `application/${network}-payment`,
-    Accept: `application/${network}-paymentack`
+  const domain = parse(paymentUrl, {}).hostname
+  if (domain === 'bitpay.com') {
+    const headers = { 'Content-Type': 'application/payment' }
+    const result = await fetch(paymentUrl, { method: 'POST', headers, body: JSON.stringify(payment) })
+    if (parseInt(result.status) !== 200) {
+      const error = await result.text()
+      throw new Error(error)
+    }
+    const paymentACK = await result.json()
+    return paymentACK
+  } else {
+    const headers = {
+      'Content-Type': `application/${network}-payment`,
+      Accept: `application/${network}-paymentack`
+    }
+    const buf = await fetchBuffer(fetch, paymentUrl, 'POST', headers, payment)
+    const paymentACK = bip70.PaymentACK.fromRaw(buf)
+    return paymentACK
   }
-  const buf = await fetchBuffer(fetch, paymentUrl, 'POST', headers, payment)
-  const paymentACK = bip70.PaymentACK.fromRaw(buf)
-  console.log('paymentACK', paymentACK)
-  return paymentACK
 }
