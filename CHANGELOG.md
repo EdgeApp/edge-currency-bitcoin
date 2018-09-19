@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 3.3.1
+
+* Using Bitpay Proprietary API for bip70 payments
+
 ## 3.3.0
 
 * bip70 is working for both Bitcoin and Bitcoin cash (in fact it should work for ALL coins now)
