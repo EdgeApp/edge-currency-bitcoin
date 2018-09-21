@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 3.3.2
+
+* Remove non-standard elvis operator
+
 ## 3.3.1
 
 * Using Bitpay Proprietary API for bip70 payments

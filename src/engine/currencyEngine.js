@@ -336,8 +336,15 @@ export class CurrencyEngine {
     customNetworkFee = {},
     otherParams
   }: EdgeSpendInfo): number {
-    const requiredFeeRate = otherParams?.paymentProtocolInfo?.merchant?.requiredFeeRate
-    if (requiredFeeRate) return parseInt(requiredFeeRate) * BYTES_TO_KB * 1.5
+    if (
+      otherParams &&
+      otherParams.paymentProtocolInfo &&
+      otherParams.paymentProtocolInfo.merchant &&
+      otherParams.paymentProtocolInfo.merchant.requiredFeeRate
+    ) {
+      const requiredFeeRate = otherParams.paymentProtocolInfo.merchant.requiredFeeRate
+      return parseInt(requiredFeeRate) * BYTES_TO_KB * 1.5
+    }
     const customFeeSetting = this.engineInfo.customFeeSettings[0]
     const customFeeAmount = customNetworkFee[customFeeSetting] || '0'
     if (networkFeeOption === 'custom' && customFeeAmount !== '0') {
