@@ -48,7 +48,7 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'DGB',
-  currencyName: 'Digibyte',
+  currencyName: 'DigiByte',
   pluginName: 'digibyte',
   denominations: [
     { name: 'DGB', multiplier: '100000000', symbol: 'Ɗ' },
