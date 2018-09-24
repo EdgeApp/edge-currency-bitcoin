@@ -14,19 +14,9 @@ import { verifyWIF } from '../utils/coinUtils.js'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
 import { bns } from 'biggystring'
-import bcoin from 'bcoin'
+// import bcoin from 'bcoin'
 
 const parsePathname = (pathname: string, network: string) => {
-  // Check if the pathname type is a mnemonic seed
-  try {
-    bcoin.hd.Mnemonic.fromPhrase(pathname)
-    return { seed: pathname }
-  } catch (e) {}
-  // Check if the pathname type is a private key
-  try {
-    bcoin.hd.PrivateKey.fromBase58(pathname, network)
-    return { masterPriv: pathname }
-  } catch (e) {}
   // Check if the pathname type is a wif
   try {
     verifyWIF(pathname, network)
