@@ -15,6 +15,7 @@ import { qtum } from './info/qtum'
 import { ufo } from './info/ufo'
 import { vertcoin } from './info/vertcoin'
 import { zcoin } from './info/zcoin'
+import { eboost } from './info/eboost'
 
 export const bitcoinCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoin)
 export const bitcoinTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoinTestnet)
@@ -31,3 +32,4 @@ export const qtumCurrencyPluginFactory = makeCurrencyPluginFactory(qtum)
 export const ufoCurrencyPluginFactory = makeCurrencyPluginFactory(ufo)
 export const vertcoinCurrencyPluginFactory = makeCurrencyPluginFactory(vertcoin)
 export const zcoinCurrencyPluginFactory = makeCurrencyPluginFactory(zcoin)
+export const eboostCurrencyPluginFactory = makeCurrencyPluginFactory(eboost)
