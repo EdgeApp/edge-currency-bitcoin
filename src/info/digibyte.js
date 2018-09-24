@@ -10,7 +10,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
   formats: ['bip49', 'bip84', 'bip44', 'bip32'],
   forks: [],
   keyPrefix: {
-    privkey: 0x80,
+    privkey: 0x9e,
     xpubkey: 0x0488b21e,
     xprivkey: 0x0488ade4,
     xpubkey58: 'xpub',
@@ -19,7 +19,8 @@ const bcoinInfo: BcoinCurrencyInfo = {
   },
   addressPrefix: {
     pubkeyhash: 0x1e,
-    scripthash: 0x05,
+    scripthash: 0x3f,
+    scripthashLegacy: 0x05,
     witnesspubkeyhash: 0x06,
     witnessscripthash: 0x0a,
     bech32: 'dgb'
@@ -50,8 +51,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   currencyName: 'Digibyte',
   pluginName: 'digibyte',
   denominations: [
-    { name: 'DGB', multiplier: '100000000', symbol: 'Ð' },
-    { name: 'mDGB', multiplier: '100000', symbol: 'mÐ' }
+    { name: 'DGB', multiplier: '100000000', symbol: 'Ɗ' },
+    { name: 'mDGB', multiplier: '100000', symbol: 'mƊ' }
   ],
 
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

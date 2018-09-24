@@ -18,7 +18,8 @@ export const getAllKeyRings = (
   network: string
 ): Promise<any[]> => {
   const keysPromises = []
-  for (const bip of SUPPORTED_BIPS) {
+  const { formats } = networks[network]
+  for (const bip of formats) {
     for (const key of privateKeys) {
       const fSelector = FormatSelector(bip, network)
       const keyRing = primitives.KeyRing.fromSecret(key, network)
@@ -33,7 +34,7 @@ export const getAllAddresses = (
   network: string
 ): Promise<any[]> =>
   getAllKeyRings(privateKeys, network).then(keyRings =>
-    Promise.all(keyRings.map(addressFromKey))
+    Promise.all(keyRings.map(key => addressFromKey(key, network)))
   )
 
 export const getXPubFromSeed = async ({
@@ -105,7 +106,7 @@ export const FormatSelector = (
     deriveAddress: (parentKey: any, index: number): Promise<any> =>
       deriveHdKey(parentKey, index)
         .then(key => setKeyTypeWrap(key))
-        .then(key => addressFromKey(key)),
+        .then(key => addressFromKey(key, network)),
 
     deriveKeyRing: (parentKey: any, index: number): Promise<any> =>
       deriveHdKey(parentKey, index).then(derivedKey =>

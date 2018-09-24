@@ -1,52 +1,76 @@
-node {
-  try {
-    stage ("Set Clean Environment") {
-      deleteDir()    
-    }
+pipeline {
+  agent any
+  tools {
+    nodejs 'v8.12.0'
+  }
+  options {
+    timestamps()
+    skipDefaultCheckout true
+  }
+  triggers {
+    pollSCM('H/5 * * * *')
+  }
 
-    stage ("checkout") {
-      checkout scm
-    }
-
-    nodejs(nodeJSInstallationName: "LTS") {
-      stage ("install modules") {
-        sh "npm i"
+  stages {
+    stage("Clean the workspace and checkout source") {
+      steps {
+        deleteDir()
+        checkout scm
       }
+    }
 
-      stage ("Module Security Check") {
+    stage ("install modules") {
+      steps {
+        sh "yarn"
+      }
+    }
+
+    stage ("Module Security Check") {
+      steps {
         sh "npm run security"
       }
+    }
 
-      stage ("Test Module") {
+    stage ("Test Module") {
+      steps {
         sh "npm test"
-        publishHTML (target: [
-          allowMissing: false,
-          alwaysLinkToLastBuild: false,
-          keepAll: true,
-          reportDir: "coverage",
-          reportFiles: "index.html",
-          reportName: "Istanbul Report"
-        ])
       }
     }
+  }
 
-    stage ("cleanup") {
+  post {
+    always {
+      echo 'Setting the build version'
+      script {
+        def packageJson = readJSON file: "./package.json"
+        currentBuild.description = "[version] ${packageJson.version}"
+      }
+      echo 'Trying to publish the test report'
+      junit healthScaleFactor: 100.0, testResults: '**/coverage/junit.xml', allowEmptyResults: true
+      echo 'Trying to publish the code coverage report'
+      cobertura(
+        coberturaReportFile: '**/coverage/cobertura-coverage.xml',
+        failNoReports: false,
+        failUnstable: false,
+        onlyStable: false,
+        zoomCoverageChart: false,
+        conditionalCoverageTargets: '70, 0, 0',
+        lineCoverageTargets: '70, 0, 0',
+        methodCoverageTargets: '70, 0, 0',
+        maxNumberOfBuilds: 0,
+        sourceEncoding: 'ASCII'
+      )
+      echo 'Cleaning the workspace'
       deleteDir()
-      currentBuild.result = "SUCCESS"
     }
-  }
-  catch(err) {
-    deleteDir()
-    // Do not add a stage here.
-    // When "stage" commands are run in a different order than the previous run
-    // the history is hidden since the rendering plugin assumes that the system has changed and
-    // that the old runs are irrelevant. As such adding a stage at this point will trigger a
-    // "change of the system" each time a run fails.
-    println "Something went wrong!"
-    println err
-    currentBuild.result = "FAILURE"
-  }
-  finally {
-    println "Fin"
+    success {
+      echo "The force is strong with this one"
+    }
+    unstable {
+      echo "Do or do not there is no try"
+    }
+    failure {
+      echo "The dark side I sense in you."
+    }
   }
 }

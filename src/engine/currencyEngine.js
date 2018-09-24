@@ -22,7 +22,11 @@ import type { KeyManagerCallbacks } from './keyManager'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import type { TxOptions } from '../utils/coinUtils.js'
 import { validateObject, promiseAny } from '../utils/utils.js'
-import { parsePayment } from './paymentRequest.js'
+import {
+  getPaymentDetails,
+  createPayment,
+  sendPayment
+} from './paymentRequest.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import { broadcastFactories } from './broadcastApi.js'
@@ -288,9 +292,9 @@ export class CurrencyEngine {
         const url = `${InfoServer}/networkFees/${this.currencyCode}`
         const feesResponse = await this.io.fetch(url)
         const feesJson = await feesResponse.json()
+        this.fees.timestamp = Date.now()
         if (validateObject(feesJson, InfoServerFeesSchema)) {
           this.fees = feesJson
-          this.fees.timestamp = Date.now()
         } else {
           throw new Error('Fetched invalid networkFees')
         }
@@ -329,8 +333,18 @@ export class CurrencyEngine {
   getRate ({
     spendTargets,
     networkFeeOption = 'standard',
-    customNetworkFee = {}
+    customNetworkFee = {},
+    otherParams
   }: EdgeSpendInfo): number {
+    if (
+      otherParams &&
+      otherParams.paymentProtocolInfo &&
+      otherParams.paymentProtocolInfo.merchant &&
+      otherParams.paymentProtocolInfo.merchant.requiredFeeRate
+    ) {
+      const requiredFeeRate = otherParams.paymentProtocolInfo.merchant.requiredFeeRate
+      return parseInt(requiredFeeRate) * BYTES_TO_KB * 1.5
+    }
     const customFeeSetting = this.engineInfo.customFeeSettings[0]
     const customFeeAmount = customNetworkFee[customFeeSetting] || '0'
     if (networkFeeOption === 'custom' && customFeeAmount !== '0') {
@@ -447,7 +461,7 @@ export class CurrencyEngine {
     const scriptHashPromises = addresses.map(address => {
       const scriptHash = this.engineState.scriptHashes[address]
       if (typeof scriptHash === 'string') return Promise.resolve(scriptHash)
-      else return addressToScriptHash(address)
+      else return addressToScriptHash(address, this.network)
     })
     Promise.all(scriptHashPromises)
       .then((scriptHashs: Array<string>) => {
@@ -526,40 +540,12 @@ export class CurrencyEngine {
     paymentProtocolURL: string
   ): Promise<EdgePaymentProtocolInfo> {
     try {
-      const headers = { Accept: `application/${this.network}-paymentrequest` }
-      // Legacy fetching using XMLHttpRequest
-      // This is for enviroments that don't support 'arrayBuffer'
-      // like some versions of react-native and old browsers
-      const legacyFetch = async url => {
-        return new Promise((resolve, reject) => {
-          const req = new window.XMLHttpRequest()
-          req.open('GET', url, true)
-          for (const header in headers) {
-            req.setRequestHeader(header, headers[header])
-          }
-          req.responseType = 'arraybuffer'
-          req.onload = event => {
-            const resp = req.response
-            if (resp) {
-              resolve(resp)
-            }
-          }
-          req.send(null)
-        })
-      }
-      let result = Buffer.alloc(0)
-      // Use the modern API if in node or any enviroment which supports it
-      if (
-        typeof window === 'undefined' ||
-        (window.Response && window.Response.prototype.arrayBuffer)
-      ) {
-        result = await this.io.fetch(paymentProtocolURL, { headers })
-        result = await result.arrayBuffer()
-      } else if (window && window.XMLHttpRequest) {
-        result = await legacyFetch(paymentProtocolURL)
-      }
-      const buf = Buffer.from(result)
-      return parsePayment(buf, this.network, this.currencyCode)
+      return getPaymentDetails(
+        paymentProtocolURL,
+        this.network,
+        this.currencyCode,
+        this.io.fetch
+      )
     } catch (err) {
       console.log(`${this.walletId} - ${err.toString()}`)
       throw err
@@ -599,7 +585,7 @@ export class CurrencyEngine {
           ({ publicAddress, nativeAmount }) => publicAddress && nativeAmount
         )
         .map(({ publicAddress = '', nativeAmount = 0 }) => ({
-          address: toLegacyFormat(publicAddress.toString(), this.network),
+          address: publicAddress.toString(),
           value: parseInt(nativeAmount)
         }))
 
@@ -651,8 +637,17 @@ export class CurrencyEngine {
   async signTx (edgeTransaction: EdgeTransaction): Promise<EdgeTransaction> {
     this.logEdgeTransaction(edgeTransaction, 'Signing')
     const { edgeSpendInfo, bcoinTx } = edgeTransaction.otherParams || {}
-    const { privateKeys = [] } = edgeSpendInfo
+    const { privateKeys = [], otherParams = {} } = edgeSpendInfo
+    const { paymentProtocolInfo } = otherParams
     const { signedTx, txid } = await this.keyManager.sign(bcoinTx, privateKeys)
+    if (paymentProtocolInfo) {
+      const publicAddress = this.getFreshAddress().publicAddress
+      const address = toLegacyFormat(publicAddress, this.network)
+      const payment = createPayment(paymentProtocolInfo, address, signedTx, this.currencyCode)
+      Object.assign(edgeTransaction.otherParams, {
+        paymentProtocolInfo: { ...paymentProtocolInfo, payment }
+      })
+    }
     return {
       ...edgeTransaction,
       signedTx,
@@ -665,7 +660,23 @@ export class CurrencyEngine {
     edgeTransaction: EdgeTransaction
   ): Promise<EdgeTransaction> {
     const { otherParams = {}, signedTx, currencyCode } = edgeTransaction
-    const tx = verifyTxAmount(signedTx, otherParams.bcoinTx)
+
+    const { bcoinTx, paymentProtocolInfo } = otherParams
+    if (paymentProtocolInfo && paymentProtocolInfo.payment) {
+      const paymentAck = await sendPayment(
+        this.io.fetch,
+        this.network,
+        paymentProtocolInfo.paymentUrl,
+        paymentProtocolInfo.payment
+      )
+      if (!paymentAck) {
+        throw new Error(
+          `Error when sending to ${paymentProtocolInfo.paymentUrl}`
+        )
+      }
+    }
+
+    const tx = verifyTxAmount(signedTx, bcoinTx)
     if (!tx) throw new Error('Wrong spend amount')
     edgeTransaction.otherParams.bcoinTx = tx
     this.logEdgeTransaction(edgeTransaction, 'Broadcasting')
@@ -677,13 +688,7 @@ export class CurrencyEngine {
       if (broadcaster) promiseArray.push(broadcaster(signedTx))
     }
     promiseArray.push(this.engineState.broadcastTx(signedTx))
-
-    try {
-      await promiseAny(promiseArray)
-    } catch (e) {
-      throw e
-    }
-
+    await promiseAny(promiseArray)
     return edgeTransaction
   }
 
