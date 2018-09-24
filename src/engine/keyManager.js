@@ -76,7 +76,6 @@ export type KeyManagerOptions = {
 
 export class KeyManager {
   masterPath: string
-  currencyName: string
   writeLock: any
   bip: string
   keys: Keys
