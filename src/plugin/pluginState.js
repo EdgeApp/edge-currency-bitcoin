@@ -3,6 +3,7 @@ import type { EdgeIo, DiskletFolder } from 'edge-core-js'
 import type { EngineState } from '../engine/engineState.js'
 import { InfoServer } from '../info/constants'
 import { ServerCache } from './serverCache.js'
+import { saveCache } from '../utils/utils.js'
 
 export type CurrencySettings = {
   customFeeSettings: Array<string>,
@@ -90,6 +91,7 @@ export class PluginState extends ServerCache {
     this.engines = []
     this.folder = io.folder.folder('plugins').folder(pluginName)
     this.pluginName = pluginName
+    this.saveCache = saveCache(this.folder, pluginName)
     this.headerCacheDirty = false
     this.serverCacheJson = {}
   }
@@ -134,38 +136,18 @@ export class PluginState extends ServerCache {
     await this.fetchStratumServers()
   }
 
-  saveHeaderCache (): Promise<void> {
-    if (this.headerCacheDirty) {
-      return this.folder
-        .file('headers.json')
-        .setText(
-          JSON.stringify({
-            height: this.height,
-            headers: this.headerCache
-          })
-        )
-        .then(() => {
-          console.log(`${this.pluginName} - Saved header cache`)
-          this.headerCacheDirty = false
-        })
-        .catch(e => console.log(`${this.pluginName} - ${e.toString()}`))
-    }
-    return Promise.resolve()
+  async saveHeaderCache () {
+    this.headerCacheDirty = await this.saveCache('headers.json', this.headerCacheDirty, 'header', {
+      height: this.height,
+      headers: this.headerCache
+    })
   }
 
   async saveServerCache () {
-    // this.printServerCache()
-    if (this.serverCacheDirty) {
-      try {
-        await this.folder
-          .file('serverCache.json')
-          .setText(JSON.stringify(this.servers_))
-        this.serverCacheDirty = false
-        this.cacheLastSave_ = Date.now()
-        console.log(`${this.pluginName} - Saved server cache`)
-      } catch (e) {
-        console.log(`${this.pluginName} - ${e.toString()}`)
-      }
+    this.serverCacheDirty = await this.saveCache('serverCache.json', this.serverCacheDirty, 'server', this.serverCache)
+    this.serverCacheLastSave = Date.now()
+  }
+
     }
   }
 

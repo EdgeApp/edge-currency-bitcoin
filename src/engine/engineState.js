@@ -1,8 +1,6 @@
 // @flow
 import type { EdgeIo, DiskletFolder } from 'edge-core-js'
-
 import { type PluginState } from '../plugin/pluginState.js'
-// import { scoreServer2 } from '../plugin/pluginState.js'
 import type {
   StratumCallbacks,
   StratumTask
@@ -25,6 +23,7 @@ import type {
   StratumHistoryRow,
   StratumUtxo
 } from '../stratum/stratumMessages.js'
+import { saveCache } from '../utils/utils.js'
 import { parseTransaction } from '../utils/coinUtils.js'
 import { parse } from 'uri-js'
 
@@ -227,7 +226,7 @@ export class EngineState extends EventEmitter {
       await this.encryptedLocalFolder.file('keys.json').setText(json)
       console.log(`${this.walletId} - Saved keys cache`)
     } catch (e) {
-      console.log(`${this.walletId} - ${e.toString()}`)
+      console.log(`${this.walletId} - saveKeysCache - ${e.toString()}`)
     }
   }
 
@@ -442,6 +441,7 @@ export class EngineState extends EventEmitter {
     this.onTxFetched = onTxFetched
     this.onAddressesChecked = onAddressesChecked
 
+    this.saveCache = saveCache(this.localFolder, this.walletId)
     this.addressCacheDirty = false
     this.txCacheDirty = false
     this.reconnectCounter = 0
@@ -918,38 +918,22 @@ export class EngineState extends EventEmitter {
   }
 
   async saveAddressCache () {
-    if (this.addressCacheDirty) {
-      try {
-        const json = JSON.stringify({
-          addresses: this.addressCache,
-          heights: this.txHeightCache
-        })
-        if (!this.addressFile || this.addressFile === '') {
-          throw new Error('Missing addressFile')
-        }
-        await this.localFolder.file(this.addressFile).setText(json)
-        console.log(`${this.walletId} - Saved address cache`)
-        this.addressCacheDirty = false
-      } catch (e) {
-        console.log(`${this.walletId} - saveAddressCache - ${e.toString()}`)
-      }
-    }
+    this.addressCacheDirty = await this.saveCache(
+      this.addressFile,
+      this.addressCacheDirty,
+      'address',
+      {
+        addresses: this.addressCache,
+        heights: this.txHeightCache
+      })
   }
 
   async saveTxCache () {
-    if (this.txCacheDirty) {
-      try {
-        if (!this.txFile || this.txFile === '') {
-          throw new Error('Missing txFile')
-        }
-        const json = JSON.stringify({ txs: this.txCache })
-        await this.localFolder.file(this.txFile).setText(json)
-        console.log(`${this.walletId} - Saved tx cache`)
-        this.txCacheDirty = false
-      } catch (e) {
-        console.log(`${this.walletId} - saveTxCache - ${e.toString()}`)
-      }
-    }
+    this.txCacheDirty = await this.saveCache(
+      this.txFile,
+      this.txCacheDirty,
+      'tx',
+      { txs: this.txCache })
   }
 
   dirtyAddressCache () {
