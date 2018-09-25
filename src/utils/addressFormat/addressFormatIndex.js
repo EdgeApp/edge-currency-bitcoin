@@ -36,7 +36,13 @@ export const switchLegacy = (
     if (mode === 'toNew') return legacyToCashAddress(address, network)
   }
   try {
-    const addressObj = bcoin.primitives.Address.fromBase58(address)
+    let addressObj = {}
+    if (mode === 'toLegacy') {
+      addressObj = bcoin.primitives.Address.fromBase58(address, network)
+    }
+    if (mode === 'toNew') {
+      addressObj = bcoin.primitives.Address.fromBase58(address)
+    }
     const type = addressObj.getType()
     const legacyPrefix = addressPrefix[`${type}Legacy`]
     if (!legacyPrefix) return address
@@ -97,7 +103,7 @@ export const validAddress = (address: string, network: string) => {
     }
   }
   try {
-    const prefix = bcoin.primitives.Address.fromBase58(address).getPrefix()
+    const prefix = bcoin.primitives.Address.fromBase58(address, network).getPrefix()
     const { pubkeyhash, scripthash } = bcoin.networks[network].addressPrefix
     if (prefix !== pubkeyhash && prefix !== scripthash) return false
   } catch (e) {
