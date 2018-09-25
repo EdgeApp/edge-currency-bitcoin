@@ -1,9 +1,10 @@
 // @flow
+import EventEmitter from 'eventemitter3'
 import type { EdgeIo, DiskletFolder } from 'edge-core-js'
 import type { EngineState } from '../engine/engineState.js'
 import { InfoServer } from '../info/constants'
-import { ServerCache } from './serverCache.js'
 import { saveCache } from '../utils/utils.js'
+import { ServerCache, type ServersInfo } from './serverCache.js'
 
 export type CurrencySettings = {
   customFeeSettings: Array<string>,
@@ -21,7 +22,7 @@ export type PluginStateSettings = {
   currencyCode: string,
   pluginName: string
 }
-export class PluginState extends ServerCache {
+export class PluginState extends EventEmitter {
   // On-disk header information:
   height: number
   headerCache: {
@@ -29,14 +30,7 @@ export class PluginState extends ServerCache {
       timestamp: number
     }
   }
-
-  // True if somebody is currently fetching a header:
-  headerStates: {
-    [height: number]: { fetching: boolean }
-  }
-
-  // On-disk server information:
-  serverCache: ServerCache
+  serverCache: ServersInfo
 
   /**
    * Begins notifying the engine of state changes. Used at connection time.
@@ -55,8 +49,7 @@ export class PluginState extends ServerCache {
   dumpData (): any {
     return {
       'pluginState.headerCache': this.headerCache,
-      'pluginState.serverCache': this.serverCache,
-      'pluginState.servers_': this.servers_
+      'pluginState.servers_': this.serverScorer.servers_
     }
   }
 
@@ -70,8 +63,10 @@ export class PluginState extends ServerCache {
   engines: Array<EngineState>
   folder: DiskletFolder
 
+  serverScorer: ServerCache
   headerCacheDirty: boolean
-  serverCacheJson: Object
+  serverCacheDirty: boolean
+  serverCacheLastSave: number
   pluginName: string
 
   constructor ({
@@ -81,6 +76,7 @@ export class PluginState extends ServerCache {
     pluginName
   }: PluginStateSettings) {
     super()
+    this.serverScorer = new ServerCache()
     this.height = 0
     this.headerCache = {}
     this.io = io
@@ -91,9 +87,11 @@ export class PluginState extends ServerCache {
     this.engines = []
     this.folder = io.folder.folder('plugins').folder(pluginName)
     this.pluginName = pluginName
+
     this.saveCache = saveCache(this.folder, pluginName)
+    this.serverCacheDirty = false
     this.headerCacheDirty = false
-    this.serverCacheJson = {}
+    this.serverCache = {}
   }
 
   async load () {
@@ -115,7 +113,7 @@ export class PluginState extends ServerCache {
       const serverCacheJson = JSON.parse(serverCacheText)
       // TODO: Validate JSON
 
-      this.serverCacheJson = serverCacheJson
+      this.serverCache = serverCacheJson
     } catch (e) {
       console.log(e)
     }
@@ -127,7 +125,7 @@ export class PluginState extends ServerCache {
   }
 
   async clearCache () {
-    this.clearServerCache()
+    this.serverScorer.clearServerCache()
     this.headerCache = {}
     this.headerCacheDirty = true
     this.serverCacheDirty = true
@@ -148,7 +146,28 @@ export class PluginState extends ServerCache {
     this.serverCacheLastSave = Date.now()
   }
 
+  serverScoreUp (
+    serverUrl: string,
+    responseTimeMilliseconds: number,
+    changeScore: number = 1
+  ) {
+    this.serverCache[serverUrl] = this.serverScorer.serverScoreUp(serverUrl, responseTimeMilliseconds, changeScore)
+    this.dirtyServerCache(serverUrl)
+  }
+
+  serverScoreDown (serverUrl: string, changeScore: number = 10) {
+    const serverInfo = this.serverScorer.serverScoreDown(serverUrl, changeScore)
+    if (serverInfo) {
+      this.serverCache[serverUrl] = serverInfo
+      this.dirtyServerCache(serverUrl)
     }
+  }
+
+  getServers (
+    numServersWanted: number,
+    ignorePatterns?: Array<string> = []
+  ) {
+    return this.serverScorer.getServers(numServersWanted, ignorePatterns)
   }
 
   dirtyServerCache (serverUrl: string) {
@@ -196,24 +215,20 @@ export class PluginState extends ServerCache {
     if (!Array.isArray(serverList)) {
       serverList = this.defaultServers
     }
-    this.serverCacheLoad(this.serverCacheJson, serverList)
-    await this.saveServerCache()
-
-    // Tell the engines about the new servers:
-    for (const engine of this.engines) {
-      engine.refillServers()
+    const newServers = this.serverScorer.serverScoreLoad(this.serverCache, serverList)
+    if (newServers !== this.serverCache) {
+      this.serverCacheDirty = true
+      this.serverCache = newServers
+      await this.saveServerCache()
     }
+    this.emit('fetchedStratumServers')
   }
 
   updateHeight (height: number) {
     if (this.height < height) {
       this.height = height
       this.dirtyHeaderCache()
-
-      // Tell the engines about our new height:
-      for (const engine of this.engines) {
-        engine.onHeightUpdated(height)
-      }
+      this.emit('newHeight', height)
     }
   }
 }
