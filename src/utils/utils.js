@@ -5,6 +5,7 @@
 
 import { validate } from 'jsonschema'
 import crypto from 'crypto'
+import { utils } from 'bcoin'
 
 export function validateObject (object: any, schema: any) {
   let result = null
@@ -57,4 +58,29 @@ export function promiseAny (promises: Array<Promise<any>>): Promise<any> {
       promise.then(value => resolve(value), error => --pending || reject(error))
     }
   })
+}
+
+export function saveCache (folder: any, id: string) {
+  const saveCacheLock = new utils.Lock()
+  return async (fileName: string, cacheDirty: boolean, cacheName: string, data: Object) => {
+    let result = cacheDirty
+    const unlock = await saveCacheLock.lock()
+    try {
+      if (cacheDirty) {
+        if (!fileName || fileName === '') {
+          throw new Error(`Missing ${cacheName}File`)
+        }
+        const jsonString = JSON.stringify(data)
+        await folder.file(fileName).setText(jsonString)
+        console.log(`${id} - Saved ${cacheName} cache`)
+        result = false
+      }
+    } catch (e) {
+      const name = cacheName.charAt(0).toUpperCase() + cacheName.slice(1)
+      console.log(`${id} - save${name}Cache - ${e.toString()}`)
+    } finally {
+      unlock()
+    }
+    return result
+  }
 }
