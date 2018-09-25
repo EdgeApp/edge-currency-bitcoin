@@ -67,7 +67,7 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrum://electrum-alts-weuro-az.edge.app:50001',
       'electrum://electrum-alts-ejapan-az.edge.app:50001'
     ],
-    disableFetchingServers: true
+    disableFetchingServers: false
   },
   metaTokens: [],
 

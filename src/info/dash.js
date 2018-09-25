@@ -69,7 +69,7 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrums://electrum.leblancnet.us:50016',
       'electrums://electrum.dash.siampm.com:50002'
     ],
-    disableFetchingServers: true
+    disableFetchingServers: false
   },
   metaTokens: [],
 

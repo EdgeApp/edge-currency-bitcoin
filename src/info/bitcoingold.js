@@ -79,7 +79,7 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrum://electrumx-us.btcgpu.org:50001',
       'electrums://electrumx-us.btcgpu.org:50002'
     ],
-    disableFetchingServers: true
+    disableFetchingServers: false
   },
   metaTokens: [],
 

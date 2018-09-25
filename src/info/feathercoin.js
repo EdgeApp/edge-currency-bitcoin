@@ -72,7 +72,7 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrum://electrumxftc.trezarcoin.com:50001',
       'electrum://electrum.feathercoin.network:50001'
     ],
-    disableFetchingServers: true
+    disableFetchingServers: false
   },
   metaTokens: [],
 

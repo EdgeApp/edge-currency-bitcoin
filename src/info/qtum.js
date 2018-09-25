@@ -66,7 +66,7 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrum://s8.qtum.info:50001',
       'electrum://s9.qtum.info:50001'
     ],
-    disableFetchingServers: true
+    disableFetchingServers: false
   },
   metaTokens: [],
 

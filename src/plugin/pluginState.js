@@ -63,6 +63,7 @@ export class PluginState extends ServerCache {
   // Private stuff
   // ------------------------------------------------------------------------
   io: EdgeIo
+  disableFetchingServers: boolean
   defaultServers: Array<string>
   infoServerUris: string
 
@@ -84,6 +85,7 @@ export class PluginState extends ServerCache {
     this.headerCache = {}
     this.io = io
     this.defaultServers = defaultSettings.electrumServers
+    this.disableFetchingServers = !!defaultSettings.disableFetchingServers
     // Rename the bitcoin currencyCode to get the new version of the server list
     const fixedCode = currencyCode === 'BTC' ? 'BC1' : currencyCode
     this.infoServerUris = `${InfoServer}/electrumServers/${fixedCode}`
@@ -197,19 +199,21 @@ export class PluginState extends ServerCache {
     const { io } = this
     console.log(`${this.pluginName} - GET ${this.infoServerUris}`)
     let serverList = this.defaultServers
-    try {
-      const result = await io.fetch(this.infoServerUris)
-      if (!result.ok) {
-        console.log(
-          `${this.pluginName} - Fetching ${this.infoServerUris} failed with ${
-            result.status
-          }`
-        )
-      } else {
-        serverList = await result.json()
+    if (!this.disableFetchingServers) {
+      try {
+        const result = await io.fetch(this.infoServerUris)
+        if (!result.ok) {
+          console.log(
+            `${this.pluginName} - Fetching ${this.infoServerUris} failed with ${
+              result.status
+            }`
+          )
+        } else {
+          serverList = await result.json()
+        }
+      } catch (e) {
+        console.log(e)
       }
-    } catch (e) {
-      console.log(e)
     }
     if (!Array.isArray(serverList)) {
       serverList = this.defaultServers
@@ -232,6 +236,32 @@ export class PluginState extends ServerCache {
       for (const engine of this.engines) {
         engine.onHeightUpdated(height)
       }
+    }
+  }
+
+  async updateServers (settings: Object) {
+    const { electrumServers, disableFetchingServers } = settings || {}
+    if (typeof disableFetchingServers === 'boolean') {
+      this.disableFetchingServers = disableFetchingServers
+    }
+    if (Array.isArray(electrumServers)) {
+      this.defaultServers = electrumServers
+    }
+    const engines = []
+    const disconnects = []
+    for (const engine of this.engines) {
+      engines.push(engine)
+      engine.serverList = []
+      disconnects.push(engine.disconnect())
+    }
+    await Promise.all(disconnects)
+    this.clearServerCache()
+    this.serverCacheJson = {}
+    this.serverCacheDirty = true
+    await this.saveServerCache()
+    await this.fetchStratumServers()
+    for (const engine of engines) {
+      engine.connect()
     }
   }
 }

@@ -95,7 +95,7 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrums://electrumx-bch.adminsehow.com:50012',
       'electrum://electrumx-bch.adminsehow.com:50011'
     ],
-    disableFetchingServers: true
+    disableFetchingServers: false
   },
   metaTokens: [],
 

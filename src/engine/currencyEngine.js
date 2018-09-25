@@ -379,10 +379,6 @@ export class CurrencyEngine {
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
-  updateSettings (settings: any): void {
-    // TODO: Implement this
-  }
-
   async startEngine (): Promise<void> {
     const cachedTXs = await this.getTransactions()
     this.callbacks.onTransactionsChanged(cachedTXs)
