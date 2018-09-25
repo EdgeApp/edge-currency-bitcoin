@@ -73,7 +73,7 @@ describe(`ServerCache`, function () {
 
     const cache = new ServerCache()
 
-    cache.serverCacheLoad(diskServerCache, newServers)
+    cache.serverScoreLoad(diskServerCache, newServers)
     const result = cache.getServers(8)
 
     const control = [
@@ -153,7 +153,7 @@ describe(`ServerCache`, function () {
 
     const cache = new ServerCache()
 
-    cache.serverCacheLoad(diskServerCache, newServers)
+    cache.serverScoreLoad(diskServerCache, newServers)
     cache.serverScoreUp('server8', 0, 405)
     const control = [
       'server8',
@@ -224,7 +224,7 @@ describe(`ServerCache`, function () {
 
     const cache = new ServerCache()
 
-    cache.serverCacheLoad(diskServerCache, newServers)
+    cache.serverScoreLoad(diskServerCache, newServers)
     const result = cache.getServers(8)
 
     const control = [

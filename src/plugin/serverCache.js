@@ -10,38 +10,37 @@ export type ServerInfo = {
   numResponseTimes: number
 }
 
+export type ServersInfo = { [serverUrl: string]: ServerInfo }
+
 const RESPONSE_TIME_UNINITIALIZED = 999999999
 const MAX_SCORE = 500
 const MIN_SCORE = -100
 
 export class ServerCache {
-  servers_: { [serverUrl: string]: ServerInfo }
-  serverCacheDirty: boolean
-  cacheLastSave_: number
+  servers_: ServersInfo
   lastScoreUpTime_: number
 
   constructor () {
     this.clearServerCache()
   }
 
-  dirtyServerCache (url: string) {
-    this.serverCacheDirty = true
-  }
-
   /**
-   * Loads the server cache with new and old servers
+   * Merges an old server list with a new one
    * @param oldServers: Map of ServerInfo objects by serverUrl. This should come from disk
    * @param newServers: Array<string> of new servers downloaded from the info server
    */
-  serverCacheLoad (
-    oldServers: { [serverUrl: string]: ServerInfo },
-    newServers: Array<string> = []
-  ) {
+  serverScoreLoad (
+    oldServers: ServersInfo,
+    newServers: Array<string> = [],
+    cacheLastSave: number = 0
+  ): ServersInfo {
+    let changed = false
     //
     // Add any new servers coming out of the info server
     //
     for (const newServer of newServers) {
       if (oldServers[newServer] === undefined) {
+        changed = true
         const serverScoreObj: ServerInfo = {
           serverUrl: newServer,
           serverScore: 0,
@@ -73,20 +72,19 @@ export class ServerCache {
         }
       }
 
-      if (this.cacheLastSave_ === 0) {
+      if (cacheLastSave === 0) {
         serverScore = Math.min(serverScore, MAX_SCORE - 100)
       }
-
+      if (oldServer.serverScore !== serverScore) changed = true
       oldServer.serverScore = serverScore
       this.servers_[serverUrl] = oldServer
-      this.dirtyServerCache(serverUrl)
     }
+    if (changed) return this.servers_
+    return oldServers
   }
 
   clearServerCache () {
     this.servers_ = {}
-    this.serverCacheDirty = false
-    this.cacheLastSave_ = Date.now()
     this.lastScoreUpTime_ = Date.now()
   }
 
@@ -115,7 +113,7 @@ export class ServerCache {
     serverUrl: string,
     responseTimeMilliseconds: number,
     changeScore: number = 1
-  ) {
+  ): ServerInfo {
     const serverInfo: ServerInfo = this.servers_[serverUrl]
 
     serverInfo.serverScore += changeScore
@@ -133,17 +131,17 @@ export class ServerCache {
         serverInfo.serverScore
       } ${responseTimeMilliseconds}`
     )
-    this.dirtyServerCache(serverUrl)
+    return serverInfo
   }
 
-  serverScoreDown (serverUrl: string, changeScore: number = 10) {
+  serverScoreDown (serverUrl: string, changeScore: number = 10): ServerInfo | null {
+    const serverInfo: ServerInfo = this.servers_[serverUrl]
     const currentTime = Date.now()
     if (currentTime - this.lastScoreUpTime_ > 60000) {
       // It has been over 1 minute since we got an up-vote for any server.
       // Assume the network is down and don't penalize anyone for now
-      return
+      return null
     }
-    const serverInfo: ServerInfo = this.servers_[serverUrl]
     serverInfo.serverScore -= changeScore
     if (serverInfo.serverScore < MIN_SCORE) {
       serverInfo.serverScore = MIN_SCORE
@@ -156,7 +154,7 @@ export class ServerCache {
     console.log(
       `Stratum ${serverUrl} score went DOWN ${serverInfo.serverScore}`
     )
-    this.dirtyServerCache(serverUrl)
+    return serverInfo
   }
 
   setResponseTime (serverUrl: string, responseTimeMilliseconds: number) {
@@ -176,7 +174,6 @@ export class ServerCache {
       }
     }
     serverInfo.responseTime = newTime
-    this.dirtyServerCache(serverUrl)
   }
 
   getServers (
