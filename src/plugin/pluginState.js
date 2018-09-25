@@ -170,6 +170,7 @@ export class PluginState extends EventEmitter {
     return this.serverScorer.getServers(numServersWanted, ignorePatterns)
   }
 
+  // Remove the call to this.engines
   dirtyServerCache (serverUrl: string) {
     this.serverCacheDirty = true
     for (const engine of this.engines) {
@@ -184,6 +185,7 @@ export class PluginState extends EventEmitter {
     }
   }
 
+  // Remove the call to this.engines
   dirtyHeaderCache () {
     this.headerCacheDirty = true
     for (const engine of this.engines) {
