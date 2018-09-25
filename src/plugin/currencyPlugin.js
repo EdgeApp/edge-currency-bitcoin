@@ -137,6 +137,10 @@ export class CurrencyPlugin {
       .filter(network => getFromatsForNetwork(network).includes(format))
       .map(network => `wallet:${network}`)
   }
+
+  async changeSettings (settings: Object): Promise<mixed> {
+    return this.state.updateServers(settings)
+  }
 }
 
 export const makeCurrencyPluginFactory = ({
