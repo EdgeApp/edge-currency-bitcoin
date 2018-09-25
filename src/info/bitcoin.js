@@ -88,7 +88,7 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrums://electrumx.westeurope.cloudapp.azure.com:50002',
       'electrum://electrumx.westeurope.cloudapp.azure.com:50001'
     ],
-    disableFetchingServers: true
+    disableFetchingServers: false
   },
   metaTokens: [],
 

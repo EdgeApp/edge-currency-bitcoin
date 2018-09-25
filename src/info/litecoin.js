@@ -99,7 +99,7 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrums://node.ispol.sk:50004',
       'electrums://electrumx.nmdps.net:9434'
     ],
-    disableFetchingServers: true
+    disableFetchingServers: false
   },
   metaTokens: [],
 

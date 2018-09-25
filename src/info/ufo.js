@@ -69,7 +69,7 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrum://electrumx4.ufobject.com:50001',
       'electrum://electrumx5.ufobject.com:50001'
     ],
-    disableFetchingServers: true
+    disableFetchingServers: false
   },
   metaTokens: [],
 
