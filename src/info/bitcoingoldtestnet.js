@@ -52,7 +52,7 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'TBTG',
-  currencyName: 'BitcoinGoldTestnet',
+  currencyName: 'Bitcoin Gold Testnet',
   pluginName: 'bitcoingoldtestnet',
   denominations: [
     { name: 'TBTG', multiplier: '100000000', symbol: '₿' },

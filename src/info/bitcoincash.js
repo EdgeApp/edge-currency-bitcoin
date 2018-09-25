@@ -49,7 +49,7 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BCH',
-  currencyName: 'BitcoinCash',
+  currencyName: 'Bitcoin Cash',
   pluginName: 'bitcoincash',
   denominations: [
     { name: 'BCH', multiplier: '100000000', symbol: '₿' },
