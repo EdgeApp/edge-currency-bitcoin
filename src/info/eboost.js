@@ -58,12 +58,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:eboost-bip84',
-    'wallet:eboost-bip49',
-    'wallet:eboost-bip44',
-    'wallet:eboost'
-  ],
+  walletTypes: ['wallet:eboost'],
 
   // Configuration options:
   defaultSettings: {
