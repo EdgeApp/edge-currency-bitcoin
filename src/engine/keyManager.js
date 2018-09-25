@@ -1,4 +1,5 @@
 // @flow
+import EventEmitter from 'eventemitter3'
 import type { AddressInfo, AddressInfos } from './engineState.js'
 import type {
   Utxo,
@@ -11,7 +12,6 @@ import { parsePath, createTX, getLock } from '../utils/coinUtils.js'
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 
 const GAP_LIMIT = 10
-const nop = () => {}
 
 export type Address = {
   displayAddress: string,
@@ -54,13 +54,6 @@ export type createTxOptions = {
   txOptions: TxOptions
 }
 
-export interface KeyManagerCallbacks {
-  // When deriving new address send it to caching and subscribing
-  +onNewAddress?: (scriptHash: string, address: string, path: string) => void;
-  // When deriving new key send it to caching
-  +onNewKey?: (keys: any) => void;
-}
-
 export type KeyManagerOptions = {
   account?: number,
   bip?: string,
@@ -69,12 +62,11 @@ export type KeyManagerOptions = {
   seed?: string,
   gapLimit: number,
   network: string,
-  callbacks: KeyManagerCallbacks,
   addressInfos?: AddressInfos,
   txInfos?: { [txid: string]: any }
 }
 
-export class KeyManager {
+export class KeyManager extends EventEmitter {
   masterPath: string
   currencyName: string
   writeLock: any
@@ -84,8 +76,6 @@ export class KeyManager {
   gapLimit: number
   network: string
   fSelector: any
-  onNewAddress: (scriptHash: string, address: string, path: string) => void
-  onNewKey: (keys: any) => void
   addressInfos: AddressInfos
   txInfos: { [txid: string]: any }
 
@@ -101,6 +91,7 @@ export class KeyManager {
     addressInfos = {},
     txInfos = {}
   }: KeyManagerOptions) {
+    super()
     // Check for any way to init the wallet with either a seed or master keys
     if (
       seed === '' &&
@@ -117,10 +108,6 @@ export class KeyManager {
     this.writeLock = getLock()
     // Create the master derivation path
     this.masterPath = this.fSelector.createMasterPath(account, coinType)
-    // Set the callbacks with nops as default
-    const { onNewAddress = nop, onNewKey = nop } = callbacks
-    this.onNewAddress = onNewAddress
-    this.onNewKey = onNewKey
     // Set the addresses and txs state objects
     this.addressInfos = addressInfos
     this.txInfos = txInfos
@@ -281,7 +268,7 @@ export class KeyManager {
           keys[type].xpub = this.keys[type].pubKey.toBase58(this.network)
         }
       }
-      this.onNewKey(keys)
+      this.emit('newKey', keys)
     } catch (e) {
       console.log(e)
     }
@@ -356,6 +343,6 @@ export class KeyManager {
     const displayAddress = toNewFormat(address, this.network)
     const keyPath = `${this.masterPath}/${branch}/${index}`
     keyRing.children.push({ displayAddress, scriptHash, index, branch })
-    this.onNewAddress(scriptHash, displayAddress, keyPath)
+    this.emit('newAddress', scriptHash, displayAddress, keyPath)
   }
 }

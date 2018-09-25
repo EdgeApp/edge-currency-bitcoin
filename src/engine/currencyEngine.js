@@ -18,7 +18,6 @@ import { EngineState } from './engineState.js'
 import { PluginState } from '../plugin/pluginState.js'
 import { KeyManager } from './keyManager'
 import type { EngineStateCallbacks } from './engineState.js'
-import type { KeyManagerCallbacks } from './keyManager'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import type { TxOptions } from '../utils/coinUtils.js'
 import { validateObject, promiseAny } from '../utils/utils.js'
@@ -149,13 +148,6 @@ export class CurrencyEngine {
 
     await this.engineState.load()
 
-    const callbacks: KeyManagerCallbacks = {
-      onNewAddress: (scriptHash: string, address: string, path: string) => {
-        return this.engineState.addAddress(scriptHash, address, path)
-      },
-      onNewKey: (keys: any) => this.engineState.saveKeys(keys)
-    }
-
     const cachedRawKeys = await this.engineState.loadKeys()
     const { master = {}, ...otherKeys } = cachedRawKeys || {}
     const keys = this.walletInfo.keys || {}
@@ -175,12 +167,14 @@ export class CurrencyEngine {
       bip: format,
       coinType: coinType,
       rawKeys: rawKeys,
-      callbacks: callbacks,
       gapLimit: this.engineInfo.gapLimit,
       network: this.network,
       addressInfos: this.engineState.addressInfos,
       txInfos: this.engineState.parsedTxs
     })
+
+    this.keyManager.on('newAddress', this.engineState.addAddress, this.engineState)
+    this.keyManager.on('newKey', this.engineState.saveKeys, this.engineState)
 
     this.engineState.onAddressUsed = () => {
       this.keyManager.setLookAhead()
