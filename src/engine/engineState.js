@@ -311,11 +311,15 @@ export class EngineState extends EventEmitter {
     this.txCacheInitSize = Object.keys(this.txCache).length
     this.onAddressesChecked(this.progressRatio)
     this.engineStarted = true
+    this.pluginState.on('newHeight', this.onHeightUpdated, this)
+    this.pluginState.on('fetchedStratumServers', this.refillServers, this)
     this.pluginState.addEngine(this)
     this.refillServers()
   }
 
   async disconnect () {
+    this.pluginState.removeListener('newHeight', this.onHeightUpdated, this)
+    this.pluginState.removeListener('fetchedStratumServers', this.refillServers, this)
     this.pluginState.removeEngine(this)
     this.engineStarted = false
     this.progressRatio = 0
