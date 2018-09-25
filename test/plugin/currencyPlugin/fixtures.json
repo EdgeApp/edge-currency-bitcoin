@@ -64,14 +64,6 @@
         "nativeAmount": "1234567890000",
         "currencyCode": "BTC"
       }],
-      "seed": ["elevator rookie hair marine express wasp town resemble snap blush wide iron tackle adult crash slush senior term vibrant language body cruel prevent auto", {
-        "metadata": {},
-        "seed": "elevator rookie hair marine express wasp town resemble snap blush wide iron tackle adult crash slush senior term vibrant language body cruel prevent auto"  
-      }],
-      "master private key": ["xprv9twnbyJhBAAVPsntF54SCKCDfJgbBemavSquVwYdFkacHT2U1MHcc4AC9Gxehtv7oFfSUor2b9xomvNCPPgjfXD4FTWcMPUSeC8HEfskehz", {
-        "metadata": {},
-        "masterPriv": "xprv9twnbyJhBAAVPsntF54SCKCDfJgbBemavSquVwYdFkacHT2U1MHcc4AC9Gxehtv7oFfSUor2b9xomvNCPPgjfXD4FTWcMPUSeC8HEfskehz"
-      }],
       "wif 1 - Compressed": ["L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2", {
         "metadata": {},
         "privateKeys": [ "L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2"]
@@ -254,14 +246,6 @@
         "nativeAmount": "1234567890000",
         "currencyCode": "LTC",
         "legacyAddress": "3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN"
-      }],
-      "seed": ["elevator rookie hair marine express wasp town resemble snap blush wide iron tackle adult crash slush senior term vibrant language body cruel prevent auto", {
-        "metadata": {},
-        "seed": "elevator rookie hair marine express wasp town resemble snap blush wide iron tackle adult crash slush senior term vibrant language body cruel prevent auto"  
-      }],
-      "master private key": ["xprv9twnbyJhBAAVPsntF54SCKCDfJgbBemavSquVwYdFkacHT2U1MHcc4AC9Gxehtv7oFfSUor2b9xomvNCPPgjfXD4FTWcMPUSeC8HEfskehz", {
-        "metadata": {},
-        "masterPriv": "xprv9twnbyJhBAAVPsntF54SCKCDfJgbBemavSquVwYdFkacHT2U1MHcc4AC9Gxehtv7oFfSUor2b9xomvNCPPgjfXD4FTWcMPUSeC8HEfskehz"
       }],
       "wif 1 - Compressed": ["T5t9N5NirTH5Bo65CEm1Z5W7jyu9ezbuMvPzuD2DoPnPGJkmpq8B", {
         "metadata": {},
