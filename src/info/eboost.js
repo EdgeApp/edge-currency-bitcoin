@@ -81,8 +81,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://www.blockexperts.com/ebst/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/eboost-logo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/eboost-logo-64.png`
+  symbolImage: `${imageServerUrl}/eboost-logo-color-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/eboost-logo-grey-64.png`
 }
 
 export const eboost = { bcoinInfo, engineInfo, currencyInfo }
