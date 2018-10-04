@@ -103,7 +103,10 @@ export const validAddress = (address: string, network: string) => {
     }
   }
   try {
-    const prefix = bcoin.primitives.Address.fromBase58(address, network).getPrefix()
+    const prefix = bcoin.primitives.Address.fromBase58(
+      address,
+      network
+    ).getPrefix()
     const { pubkeyhash, scripthash } = bcoin.networks[network].addressPrefix
     if (prefix !== pubkeyhash && prefix !== scripthash) return false
   } catch (e) {

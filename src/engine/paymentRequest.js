@@ -3,9 +3,16 @@
 import { primitives } from 'bcoin'
 import parse from 'url-parse'
 import type { EdgePaymentProtocolInfo } from 'edge-core-js'
-import { toNewFormat, toLegacyFormat } from '../utils/addressFormat/addressFormatIndex.js'
+import {
+  toNewFormat,
+  toLegacyFormat
+} from '../utils/addressFormat/addressFormatIndex.js'
 
-const getSpendTargets = (outputs: Array<any>, network: string, currencyCode: string) => {
+const getSpendTargets = (
+  outputs: Array<any>,
+  network: string,
+  currencyCode: string
+) => {
   let nativeAmount = 0
   const spendTargets = []
   for (const output of outputs) {
@@ -32,12 +39,26 @@ const getBitPayPayment = async (
     throw new Error(error)
   }
   const paymentRequest = await result.json()
-  const { outputs, memo, paymentUrl, paymentId, requiredFeeRate, currency } = paymentRequest
+  const {
+    outputs,
+    memo,
+    paymentUrl,
+    paymentId,
+    requiredFeeRate,
+    currency
+  } = paymentRequest
   const parsedOutputs = outputs.map(({ amount, address }) => {
     const legacyAddress = toLegacyFormat(address, network)
-    return primitives.Output.fromOptions({ value: amount, address: legacyAddress })
+    return primitives.Output.fromOptions({
+      value: amount,
+      address: legacyAddress
+    })
   })
-  const { nativeAmount, spendTargets } = getSpendTargets(parsedOutputs, network, currency)
+  const { nativeAmount, spendTargets } = getSpendTargets(
+    parsedOutputs,
+    network,
+    currency
+  )
   const domain = parse(paymentUrl, {}).hostname
   // $FlowFixMe
   const edgePaymentProtocolInfo: EdgePaymentProtocolInfo = {
@@ -79,7 +100,11 @@ export async function sendPayment (
   const headers = { 'Content-Type': 'application/payment' }
   if (global.androidFetch) {
     try {
-      const result = await global.androidFetch(paymentUrl, { method: 'POST', headers, body: JSON.stringify(payment) })
+      const result = await global.androidFetch(paymentUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payment)
+      })
       const paymentACK = JSON.parse(result)
       return paymentACK
     } catch (e) {
@@ -87,7 +112,11 @@ export async function sendPayment (
       throw e
     }
   }
-  const result = await fetch(paymentUrl, { method: 'POST', headers, body: JSON.stringify(payment) })
+  const result = await fetch(paymentUrl, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payment)
+  })
   if (parseInt(result.status) !== 200) {
     const error = await result.text()
     throw new Error(error)
