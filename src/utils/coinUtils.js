@@ -120,6 +120,17 @@ export const createTX = async ({
     setRBF = false
   }
 }: CreateTxOptions) => {
+  // Convert an address to the correct format that bcoin supports
+  const toBcoinFormat = (address: string, network: string): string => {
+    const { addressPrefix = {} } = networks[network] || {}
+    return primitives.Address.fromString(
+      addressPrefix.cashAddress
+        ? toLegacyFormat(address, network)
+        : toNewFormat(address, network),
+      network
+    )
+  }
+
   // Create the Mutable Transaction
   const mtx = new primitives.MTX()
 
@@ -149,19 +160,10 @@ export const createTX = async ({
     throw new Error('No outputs available.')
   }
 
-  // Convert an address to the correct format that bcoin supports
-  const toBcoinFormat = (address: string, network: string): string => {
-    const { addressPrefix = {} } = networks[network] || {}
-    return addressPrefix.cashAddress
-      ? toLegacyFormat(address, network)
-      : toNewFormat(address, network)
-  }
-
   // Add the outputs
   outputs.forEach(({ address, value }) => {
     const bcoinAddress = toBcoinFormat(address, network)
-    const addressObj = primitives.Address.fromString(bcoinAddress, network)
-    const addressScript = script.fromAddress(addressObj)
+    const addressScript = script.fromAddress(bcoinAddress)
     mtx.addOutput(addressScript, value)
   })
 
