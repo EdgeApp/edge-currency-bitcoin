@@ -1,5 +1,20 @@
 # edge-currency-bitcoin
 
+## 3.4.1
+
+* Fix eboost logo file names
+* Remove BIP70 support and make all payment protocol request use Bitpay JSON protocol
+* Fix payment protocol requests for React Native Android to use custom native module fetch to fix issue
+  with RN's fetch not being compatible with Bitpay
+
+## 3.4.0
+
+* Use pluginName as unique currency ID and leave currencyName as human readable
+* Change currencyName for BitcoinCash -> Bitcoin Cash
+* Remove support for parsing xpriv/seeds (untested)
+* Add eboost support
+* Implement changeSettings endpoint
+
 ## 3.3.2
 
 * Remove non-standard elvis operator
