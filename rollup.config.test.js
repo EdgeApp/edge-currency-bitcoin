@@ -8,9 +8,7 @@ import config from './rollup.config.js'
 
 const babelOptions = {
   presets: ['@babel/preset-flow'],
-  plugins: [
-    '@babel/plugin-proposal-object-rest-spread'
-  ]
+  plugins: ['@babel/plugin-proposal-object-rest-spread']
 }
 
 export default {

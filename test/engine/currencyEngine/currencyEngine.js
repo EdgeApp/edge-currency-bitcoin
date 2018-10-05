@@ -444,12 +444,12 @@ for (const fixture of fixtures) {
     })
 
     it('changeSettings', function (done) {
-      plugin.changeSettings({
-        electrumServers: [
-          'electrum://testnet.qtornado.com:51001'
-        ],
-        disableFetchingServers: true
-      }).then(done)
+      plugin
+        .changeSettings({
+          electrumServers: ['electrum://testnet.qtornado.com:51001'],
+          disableFetchingServers: true
+        })
+        .then(done)
     })
 
     it('Stop the engine', function (done) {

@@ -18,16 +18,28 @@ import { zcoin } from './info/zcoin'
 import { eboost } from './info/eboost'
 
 export const bitcoinCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoin)
-export const bitcoinTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoinTestnet)
-export const bitcoincashCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoincash)
-export const bitcoincashTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoincashTestnet)
-export const bitcoingoldCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoingold)
-export const bitcoingoldTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoingoldTestnet)
+export const bitcoinTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(
+  bitcoinTestnet
+)
+export const bitcoincashCurrencyPluginFactory = makeCurrencyPluginFactory(
+  bitcoincash
+)
+export const bitcoincashTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(
+  bitcoincashTestnet
+)
+export const bitcoingoldCurrencyPluginFactory = makeCurrencyPluginFactory(
+  bitcoingold
+)
+export const bitcoingoldTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(
+  bitcoingoldTestnet
+)
 export const litecoinCurrencyPluginFactory = makeCurrencyPluginFactory(litecoin)
 export const dashCurrencyPluginFactory = makeCurrencyPluginFactory(dash)
 export const digibyteCurrencyPluginFactory = makeCurrencyPluginFactory(digibyte)
 export const dogecoinCurrencyPluginFactory = makeCurrencyPluginFactory(dogecoin)
-export const feathercoinCurrencyPluginFactory = makeCurrencyPluginFactory(feathercoin)
+export const feathercoinCurrencyPluginFactory = makeCurrencyPluginFactory(
+  feathercoin
+)
 export const qtumCurrencyPluginFactory = makeCurrencyPluginFactory(qtum)
 export const ufoCurrencyPluginFactory = makeCurrencyPluginFactory(ufo)
 export const vertcoinCurrencyPluginFactory = makeCurrencyPluginFactory(vertcoin)

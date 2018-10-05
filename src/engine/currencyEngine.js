@@ -342,7 +342,8 @@ export class CurrencyEngine {
       otherParams.paymentProtocolInfo.merchant &&
       otherParams.paymentProtocolInfo.merchant.requiredFeeRate
     ) {
-      const requiredFeeRate = otherParams.paymentProtocolInfo.merchant.requiredFeeRate
+      const requiredFeeRate =
+        otherParams.paymentProtocolInfo.merchant.requiredFeeRate
       return parseInt(requiredFeeRate) * BYTES_TO_KB * 1.5
     }
     const customFeeSetting = this.engineInfo.customFeeSettings[0]
@@ -639,7 +640,12 @@ export class CurrencyEngine {
     if (paymentProtocolInfo) {
       const publicAddress = this.getFreshAddress().publicAddress
       const address = toLegacyFormat(publicAddress, this.network)
-      const payment = createPayment(paymentProtocolInfo, address, signedTx, this.currencyCode)
+      const payment = createPayment(
+        paymentProtocolInfo,
+        address,
+        signedTx,
+        this.currencyCode
+      )
       Object.assign(edgeTransaction.otherParams, {
         paymentProtocolInfo: { ...paymentProtocolInfo, payment }
       })
