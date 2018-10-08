@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+## 3.5.0
+
+* Update the Path from which to get the Digibyte electrum servers.
+  Previous versions won't be able to get the server list so they won't be able to sync.
+
 ## 3.4.1
 
 * Fix eboost logo file names
