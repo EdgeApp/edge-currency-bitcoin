@@ -1,7 +1,7 @@
 // @flow
 import type { EdgeIo, DiskletFolder } from 'edge-core-js'
 import type { EngineState } from '../engine/engineState.js'
-import { InfoServer } from '../info/constants'
+import { InfoServer, FixCurrencyCode } from '../info/constants'
 import { ServerCache } from './serverCache.js'
 
 export type CurrencySettings = {
@@ -87,7 +87,7 @@ export class PluginState extends ServerCache {
     this.defaultServers = defaultSettings.electrumServers
     this.disableFetchingServers = !!defaultSettings.disableFetchingServers
     // Rename the bitcoin currencyCode to get the new version of the server list
-    const fixedCode = currencyCode === 'BTC' ? 'BC1' : currencyCode
+    const fixedCode = FixCurrencyCode(currencyCode)
     this.infoServerUris = `${InfoServer}/electrumServers/${fixedCode}`
     this.engines = []
     this.folder = io.folder.folder('plugins').folder(pluginName)
