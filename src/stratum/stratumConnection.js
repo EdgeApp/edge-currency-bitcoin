@@ -3,6 +3,8 @@ import { parse } from 'uri-js'
 
 import { fetchVersion } from './stratumMessages.js'
 import type { StratumBlockHeader } from './stratumMessages.js'
+import { TcpSocketConnection } from './tcpSocketConnection.js'
+import { WebSocketConnection } from './webSocketConnection.js'
 
 export type OnFailHandler = (error: Error) => void
 
@@ -43,6 +45,7 @@ export interface StratumOptions {
  * Manages the underlying TCP socket, as well as message framing,
  * queue depth, error handling, and so forth.
  */
+
 export class StratumConnection {
   uri: string
   connected: boolean
@@ -83,21 +86,16 @@ export class StratumConnection {
     }
 
     // Connect to the server:
-    const socket =
-      parsed.scheme === 'electrums'
-        ? new this.io.TLSSocket()
-        : new this.io.Socket()
-    socket.setEncoding('utf8')
-    socket.on('close', (hadError: boolean) => this.onSocketClose(hadError))
-    socket.on('error', (e: Error) => {
-      this.error = e
-    })
-    socket.on('connect', () => this.onSocketConnect(socket))
-    socket.on('data', (data: string) => this.onSocketData(data))
-    socket.connect({
-      host: parsed.host,
-      port: Number(parsed.port)
-    })
+    let socket: TcpSocketConnection | WebSocketConnection
+    if (this.io.Socket || this.io.TLSSocket) {
+      socket = new TcpSocketConnection(this, this.io, parsed)
+    } else if (this.io.WebSocket) {
+      socket = new WebSocketConnection(this, this.io, parsed)
+    } else {
+      return
+    }
+    const result = socket.init()
+    if (!result) return
     this.socket = socket
     this.needsDisconnect = false
   }
@@ -153,7 +151,7 @@ export class StratumConnection {
   needsDisconnect: boolean
   lastKeepAlive: number
   partialMessage: string
-  socket: net$Socket | void
+  socket: TcpSocketConnection | WebSocketConnection
   timer: TimeoutID
   error: Error
   sigkill: boolean
@@ -189,7 +187,7 @@ export class StratumConnection {
   /**
    * Called when the socket completes its connection.
    */
-  onSocketConnect (socket: net$Socket) {
+  onSocketConnect (socket: TcpSocketConnection | WebSocketConnection) {
     if (this.needsDisconnect) {
       if (this.socket) this.socket.end()
       return
@@ -354,7 +352,7 @@ export class StratumConnection {
         method: task.method,
         params: task.params
       }
-      this.socket.write(JSON.stringify(message) + '\n')
+      this.socket.write(JSON.stringify(message))
     }
   }
 }
