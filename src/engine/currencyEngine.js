@@ -685,10 +685,13 @@ export class CurrencyEngine {
 
     // Try APIs
     const promiseArray = []
-    for (const broadcastFactory of broadcastFactories) {
-      const broadcaster = broadcastFactory(this.io, currencyCode)
-      if (broadcaster) promiseArray.push(broadcaster(signedTx))
+    if (!this.pluginState.disableFetchingServers) {
+      for (const broadcastFactory of broadcastFactories) {
+        const broadcaster = broadcastFactory(this.io, currencyCode)
+        if (broadcaster) promiseArray.push(broadcaster(signedTx))
+      }
     }
+
     promiseArray.push(this.engineState.broadcastTx(signedTx))
     await promiseAny(promiseArray)
     return edgeTransaction
