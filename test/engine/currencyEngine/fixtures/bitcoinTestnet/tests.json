@@ -26,6 +26,13 @@
     "uri": "https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY",
     "defaultHeight": 1286739
   },
+  "FreshAddress": {
+    "uri": "https://api.blocktrail.com/v1/tBTC/address/"
+  },
+  "ChangeSettings": {
+    "electrumServers": ["electrum://testnet.qtornado.com:51001"],
+    "disableFetchingServers": true
+  },
   "Address used from cache": {
     "wrongFormat": ["TestErrorWithWrongAddress"],
     "notInWallet": ["mnSmvy2q4dFNKQF18EBsrZrS7WEy6CieEE"],

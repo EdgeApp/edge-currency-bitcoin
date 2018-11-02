@@ -119,10 +119,10 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
         })
     })
 
-    it('Error when Making Engine without bitcoin key', function () {
+    it('Error when Making Engine without key', function () {
       return plugin
         .makeEngine(
-          { type: WALLET_TYPE, keys: { bitcoinXpub: keys.pub } },
+          { type: WALLET_TYPE, keys: { ninjaXpub: keys.pub } },
           { callbacks, walletLocalFolder }
         )
         .catch(e => {
@@ -360,12 +360,11 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
     it('Should provide a non used BTC address when no options are provided', function (done) {
       this.timeout(10000)
+      const { uri } = fixture.FreshAddress
       setTimeout(() => {
-        const address = engine.getFreshAddress()
+        const address = engine.getFreshAddress() // TODO
         request.get(
-          `https://api.blocktrail.com/v1/tBTC/address/${
-            address.publicAddress
-          }?api_key=MY_APIKEY`,
+          `${uri}${address.publicAddress}?api_key=MY_APIKEY`,
           (err, res, body) => {
             let code = null
             try {
@@ -468,12 +467,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     })
 
     it('changeSettings', function (done) {
-      plugin
-        .changeSettings({
-          electrumServers: ['electrum://testnet.qtornado.com:51001'],
-          disableFetchingServers: true
-        })
-        .then(done)
+      plugin.changeSettings(fixture.ChangeSettings).then(done)
     })
 
     it('Stop the engine', function (done) {
