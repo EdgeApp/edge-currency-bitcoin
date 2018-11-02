@@ -4,19 +4,36 @@ import EventEmitter from 'events'
 import { makeFakeIos } from 'edge-core-js'
 import { assert } from 'chai'
 import { before, describe, it } from 'mocha'
+import { statSync, readdirSync } from 'fs'
+import { readFileSync } from 'jsonfile'
+import { join } from 'path'
+
 import fetch from 'node-fetch'
 import request from 'request'
 
 import * as Factories from '../../../src/index.js'
-import dummyAddressData from './dummyAddressData.json'
-import dummyHeadersData from './dummyHeadersData.json'
-import dummyTransactionsData from './dummyTransactionsData.json'
-import fixtures from './fixtures.json'
 import bcoin from 'bcoin'
 
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
+const ROOT_FOLDER = join(__dirname, '../')
+const FIXTURES_FOLDER = join(ROOT_FOLDER, 'test/engine/currencyEngine/fixtures')
 
-for (const fixture of fixtures) {
+const fixtureFile = 'tests.json'
+const dummyAddressDataFile = 'dummyAddressData.json'
+const dummyHeadersDataFile = 'dummyHeadersData.json'
+const dummyTransactionsDataFile = 'dummyTransactionsData.json'
+
+// return only the directories inside fixtures dir
+const dirs = dir => readdirSync(dir).filter(file => statSync(join(dir, file)).isDirectory())
+
+for (const dir of dirs(FIXTURES_FOLDER)) {
+  const fixtureDataPath = join(FIXTURES_FOLDER, dir)
+
+  const fixture = readFileSync(join(fixtureDataPath, fixtureFile))
+  const dummyAddressData = readFileSync(join(fixtureDataPath, dummyAddressDataFile))
+  const dummyHeadersData = readFileSync(join(fixtureDataPath, dummyHeadersDataFile))
+  const dummyTransactionsData = readFileSync(join(fixtureDataPath, dummyTransactionsDataFile))
+
   const CurrencyPluginFactory = Factories[fixture['factory']]
   const WALLET_FORMAT = fixture['WALLET_FORMAT']
   const WALLET_TYPE = fixture['WALLET_TYPE']
