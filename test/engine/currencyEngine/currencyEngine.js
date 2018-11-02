@@ -24,15 +24,22 @@ const dummyHeadersDataFile = 'dummyHeadersData.json'
 const dummyTransactionsDataFile = 'dummyTransactionsData.json'
 
 // return only the directories inside fixtures dir
-const dirs = dir => readdirSync(dir).filter(file => statSync(join(dir, file)).isDirectory())
+const dirs = dir =>
+  readdirSync(dir).filter(file => statSync(join(dir, file)).isDirectory())
 
 for (const dir of dirs(FIXTURES_FOLDER)) {
   const fixtureDataPath = join(FIXTURES_FOLDER, dir)
 
   const fixture = readFileSync(join(fixtureDataPath, fixtureFile))
-  const dummyAddressData = readFileSync(join(fixtureDataPath, dummyAddressDataFile))
-  const dummyHeadersData = readFileSync(join(fixtureDataPath, dummyHeadersDataFile))
-  const dummyTransactionsData = readFileSync(join(fixtureDataPath, dummyTransactionsDataFile))
+  const dummyAddressData = readFileSync(
+    join(fixtureDataPath, dummyAddressDataFile)
+  )
+  const dummyHeadersData = readFileSync(
+    join(fixtureDataPath, dummyHeadersDataFile)
+  )
+  const dummyTransactionsData = readFileSync(
+    join(fixtureDataPath, dummyTransactionsDataFile)
+  )
 
   const CurrencyPluginFactory = Factories[fixture['factory']]
   const WALLET_FORMAT = fixture['WALLET_FORMAT']
