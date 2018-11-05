@@ -14,8 +14,8 @@ export const ES_FEE_HIGH = 'high'
 export const ES_FEE_CUSTOM = 'custom'
 
 const MAX_FEE = 999999999.0
-const MAX_STANDARD_DELAY = 12
-const MIN_STANDARD_DELAY = 3
+const MAX_STANDARD_DELAY = 9
+const MIN_STANDARD_DELAY = 2
 
 /**
  * Calculate the BitcoinFees object given a default BitcoinFees object and EarnComFees
@@ -112,7 +112,7 @@ export function calcFeesFromEarnCom (
 
     // If we have a delay that's greater than MIN_STANDARD_DELAY, then we're done.
     // Otherwise we'd be getting bigger delays and further reducing fees.
-    if (fee.maxDelay > MIN_STANDARD_DELAY) {
+    if (fee.maxDelay >= MIN_STANDARD_DELAY) {
       break
     }
   }
