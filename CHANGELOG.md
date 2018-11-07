@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+## 3.5.1
+
+* When server override is enabled, do not broadcast to any other servers
+* Tweak fee estimates to target 2-8 blocks
+
 ## 3.5.0
 
 * Update the Path from which to get the Digibyte electrum servers.
