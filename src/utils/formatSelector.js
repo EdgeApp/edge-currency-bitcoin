@@ -48,7 +48,8 @@ export const getXPubFromSeed = async ({
   const fSelector = FormatSelector(format, network)
   const masterPath = fSelector.createMasterPath(account, coinType)
   const privateKey = await masterKey.derivePath(masterPath)
-  return privateKey.xpubkey()
+  const xpubKey = await privateKey.xpubkey()
+  return xpubKey
 }
 
 export const FormatSelector = (
@@ -87,7 +88,8 @@ export const FormatSelector = (
         const privateKey = await getPrivateFromSeed(seed, network)
         privKey = await privateKey.derivePath(masterPath)
       }
-      return { privKey, pubKey: privKey.toPublic() }
+      const pubKey = await privKey.toPublic()
+      return { privKey, pubKey }
     },
 
     parseSeed:
@@ -113,18 +115,32 @@ export const FormatSelector = (
         setKeyTypeWrap(derivedKey)
       ),
 
-    keysFromRaw: (rawKeys: any = {}) =>
-      branches.reduce((keyRings, branch) => {
+    keysFromRaw: async (rawKeys: any = {}) => {
+      const keyRings = {}
+      const keyRingPromises = []
+      for (const branch of branches) {
         const { xpub, xpriv } = rawKeys[branch] || {}
-        return {
-          ...keyRings,
-          [branch]: {
-            pubKey: xpub ? hd.PublicKey.fromBase58(xpub, network) : null,
-            privKey: xpriv ? hd.PrivateKey.fromBase58(xpriv, network) : null,
-            children: []
-          }
+        keyRings[branch] = { children: [], pubKey: null, privKey: null }
+        if (xpub) {
+          const prom = Promise.resolve(hd.PublicKey.fromBase58(xpub, network))
+          keyRingPromises.push(
+            prom.then(pubKey => {
+              keyRings[branch] = { ...keyRings[branch], pubKey }
+            })
+          )
         }
-      }, {}),
+        if (xpriv) {
+          const prom = Promise.resolve(hd.PrivateKey.fromBase58(xpriv, network))
+          keyRingPromises.push(
+            prom.then(privKey => {
+              keyRings[branch] = { ...keyRings[branch], privKey }
+            })
+          )
+        }
+      }
+      await Promise.all(keyRingPromises)
+      return keyRings
+    },
 
     estimateSize: (prev: any) => {
       const address = prev.getAddress()
