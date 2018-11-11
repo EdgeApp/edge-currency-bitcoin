@@ -91,7 +91,7 @@ export interface EngineStateOptions {
 
 function nop () {}
 
-const MAX_CONNECTIONS = 3
+const MAX_CONNECTIONS = 2
 const NEW_CONNECTIONS = 8
 const CACHE_THROTTLE = 0.1
 
