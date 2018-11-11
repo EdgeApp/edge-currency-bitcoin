@@ -5,6 +5,7 @@ import type {
   EdgeCurrencyEngine,
   EdgeCurrencyEngineOptions,
   EdgeCurrencyEngineCallbacks,
+  EdgeGetTransactionsOptions,
   EdgePaymentProtocolInfo,
   EdgeFreshAddress,
   EdgeSpendInfo,
@@ -46,6 +47,10 @@ import {
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000
+
+export function snooze (ms: number): Promise<void> {
+  return new Promise((resolve: any) => setTimeout(resolve, ms))
+}
 
 export type EngineCurrencyInfo = {
   // Required Settings
@@ -131,8 +136,9 @@ export class CurrencyEngine {
     const engineStateCallbacks: EngineStateCallbacks = {
       onHeightUpdated: this.callbacks.onBlockHeightChanged,
       onTxFetched: (txid: string) => {
-        const edgeTransaction = this.getTransaction(txid)
-        this.callbacks.onTransactionsChanged([edgeTransaction])
+        this.getTransaction(txid).then(edgeTransaction => {
+          this.callbacks.onTransactionsChanged([edgeTransaction])
+        })
       },
       onAddressesChecked: this.callbacks.onAddressesChecked
     }
@@ -193,7 +199,8 @@ export class CurrencyEngine {
     await this.keyManager.load()
   }
 
-  getTransaction (txid: string): EdgeTransaction {
+  async getTransaction (txid: string): Promise<EdgeTransaction> {
+    await snooze(3) // Give up a tick so some GUI rendering can happen
     const { height = -1, firstSeen = Date.now() / 1000 } =
       this.engineState.txHeightCache[txid] || {}
     let date = firstSeen
@@ -429,17 +436,19 @@ export class CurrencyEngine {
     return this.engineState.getNumTransactions(options)
   }
 
-  async getTransactions (options: any): Promise<Array<EdgeTransaction>> {
+  async getTransactions (
+    options: EdgeGetTransactionsOptions
+  ): Promise<Array<EdgeTransaction>> {
     const rawTxs = this.engineState.txCache
     const edgeTransactions = []
     for (const txid in rawTxs) {
-      const edgeTransaction = this.getTransaction(txid)
+      const edgeTransaction = await this.getTransaction(txid)
       edgeTransactions.push(edgeTransaction)
     }
 
     const startIndex = (options && options.startIndex) || 0
     let endIndex =
-      (options && options.numEntries + startIndex) || edgeTransactions.length
+      (options && options.startEntries + startIndex) || edgeTransactions.length
     if (startIndex + endIndex > edgeTransactions.length) {
       endIndex = edgeTransactions.length
     }
