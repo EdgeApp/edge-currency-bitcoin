@@ -186,8 +186,7 @@ export const patchSecp256k1 = function (bcoin, secp256k1) {
     return pubKey.xpubkey()
   }
 
-  privateKey.fromReader = async function (br, network) {
-    console.time('TIMER - privateKey.fromReader')
+  privateKey.fromReader = function (br, network) {
     const version = br.readU32BE()
 
     this.network = bcoin.network.fromPrivate(version, network)
@@ -200,7 +199,6 @@ export const patchSecp256k1 = function (bcoin, secp256k1) {
     this.publicKey = null
 
     br.verifyChecksum()
-    console.timeEnd('TIMER - privateKey.fromReader')
     return this
   }
 
