@@ -1,8 +1,15 @@
 import { assert } from 'chai'
 import { nfkd } from 'unorm'
+// $FlowFixMe
+import buffer from 'buffer-hack'
+// $FlowFixMe
+const { Buffer } = buffer
+const SEED_SALT = Buffer.from('Bitcoin seed', 'ascii')
 
-export const patchDerivePublic = function (bcoin, secp256k1) {
+export const patchSecp256k1 = function (bcoin, secp256k1) {
+  const privateKey = bcoin.hd.PrivateKey.prototype
   const publicKey = bcoin.hd.PublicKey.prototype
+
   publicKey.derive = async function (index, hardened) {
     assert.equal(typeof index, 'number')
 
@@ -64,10 +71,7 @@ export const patchDerivePublic = function (bcoin, secp256k1) {
 
     return child
   }
-}
 
-export const patchDerivePrivate = function (bcoin, secp256k1) {
-  const privateKey = bcoin.hd.PrivateKey.prototype
   privateKey.derive = async function (index, hardened) {
     assert.equal(typeof index, 'number')
 
@@ -83,7 +87,15 @@ export const patchDerivePrivate = function (bcoin, secp256k1) {
       index |= bcoin.hd.common.HARDENED
       index >>>= 0
     }
-
+    if (!this.publicKey) {
+      const result = secp256k1.publicKeyCreate(this.privateKey, true)
+      if (typeof result.then === 'function') {
+        this.publicKey = await Promise.resolve(result)
+        this.publicKey = Buffer.from(this.publicKey)
+      } else {
+        this.publicKey = result
+      }
+    }
     const id = this.getID(index)
     const cache = bcoin.hd.common.cache.get(id)
 
@@ -143,29 +155,105 @@ export const patchDerivePrivate = function (bcoin, secp256k1) {
 
     return child
   }
-}
 
-export const patchDerivePath = function (bcoin) {
-  const privateKey = bcoin.hd.PrivateKey.prototype
+  privateKey.toPublic = async function () {
+    let key = this._hdPublicKey
+
+    if (!key) {
+      key = new bcoin.hd.PublicKey()
+      key.network = this.network
+      key.depth = this.depth
+      key.parentFingerPrint = this.parentFingerPrint
+      key.childIndex = this.childIndex
+      key.chainCode = this.chainCode
+      const result = secp256k1.publicKeyCreate(this.privateKey, true)
+      if (typeof result.then === 'function') {
+        key.publicKey = await Promise.resolve(result)
+        key.publicKey = Buffer.from(key.publicKey)
+      } else {
+        key.publicKey = result
+      }
+
+      key.publicKey = this.publicKey
+      this._hdPublicKey = key
+    }
+
+    return key
+  }
+
+  privateKey.xpubkey = async function () {
+    const pubKey = await this.toPublic()
+    return pubKey.xpubkey()
+  }
+
+  privateKey.fromReader = async function (br, network) {
+    console.time('TIMER - privateKey.fromReader')
+    const version = br.readU32BE()
+
+    this.network = bcoin.network.fromPrivate(version, network)
+    this.depth = br.readU8()
+    this.parentFingerPrint = br.readU32BE()
+    this.childIndex = br.readU32BE()
+    this.chainCode = br.readBytes(32)
+    assert(br.readU8() === 0)
+    this.privateKey = br.readBytes(32)
+    this.publicKey = null
+
+    br.verifyChecksum()
+    console.timeEnd('TIMER - privateKey.fromReader')
+    return this
+  }
+
+  privateKey.fromSeed = async function (seed, network) {
+    assert(Buffer.isBuffer(seed))
+
+    if (
+      seed.length * 8 < bcoin.hd.common.MIN_ENTROPY ||
+      seed.length * 8 > bcoin.hd.common.MAX_ENTROPY
+    ) {
+      throw new Error('Entropy not in range.')
+    }
+
+    const hash = bcoin.crypto.digest.hmac('sha512', seed, SEED_SALT)
+    const left = hash.slice(0, 32)
+    const right = hash.slice(32, 64)
+
+    // Only a 1 in 2^127 chance of happening.
+    if (!bcoin.crypto.secp256k1.privateKeyVerify(left)) {
+      throw new Error('Master private key is invalid.')
+    }
+
+    this.network = bcoin.network.get(network)
+    this.depth = 0
+    this.parentFingerPrint = 0
+    this.childIndex = 0
+    this.chainCode = right
+    this.privateKey = left
+    const result = secp256k1.publicKeyCreate(this.privateKey, true)
+    if (typeof result.then === 'function') {
+      this.publicKey = await Promise.resolve(result)
+      this.publicKey = Buffer.from(this.publicKey)
+    } else {
+      this.publicKey = result
+    }
+
+    return this
+  }
+
   privateKey.derivePath = async function (path) {
     const indexes = bcoin.hd.common.parsePath(path, true)
 
     let key = this
 
     for (const index of indexes) {
-      const result = key.derive(index)
-      if (typeof result.then === 'function') {
-        key = await Promise.resolve(result)
-      } else {
-        key = result
-      }
+      key = await key.derive(index)
     }
 
     return key
   }
 }
 
-export const patchPrivateFromMnemonic = function (bcoin, pbkdf2) {
+export const patchPbkdf2 = function (bcoin, pbkdf2) {
   const privateKey = bcoin.hd.PrivateKey.prototype
   privateKey.fromMnemonic = async function (mnemonic, network) {
     const passphrase = mnemonic.passphrase

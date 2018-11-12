@@ -1,10 +1,5 @@
 // @flow
-import {
-  patchDerivePublic,
-  patchDerivePrivate,
-  patchDerivePath,
-  patchPrivateFromMnemonic
-} from './deriveExtender.js'
+import { patchSecp256k1, patchPbkdf2 } from './patchCrypto.js'
 import { patchTransaction } from './replayProtection.js'
 import bcoin from 'bcoin'
 
@@ -53,13 +48,11 @@ export const addNetwork = (bcoinInfo: BcoinCurrencyInfo) => {
 export const patchCrypto = (secp256k1?: any = null, pbkdf2?: any = null) => {
   if (!cryptoReplaced) {
     if (secp256k1) {
-      patchDerivePublic(bcoin, secp256k1)
-      patchDerivePrivate(bcoin, secp256k1)
-      patchDerivePath(bcoin)
+      patchSecp256k1(bcoin, secp256k1)
       cryptoReplaced = true
     }
     if (pbkdf2) {
-      patchPrivateFromMnemonic(bcoin, pbkdf2)
+      patchPbkdf2(bcoin, pbkdf2)
       cryptoReplaced = true
     }
   }
