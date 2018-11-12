@@ -447,9 +447,8 @@ export class CurrencyEngine {
     }
 
     const startIndex = (options && options.startIndex) || 0
-    let endIndex = edgeTransactions.length
-    // TODO: Fix edge-core-js to not drop txs if we only do a partial query -paulvp
-    // (options && options.startEntries + startIndex) || edgeTransactions.length
+    let endIndex =
+      (options && options.startEntries + startIndex) || edgeTransactions.length
     if (startIndex + endIndex > edgeTransactions.length) {
       endIndex = edgeTransactions.length
     }

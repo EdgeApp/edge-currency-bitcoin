@@ -269,12 +269,12 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
       })
     })
 
-    // it('Should get transactions from cache with options', function (done) {
-    //   engine.getTransactions({ startIndex: 1, startEntries: 2 }).then(txs => {
-    //     assert.equal(txs.length, 2, 'should have 2 tx from cache')
-    //     done()
-    //   })
-    // })
+    it('Should get transactions from cache with options', function (done) {
+      engine.getTransactions({ startIndex: 1, startEntries: 2 }).then(txs => {
+        assert.equal(txs.length, 2, 'should have 2 tx from cache')
+        done()
+      })
+    })
   })
 
   describe('Should Add Gap Limit Addresses', function () {
