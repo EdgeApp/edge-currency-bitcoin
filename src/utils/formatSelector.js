@@ -115,32 +115,18 @@ export const FormatSelector = (
         setKeyTypeWrap(derivedKey)
       ),
 
-    keysFromRaw: async (rawKeys: any = {}) => {
-      const keyRings = {}
-      const keyRingPromises = []
-      for (const branch of branches) {
+    keysFromRaw: (rawKeys: any = {}) =>
+      branches.reduce((keyRings, branch) => {
         const { xpub, xpriv } = rawKeys[branch] || {}
-        keyRings[branch] = { children: [], pubKey: null, privKey: null }
-        if (xpub) {
-          const prom = Promise.resolve(hd.PublicKey.fromBase58(xpub, network))
-          keyRingPromises.push(
-            prom.then(pubKey => {
-              keyRings[branch] = { ...keyRings[branch], pubKey }
-            })
-          )
+        return {
+          ...keyRings,
+          [branch]: {
+            pubKey: xpub ? hd.PublicKey.fromBase58(xpub, network) : null,
+            privKey: xpriv ? hd.PrivateKey.fromBase58(xpriv, network) : null,
+            children: []
+          }
         }
-        if (xpriv) {
-          const prom = Promise.resolve(hd.PrivateKey.fromBase58(xpriv, network))
-          keyRingPromises.push(
-            prom.then(privKey => {
-              keyRings[branch] = { ...keyRings[branch], privKey }
-            })
-          )
-        }
-      }
-      await Promise.all(keyRingPromises)
-      return keyRings
-    },
+      }, {}),
 
     estimateSize: (prev: any) => {
       const address = prev.getAddress()

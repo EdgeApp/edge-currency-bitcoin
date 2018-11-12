@@ -186,7 +186,7 @@ export const patchSecp256k1 = function (bcoin, secp256k1) {
     return pubKey.xpubkey()
   }
 
-  privateKey.fromReader = async function (br, network) {
+  privateKey.fromReader = function (br, network) {
     const version = br.readU32BE()
 
     this.network = bcoin.network.fromPrivate(version, network)

@@ -78,7 +78,6 @@ export class KeyManager {
   masterPath: string
   writeLock: any
   bip: string
-  rawKeys: any
   keys: Keys
   seed: string
   gapLimit: number
@@ -112,7 +111,7 @@ export class KeyManager {
     this.gapLimit = gapLimit
     this.network = network
     this.bip = bip
-    this.fSelector = FormatSelector(bip, this.network)
+    this.fSelector = FormatSelector(bip, network)
     // Create a lock for when deriving addresses
     this.writeLock = getLock()
     // Create the master derivation path
@@ -124,26 +123,16 @@ export class KeyManager {
     // Set the addresses and txs state objects
     this.addressInfos = addressInfos
     this.txInfos = txInfos
-    this.rawKeys = rawKeys
-  }
-
-  // ////////////////////////////////////////////// //
-  // /////////////// Public API /////////////////// //
-  // ////////////////////////////////////////////// //
-  async load () {
     // Create KeyRings while tring to load as many of the pubKey/privKey from the cache
-    this.keys = await this.fSelector.keysFromRaw(this.rawKeys)
+    this.keys = this.fSelector.keysFromRaw(rawKeys)
     // Load addresses from Cache
     const { branches } = this.fSelector
-    for (const scriptHash in this.addressInfos) {
-      const addressObj: AddressInfo = this.addressInfos[scriptHash]
+    for (const scriptHash in addressInfos) {
+      const addressObj: AddressInfo = addressInfos[scriptHash]
       const path = parsePath(addressObj.path, this.masterPath)
       if (path.length) {
         const [branch, index] = path
-        const displayAddress = toNewFormat(
-          addressObj.displayAddress,
-          this.network
-        )
+        const displayAddress = toNewFormat(addressObj.displayAddress, network)
         const address = { displayAddress, scriptHash, index, branch }
         this.keys[branches[branch]].children.push(address)
       }
@@ -152,6 +141,12 @@ export class KeyManager {
     for (const branch in this.keys) {
       this.keys[branch].children.sort((a, b) => a.index - b.index)
     }
+  }
+
+  // ////////////////////////////////////////////// //
+  // /////////////// Public API /////////////////// //
+  // ////////////////////////////////////////////// //
+  async load () {
     // If we don't have a public master key we will now create it from seed
     if (!this.keys.master.pubKey) await this.initMasterKeys()
     await this.setLookAhead(true)
