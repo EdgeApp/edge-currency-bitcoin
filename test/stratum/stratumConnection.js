@@ -20,7 +20,7 @@ import {
 import type { StratumUtxo } from '../../src/stratum/stratumMessages.js'
 
 // const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
-const ELECTRUM_SERVER = 'electrum://139.162.14.142:50001'
+const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'
 const io = {
   Socket: net.Socket,
   TLSSocket: tls.TLSSocket

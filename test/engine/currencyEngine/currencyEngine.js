@@ -270,7 +270,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     })
 
     it('Should get transactions from cache with options', function (done) {
-      engine.getTransactions({ startIndex: 1, numEntries: 2 }).then(txs => {
+      engine.getTransactions({ startIndex: 1, startEntries: 2 }).then(txs => {
         assert.equal(txs.length, 2, 'should have 2 tx from cache')
         done()
       })
