@@ -1,5 +1,14 @@
 # edge-currency-bitcoin
 
+## 3.6.0
+
+* Do not call onTransactionsChanged at startEngine or makeEngine. edge-core-js will query getTransactions when needed
+* Reduce concurrent server connections from 3 to 2
+* Change testing electrum server and give 10s timeout
+* Prevent calling unaccelerated publicToPrivate when logging in. Saves 200ms per wallet on slower devices (LG V20)
+* Give up JS tick between calls to getTransaction so GUI can render in between a long sync call to getTransactions
+* Properly save header/server cache when progress hits 100%
+
 ## 3.5.1
 
 * When server override is enabled, do not broadcast to any other servers
