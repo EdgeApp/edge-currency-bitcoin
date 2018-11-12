@@ -488,7 +488,10 @@ export class EngineState extends EventEmitter {
       }
 
       if (percent !== this.progressRatio) {
-        if (Math.abs(percent - this.progressRatio) > CACHE_THROTTLE) {
+        if (
+          Math.abs(percent - this.progressRatio) > CACHE_THROTTLE ||
+          percent === 1
+        ) {
           const saves = [this.saveAddressCache(), this.saveTxCache()]
           if (this.pluginState) {
             saves.push(this.pluginState.saveHeaderCache())
