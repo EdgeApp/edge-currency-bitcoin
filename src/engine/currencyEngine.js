@@ -351,7 +351,7 @@ export class CurrencyEngine {
     ) {
       const requiredFeeRate =
         otherParams.paymentProtocolInfo.merchant.requiredFeeRate
-      return parseInt(requiredFeeRate) * BYTES_TO_KB * 1.5
+      return Math.ceil(parseFloat(requiredFeeRate) * BYTES_TO_KB * 1.5)
     }
     const customFeeSetting = this.engineInfo.customFeeSettings[0]
     const customFeeAmount = customNetworkFee[customFeeSetting] || '0'
