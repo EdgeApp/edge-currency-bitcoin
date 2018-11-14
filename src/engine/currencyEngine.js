@@ -136,9 +136,8 @@ export class CurrencyEngine {
     const engineStateCallbacks: EngineStateCallbacks = {
       onHeightUpdated: this.callbacks.onBlockHeightChanged,
       onTxFetched: (txid: string) => {
-        this.getTransaction(txid).then(edgeTransaction => {
-          this.callbacks.onTransactionsChanged([edgeTransaction])
-        })
+        const edgeTransaction = this.getTransactionSync(txid)
+        this.callbacks.onTransactionsChanged([edgeTransaction])
       },
       onAddressesChecked: this.callbacks.onAddressesChecked
     }
@@ -199,8 +198,12 @@ export class CurrencyEngine {
     await this.keyManager.load()
   }
 
-  async getTransaction (txid: string): Promise<EdgeTransaction> {
+  async getTransaction (txid: string): EdgeTransaction {
     await snooze(3) // Give up a tick so some GUI rendering can happen
+    return this.getTransactionSync(txid)
+  }
+
+  getTransactionSync (txid: string): Promise<EdgeTransaction> {
     const { height = -1, firstSeen = Date.now() / 1000 } =
       this.engineState.txHeightCache[txid] || {}
     let date = firstSeen

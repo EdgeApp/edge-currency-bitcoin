@@ -166,12 +166,14 @@ export const patchSecp256k1 = function (bcoin, secp256k1) {
       key.parentFingerPrint = this.parentFingerPrint
       key.childIndex = this.childIndex
       key.chainCode = this.chainCode
-      const result = secp256k1.publicKeyCreate(this.privateKey, true)
-      if (typeof result.then === 'function') {
-        key.publicKey = await Promise.resolve(result)
-        key.publicKey = Buffer.from(key.publicKey)
-      } else {
-        key.publicKey = result
+      if (!this.publicKey) {
+        const result = secp256k1.publicKeyCreate(this.privateKey, true)
+        if (typeof result.then === 'function') {
+          this.publicKey = await Promise.resolve(result)
+          this.publicKey = Buffer.from(this.publicKey)
+        } else {
+          this.publicKey = result
+        }
       }
 
       key.publicKey = this.publicKey
