@@ -1,5 +1,11 @@
 # edge-currency-bitcoin
 
+## 3.6.1
+
+* Fixed issue where as saveTX wouldn't call onTransactionsChanged.
+* Round up the fee we get from bitpay incase since we work in sat/byte and not sat/kb
+* privateKey.toPublic had an issue where it would bassicly create a null valued public key. now it works as it should and gives the correct key.
+
 ## 3.6.0
 
 * Do not call onTransactionsChanged at startEngine or makeEngine. edge-core-js will query getTransactions when needed
