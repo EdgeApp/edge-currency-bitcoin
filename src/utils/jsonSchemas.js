@@ -70,17 +70,6 @@ export const electrumHeaderSchema = {
   required: ['block_height', 'timestamp']
 }
 
-export const protocolVersion = {
-  type: 'number',
-  minimum: 1.1,
-  maximum: 1.1
-}
-
-export const electrumVersionSchema = {
-  type: 'array',
-  items: [{ type: 'any' }, protocolVersion]
-}
-
 export const electrumSubscribeHeadersSchema = {
   type: 'object',
   properties: {

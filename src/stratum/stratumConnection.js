@@ -1,7 +1,7 @@
 // @flow
 import { parse } from 'uri-js'
 
-import { fetchVersion } from './stratumMessages.js'
+import { fetchPing, fetchVersion } from './stratumMessages.js'
 import type { StratumBlockHeader } from './stratumMessages.js'
 
 export type OnFailHandler = (error: Error) => void
@@ -299,12 +299,19 @@ export class StratumConnection {
 
     if (this.lastKeepAlive + KEEP_ALIVE_MS < now) {
       this.submitTask(
-        fetchVersion(
-          (version: string) => {
-            this.callbacks.onTimer(now)
-          },
-          (e: Error) => this.close(e)
-        )
+        this.version === '1.1'
+          ? fetchVersion(
+            (version: string) => {
+              this.callbacks.onTimer(now)
+            },
+            (e: Error) => this.close(e)
+          )
+          : fetchPing(
+            () => {
+              this.callbacks.onTimer(now)
+            },
+            (e: Error) => this.close(e)
+          )
       )
     }
 
@@ -358,7 +365,10 @@ export class StratumConnection {
     if (this.socket && this.connected && !this.needsDisconnect) {
       pending.startTime = now
       // If this is a keepAlive, record the time:
-      if (pending.task.method === 'server.version') {
+      if (
+        pending.task.method === 'server.ping' ||
+        pending.task.method === 'server.version'
+      ) {
         this.lastKeepAlive = now
       }
 
