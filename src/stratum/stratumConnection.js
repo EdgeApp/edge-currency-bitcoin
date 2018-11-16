@@ -17,7 +17,7 @@ const KEEP_ALIVE_MS = 60000
 export interface StratumTask {
   method: string;
   params: Array<any>;
-  +onDone: (reply: any) => void;
+  +onDone: (reply: any, requestMs: number) => void;
   +onFail: OnFailHandler;
 }
 
@@ -28,6 +28,7 @@ export interface StratumCallbacks {
   +onNotifyHeader: (headerInfo: StratumBlockHeader) => void;
   +onNotifyScriptHash: (scriptHash: string, hash: string) => void;
   +onTimer: (queryTime: number) => void;
+  +onVersion: (version: string, requestMs: number) => void;
 }
 
 export interface StratumOptions {
@@ -38,6 +39,11 @@ export interface StratumOptions {
   walletId?: string; // for logging purposes
 }
 
+type PendingMessage = {
+  startTime: number,
+  task: StratumTask
+}
+
 /**
  * A connection to a Stratum server.
  * Manages the underlying TCP socket, as well as message framing,
@@ -46,6 +52,7 @@ export interface StratumOptions {
 export class StratumConnection {
   uri: string
   connected: boolean
+  version: string | void
   errStr: (e: Error) => string
 
   constructor (uri: string, options: StratumOptions) {
@@ -67,6 +74,17 @@ export class StratumConnection {
     // Message queue:
     this.nextId = 0
     this.pendingMessages = {}
+
+    // Send a version message before anything else:
+    this.submitTask(
+      fetchVersion(
+        (version: string, requestMs: number) => {
+          this.version = version
+          this.callbacks.onVersion(version, requestMs)
+        },
+        (e: Error) => this.close(e)
+      )
+    )
   }
 
   /**
@@ -121,13 +139,11 @@ export class StratumConnection {
   submitTask (task: StratumTask) {
     // Add the message to the queue:
     const id = ++this.nextId
-    this.pendingMessages[id.toString()] = {
-      task,
-      startTime: Date.now()
-    }
+    const message = { task, startTime: Date.now() }
+    this.pendingMessages[id.toString()] = message
 
     // Send the message:
-    this.transmitMessage(id, task)
+    this.transmitMessage(id, message)
   }
 
   // ------------------------------------------------------------------------
@@ -142,12 +158,7 @@ export class StratumConnection {
 
   // Message queue:
   nextId: number
-  pendingMessages: {
-    [id: string]: {
-      startTime: number,
-      task: StratumTask
-    }
-  }
+  pendingMessages: { [id: string]: PendingMessage }
 
   // Connection state:
   needsDisconnect: boolean
@@ -208,7 +219,7 @@ export class StratumConnection {
     // Launch pending messages:
     for (const id of Object.keys(this.pendingMessages)) {
       const message = this.pendingMessages[id]
-      this.transmitMessage(Number(id), message.task)
+      this.transmitMessage(Number(id), message)
     }
 
     this.setupTimer()
@@ -232,7 +243,7 @@ export class StratumConnection {
    */
   onMessage (messageJson: string) {
     try {
-      // const start = Date.now()
+      const now = Date.now()
       const json = JSON.parse(messageJson)
 
       if (json.id) {
@@ -251,7 +262,7 @@ export class StratumConnection {
               : error.code
             throw new Error(errorMessage)
           }
-          message.task.onDone(json.result)
+          message.task.onDone(json.result, now - message.startTime)
         } catch (e) {
           message.task.onFail(e)
         }
@@ -342,17 +353,19 @@ export class StratumConnection {
     this.timer = setTimeout(() => this.onTimer(), delay)
   }
 
-  transmitMessage (id: number, task: StratumTask) {
+  transmitMessage (id: number, pending: PendingMessage) {
+    const now = Date.now()
     if (this.socket && this.connected && !this.needsDisconnect) {
+      pending.startTime = now
       // If this is a keepAlive, record the time:
-      if (task.method === 'server.version') {
-        this.lastKeepAlive = Date.now()
+      if (pending.task.method === 'server.version') {
+        this.lastKeepAlive = now
       }
 
       const message = {
         id,
-        method: task.method,
-        params: task.params
+        method: pending.task.method,
+        params: pending.task.params
       }
       this.socket.write(JSON.stringify(message) + '\n')
     }

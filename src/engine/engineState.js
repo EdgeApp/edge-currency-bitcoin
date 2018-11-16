@@ -15,7 +15,6 @@ import {
   fetchScriptHashHistory,
   fetchScriptHashUtxo,
   fetchTransaction,
-  fetchVersion,
   subscribeHeight,
   subscribeScriptHash,
   fetchBlockHeader
@@ -148,14 +147,12 @@ export class EngineState extends EventEmitter {
   serverStates: {
     [uri: string]: {
       fetchingHeight: boolean,
-      fetchingVersion: boolean,
 
       // The server block height:
       // undefined - never subscribed
       // 0 - subscribed but no results yet
       // number - subscription result
       height: number | void,
-      version: string | void,
 
       // Address subscriptions:
       addresses: { [scriptHash: string]: AddressState },
@@ -584,6 +581,10 @@ export class EngineState extends EventEmitter {
           console.log(`${prefix}was pinged`)
           this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
         },
+        onVersion: (version: string, requestMs) => {
+          console.log(`${prefix}received version ${version}`)
+          this.pluginState.serverScoreUp(uri, requestMs)
+        },
         onNotifyHeader: (headerInfo: StratumBlockHeader) => {
           console.log(`${prefix}notified header ${headerInfo.block_height}`)
           this.serverStates[uri].height = headerInfo.block_height
@@ -605,9 +606,7 @@ export class EngineState extends EventEmitter {
       })
       this.serverStates[uri] = {
         fetchingHeight: false,
-        fetchingVersion: false,
         height: void 0,
-        version: void 0,
         addresses: {},
         txids: new Set(),
         headers: new Set()
@@ -619,25 +618,8 @@ export class EngineState extends EventEmitter {
 
   pickNextTask (uri: string): StratumTask | void {
     const serverState = this.serverStates[uri]
+    const connection = this.connections[uri]
     const prefix = `${this.walletId} - Stratum ${uri} `
-
-    // Check the version if we haven't done that already:
-    if (serverState.version === void 0 && !serverState.fetchingVersion) {
-      serverState.fetchingVersion = true
-      const queryTime = Date.now()
-      return fetchVersion(
-        (version: string) => {
-          console.log(`${prefix}received version ${version}`)
-          serverState.fetchingVersion = false
-          serverState.version = version
-          this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
-        },
-        (e?: Error) => {
-          serverState.fetchingVersion = false
-          this.onConnectionClose(uri, 'getting version', e)
-        }
-      )
-    }
 
     // Subscribe to height if this has never happened:
     if (serverState.height === void 0 && !serverState.fetchingHeight) {
@@ -661,8 +643,8 @@ export class EngineState extends EventEmitter {
     // If this server is too old, bail out!
     // TODO: Stop checking the height in the Stratum message creator.
     // TODO: Check block headers to ensure we are on the right chain.
-    if (!serverState.version) return
-    if (serverState.version < '1.1') {
+    if (connection.version == null) return
+    if (connection.version < '1.1') {
       this.connections[uri].close(
         new Error('Server protocol version is too old')
       )

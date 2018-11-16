@@ -15,15 +15,16 @@ import {
  * Creates a server version query message.
  */
 export function fetchVersion (
-  onDone: (version: string) => void,
+  onDone: (version: string, requestMs: number) => void,
   onFail: OnFailHandler
 ): StratumTask {
+  const queryTime = Date.now()
   return {
     method: 'server.version',
     params: ['1.1', '1.1'],
     onDone (reply: any) {
       if (validateObject(reply.map(parseFloat), electrumVersionSchema)) {
-        return onDone(reply[1].toString())
+        return onDone(reply[1].toString(), Date.now() - queryTime)
       }
       throw new Error(`Bad Stratum version reply ${reply}`)
     },
