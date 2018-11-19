@@ -19,11 +19,11 @@ const makeBroadcastBlockchainInfo = (io: EdgeIo, currencyCode: string) => {
         return true
       } else {
         io.console.info('ERROR makeBroadcastBlockchainInfo', response)
-        throw new Error(response)
+        throw new Error(`blockchain.info failed with status ${response.status}`)
       }
     } catch (e) {
       io.console.info('ERROR makeBroadcastBlockchainInfo', e)
-      throw new Error(e)
+      throw e
     }
   }
 }
@@ -54,10 +54,10 @@ const makeBroadcastInsight = (io: EdgeIo, currencyCode: string) => {
         }
       }
       io.console.info('ERROR makeBroadcastInsight', response)
-      throw new Error(response)
+      throw new Error(`${urls[currencyCode]} failed with status ${response.status}`)
     } catch (e) {
       io.console.info('ERROR makeBroadcastInsight:', e)
-      throw new Error(e)
+      throw e
     }
   }
 }
@@ -87,7 +87,7 @@ const makeBroadcastBlockcypher = (io: EdgeIo, currencyCode: string) => {
       return out.hash
     } catch (e) {
       io.console.info('ERROR makeBroadcastBlockcypher: ', e)
-      throw new Error(e)
+      throw e
     }
   }
 }
