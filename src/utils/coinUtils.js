@@ -86,6 +86,16 @@ export const verifyWIF = (data: any, network: string) => {
   return true
 }
 
+// if (protocol && protocol.replace(':', '').toLowerCase() !== pluginName) {
+export const verifyUriProtocol = (protocol: any, network: string, pluginName: string) => {
+  const { addressPrefix = {} } = networks[network] || {}
+  if (protocol) {
+    const prot = protocol.replace(':', '').toLowerCase()
+    return prot === pluginName || prot === addressPrefix.cashAddress
+  }
+  return true
+}
+
 export const setKeyType = (
   key: any,
   nested: boolean,
