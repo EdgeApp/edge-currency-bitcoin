@@ -8,6 +8,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcoincash',
   magic: 0xd9b4bef9,
   formats: ['bip44', 'bip32'],
+  forks: ['bitcoincashsv'],
   keyPrefix: {
     privkey: 0x80,
     xpubkey: 0x0488b21e,
