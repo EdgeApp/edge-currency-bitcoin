@@ -6,7 +6,7 @@ import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcoinsv',
-  magic: 0xe3e1f3e8,
+  magic: 0xd9b4bef9,
   formats: ['bip44', 'bip32'],
   keyPrefix: {
     privkey: 0x80,
@@ -19,7 +19,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
   addressPrefix: {
     pubkeyhash: 0x00,
     scripthash: 0x05,
-    cashAddress: 'bitcoinsv'
+    cashAddress: 'bitcoincash'
   },
   replayProtection: {
     SIGHASH_FORKID: 0x40,
@@ -86,8 +86,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://bsvexplorer.info/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/bitcoincashsv-logo-color-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bitcoincashsv-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/bitcoinsv-logo-color-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/bitcoinsv-logo-grey-64.png`
 }
 
 export const bitcoinsv = { bcoinInfo, engineInfo, currencyInfo }
