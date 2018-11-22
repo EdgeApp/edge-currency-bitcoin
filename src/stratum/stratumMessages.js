@@ -2,7 +2,6 @@
 import type { OnFailHandler, StratumTask } from './stratumConnection.js'
 import { validateObject } from '../utils/utils.js'
 import {
-  electrumVersionSchema,
   electrumFetchHeaderSchema,
   electrumSubscribeHeadersSchema,
   electrumFetchHistorySchema,
@@ -12,20 +11,44 @@ import {
 } from '../utils/jsonSchemas.js'
 
 /**
+ * Creates a server ping message.
+ */
+export function fetchPing (
+  onDone: (requestMs: number) => void,
+  onFail: OnFailHandler
+): StratumTask {
+  return {
+    method: 'server.ping',
+    params: [],
+    onDone (reply: any, requestMs: number) {
+      return onDone(requestMs)
+    },
+    onFail
+  }
+}
+
+/**
  * Creates a server version query message.
  */
 export function fetchVersion (
-  onDone: (version: string) => void,
+  onDone: (version: string, requestMs: number) => void,
   onFail: OnFailHandler
 ): StratumTask {
   return {
     method: 'server.version',
-    params: ['1.1', '1.1'],
-    onDone (reply: any) {
-      if (validateObject(reply.map(parseFloat), electrumVersionSchema)) {
-        return onDone(reply[1].toString())
+    params: ['Edge wallet', ['1.1', '1.3']],
+    onDone (reply: any, requestMs: number) {
+      if (
+        Array.isArray(reply) &&
+        (typeof reply[1] === 'string' || typeof reply[1] === 'number')
+      ) {
+        const version = reply[1].toString()
+        if (version !== '1.1' && version !== '1.2' && version !== '1.3') {
+          throw new Error(`Bad Stratum version ${version}`)
+        }
+        return onDone(version, requestMs)
       }
-      throw new Error(`Bad Stratum version reply ${reply}`)
+      throw new Error(`Bad Stratum version reply ${JSON.stringify(reply)}`)
     },
     onFail
   }
@@ -50,7 +73,10 @@ export function subscribeHeight (
       if (validateObject(reply, electrumHeaderSchema)) {
         return onDone(reply.block_height)
       }
-      throw new Error(`Bad Stratum height reply ${reply}`)
+      if (reply != null && typeof reply.height === 'number') {
+        return onDone(reply.height)
+      }
+      throw new Error(`Bad Stratum height reply ${JSON.stringify(reply)}`)
     },
     onFail
   }
@@ -84,7 +110,7 @@ export function fetchBlockHeader (
       if (validateObject(reply, electrumFetchHeaderSchema)) {
         return onDone(reply)
       }
-      throw new Error(`Bad Stratum get_header reply ${reply}`)
+      throw new Error(`Bad Stratum get_header reply ${JSON.stringify(reply)}`)
     },
     onFail
   }
@@ -108,7 +134,9 @@ export function fetchTransaction (
       if (typeof reply === 'string') {
         return onDone(reply)
       }
-      throw new Error(`Bad Stratum transaction.get reply ${reply}`)
+      throw new Error(
+        `Bad Stratum transaction.get reply ${JSON.stringify(reply)}`
+      )
     },
     onFail
   }
@@ -138,7 +166,9 @@ export function subscribeScriptHash (
       if (validateObject(reply, electrumSubscribeScriptHashSchema)) {
         return onDone(reply.params[1])
       }
-      throw new Error(`Bad Stratum scripthash.subscribe reply ${reply}`)
+      throw new Error(
+        `Bad Stratum scripthash.subscribe reply ${JSON.stringify(reply)}`
+      )
     },
     onFail
   }
@@ -171,7 +201,9 @@ export function fetchScriptHashHistory (
       if (validateObject(reply, electrumFetchHistorySchema)) {
         return onDone(reply)
       }
-      throw new Error(`Bad Stratum scripthash.get_history reply ${reply}`)
+      throw new Error(
+        `Bad Stratum scripthash.get_history reply ${JSON.stringify(reply)}`
+      )
     },
     onFail
   }
@@ -202,7 +234,9 @@ export function fetchScriptHashUtxo (
       if (validateObject(reply, electrumFetchUtxoSchema)) {
         return onDone(reply)
       }
-      throw new Error(`Bad Stratum scripthash.listunspent reply ${reply}`)
+      throw new Error(
+        `Bad Stratum scripthash.listunspent reply ${JSON.stringify(reply)}`
+      )
     },
     onFail
   }
@@ -220,7 +254,9 @@ export function broadcastTx (
       if (typeof reply === 'string') {
         return onDone(reply)
       }
-      throw new Error(`transaction.broadcast error. reply ${reply}`)
+      throw new Error(
+        `Bad Stratum transaction.broadcast reply ${JSON.stringify(reply)}`
+      )
     },
     onFail
   }
@@ -238,7 +274,9 @@ export function fetchEstimateFee (
       if (reply != null) {
         return onDone(parseInt(reply))
       }
-      throw new Error(`blockchain.estimatefee error. reply ${reply}`)
+      throw new Error(
+        `Bad Stratum blockchain.estimatefee reply ${JSON.stringify(reply)}`
+      )
     },
     onFail
   }
