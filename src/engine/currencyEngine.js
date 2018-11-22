@@ -588,30 +588,22 @@ export class CurrencyEngine {
       // Get the rate according to the latest fee
       const rate = this.getRate(edgeSpendInfo)
       // Create outputs from spendTargets
-      const outputs = spendTargets
-        .filter(
-          ({ publicAddress, nativeAmount, otherParams }) =>
-            (publicAddress && nativeAmount) ||
-            (otherParams && otherParams.script)
-        )
-        .map(({ publicAddress = '', nativeAmount = 0, otherParams = {} }) => {
-          if (publicAddress && nativeAmount) {
-            return {
-              address: publicAddress.toString(),
-              value: parseInt(nativeAmount)
-            }
-          }
-          if (otherParams.script) {
-            return {
-              script: otherParams.script,
-              value: parseInt(nativeAmount)
-            }
-          }
-          return {
-            address: publicAddress.toString(),
+
+      const outputs = []
+      for (const spendTarget of spendTargets) {
+        const { publicAddress = '', nativeAmount = 0, otherParams = {} } = spendTarget
+        if (publicAddress && nativeAmount) {
+          outputs.push({
+            address: publicAddress,
             value: parseInt(nativeAmount)
-          }
-        })
+          })
+        } else if (otherParams.script) {
+          outputs.push({
+            script: otherParams.script,
+            value: parseInt(nativeAmount)
+          })
+        }
+      }
 
       const bcoinTx = await this.keyManager.createTX({
         outputs,
