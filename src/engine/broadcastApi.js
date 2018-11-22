@@ -54,7 +54,9 @@ const makeBroadcastInsight = (io: EdgeIo, currencyCode: string) => {
         }
       }
       io.console.info('ERROR makeBroadcastInsight', response)
-      throw new Error(`${urls[currencyCode]} failed with status ${response.status}`)
+      throw new Error(
+        `${urls[currencyCode]} failed with status ${response.status}`
+      )
     } catch (e) {
       io.console.info('ERROR makeBroadcastInsight:', e)
       throw e

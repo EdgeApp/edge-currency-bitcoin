@@ -46,4 +46,6 @@ export const ufoCurrencyPluginFactory = makeCurrencyPluginFactory(ufo)
 export const vertcoinCurrencyPluginFactory = makeCurrencyPluginFactory(vertcoin)
 export const zcoinCurrencyPluginFactory = makeCurrencyPluginFactory(zcoin)
 export const eboostCurrencyPluginFactory = makeCurrencyPluginFactory(eboost)
-export const bitcoinsvCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoinsv)
+export const bitcoinsvCurrencyPluginFactory = makeCurrencyPluginFactory(
+  bitcoinsv
+)

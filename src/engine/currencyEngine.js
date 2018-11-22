@@ -591,7 +591,8 @@ export class CurrencyEngine {
       const outputs = spendTargets
         .filter(
           ({ publicAddress, nativeAmount, otherParams }) =>
-            (publicAddress && nativeAmount) || (otherParams && otherParams.script)
+            (publicAddress && nativeAmount) ||
+            (otherParams && otherParams.script)
         )
         .map(({ publicAddress = '', nativeAmount = 0, otherParams = {} }) => {
           if (publicAddress && nativeAmount) {
@@ -632,7 +633,9 @@ export class CurrencyEngine {
 
       const addresses = getReceiveAddresses(bcoinTx, this.network)
 
-      const ourReceiveAddresses = addresses.filter(address => scriptHashes[address])
+      const ourReceiveAddresses = addresses.filter(
+        address => scriptHashes[address]
+      )
 
       const edgeTransaction: EdgeTransaction = {
         ourReceiveAddresses,
