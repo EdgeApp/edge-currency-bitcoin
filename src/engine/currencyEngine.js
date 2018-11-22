@@ -37,7 +37,8 @@ import { InfoServer } from '../info/constants'
 import {
   addressToScriptHash,
   verifyTxAmount,
-  sumUtxos
+  sumUtxos,
+  getReceiveAddresses
 } from '../utils/coinUtils.js'
 import {
   toLegacyFormat,
@@ -614,14 +615,9 @@ export class CurrencyEngine {
         0
       )
 
-      const ourReceiveAddresses = []
-      for (const i in bcoinTx.outputs) {
-        let address = bcoinTx.outputs[i].getAddress().toString(this.network)
-        address = toNewFormat(address, this.network)
-        if (address && scriptHashes[address]) {
-          ourReceiveAddresses.push(address)
-        }
-      }
+      const addresses = getReceiveAddresses(bcoinTx, this.network)
+
+      const ourReceiveAddresses = addresses.filter(address => scriptHashes[address])
 
       const edgeTransaction: EdgeTransaction = {
         ourReceiveAddresses,

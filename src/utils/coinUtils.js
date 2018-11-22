@@ -237,7 +237,9 @@ export const verifyTxAmount = (
   rawTx: string,
   bcoinTx: any = primitives.TX.fromRaw(rawTx, 'hex')
 ) =>
-  bcoinTx.outputs.find(({ value }) => parseInt(value) <= 0) ? false : bcoinTx
+  filterOutputs(bcoinTx.outputs).find(({ value }) => parseInt(value) <= 0)
+    ? false
+    : bcoinTx
 
 export const parseTransaction = (
   rawTx: string,
@@ -274,3 +276,17 @@ export const addressFromKey = (key: any, network: string): Promise<any> => {
     scriptHash
   }))
 }
+
+export const filterOutputs = (outputs: Array<any>): Array<any> => {
+  const { NONSTANDARD, NULLDATA } = script.types
+  return outputs.filter(output => {
+    const type = output.getType()
+    return type !== NONSTANDARD && type !== NULLDATA
+  })
+}
+
+export const getReceiveAddresses = (bcoinTx: any, network: string): Array<string> =>
+  filterOutputs(bcoinTx.outputs).map(output => {
+    const address = output.getAddress().toString(network)
+    return toNewFormat(address, network)
+  })
