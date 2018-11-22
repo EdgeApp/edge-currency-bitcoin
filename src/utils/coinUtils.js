@@ -92,9 +92,8 @@ export const verifyWIF = (data: any, network: string) => {
   return true
 }
 
-// if (protocol && protocol.replace(':', '').toLowerCase() !== pluginName) {
 export const verifyUriProtocol = (
-  protocol: any,
+  protocol: string | null,
   network: string,
   pluginName: string
 ) => {
@@ -308,7 +307,7 @@ export const filterOutputs = (outputs: Array<any>): Array<any> => {
 }
 
 export const getReceiveAddresses = (
-  bcoinTx: any,
+  bcoinTx: Object,
   network: string
 ): Array<string> =>
   filterOutputs(bcoinTx.outputs).map(output => {
