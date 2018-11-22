@@ -26,6 +26,9 @@ const bcoinInfo: BcoinCurrencyInfo = {
     SIGHASH_FORKID: 0x40,
     forcedMinVersion: 1,
     forkId: 0
+  },
+  scriptTemplates: {
+    replayProtection: () => '0xba'
   }
 }
 

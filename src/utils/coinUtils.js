@@ -22,8 +22,14 @@ export type RawTx = string
 export type BlockHeight = number
 export type Txid = string
 
+export type Script = {
+  type: string,
+  params?: Array<string>
+}
+
 export type Output = {
-  address: string,
+  address?: string,
+  script?: Script,
   value: number
 }
 
@@ -171,10 +177,22 @@ export const createTX = async ({
   }
 
   // Add the outputs
-  outputs.forEach(({ address, value }) => {
-    const bcoinAddress = toBcoinFormat(address, network)
-    const addressScript = script.fromAddress(bcoinAddress)
-    mtx.addOutput(addressScript, value)
+  outputs.forEach(({ address, script: scriptObj, value }) => {
+    if (address) {
+      const bcoinAddress = toBcoinFormat(address, network)
+      const addressScript = script.fromAddress(bcoinAddress)
+      mtx.addOutput(addressScript, value)
+    }
+    if (scriptObj) {
+      const { type, params = [] } = scriptObj
+      const { scriptTemplates = {} } = networks[network] || {}
+      const scriptTemplate = scriptTemplates[type]
+      if (scriptTemplate) {
+        const scriptString = scriptTemplate(...params)
+        const bcashScript = script.fromString(scriptString)
+        mtx.addOutput(bcashScript, value)
+      } else throw new Error('Unkown script template')
+    }
   })
 
   // Create coins

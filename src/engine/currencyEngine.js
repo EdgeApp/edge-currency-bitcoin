@@ -590,12 +590,27 @@ export class CurrencyEngine {
       // Create outputs from spendTargets
       const outputs = spendTargets
         .filter(
-          ({ publicAddress, nativeAmount }) => publicAddress && nativeAmount
+          ({ publicAddress, nativeAmount, otherParams }) =>
+            (publicAddress && nativeAmount) || (otherParams && otherParams.script)
         )
-        .map(({ publicAddress = '', nativeAmount = 0 }) => ({
-          address: publicAddress.toString(),
-          value: parseInt(nativeAmount)
-        }))
+        .map(({ publicAddress = '', nativeAmount = 0, otherParams = {} }) => {
+          if (publicAddress && nativeAmount) {
+            return {
+              address: publicAddress.toString(),
+              value: parseInt(nativeAmount)
+            }
+          }
+          if (otherParams.script) {
+            return {
+              script: otherParams.script,
+              value: parseInt(nativeAmount)
+            }
+          }
+          return {
+            address: publicAddress.toString(),
+            value: parseInt(nativeAmount)
+          }
+        })
 
       const bcoinTx = await this.keyManager.createTX({
         outputs,
