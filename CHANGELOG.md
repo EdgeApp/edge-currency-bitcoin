@@ -1,5 +1,12 @@
 # edge-currency-bitcoin
 
+## 3.7.0
+
+* Add BitcoinSV.
+* Add a way to pass in custom scripts (currently used for replay protaction) into makespend.
+* Fix some meaningless error messages.
+* Add support for Stratum v1.2 & v1.3.
+
 ## 3.6.1
 
 * Fixed issue where as saveTX wouldn't call onTransactionsChanged.
