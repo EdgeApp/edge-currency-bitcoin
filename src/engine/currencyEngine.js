@@ -37,7 +37,8 @@ import { InfoServer } from '../info/constants'
 import {
   addressToScriptHash,
   verifyTxAmount,
-  sumUtxos
+  sumUtxos,
+  getReceiveAddresses
 } from '../utils/coinUtils.js'
 import {
   toLegacyFormat,
@@ -587,14 +588,22 @@ export class CurrencyEngine {
       // Get the rate according to the latest fee
       const rate = this.getRate(edgeSpendInfo)
       // Create outputs from spendTargets
-      const outputs = spendTargets
-        .filter(
-          ({ publicAddress, nativeAmount }) => publicAddress && nativeAmount
-        )
-        .map(({ publicAddress = '', nativeAmount = 0 }) => ({
-          address: publicAddress.toString(),
-          value: parseInt(nativeAmount)
-        }))
+
+      const outputs = []
+      for (const spendTarget of spendTargets) {
+        const { publicAddress = '', nativeAmount = 0, otherParams = {} } = spendTarget
+        if (publicAddress && nativeAmount) {
+          outputs.push({
+            address: publicAddress,
+            value: parseInt(nativeAmount)
+          })
+        } else if (otherParams.script) {
+          outputs.push({
+            script: otherParams.script,
+            value: parseInt(nativeAmount)
+          })
+        }
+      }
 
       const bcoinTx = await this.keyManager.createTX({
         outputs,
@@ -614,14 +623,11 @@ export class CurrencyEngine {
         0
       )
 
-      const ourReceiveAddresses = []
-      for (const i in bcoinTx.outputs) {
-        let address = bcoinTx.outputs[i].getAddress().toString(this.network)
-        address = toNewFormat(address, this.network)
-        if (address && scriptHashes[address]) {
-          ourReceiveAddresses.push(address)
-        }
-      }
+      const addresses = getReceiveAddresses(bcoinTx, this.network)
+
+      const ourReceiveAddresses = addresses.filter(
+        address => scriptHashes[address]
+      )
 
       const edgeTransaction: EdgeTransaction = {
         ourReceiveAddresses,

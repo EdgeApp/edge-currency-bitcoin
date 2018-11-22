@@ -22,8 +22,14 @@ export type RawTx = string
 export type BlockHeight = number
 export type Txid = string
 
+export type Script = {
+  type: string,
+  params?: Array<string>
+}
+
 export type Output = {
-  address: string,
+  address?: string,
+  script?: Script,
   value: number
 }
 
@@ -83,6 +89,19 @@ export const verifyWIF = (data: any, network: string) => {
     throw new Error('Bad compression flag.')
   }
   br.verifyChecksum()
+  return true
+}
+
+export const verifyUriProtocol = (
+  protocol: string | null,
+  network: string,
+  pluginName: string
+) => {
+  const { addressPrefix = {} } = networks[network] || {}
+  if (protocol) {
+    const prot = protocol.replace(':', '').toLowerCase()
+    return prot === pluginName || prot === addressPrefix.cashAddress
+  }
   return true
 }
 
@@ -161,10 +180,22 @@ export const createTX = async ({
   }
 
   // Add the outputs
-  outputs.forEach(({ address, value }) => {
-    const bcoinAddress = toBcoinFormat(address, network)
-    const addressScript = script.fromAddress(bcoinAddress)
-    mtx.addOutput(addressScript, value)
+  outputs.forEach(({ address, script: scriptObj, value }) => {
+    if (address) {
+      const bcoinAddress = toBcoinFormat(address, network)
+      const addressScript = script.fromAddress(bcoinAddress)
+      mtx.addOutput(addressScript, value)
+    }
+    if (scriptObj) {
+      const { type, params = [] } = scriptObj
+      const { scriptTemplates = {} } = networks[network] || {}
+      const scriptTemplate = scriptTemplates[type]
+      if (scriptTemplate) {
+        const scriptString = scriptTemplate(...params)
+        const bcashScript = script.fromString(scriptString)
+        mtx.addOutput(bcashScript, value)
+      } else throw new Error('Unkown script template')
+    }
   })
 
   // Create coins
@@ -227,7 +258,9 @@ export const verifyTxAmount = (
   rawTx: string,
   bcoinTx: any = primitives.TX.fromRaw(rawTx, 'hex')
 ) =>
-  bcoinTx.outputs.find(({ value }) => parseInt(value) <= 0) ? false : bcoinTx
+  filterOutputs(bcoinTx.outputs).find(({ value }) => parseInt(value) <= 0)
+    ? false
+    : bcoinTx
 
 export const parseTransaction = (
   rawTx: string,
@@ -264,3 +297,20 @@ export const addressFromKey = (key: any, network: string): Promise<any> => {
     scriptHash
   }))
 }
+
+export const filterOutputs = (outputs: Array<any>): Array<any> => {
+  const { NONSTANDARD, NULLDATA } = script.types
+  return outputs.filter(output => {
+    const type = output.getType()
+    return type !== NONSTANDARD && type !== NULLDATA
+  })
+}
+
+export const getReceiveAddresses = (
+  bcoinTx: Object,
+  network: string
+): Array<string> =>
+  filterOutputs(bcoinTx.outputs).map(output => {
+    const address = output.getAddress().toString(network)
+    return toNewFormat(address, network)
+  })

@@ -93,7 +93,7 @@ export const validAddress = (address: string, network: string) => {
   const { addressPrefix = {} } = bcoin.networks[network] || {}
   if (addressPrefix.cashAddress) {
     try {
-      if (!address.includes(`${network}`)) {
+      if (!address.includes(`${addressPrefix.cashAddress}`)) {
         base32.decode(address)
         address = `${addressPrefix.cashAddress}:${address}`
       }

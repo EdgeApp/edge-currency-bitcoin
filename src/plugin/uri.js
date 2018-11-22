@@ -10,7 +10,7 @@ import {
   dirtyAddress,
   toNewFormat
 } from '../utils/addressFormat/addressFormatIndex.js'
-import { verifyWIF } from '../utils/coinUtils.js'
+import { verifyWIF, verifyUriProtocol } from '../utils/coinUtils.js'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
 import { bns } from 'biggystring'
@@ -51,7 +51,7 @@ export const parseUri = (
   const uriObj = parse(uri, {}, true)
   const { protocol, pathname, query } = uriObj
   // If the currency URI belongs to the wrong network then error
-  if (protocol && protocol.replace(':', '').toLowerCase() !== pluginName) {
+  if (!verifyUriProtocol(protocol, network, pluginName)) {
     throw new Error('InvalidUriError')
   }
   // Get all posible query params
