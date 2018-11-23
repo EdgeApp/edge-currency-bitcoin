@@ -298,13 +298,11 @@ export const addressFromKey = (key: any, network: string): Promise<any> => {
   }))
 }
 
-export const filterOutputs = (outputs: Array<any>): Array<any> => {
-  const { NONSTANDARD, NULLDATA } = script.types
-  return outputs.filter(output => {
+export const filterOutputs = (outputs: Array<any>): Array<any> =>
+  outputs.filter(output => {
     const type = output.getType()
-    return type !== NONSTANDARD && type !== NULLDATA
+    return type !== 'nonstandard' && type !== 'nulldata'
   })
-}
 
 export const getReceiveAddresses = (
   bcoinTx: Object,
