@@ -591,7 +591,11 @@ export class CurrencyEngine {
 
       const outputs = []
       for (const spendTarget of spendTargets) {
-        const { publicAddress = '', nativeAmount = 0, otherParams = {} } = spendTarget
+        const {
+          publicAddress = '',
+          nativeAmount = 0,
+          otherParams = {}
+        } = spendTarget
         if (publicAddress && nativeAmount) {
           outputs.push({
             address: publicAddress,
