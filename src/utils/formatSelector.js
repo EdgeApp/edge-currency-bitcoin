@@ -99,6 +99,17 @@ export const FormatSelector = (
       return { privKey, pubKey }
     },
 
+    hasScript: (branch: number, scriptObj?: Script): boolean => {
+      if (scriptObj) {
+        if (!scriptTemplates[scriptObj.type]) {
+          throw new Error('Unkown script template')
+        }
+        return true
+      }
+      if (scriptTemplates[branches[`${branch}`]]) return true
+      return false
+    },
+
     parseSeed:
       bip === 32
         ? (seed: string) => Buffer.from(seed, 'base64').toString('hex')
@@ -125,6 +136,29 @@ export const FormatSelector = (
       deriveHdKey(parentKey, index).then(derivedKey =>
         setKeyTypeWrap(derivedKey, redeemScript)
       ),
+    
+    deriveScriptAddress: async (
+      parentKey: any,
+      index: number,
+      branch: number,
+      scriptObj?: Script
+    ): Promise<DerivedAddress | null> => {
+      const branchName = branches[`${branch}`]
+      const childKey = await deriveHdKey(parentKey, index)
+      let redeemScript = null
+      if (scriptObj) {
+        const scriptTemplate = scriptTemplates[scriptObj.type]
+        redeemScript = scriptTemplate(childKey)(scriptObj.params)
+      } else if (scriptTemplates[branchName]) {
+        const scriptTemplate = scriptTemplates[branchName]
+        const temp = scriptTemplate(childKey)
+        if (typeof temp === 'string') redeemScript = temp
+      }
+      if (!redeemScript) return null
+      const typedKey = await setKeyTypeWrap(childKey, redeemScript)
+      const address = await addressFromKey(typedKey, network)
+      return Object.assign(address, { redeemScript })
+    },
 
     keysFromRaw: (rawKeys: any = {}) => {
       const keyRings = {}
