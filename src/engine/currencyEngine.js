@@ -592,21 +592,13 @@ export class CurrencyEngine {
       const outputs = []
       for (const spendTarget of spendTargets) {
         const {
-          publicAddress = '',
-          nativeAmount = 0,
-          otherParams = {}
+          publicAddress: address = '',
+          nativeAmount = '0',
+          otherParams: { script } = {}
         } = spendTarget
-        if (publicAddress && nativeAmount) {
-          outputs.push({
-            address: publicAddress,
-            value: parseInt(nativeAmount)
-          })
-        } else if (otherParams.script) {
-          outputs.push({
-            script: otherParams.script,
-            value: parseInt(nativeAmount)
-          })
-        }
+        const value = parseInt(nativeAmount)
+        if (address && value) outputs.push({ address, value })
+        else if (script) outputs.push({ script, value })
       }
 
       const bcoinTx = await this.keyManager.createTX({
