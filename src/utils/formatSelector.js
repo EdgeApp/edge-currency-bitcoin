@@ -143,7 +143,7 @@ export const FormatSelector = (
       deriveHdKey(parentKey, index).then(derivedKey =>
         setKeyTypeWrap(derivedKey, redeemScript)
       ),
-    
+
     deriveScriptAddress: async (
       parentKey: any,
       index: number,
