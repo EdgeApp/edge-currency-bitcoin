@@ -4,7 +4,8 @@ import type {
   Utxo,
   BlockHeight,
   TxOptions,
-  Output
+  Output,
+  Script
 } from '../utils/coinUtils.js'
 import { getAllKeyRings, FormatSelector } from '../utils/formatSelector.js'
 import { parsePath, createTX, getLock } from '../utils/coinUtils.js'
@@ -17,7 +18,8 @@ export type Address = {
   displayAddress: string,
   scriptHash: string,
   index: number,
-  branch: number
+  branch: number,
+  redeemScript?: string
 }
 
 export type KeyRing = {
@@ -133,8 +135,16 @@ export class KeyManager {
       if (path.length) {
         const [branch, index] = path
         const displayAddress = toNewFormat(addressObj.displayAddress, network)
-        const address = { displayAddress, scriptHash, index, branch }
-        this.keys[branches[branch]].children.push(address)
+        const { redeemScript } = addressObj
+        const address = {
+          displayAddress,
+          scriptHash,
+          index,
+          branch,
+          redeemScript
+        }
+        const branchName = branches[`${branch}`]
+        this.keys[branchName].children.push(address)
       }
     }
     // Cache is not sorted so sort addresses according to derivation index
@@ -188,8 +198,9 @@ export class KeyManager {
       for (const input: any of tx.inputs) {
         const { prevout } = input
         if (prevout) {
-          const [branch: number, index: number] = this.utxoToPath(prevout)
-          const keyRing = this.keys[branches[branch]]
+          const { branch, index, redeemScript } = this.utxoToAddress(prevout)
+          const branchName = branches[`${branch}`]
+          const keyRing = this.keys[branchName]
           if (!keyRing.privKey) {
             keyRing.privKey = await this.fSelector.deriveHdKey(
               this.keys.master.privKey,
@@ -197,7 +208,11 @@ export class KeyManager {
             )
             this.saveKeysToCache()
           }
-          const key = await this.fSelector.deriveKeyRing(keyRing.privKey, index)
+          const key = await this.fSelector.deriveKeyRing(
+            keyRing.privKey,
+            index,
+            redeemScript
+          )
           keyRings.push(key)
         }
       }
@@ -227,7 +242,9 @@ export class KeyManager {
   // ////////////// Private API /////////////////// //
   // ////////////////////////////////////////////// //
 
-  utxoToPath (prevout: any): Array<number> {
+  utxoToAddress (
+    prevout: any
+  ): { branch: number, index: number, redeemScript?: string } {
     const parsedTx = this.txInfos[prevout.rhash()]
     if (!parsedTx) throw new Error('UTXO not synced yet')
     const output = parsedTx.outputs[prevout.index]
@@ -235,10 +252,10 @@ export class KeyManager {
     const scriptHash = output.scriptHash
     const address = this.addressInfos[scriptHash]
     if (!address) throw new Error('Address is not part of this wallet')
-    const path = address.path
+    const { path, redeemScript } = address
     const pathSuffix = path.split(this.masterPath + '/')[1]
     const [branch, index] = pathSuffix.split('/')
-    return [parseInt(branch), parseInt(index)]
+    return { branch: parseInt(branch), index: parseInt(index), redeemScript }
   }
 
   getNextAvailable (addresses: Array<Address>): string {
@@ -289,9 +306,13 @@ export class KeyManager {
   async setLookAhead (closeGaps: boolean = false) {
     const unlock = await this.writeLock.lock()
     try {
-      const { branches } = this.fSelector
-      for (let i = 0; i < branches.length; i++) {
-        await this.deriveNewKeys(this.keys[branches[i]], i, closeGaps)
+      for (const branchNum in this.fSelector.branches) {
+        const branchName = this.fSelector.branches[branchNum]
+        await this.deriveNewKeys(
+          this.keys[branchName],
+          parseInt(branchNum),
+          closeGaps
+        )
       }
     } catch (e) {
       console.log(e)

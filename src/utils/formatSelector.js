@@ -1,5 +1,6 @@
 // @flow
 // $FlowFixMe
+import type { Script } from '../utils/coinUtils.js'
 import buffer from 'buffer-hack'
 import { hd, primitives, consensus, networks } from 'bcoin'
 import {
@@ -8,10 +9,15 @@ import {
   setKeyType
 } from '../utils/coinUtils.js'
 
-export const SUPPORTED_BIPS = ['bip32', 'bip44', 'bip49', 'bip84']
-
 const { Buffer } = buffer
 const witScale = consensus.WITNESS_SCALE_FACTOR
+
+export type DerivedAddress = {
+  address: string,
+  scriptHash: string,
+  redeemScript?: string
+}
+export const SUPPORTED_BIPS = ['bip32', 'bip44', 'bip49', 'bip84']
 
 export const getAllKeyRings = (
   privateKeys: Array<string>,
@@ -59,17 +65,18 @@ export const FormatSelector = (
   if (!SUPPORTED_BIPS.includes(format)) throw new Error('Unknown bip type')
   const bip = parseInt(format.split('bip')[1])
 
-  const branches = ['master', 'receive']
-  if (bip !== 32) branches.push('change')
+  const branches = { '0': 'receive' }
+  if (bip !== 32) Object.assign(branches, { '1': 'change' })
   const nested = bip === 49
   const witness = bip === 49 || bip === 84
 
-  const setKeyTypeWrap = (key: any) => setKeyType(key, nested, witness, network)
+  const setKeyTypeWrap = (key: any, redeemScript?: string) =>
+    setKeyType(key, nested, witness, network, redeemScript)
   const deriveHdKey = (parentKey: any, index: number): Promise<any> =>
     Promise.resolve(parentKey.derive(index))
-  const children: Array<string> = branches.slice(1)
+
   return {
-    branches: children,
+    branches,
     setKeyType: setKeyTypeWrap,
 
     sign: (
@@ -110,23 +117,28 @@ export const FormatSelector = (
         .then(key => setKeyTypeWrap(key))
         .then(key => addressFromKey(key, network)),
 
-    deriveKeyRing: (parentKey: any, index: number): Promise<any> =>
+    deriveKeyRing: (
+      parentKey: any,
+      index: number,
+      redeemScript?: string
+    ): Promise<any> =>
       deriveHdKey(parentKey, index).then(derivedKey =>
-        setKeyTypeWrap(derivedKey)
+        setKeyTypeWrap(derivedKey, redeemScript)
       ),
 
-    keysFromRaw: (rawKeys: any = {}) =>
-      branches.reduce((keyRings, branch) => {
-        const { xpub, xpriv } = rawKeys[branch] || {}
-        return {
-          ...keyRings,
-          [branch]: {
-            pubKey: xpub ? hd.PublicKey.fromBase58(xpub, network) : null,
-            privKey: xpriv ? hd.PrivateKey.fromBase58(xpriv, network) : null,
-            children: []
-          }
+    keysFromRaw: (rawKeys: any = {}) => {
+      const keyRings = {}
+      const branchesNames = ['master', ...Object.values(branches)]
+      for (const branchName of branchesNames) {
+        const { xpub, xpriv } = rawKeys[branchName] || {}
+        keyRings[branchName] = {
+          pubKey: xpub ? hd.PublicKey.fromBase58(xpub, network) : null,
+          privKey: xpriv ? hd.PrivateKey.fromBase58(xpriv, network) : null,
+          children: []
         }
-      }, {}),
+      }
+      return keyRings
+    },
 
     estimateSize: (prev: any) => {
       const address = prev.getAddress()
