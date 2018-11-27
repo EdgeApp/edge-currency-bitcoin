@@ -1,7 +1,7 @@
 // @flow
 // $FlowFixMe
-import type { Script } from '../utils/coinUtils.js'
 import buffer from 'buffer-hack'
+import type { Script } from '../utils/coinUtils.js'
 import { hd, primitives, consensus, networks } from 'bcoin'
 import {
   getPrivateFromSeed,
@@ -16,6 +16,11 @@ export type DerivedAddress = {
   address: string,
   scriptHash: string,
   redeemScript?: string
+}
+export type BranchName = string
+
+export type Branches = {
+  [branchNum: string]: BranchName
 }
 export const SUPPORTED_BIPS = ['bip32', 'bip44', 'bip49', 'bip84']
 
@@ -65,7 +70,7 @@ export const FormatSelector = (
   if (!SUPPORTED_BIPS.includes(format)) throw new Error('Unknown bip type')
   const bip = parseInt(format.split('bip')[1])
 
-  const branches = { '0': 'receive' }
+  const branches: Branches = { '0': 'receive' }
   if (bip !== 32) Object.assign(branches, { '1': 'change' })
   const nested = bip === 49
   const witness = bip === 49 || bip === 84
@@ -74,7 +79,7 @@ export const FormatSelector = (
     const template = scriptTemplates[scriptName]()
     const defaultScript = typeof template === 'function' ? template() : template
     const branchNum = parseInt(defaultScript.slice(-8), 16)
-    branches[branchNum] = scriptName
+    branches[`${branchNum}`] = scriptName
   }
 
   const setKeyTypeWrap = (key: any, redeemScript?: string) =>
@@ -164,12 +169,15 @@ export const FormatSelector = (
       if (!redeemScript) return null
       const typedKey = await setKeyTypeWrap(childKey, redeemScript)
       const address = await addressFromKey(typedKey, network)
-      return Object.assign(address, { redeemScript })
+      return { ...address, redeemScript }
     },
 
     keysFromRaw: (rawKeys: any = {}) => {
       const keyRings = {}
-      const branchesNames = ['master', ...Object.values(branches)]
+      const branchesNames: Array<string> = [
+        'master',
+        ...(Object.values(branches): any)
+      ]
       for (const branchName of branchesNames) {
         const { xpub, xpriv } = rawKeys[branchName] || {}
         keyRings[branchName] = {

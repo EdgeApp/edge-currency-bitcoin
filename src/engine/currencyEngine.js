@@ -156,8 +156,18 @@ export class CurrencyEngine {
     await this.engineState.load()
 
     const callbacks: KeyManagerCallbacks = {
-      onNewAddress: (scriptHash: string, address: string, path: string) => {
-        return this.engineState.addAddress(scriptHash, address, path)
+      onNewAddress: (
+        scriptHash: string,
+        address: string,
+        path: string,
+        redeemScript?: string
+      ) => {
+        return this.engineState.addAddress(
+          scriptHash,
+          address,
+          path,
+          redeemScript
+        )
       },
       onNewKey: (keys: any) => this.engineState.saveKeys(keys)
     }

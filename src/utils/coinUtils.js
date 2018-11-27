@@ -194,9 +194,11 @@ export const createTX = async ({
 
   // Add the outputs
   outputs.forEach(({ address, value }) => {
-    const bcoinAddress = toBcoinFormat(address, network)
-    const addressScript = script.fromAddress(bcoinAddress)
-    mtx.addOutput(addressScript, value)
+    if (address && value) {
+      const bcoinAddress = toBcoinFormat(address, network)
+      const addressScript = script.fromAddress(bcoinAddress)
+      mtx.addOutput(addressScript, value)
+    }
   })
 
   // Create coins

@@ -58,7 +58,12 @@ export type createTxOptions = {
 
 export interface KeyManagerCallbacks {
   // When deriving new address send it to caching and subscribing
-  +onNewAddress?: (scriptHash: string, address: string, path: string) => void;
+  +onNewAddress?: (
+    scriptHash: string,
+    address: string,
+    path: string,
+    redeemScript?: string
+  ) => void;
   // When deriving new key send it to caching
   +onNewKey?: (keys: any) => void;
 }
@@ -85,7 +90,12 @@ export class KeyManager {
   gapLimit: number
   network: string
   fSelector: any
-  onNewAddress: (scriptHash: string, address: string, path: string) => void
+  onNewAddress: (
+    scriptHash: string,
+    address: string,
+    path: string,
+    redeemScript?: string
+  ) => void
   onNewKey: (keys: any) => void
   addressInfos: AddressInfos
   txInfos: { [txid: string]: any }
@@ -190,13 +200,17 @@ export class KeyManager {
           const branch = Object.keys(branches).find(
             num => type === branches[num]
           )
+          if (!branch) throw new Error(`Branch does not exist`)
           const addressObj = await this.deriveAddress(
             keyRing,
             branch,
             index,
             output.script
           )
-          output.address = addressObj.address
+          if (!addressObj) {
+            throw new Error(`Error creating address from script type ${type}`)
+          }
+          output.address = addressObj.displayAddress
         } else {
           output.address = this.getNextAvailable(keyRing.children)
         }
@@ -398,7 +412,7 @@ export class KeyManager {
     branch: number,
     index: number,
     scriptObj?: Script
-  ): Promise<Address> {
+  ): Promise<Address | null> {
     let newAddress = {}
 
     if (!this.fSelector.hasScript(branch, scriptObj)) {
