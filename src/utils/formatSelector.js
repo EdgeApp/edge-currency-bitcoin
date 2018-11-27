@@ -69,6 +69,13 @@ export const FormatSelector = (
   if (bip !== 32) Object.assign(branches, { '1': 'change' })
   const nested = bip === 49
   const witness = bip === 49 || bip === 84
+  const { scriptTemplates = {} } = networks[network] || {}
+  for (const scriptName in scriptTemplates) {
+    const template = scriptTemplates[scriptName]()
+    const defaultScript = typeof template === 'function' ? template() : template
+    const branchNum = parseInt(defaultScript.slice(-8), 16)
+    branches[branchNum] = scriptName
+  }
 
   const setKeyTypeWrap = (key: any, redeemScript?: string) =>
     setKeyType(key, nested, witness, network, redeemScript)
