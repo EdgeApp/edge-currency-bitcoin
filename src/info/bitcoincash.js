@@ -3,6 +3,25 @@ import type { EdgeCurrencyInfo } from 'edge-core-js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
+import { hexToVarByte } from '../utils/utils.js'
+
+const OP_CHECKDATASIGVERIFY = 'bb'
+const OP_CHECKDATASIG = 'ba'
+const OP_CHECKSIG = 'ac'
+const SIGNATURE =
+  '30440220256c12175e809381f97637933ed6ab97737d263eaaebca6add21bced67fd12a402205ce29ecc1369d6fc1b51977ed38faaf41119e3be1d7edfafd7cfaf0b6061bd07'
+const MESSAGE = ''
+const PUBKEY =
+  '038282263212c609d9ea2a6e3e172de238d8c39cabd5ac1ca10646e23fd5f51508'
+const cds = (sig: string, msg: string, pubKey: string, hdKey: any) => {
+  const cdsSuffix = `${hexToVarByte(
+    hdKey ? hdKey.publicKey.toString('hex') : ''
+  )}${OP_CHECKSIG}`
+  const cdsPrefix = `0x${hexToVarByte(sig)}${hexToVarByte(msg)}${hexToVarByte(
+    pubKey
+  )}`
+  return [cdsPrefix, cdsSuffix]
+}
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcoincash',
@@ -28,7 +47,18 @@ const bcoinInfo: BcoinCurrencyInfo = {
     forkId: 0
   },
   scriptTemplates: {
-    replayProtection: () => '0xba'
+    replayProtection: (hdKey: any) =>
+      cds(SIGNATURE, MESSAGE, PUBKEY, hdKey).join(OP_CHECKDATASIGVERIFY),
+    checkdatasig: (hdKey: any) => (
+      sig: string = '',
+      msg: string = '',
+      pubKey: string = ''
+    ) => cds(sig, msg, pubKey, hdKey).join(OP_CHECKDATASIG),
+    checkdatasigverify: (hdKey: any) => (
+      sig: string = '',
+      msg: string = '',
+      pubKey: string = ''
+    ) => cds(sig, msg, pubKey, hdKey).join(OP_CHECKDATASIGVERIFY)
   }
 }
 
