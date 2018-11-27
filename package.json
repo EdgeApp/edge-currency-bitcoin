@@ -32,7 +32,7 @@
     "prepare": "npm run build",
     "security": "nsp check",
     "pretest": "npm run build:test && npm run lint",
-    "test": "nyc mocha --require source-map-support/register build/tests.cjs.js --reporter mocha-multi-reporters --reporter-options configFile=./mocha-config.json",
+    "test": "nyc mocha --inspect --require source-map-support/register build/tests.cjs.js --reporter mocha-multi-reporters --reporter-options configFile=./mocha-config.json",
     "posttest": "nyc report --reporter=cobertura --reporter=html",
     "updot": "updot"
   },
