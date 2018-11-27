@@ -218,7 +218,7 @@ export class KeyManager {
           address = this.getNextAvailable(keyRing.children)
         }
       }
-      standardOutputs.push({ address, value: output.value })
+      if (address) standardOutputs.push({ address, value: output.value })
     }
     return createTX({
       ...rest,
