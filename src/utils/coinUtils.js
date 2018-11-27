@@ -105,21 +105,34 @@ export const verifyUriProtocol = (
   return true
 }
 
-export const setKeyType = (
+export const setKeyType = async (
   key: any,
   nested: boolean,
   witness: boolean,
-  network: string
-): Promise<any> =>
-  Promise.resolve(
-    primitives.KeyRing.fromKey(
+  network: string,
+  redeemScript?: string
+): Promise<any> => {
+  let keyRing = {}
+  if (redeemScript) {
+    nested = false
+    witness = false
+    keyRing = await primitives.KeyRing.fromScript(
+      key.privateKey || key.publicKey,
+      script.fromString(redeemScript),
+      isCompressed(key.publicKey),
+      network
+    )
+  } else {
+    keyRing = await primitives.KeyRing.fromKey(
       key.privateKey || key.publicKey,
       isCompressed(key.publicKey),
       network
     )
-  ).then(clone =>
-    Object.assign(clone, { nested, witness, network: Network.get(network) })
-  )
+  }
+
+  Object.assign(keyRing, { nested, witness, network: Network.get(network) })
+  return keyRing
+}
 
 export const createTX = async ({
   utxos,
