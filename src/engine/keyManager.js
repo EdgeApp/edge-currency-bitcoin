@@ -179,6 +179,29 @@ export class KeyManager {
   }
 
   async createTX (options: createTxOptions): any {
+    const { outputs = [] } = options
+    const branches = this.fSelector.branches
+    for (const output of outputs) {
+      if (output.script) {
+        const { type, params } = output.script
+        const keyRing = this.keys[type]
+        if (params && params.length) {
+          const index = keyRing.children.length
+          const branch = Object.keys(branches).find(
+            num => type === branches[num]
+          )
+          const addressObj = await this.deriveAddress(
+            keyRing,
+            branch,
+            index,
+            output.script
+          )
+          output.address = addressObj.address
+        } else {
+          output.address = this.getNextAvailable(keyRing.children)
+        }
+      }
+    }
     return createTX({
       ...options,
       changeAddress: this.getChangeAddress(),
@@ -338,7 +361,8 @@ export class KeyManager {
       const length = children.length
       for (let i = 0; i < length; ++i, ++index) {
         while (index < children[i].index) {
-          await this.deriveAddress(keyRing, branch, index++)
+          const newAddr = await this.deriveAddress(keyRing, branch, index++)
+          if (!newAddr) break
         }
       }
       if (children.length > length) {
@@ -359,7 +383,8 @@ export class KeyManager {
 
     // If the last used address is too close to the end, generate some more:
     while (lastUsed + this.gapLimit > children.length) {
-      await this.deriveAddress(keyRing, branch, children.length)
+      const newAddr = await this.deriveAddress(keyRing, branch, children.length)
+      if (!newAddr) break
     }
   }
 
@@ -368,14 +393,38 @@ export class KeyManager {
    * and adds it to the state.
    * @param keyRing The KeyRing corresponding to the selected branch.
    */
-  async deriveAddress (keyRing: KeyRing, branch: number, index: number) {
-    const { address, scriptHash } = await this.fSelector.deriveAddress(
-      keyRing.pubKey,
-      index
-    )
+  async deriveAddress (
+    keyRing: KeyRing,
+    branch: number,
+    index: number,
+    scriptObj?: Script
+  ): Promise<Address> {
+    let newAddress = {}
+
+    if (!this.fSelector.hasScript(branch, scriptObj)) {
+      newAddress = await this.fSelector.deriveAddress(keyRing.pubKey, index)
+    } else {
+      newAddress = await this.fSelector.deriveScriptAddress(
+        keyRing.pubKey,
+        index,
+        branch,
+        scriptObj
+      )
+    }
+
+    if (!newAddress) return null
+    const { address, scriptHash, redeemScript } = newAddress
     const displayAddress = toNewFormat(address, this.network)
     const keyPath = `${this.masterPath}/${branch}/${index}`
-    keyRing.children.push({ displayAddress, scriptHash, index, branch })
-    this.onNewAddress(scriptHash, displayAddress, keyPath)
+    const addressObj = {
+      displayAddress,
+      scriptHash,
+      index,
+      branch,
+      redeemScript
+    }
+    keyRing.children.push(addressObj)
+    this.onNewAddress(scriptHash, displayAddress, keyPath, redeemScript)
+    return addressObj
   }
 }
