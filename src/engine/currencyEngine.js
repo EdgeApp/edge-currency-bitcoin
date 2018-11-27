@@ -602,12 +602,12 @@ export class CurrencyEngine {
       const outputs = []
       for (const spendTarget of spendTargets) {
         const {
-          publicAddress: address = '',
-          nativeAmount = '0',
+          publicAddress: address,
+          nativeAmount,
           otherParams: { script } = {}
         } = spendTarget
-        const value = parseInt(nativeAmount)
-        if (address && value) outputs.push({ address, value })
+        const value = parseInt(nativeAmount || '0')
+        if (address && nativeAmount) outputs.push({ address, value })
         else if (script) outputs.push({ script, value })
       }
 

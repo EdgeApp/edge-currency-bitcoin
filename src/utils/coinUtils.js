@@ -33,6 +33,11 @@ export type Output = {
   value: number
 }
 
+export type StandardOutput = {
+  address: string,
+  value: number
+}
+
 export type Utxo = {
   tx: any,
   index: number,
@@ -55,7 +60,7 @@ export type CreateTxOptions = {
   maxFee: number,
   changeAddress: string,
   network: string,
-  outputs?: Array<Output>,
+  outputs?: Array<StandardOutput>,
   height?: BlockHeight,
   estimate?: Function,
   txOptions: TxOptions
@@ -194,11 +199,9 @@ export const createTX = async ({
 
   // Add the outputs
   outputs.forEach(({ address, value }) => {
-    if (address && value) {
-      const bcoinAddress = toBcoinFormat(address, network)
-      const addressScript = script.fromAddress(bcoinAddress)
-      mtx.addOutput(addressScript, value)
-    }
+    const bcoinAddress = toBcoinFormat(address, network)
+    const addressScript = script.fromAddress(bcoinAddress)
+    mtx.addOutput(addressScript, value)
   })
 
   // Create coins

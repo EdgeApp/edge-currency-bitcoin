@@ -5,6 +5,7 @@ import type {
   BlockHeight,
   TxOptions,
   Output,
+  StandardOutput,
   Script
 } from '../utils/coinUtils.js'
 import { getAllKeyRings, FormatSelector } from '../utils/formatSelector.js'
@@ -189,9 +190,11 @@ export class KeyManager {
   }
 
   async createTX (options: createTxOptions): any {
-    const { outputs = [] } = options
+    const { outputs = [], ...rest } = options
+    const standardOutputs: Array<StandardOutput> = []
     const branches = this.fSelector.branches
     for (const output of outputs) {
+      let { address = '' } = output
       if (output.script) {
         const { type, params } = output.script
         const keyRing = this.keys[type]
@@ -210,14 +213,16 @@ export class KeyManager {
           if (!addressObj) {
             throw new Error(`Error creating address from script type ${type}`)
           }
-          output.address = addressObj.displayAddress
+          address = addressObj.displayAddress
         } else {
-          output.address = this.getNextAvailable(keyRing.children)
+          address = this.getNextAvailable(keyRing.children)
         }
       }
+      standardOutputs.push({ address, value: output.value })
     }
     return createTX({
-      ...options,
+      ...rest,
+      outputs: standardOutputs,
       changeAddress: this.getChangeAddress(),
       estimate: prev => this.fSelector.estimateSize(prev),
       network: this.network
