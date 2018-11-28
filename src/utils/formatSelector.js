@@ -1,6 +1,7 @@
 // @flow
 // $FlowFixMe
 import buffer from 'buffer-hack'
+import type { Script } from '../utils/coinUtils.js'
 import { hd, primitives, consensus, networks } from 'bcoin'
 import {
   getPrivateFromSeed,
@@ -8,10 +9,20 @@ import {
   setKeyType
 } from '../utils/coinUtils.js'
 
-export const SUPPORTED_BIPS = ['bip32', 'bip44', 'bip49', 'bip84']
-
 const { Buffer } = buffer
 const witScale = consensus.WITNESS_SCALE_FACTOR
+
+export type DerivedAddress = {
+  address: string,
+  scriptHash: string,
+  redeemScript?: string
+}
+export type BranchName = string
+
+export type Branches = {
+  [branchNum: string]: BranchName
+}
+export const SUPPORTED_BIPS = ['bip32', 'bip44', 'bip49', 'bip84']
 
 export const getAllKeyRings = (
   privateKeys: Array<string>,
@@ -59,17 +70,25 @@ export const FormatSelector = (
   if (!SUPPORTED_BIPS.includes(format)) throw new Error('Unknown bip type')
   const bip = parseInt(format.split('bip')[1])
 
-  const branches = ['master', 'receive']
-  if (bip !== 32) branches.push('change')
+  const branches: Branches = { '0': 'receive' }
+  if (bip !== 32) Object.assign(branches, { '1': 'change' })
   const nested = bip === 49
   const witness = bip === 49 || bip === 84
+  const { scriptTemplates = {} } = networks[network] || {}
+  for (const scriptName in scriptTemplates) {
+    const template = scriptTemplates[scriptName]()
+    const defaultScript = typeof template === 'function' ? template() : template
+    const branchNum = parseInt(defaultScript.slice(-8), 16)
+    branches[`${branchNum}`] = scriptName
+  }
 
-  const setKeyTypeWrap = (key: any) => setKeyType(key, nested, witness, network)
+  const setKeyTypeWrap = (key: any, redeemScript?: string) =>
+    setKeyType(key, nested, witness, network, redeemScript)
   const deriveHdKey = (parentKey: any, index: number): Promise<any> =>
     Promise.resolve(parentKey.derive(index))
-  const children: Array<string> = branches.slice(1)
+
   return {
-    branches: children,
+    branches,
     setKeyType: setKeyTypeWrap,
 
     sign: (
@@ -92,6 +111,17 @@ export const FormatSelector = (
       return { privKey, pubKey }
     },
 
+    hasScript: (branch: number, scriptObj?: Script): boolean => {
+      if (scriptObj) {
+        if (!scriptTemplates[scriptObj.type]) {
+          throw new Error('Unkown script template')
+        }
+        return true
+      }
+      if (scriptTemplates[branches[`${branch}`]]) return true
+      return false
+    },
+
     parseSeed:
       bip === 32
         ? (seed: string) => Buffer.from(seed, 'base64').toString('hex')
@@ -110,23 +140,54 @@ export const FormatSelector = (
         .then(key => setKeyTypeWrap(key))
         .then(key => addressFromKey(key, network)),
 
-    deriveKeyRing: (parentKey: any, index: number): Promise<any> =>
+    deriveKeyRing: (
+      parentKey: any,
+      index: number,
+      redeemScript?: string
+    ): Promise<any> =>
       deriveHdKey(parentKey, index).then(derivedKey =>
-        setKeyTypeWrap(derivedKey)
+        setKeyTypeWrap(derivedKey, redeemScript)
       ),
 
-    keysFromRaw: (rawKeys: any = {}) =>
-      branches.reduce((keyRings, branch) => {
-        const { xpub, xpriv } = rawKeys[branch] || {}
-        return {
-          ...keyRings,
-          [branch]: {
-            pubKey: xpub ? hd.PublicKey.fromBase58(xpub, network) : null,
-            privKey: xpriv ? hd.PrivateKey.fromBase58(xpriv, network) : null,
-            children: []
-          }
+    deriveScriptAddress: async (
+      parentKey: any,
+      index: number,
+      branch: number,
+      scriptObj?: Script
+    ): Promise<DerivedAddress | null> => {
+      const branchName = branches[`${branch}`]
+      const childKey = await deriveHdKey(parentKey, index)
+      let redeemScript = null
+      if (scriptObj) {
+        const scriptTemplate = scriptTemplates[scriptObj.type]
+        redeemScript = scriptTemplate(childKey)(scriptObj.params)
+      } else if (scriptTemplates[branchName]) {
+        const scriptTemplate = scriptTemplates[branchName]
+        const temp = scriptTemplate(childKey)
+        if (typeof temp === 'string') redeemScript = temp
+      }
+      if (!redeemScript) return null
+      const typedKey = await setKeyTypeWrap(childKey, redeemScript)
+      const address = await addressFromKey(typedKey, network)
+      return { ...address, redeemScript }
+    },
+
+    keysFromRaw: (rawKeys: any = {}) => {
+      const keyRings = {}
+      const branchesNames: Array<string> = [
+        'master',
+        ...(Object.values(branches): any)
+      ]
+      for (const branchName of branchesNames) {
+        const { xpub, xpriv } = rawKeys[branchName] || {}
+        keyRings[branchName] = {
+          pubKey: xpub ? hd.PublicKey.fromBase58(xpub, network) : null,
+          privKey: xpriv ? hd.PrivateKey.fromBase58(xpriv, network) : null,
+          children: []
         }
-      }, {}),
+      }
+      return keyRings
+    },
 
     estimateSize: (prev: any) => {
       const address = prev.getAddress()

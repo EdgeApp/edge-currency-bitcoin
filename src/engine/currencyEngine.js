@@ -156,8 +156,18 @@ export class CurrencyEngine {
     await this.engineState.load()
 
     const callbacks: KeyManagerCallbacks = {
-      onNewAddress: (scriptHash: string, address: string, path: string) => {
-        return this.engineState.addAddress(scriptHash, address, path)
+      onNewAddress: (
+        scriptHash: string,
+        address: string,
+        path: string,
+        redeemScript?: string
+      ) => {
+        return this.engineState.addAddress(
+          scriptHash,
+          address,
+          path,
+          redeemScript
+        )
       },
       onNewKey: (keys: any) => this.engineState.saveKeys(keys)
     }
@@ -592,21 +602,13 @@ export class CurrencyEngine {
       const outputs = []
       for (const spendTarget of spendTargets) {
         const {
-          publicAddress = '',
-          nativeAmount = 0,
-          otherParams = {}
+          publicAddress: address,
+          nativeAmount,
+          otherParams: { script } = {}
         } = spendTarget
-        if (publicAddress && nativeAmount) {
-          outputs.push({
-            address: publicAddress,
-            value: parseInt(nativeAmount)
-          })
-        } else if (otherParams.script) {
-          outputs.push({
-            script: otherParams.script,
-            value: parseInt(nativeAmount)
-          })
-        }
+        const value = parseInt(nativeAmount || '0')
+        if (address && nativeAmount) outputs.push({ address, value })
+        else if (script) outputs.push({ script, value })
       }
 
       const bcoinTx = await this.keyManager.createTX({

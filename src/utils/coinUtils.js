@@ -33,6 +33,11 @@ export type Output = {
   value: number
 }
 
+export type StandardOutput = {
+  address: string,
+  value: number
+}
+
 export type Utxo = {
   tx: any,
   index: number,
@@ -55,7 +60,7 @@ export type CreateTxOptions = {
   maxFee: number,
   changeAddress: string,
   network: string,
-  outputs?: Array<Output>,
+  outputs?: Array<StandardOutput>,
   height?: BlockHeight,
   estimate?: Function,
   txOptions: TxOptions
@@ -105,21 +110,34 @@ export const verifyUriProtocol = (
   return true
 }
 
-export const setKeyType = (
+export const setKeyType = async (
   key: any,
   nested: boolean,
   witness: boolean,
-  network: string
-): Promise<any> =>
-  Promise.resolve(
-    primitives.KeyRing.fromKey(
+  network: string,
+  redeemScript?: string
+): Promise<any> => {
+  let keyRing = {}
+  if (redeemScript) {
+    nested = false
+    witness = false
+    keyRing = await primitives.KeyRing.fromScript(
+      key.privateKey || key.publicKey,
+      script.fromString(redeemScript),
+      isCompressed(key.publicKey),
+      network
+    )
+  } else {
+    keyRing = await primitives.KeyRing.fromKey(
       key.privateKey || key.publicKey,
       isCompressed(key.publicKey),
       network
     )
-  ).then(clone =>
-    Object.assign(clone, { nested, witness, network: Network.get(network) })
-  )
+  }
+
+  Object.assign(keyRing, { nested, witness, network: Network.get(network) })
+  return keyRing
+}
 
 export const createTX = async ({
   utxos,
@@ -180,22 +198,10 @@ export const createTX = async ({
   }
 
   // Add the outputs
-  outputs.forEach(({ address, script: scriptObj, value }) => {
-    if (address) {
-      const bcoinAddress = toBcoinFormat(address, network)
-      const addressScript = script.fromAddress(bcoinAddress)
-      mtx.addOutput(addressScript, value)
-    }
-    if (scriptObj) {
-      const { type, params = [] } = scriptObj
-      const { scriptTemplates = {} } = networks[network] || {}
-      const scriptTemplate = scriptTemplates[type]
-      if (scriptTemplate) {
-        const scriptString = scriptTemplate(...params)
-        const bcashScript = script.fromString(scriptString)
-        mtx.addOutput(bcashScript, value)
-      } else throw new Error('Unkown script template')
-    }
+  outputs.forEach(({ address, value }) => {
+    const bcoinAddress = toBcoinFormat(address, network)
+    const addressScript = script.fromAddress(bcoinAddress)
+    mtx.addOutput(addressScript, value)
   })
 
   // Create coins
@@ -290,7 +296,10 @@ export const getForksForNetwork = (network: string) =>
 export const getFromatsForNetwork = (network: string) =>
   networks[network] ? networks[network].formats : []
 
-export const addressFromKey = (key: any, network: string): Promise<any> => {
+export const addressFromKey = (
+  key: any,
+  network: string
+): Promise<{ address: string, scriptHash: string }> => {
   const address = key.getAddress().toString()
   return addressToScriptHash(address, network).then(scriptHash => ({
     address,

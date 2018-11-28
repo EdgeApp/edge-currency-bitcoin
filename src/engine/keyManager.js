@@ -4,7 +4,9 @@ import type {
   Utxo,
   BlockHeight,
   TxOptions,
-  Output
+  Output,
+  StandardOutput,
+  Script
 } from '../utils/coinUtils.js'
 import { getAllKeyRings, FormatSelector } from '../utils/formatSelector.js'
 import { parsePath, createTX, getLock } from '../utils/coinUtils.js'
@@ -17,7 +19,8 @@ export type Address = {
   displayAddress: string,
   scriptHash: string,
   index: number,
-  branch: number
+  branch: number,
+  redeemScript?: string
 }
 
 export type KeyRing = {
@@ -56,7 +59,12 @@ export type createTxOptions = {
 
 export interface KeyManagerCallbacks {
   // When deriving new address send it to caching and subscribing
-  +onNewAddress?: (scriptHash: string, address: string, path: string) => void;
+  +onNewAddress?: (
+    scriptHash: string,
+    address: string,
+    path: string,
+    redeemScript?: string
+  ) => void;
   // When deriving new key send it to caching
   +onNewKey?: (keys: any) => void;
 }
@@ -83,7 +91,12 @@ export class KeyManager {
   gapLimit: number
   network: string
   fSelector: any
-  onNewAddress: (scriptHash: string, address: string, path: string) => void
+  onNewAddress: (
+    scriptHash: string,
+    address: string,
+    path: string,
+    redeemScript?: string
+  ) => void
   onNewKey: (keys: any) => void
   addressInfos: AddressInfos
   txInfos: { [txid: string]: any }
@@ -133,8 +146,16 @@ export class KeyManager {
       if (path.length) {
         const [branch, index] = path
         const displayAddress = toNewFormat(addressObj.displayAddress, network)
-        const address = { displayAddress, scriptHash, index, branch }
-        this.keys[branches[branch]].children.push(address)
+        const { redeemScript } = addressObj
+        const address = {
+          displayAddress,
+          scriptHash,
+          index,
+          branch,
+          redeemScript
+        }
+        const branchName = branches[`${branch}`]
+        this.keys[branchName].children.push(address)
       }
     }
     // Cache is not sorted so sort addresses according to derivation index
@@ -169,8 +190,39 @@ export class KeyManager {
   }
 
   async createTX (options: createTxOptions): any {
+    const { outputs = [], ...rest } = options
+    const standardOutputs: Array<StandardOutput> = []
+    const branches = this.fSelector.branches
+    for (const output of outputs) {
+      let { address = '' } = output
+      if (output.script) {
+        const { type, params } = output.script
+        const keyRing = this.keys[type]
+        if (params && params.length) {
+          const index = keyRing.children.length
+          const branch = Object.keys(branches).find(
+            num => type === branches[num]
+          )
+          if (!branch) throw new Error(`Branch does not exist`)
+          const addressObj = await this.deriveAddress(
+            keyRing,
+            branch,
+            index,
+            output.script
+          )
+          if (!addressObj) {
+            throw new Error(`Error creating address from script type ${type}`)
+          }
+          address = addressObj.displayAddress
+        } else {
+          address = this.getNextAvailable(keyRing.children)
+        }
+      }
+      if (address) standardOutputs.push({ address, value: output.value })
+    }
     return createTX({
-      ...options,
+      ...rest,
+      outputs: standardOutputs,
       changeAddress: this.getChangeAddress(),
       estimate: prev => this.fSelector.estimateSize(prev),
       network: this.network
@@ -188,8 +240,9 @@ export class KeyManager {
       for (const input: any of tx.inputs) {
         const { prevout } = input
         if (prevout) {
-          const [branch: number, index: number] = this.utxoToPath(prevout)
-          const keyRing = this.keys[branches[branch]]
+          const { branch, index, redeemScript } = this.utxoToAddress(prevout)
+          const branchName = branches[`${branch}`]
+          const keyRing = this.keys[branchName]
           if (!keyRing.privKey) {
             keyRing.privKey = await this.fSelector.deriveHdKey(
               this.keys.master.privKey,
@@ -197,7 +250,11 @@ export class KeyManager {
             )
             this.saveKeysToCache()
           }
-          const key = await this.fSelector.deriveKeyRing(keyRing.privKey, index)
+          const key = await this.fSelector.deriveKeyRing(
+            keyRing.privKey,
+            index,
+            redeemScript
+          )
           keyRings.push(key)
         }
       }
@@ -227,7 +284,9 @@ export class KeyManager {
   // ////////////// Private API /////////////////// //
   // ////////////////////////////////////////////// //
 
-  utxoToPath (prevout: any): Array<number> {
+  utxoToAddress (
+    prevout: any
+  ): { branch: number, index: number, redeemScript?: string } {
     const parsedTx = this.txInfos[prevout.rhash()]
     if (!parsedTx) throw new Error('UTXO not synced yet')
     const output = parsedTx.outputs[prevout.index]
@@ -235,10 +294,10 @@ export class KeyManager {
     const scriptHash = output.scriptHash
     const address = this.addressInfos[scriptHash]
     if (!address) throw new Error('Address is not part of this wallet')
-    const path = address.path
+    const { path, redeemScript } = address
     const pathSuffix = path.split(this.masterPath + '/')[1]
     const [branch, index] = pathSuffix.split('/')
-    return [parseInt(branch), parseInt(index)]
+    return { branch: parseInt(branch), index: parseInt(index), redeemScript }
   }
 
   getNextAvailable (addresses: Array<Address>): string {
@@ -289,9 +348,13 @@ export class KeyManager {
   async setLookAhead (closeGaps: boolean = false) {
     const unlock = await this.writeLock.lock()
     try {
-      const { branches } = this.fSelector
-      for (let i = 0; i < branches.length; i++) {
-        await this.deriveNewKeys(this.keys[branches[i]], i, closeGaps)
+      for (const branchNum in this.fSelector.branches) {
+        const branchName = this.fSelector.branches[branchNum]
+        await this.deriveNewKeys(
+          this.keys[branchName],
+          parseInt(branchNum),
+          closeGaps
+        )
       }
     } catch (e) {
       console.log(e)
@@ -317,7 +380,8 @@ export class KeyManager {
       const length = children.length
       for (let i = 0; i < length; ++i, ++index) {
         while (index < children[i].index) {
-          await this.deriveAddress(keyRing, branch, index++)
+          const newAddr = await this.deriveAddress(keyRing, branch, index++)
+          if (!newAddr) break
         }
       }
       if (children.length > length) {
@@ -338,7 +402,8 @@ export class KeyManager {
 
     // If the last used address is too close to the end, generate some more:
     while (lastUsed + this.gapLimit > children.length) {
-      await this.deriveAddress(keyRing, branch, children.length)
+      const newAddr = await this.deriveAddress(keyRing, branch, children.length)
+      if (!newAddr) break
     }
   }
 
@@ -347,14 +412,38 @@ export class KeyManager {
    * and adds it to the state.
    * @param keyRing The KeyRing corresponding to the selected branch.
    */
-  async deriveAddress (keyRing: KeyRing, branch: number, index: number) {
-    const { address, scriptHash } = await this.fSelector.deriveAddress(
-      keyRing.pubKey,
-      index
-    )
+  async deriveAddress (
+    keyRing: KeyRing,
+    branch: number,
+    index: number,
+    scriptObj?: Script
+  ): Promise<Address | null> {
+    let newAddress = {}
+
+    if (!this.fSelector.hasScript(branch, scriptObj)) {
+      newAddress = await this.fSelector.deriveAddress(keyRing.pubKey, index)
+    } else {
+      newAddress = await this.fSelector.deriveScriptAddress(
+        keyRing.pubKey,
+        index,
+        branch,
+        scriptObj
+      )
+    }
+
+    if (!newAddress) return null
+    const { address, scriptHash, redeemScript } = newAddress
     const displayAddress = toNewFormat(address, this.network)
     const keyPath = `${this.masterPath}/${branch}/${index}`
-    keyRing.children.push({ displayAddress, scriptHash, index, branch })
-    this.onNewAddress(scriptHash, displayAddress, keyPath)
+    const addressObj = {
+      displayAddress,
+      scriptHash,
+      index,
+      branch,
+      redeemScript
+    }
+    keyRing.children.push(addressObj)
+    this.onNewAddress(scriptHash, displayAddress, keyPath, redeemScript)
+    return addressObj
   }
 }

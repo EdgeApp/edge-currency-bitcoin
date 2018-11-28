@@ -39,7 +39,8 @@ export type AddressInfo = {
   used: boolean, // Set manually by `addGapLimitAddress`
   displayAddress: string, // base58 or other wallet-ready format
   path: string, // TODO: Define the contents of this member.
-  balance: number
+  balance: number,
+  redeemScript?: string
 }
 
 export type AddressInfos = {
@@ -110,7 +111,9 @@ export class EngineState extends EventEmitter {
       utxoStratumHash: string,
 
       displayAddress: string, // base58 or other wallet-ready format
-      path: string // TODO: Define the contents of this member.
+      path: string, // TODO: Define the contents of this member.
+
+      redeemScript?: string // Allows for saving generic P2SH addresses
     }
   }
 
@@ -183,7 +186,12 @@ export class EngineState extends EventEmitter {
   // Headers that are relevant to our transactions, but missing locally:
   missingHeaders: { [height: string]: true }
 
-  addAddress (scriptHash: string, displayAddress: string, path: string) {
+  addAddress (
+    scriptHash: string,
+    displayAddress: string,
+    path: string,
+    redeemScript?: string
+  ) {
     if (this.addressCache[scriptHash]) return
 
     this.addressCache[scriptHash] = {
@@ -192,7 +200,8 @@ export class EngineState extends EventEmitter {
       utxos: [],
       utxoStratumHash: '',
       displayAddress,
-      path
+      path,
+      redeemScript
     }
     this.scriptHashes[displayAddress] = scriptHash
     this.refreshAddressInfo(scriptHash)
@@ -1119,7 +1128,7 @@ export class EngineState extends EventEmitter {
   refreshAddressInfo (scriptHash: string) {
     const address = this.addressCache[scriptHash]
     if (!address) return
-    const { displayAddress, path } = address
+    const { displayAddress, path, redeemScript } = address
 
     // It is used if it has transactions or if the metadata says so:
     const used =
@@ -1177,7 +1186,8 @@ export class EngineState extends EventEmitter {
       used,
       displayAddress,
       path,
-      balance
+      balance,
+      redeemScript
     }
 
     if (prevBalance !== balance) this.onBalanceChanged()
