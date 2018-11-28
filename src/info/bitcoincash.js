@@ -4,7 +4,22 @@ import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
 import { hexToVarByte } from '../utils/utils.js'
+import { script } from 'bcoin'
 
+const scriptProto = script.prototype
+const getPubkey = scriptProto.getPubkey
+scriptProto.getPubkey = function (minimal: boolean) {
+  if (this.code.length === 6) {
+    const size = this.getLength(4)
+
+    if ((size === 33 || size === 65) &&
+      this.getOp(5) === parseInt(OP_CHECKSIG, 16)) {
+      return this.getData(4)
+    }
+  }
+
+  return getPubkey.call(this, minimal)
+}
 const OP_CHECKDATASIGVERIFY = 'bb'
 const OP_CHECKDATASIG = 'ba'
 const OP_CHECKSIG = 'ac'
