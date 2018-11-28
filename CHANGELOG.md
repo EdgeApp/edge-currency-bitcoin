@@ -1,5 +1,12 @@
 # edge-currency-bitcoin
 
+## 3.7.1
+
+* Reworte the custom scripts part to allow for much much more flexebility when creating the scripts.
+  Allows to almost use the full power or bitcoin scripting.
+* Some flow fixes.
+* Updated dependencies.
+
 ## 3.7.0
 
 * Add BitcoinSV.
