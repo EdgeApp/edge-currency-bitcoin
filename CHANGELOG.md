@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 3.7.2
+
+* Fix BSV Block Explorer URL
+
 ## 3.7.1
 
 * Reworte the custom scripts part to allow for much much more flexebility when creating the scripts.
