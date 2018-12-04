@@ -86,6 +86,8 @@ export const keysFromEntropy = (
 
 export const verifyWIF = (data: any, network: string) => {
   const base58 = utils.base58
+  const { serializers = {} } = networks[network] || {}
+  if (serializers.wif) data = serializers.wif.decode(data)
   const br = new utils.BufferReader(base58.decode(data), true)
   const version = br.readU8()
   network = Network.fromWIF(version, network)
@@ -157,17 +159,6 @@ export const createTX = async ({
     setRBF = false
   }
 }: CreateTxOptions) => {
-  // Convert an address to the correct format that bcoin supports
-  const toBcoinFormat = (address: string, network: string): string => {
-    const { addressPrefix = {} } = networks[network] || {}
-    return primitives.Address.fromString(
-      addressPrefix.cashAddress
-        ? toLegacyFormat(address, network)
-        : toNewFormat(address, network),
-      network
-    )
-  }
-
   // Create the Mutable Transaction
   const mtx = new primitives.MTX()
 
@@ -197,6 +188,15 @@ export const createTX = async ({
     throw new Error('No outputs available.')
   }
 
+  // Convert an address to the correct format that bcoin supports
+  const toBcoinFormat = (address: string, network: string): string => {
+    const { serializers = {}, addressPrefix = {} } = networks[network] || {}
+    if (serializers.address) return serializers.address.decode(address)
+    return addressPrefix.cashAddress
+      ? toLegacyFormat(address, network)
+      : toNewFormat(address, network)
+  }
+
   // Add the outputs
   outputs.forEach(({ address, value }) => {
     const bcoinAddress = toBcoinFormat(address, network)
@@ -205,9 +205,12 @@ export const createTX = async ({
   })
 
   // Create coins
-  const coins = utxos.map(({ tx, index, height }) =>
-    primitives.Coin.fromTX(tx, index, height)
-  )
+  const coins = utxos.map(({ tx, index, height }) => {
+    const coin = primitives.Coin.fromTX(tx, index, height)
+    const { serializers = {} } = networks[network] || {}
+    if (serializers.txHash) coin.hash = serializers.txHash(tx.toRaw().toString('hex'))
+    return coin
+  })
 
   // Try to fund the transaction
   await mtx.fund(coins, {
@@ -296,15 +299,88 @@ export const getForksForNetwork = (network: string) =>
 export const getFromatsForNetwork = (network: string) =>
   networks[network] ? networks[network].formats : []
 
-export const addressFromKey = (
+export const addressFromKey = async (
   key: any,
   network: string
 ): Promise<{ address: string, scriptHash: string }> => {
-  const address = key.getAddress().toString()
-  return addressToScriptHash(address, network).then(scriptHash => ({
+  const { serializers = {} } = networks[network] || {}
+  const standardAddress = key.getAddress().toString()
+  let address = standardAddress
+  if (serializers.address) address = serializers.address.encode(address)
+  const scriptHash = await addressToScriptHash(standardAddress, network)
+  return {
     address,
     scriptHash
-  }))
+  }
+}
+
+export const sumTransaction = (bcoinTransaction: any, network: string, engineState: any) => {
+  const ourReceiveAddresses = []
+  let totalOutputAmount = 0
+  let totalInputAmount = 0
+  let nativeAmount = 0
+  let address = ''
+  let value = 0
+  let output = null
+  let type = null
+
+  // Process tx outputs
+  const outputsLength = bcoinTransaction.outputs.length
+  for (let i = 0; i < outputsLength; i++) {
+    output = bcoinTransaction.outputs[i]
+    type = output.getType()
+    if (type === 'nonstandard' || type === 'nulldata') {
+      continue
+    }
+    output = output.getJSON(network)
+    value = output.value
+    try {
+      address = toNewFormat(output.address, network)
+      const { serializers = {} } = networks[network] || {}
+      address = serializers.address ? serializers.address.encode(address) : address
+    } catch (e) {
+      console.log(e)
+      if (value <= 0) {
+        continue
+      } else {
+        address = ''
+      }
+    }
+    totalOutputAmount += value
+    if (engineState.scriptHashes[address]) {
+      nativeAmount += value
+      ourReceiveAddresses.push(address)
+    }
+  }
+
+  let input = null
+  let prevoutBcoinTX = null
+  let index = 0
+  let hash = ''
+  // Process tx inputs
+  const inputsLength = bcoinTransaction.inputs.length
+  for (let i = 0; i < inputsLength; i++) {
+    input = bcoinTransaction.inputs[i]
+    if (input.prevout) {
+      hash = input.prevout.rhash()
+      index = input.prevout.index
+      prevoutBcoinTX = engineState.parsedTxs[hash]
+      if (prevoutBcoinTX) {
+        output = prevoutBcoinTX.outputs[index].getJSON(network)
+        value = output.value
+        address = toNewFormat(output.address, network)
+        const { serializers = {} } = networks[network] || {}
+        address = serializers.address ? serializers.address.encode(address) : address
+        totalInputAmount += value
+        if (engineState.scriptHashes[address]) {
+          nativeAmount -= value
+        }
+      }
+    }
+  }
+
+  const fee = totalInputAmount ? totalInputAmount - totalOutputAmount : 0
+  return { nativeAmount, fee, ourReceiveAddresses }
 }
 
 export const filterOutputs = (outputs: Array<any>): Array<any> =>

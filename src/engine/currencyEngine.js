@@ -38,11 +38,11 @@ import {
   addressToScriptHash,
   verifyTxAmount,
   sumUtxos,
+  sumTransaction,
   getReceiveAddresses
 } from '../utils/coinUtils.js'
 import {
   toLegacyFormat,
-  toNewFormat,
   validAddress
 } from '../utils/addressFormat/addressFormatIndex.js'
 
@@ -231,67 +231,8 @@ export class CurrencyEngine {
       throw new Error('Transaction not found')
     }
 
-    const ourReceiveAddresses = []
-    let nativeAmount = 0
-    let totalOutputAmount = 0
-    let totalInputAmount = 0
-    let address = ''
-    let value = 0
-    let output = null
-    let type = null
+    const { fee, ourReceiveAddresses, nativeAmount } = sumTransaction(bcoinTransaction, this.network, this.engineState)
 
-    // Process tx outputs
-    const outputsLength = bcoinTransaction.outputs.length
-    for (let i = 0; i < outputsLength; i++) {
-      output = bcoinTransaction.outputs[i]
-      type = output.getType()
-      if (type === 'nonstandard' || type === 'nulldata') {
-        continue
-      }
-      output = output.getJSON(this.network)
-      value = output.value
-      try {
-        address = toNewFormat(output.address, this.network)
-      } catch (e) {
-        console.log(e)
-        if (value <= 0) {
-          continue
-        } else {
-          address = ''
-        }
-      }
-      totalOutputAmount += value
-      if (this.engineState.scriptHashes[address]) {
-        nativeAmount += value
-        ourReceiveAddresses.push(address)
-      }
-    }
-
-    let input = null
-    let prevoutBcoinTX = null
-    let index = 0
-    let hash = ''
-    // Process tx inputs
-    const inputsLength = bcoinTransaction.inputs.length
-    for (let i = 0; i < inputsLength; i++) {
-      input = bcoinTransaction.inputs[i]
-      if (input.prevout) {
-        hash = input.prevout.rhash()
-        index = input.prevout.index
-        prevoutBcoinTX = this.engineState.parsedTxs[hash]
-        if (prevoutBcoinTX) {
-          output = prevoutBcoinTX.outputs[index].getJSON(this.network)
-          value = output.value
-          address = toNewFormat(output.address, this.network)
-          totalInputAmount += value
-          if (this.engineState.scriptHashes[address]) {
-            nativeAmount -= value
-          }
-        }
-      }
-    }
-
-    const fee = totalInputAmount ? totalInputAmount - totalOutputAmount : 0
     const edgeTransaction: EdgeTransaction = {
       ourReceiveAddresses,
       currencyCode: this.currencyCode,
