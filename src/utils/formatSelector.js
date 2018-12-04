@@ -96,11 +96,17 @@ export const FormatSelector = (
       keys: Array<any>
     ): Promise<{ txid: string, signedTx: string }> =>
       Promise.resolve(tx.template(keys))
-        .then(() => tx.sign(keys, networks[network].replayProtection))
-        .then(() => ({
-          txid: tx.rhash(),
-          signedTx: tx.toRaw().toString('hex')
-        })),
+        .then(() => {
+          tx.network = network
+          return tx.sign(keys, networks[network].replayProtection)
+        })
+        .then(() => {
+          const { serializers = {} } = networks[network] || {}
+          const rawTx = tx.toRaw().toString('hex')
+          if (serializers.txHash) tx._hash = serializers.txHash(rawTx)
+          const txid = tx.rhash()
+          return { txid, signedTx: rawTx }
+        }),
 
     getMasterKeys: async (seed: string, masterPath: string, privKey?: any) => {
       if (!privKey) {
