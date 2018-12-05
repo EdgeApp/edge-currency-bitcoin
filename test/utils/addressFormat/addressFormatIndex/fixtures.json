@@ -642,14 +642,14 @@
     ],
     "toLegacy": [
       [ "5DCGZBCYJy71oSfky6DXHsuWqMW3yqiJiS", "3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC" ],
-      [ "5LutMcbbX2CEzkLH26gC4rfjcFuyHYHKCd", "3LDsS579y7sruadqu11beEJoTjdFiFCdX4" ], 
-      [ "52UxrJ4PXHx55tsjgdKpC4soLar3p52vcm", "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw" ], 
+      [ "5LutMcbbX2CEzkLH26gC4rfjcFuyHYHKCd", "3LDsS579y7sruadqu11beEJoTjdFiFCdX4" ],
+      [ "52UxrJ4PXHx55tsjgdKpC4soLar3p52vcm", "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw" ],
       [ "5FAyQxqcVJ4Qeyt4qw6UxnGtf3jUArd1Gc", "3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN" ]
     ],
     "toNewFormat": [
       [ "3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC", "5DCGZBCYJy71oSfky6DXHsuWqMW3yqiJiS" ],
-      [ "3LDsS579y7sruadqu11beEJoTjdFiFCdX4", "5LutMcbbX2CEzkLH26gC4rfjcFuyHYHKCd" ], 
-      [ "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw", "52UxrJ4PXHx55tsjgdKpC4soLar3p52vcm" ], 
+      [ "3LDsS579y7sruadqu11beEJoTjdFiFCdX4", "5LutMcbbX2CEzkLH26gC4rfjcFuyHYHKCd" ],
+      [ "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw", "52UxrJ4PXHx55tsjgdKpC4soLar3p52vcm" ],
       [ "3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN", "5FAyQxqcVJ4Qeyt4qw6UxnGtf3jUArd1Gc" ]
     ]
   },
@@ -663,7 +663,12 @@
       "Fai7L9MJHa58NBe4RS4s4foXmBeMyN6N7a",
       "FhnTYU7uu52ozkEqbYZqnwL1azyr44cN4q",
       "3EFKXV683Aeq35dtv3yeciZPPA4t8M1gxX",
-      "FtCkFSrwrgiJzjQzGRZvjHzrmHp4HJeGYm"
+      "FtCkFSrwrgiJzjQzGRZvjHzrmHp4HJeGYm",
+      "grs1qf377ra30fap0wxqwvmhz8psvv2nal7mr0t4q4y",
+      "grs1qyzpu545r3pelyp4kktmr3hxfhwchyqmkk5w7l5",
+      "grs1qzdzplz6ghc0dqyydykp9hqhqn6rwvdrlfcl8nr",
+      "grs1qy99f4e9urelqsgvdsewv0292sjsh33mq0egrd2",
+      "grs1q3u5detu77paqd834lr7y5d5aa0gpwr22zvdu8k"
     ],
     "inValid": [
       "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu",
