@@ -62,12 +62,12 @@ const engineInfo: EngineCurrencyInfo = {
   feeUpdateInterval: 60000,
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
-    highFee: '150',
-    lowFee: '20',
-    standardFeeLow: '50',
-    standardFeeHigh: '100',
-    standardFeeLowAmount: '173200',
-    standardFeeHighAmount: '8670000'
+    highFee: '1500',
+    lowFee: '200',
+    standardFeeLow: '500',
+    standardFeeHigh: '1000',
+    standardFeeLowAmount: '1732000',
+    standardFeeHighAmount: '86700000'
   }
 }
 
