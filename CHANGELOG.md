@@ -1,5 +1,11 @@
 # edge-currency-bitcoin
 
+# 3.7.3
+
+* Add Groestlcoin
+* Add SmartCash
+* Fix Flow compatibility with edge-core-js v0.13.0
+
 ## 3.7.2
 
 * Fix BSV Block Explorer URL
