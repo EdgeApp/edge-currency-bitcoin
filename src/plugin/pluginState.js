@@ -1,5 +1,8 @@
 // @flow
-import type { EdgeIo, DiskletFolder } from 'edge-core-js'
+
+import type { DiskletFolder } from 'disklet'
+import type { EdgeIo } from 'edge-core-js'
+
 import type { EngineState } from '../engine/engineState.js'
 import { InfoServer, FixCurrencyCode } from '../info/constants'
 import { ServerCache } from './serverCache.js'
@@ -90,7 +93,9 @@ export class PluginState extends ServerCache {
     const fixedCode = FixCurrencyCode(currencyCode)
     this.infoServerUris = `${InfoServer}/electrumServers/${fixedCode}`
     this.engines = []
-    this.folder = io.folder.folder('plugins').folder(pluginName)
+    // The core object still includes `folder`, even though the type doesn't:
+    const flowHack: any = io
+    this.folder = flowHack.folder.folder('plugins').folder(pluginName)
     this.pluginName = pluginName
     this.headerCacheDirty = false
     this.serverCacheJson = {}

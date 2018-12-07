@@ -133,8 +133,13 @@ export const patchTransaction = function (bcoin) {
     // Append the hash type.
     bw.writeU32(type)
 
-    const { serializers = {} } = (this.network && bcoin.networks[this.network]) ? bcoin.networks[this.network] : {}
-    const sigHash = serializers.signatureHash ? serializers.signatureHash(bw.render()) : bcoin.crypto.digest.hash256(bw.render())
+    const { serializers = {} } =
+      this.network && bcoin.networks[this.network]
+        ? bcoin.networks[this.network]
+        : {}
+    const sigHash = serializers.signatureHash
+      ? serializers.signatureHash(bw.render())
+      : bcoin.crypto.digest.hash256(bw.render())
     return sigHash
   }
 
@@ -144,7 +149,10 @@ export const patchTransaction = function (bcoin) {
     let sequences = bcoin.utils.encoding.ZERO_HASH
     let outputs = bcoin.utils.encoding.ZERO_HASH
 
-    const { serializers = {} } = (this.network && bcoin.networks[this.network]) ? bcoin.networks[this.network] : {}
+    const { serializers = {} } =
+      this.network && bcoin.networks[this.network]
+        ? bcoin.networks[this.network]
+        : {}
     if (!(type & bcoin.script.hashType.ANYONECANPAY)) {
       if (this._hashPrevouts) {
         prevouts = this._hashPrevouts
@@ -156,7 +164,9 @@ export const patchTransaction = function (bcoin) {
         }
 
         // prevouts = bcoin.crypto.digest.hash256(bw.render())
-        prevouts = serializers.signatureHash ? serializers.signatureHash(bw.render()) : bcoin.crypto.digest.hash256(bw.render())
+        prevouts = serializers.signatureHash
+          ? serializers.signatureHash(bw.render())
+          : bcoin.crypto.digest.hash256(bw.render())
 
         if (!this.mutable) {
           this._hashPrevouts = prevouts
@@ -164,9 +174,11 @@ export const patchTransaction = function (bcoin) {
       }
     }
 
-    if (!(type & bcoin.script.hashType.ANYONECANPAY) &&
-    (type & 0x1f) !== bcoin.script.hashType.SINGLE &&
-    (type & 0x1f) !== bcoin.script.hashType.NONE) {
+    if (
+      !(type & bcoin.script.hashType.ANYONECANPAY) &&
+      (type & 0x1f) !== bcoin.script.hashType.SINGLE &&
+      (type & 0x1f) !== bcoin.script.hashType.NONE
+    ) {
       if (this._hashSequence) {
         sequences = this._hashSequence
       } else {
@@ -177,7 +189,9 @@ export const patchTransaction = function (bcoin) {
         }
 
         // sequences = bcoin.crypto.digest.hash256(bw.render())
-        sequences = serializers.signatureHash ? serializers.signatureHash(bw.render()) : bcoin.crypto.digest.hash256(bw.render())
+        sequences = serializers.signatureHash
+          ? serializers.signatureHash(bw.render())
+          : bcoin.crypto.digest.hash256(bw.render())
 
         if (!this.mutable) {
           this._hashSequence = sequences
@@ -185,8 +199,10 @@ export const patchTransaction = function (bcoin) {
       }
     }
 
-    if ((type & 0x1f) !== bcoin.script.hashType.SINGLE &&
-       (type & 0x1f) !== bcoin.script.hashType.NONE) {
+    if (
+      (type & 0x1f) !== bcoin.script.hashType.SINGLE &&
+      (type & 0x1f) !== bcoin.script.hashType.NONE
+    ) {
       if (this._hashOutputs) {
         outputs = this._hashOutputs
       } else {
@@ -203,7 +219,9 @@ export const patchTransaction = function (bcoin) {
         }
 
         // outputs = bcoin.crypto.digest.hash256(bw.render())
-        outputs = serializers.signatureHash ? serializers.signatureHash(bw.render()) : bcoin.crypto.digest.hash256(bw.render())
+        outputs = serializers.signatureHash
+          ? serializers.signatureHash(bw.render())
+          : bcoin.crypto.digest.hash256(bw.render())
 
         if (!this.mutable) {
           this._hashOutputs = outputs
@@ -213,7 +231,9 @@ export const patchTransaction = function (bcoin) {
       if (index < this.outputs.length) {
         const output = this.outputs[index]
         // outputs = bcoin.crypto.digest.hash256(output.toRaw())
-        outputs = serializers.signatureHash ? serializers.signatureHash(output.toRaw()) : bcoin.crypto.digest.hash256(output.toRaw())
+        outputs = serializers.signatureHash
+          ? serializers.signatureHash(output.toRaw())
+          : bcoin.crypto.digest.hash256(output.toRaw())
       }
     }
 
@@ -232,7 +252,9 @@ export const patchTransaction = function (bcoin) {
     bw.writeU32(this.locktime)
     bw.writeU32(type)
 
-    const sigHash = serializers.signatureHash ? serializers.signatureHash(bw.render()) : bcoin.crypto.digest.hash256(bw.render())
+    const sigHash = serializers.signatureHash
+      ? serializers.signatureHash(bw.render())
+      : bcoin.crypto.digest.hash256(bw.render())
     return bcoin.crypto.digest.hash256(sigHash)
   }
 }

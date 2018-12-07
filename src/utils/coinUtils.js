@@ -208,7 +208,9 @@ export const createTX = async ({
   const coins = utxos.map(({ tx, index, height }) => {
     const coin = primitives.Coin.fromTX(tx, index, height)
     const { serializers = {} } = networks[network] || {}
-    if (serializers.txHash) coin.hash = serializers.txHash(tx.toRaw().toString('hex'))
+    if (serializers.txHash) {
+      coin.hash = serializers.txHash(tx.toRaw().toString('hex'))
+    }
     return coin
   })
 
@@ -314,7 +316,11 @@ export const addressFromKey = async (
   }
 }
 
-export const sumTransaction = (bcoinTransaction: any, network: string, engineState: any) => {
+export const sumTransaction = (
+  bcoinTransaction: any,
+  network: string,
+  engineState: any
+) => {
   const ourReceiveAddresses = []
   let totalOutputAmount = 0
   let totalInputAmount = 0
@@ -337,7 +343,9 @@ export const sumTransaction = (bcoinTransaction: any, network: string, engineSta
     try {
       address = toNewFormat(output.address, network)
       const { serializers = {} } = networks[network] || {}
-      address = serializers.address ? serializers.address.encode(address) : address
+      address = serializers.address
+        ? serializers.address.encode(address)
+        : address
     } catch (e) {
       console.log(e)
       if (value <= 0) {
@@ -370,7 +378,9 @@ export const sumTransaction = (bcoinTransaction: any, network: string, engineSta
         value = output.value
         address = toNewFormat(output.address, network)
         const { serializers = {} } = networks[network] || {}
-        address = serializers.address ? serializers.address.encode(address) : address
+        address = serializers.address
+          ? serializers.address.encode(address)
+          : address
         totalInputAmount += value
         if (engineState.scriptHashes[address]) {
           nativeAmount -= value
