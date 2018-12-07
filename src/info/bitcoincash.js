@@ -12,8 +12,10 @@ scriptProto.getPubkey = function (minimal: boolean) {
   if (this.code.length === 6) {
     const size = this.getLength(4)
 
-    if ((size === 33 || size === 65) &&
-      this.getOp(5) === parseInt(OP_CHECKSIG, 16)) {
+    if (
+      (size === 33 || size === 65) &&
+      this.getOp(5) === parseInt(OP_CHECKSIG, 16)
+    ) {
       return this.getData(4)
     }
   }

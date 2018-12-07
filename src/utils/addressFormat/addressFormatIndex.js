@@ -13,7 +13,11 @@ const legacyToCashAddress = (address: string, network: string) => {
   return newAddress
 }
 
-const changeAddressPrefix = (address: any, newPrefix: number, expectedPrefix: number) => {
+const changeAddressPrefix = (
+  address: any,
+  newPrefix: number,
+  expectedPrefix: number
+) => {
   const prefix = address.getPrefix()
   if (prefix !== expectedPrefix) return null
   const bw = new bcoin.utils.StaticWriter(address.getSize())
@@ -38,8 +42,13 @@ export const toLegacyFormat = (address: string, network: string): string => {
   const { serializers = {}, addressPrefix = {} } = bcoin.networks[network] || {}
   if (addressPrefix.cashAddress) return cashAddressToLegacy(address, network)
   try {
-    const addressToDecode = serializers.address ? serializers.address.decode(address) : address
-    const addressObj = bcoin.primitives.Address.fromBase58(addressToDecode, network)
+    const addressToDecode = serializers.address
+      ? serializers.address.decode(address)
+      : address
+    const addressObj = bcoin.primitives.Address.fromBase58(
+      addressToDecode,
+      network
+    )
     const { legacyPrefix, newPrefix } = getPrefixes(addressObj, addressPrefix)
     return changeAddressPrefix(addressObj, legacyPrefix, newPrefix) || address
   } catch (e) {
@@ -51,7 +60,9 @@ export const toNewFormat = (address: string, network: string): string => {
   const { serializers = {}, addressPrefix = {} } = bcoin.networks[network] || {}
   if (addressPrefix.cashAddress) return legacyToCashAddress(address, network)
   try {
-    const addressToDecode = serializers.address ? serializers.address.decode(address) : address
+    const addressToDecode = serializers.address
+      ? serializers.address.decode(address)
+      : address
     const addressObj = bcoin.primitives.Address.fromBase58(addressToDecode)
     const { legacyPrefix, newPrefix } = getPrefixes(addressObj, addressPrefix)
     return changeAddressPrefix(addressObj, newPrefix, legacyPrefix) || address

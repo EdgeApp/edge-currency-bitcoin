@@ -54,4 +54,6 @@ export const eboostCurrencyPluginFactory = makeCurrencyPluginFactory(eboost)
 export const bitcoinsvCurrencyPluginFactory = makeCurrencyPluginFactory(
   bitcoinsv
 )
-export const groestlcoinCurrencyPluginFactory = makeCurrencyPluginFactory(groestlcoin)
+export const groestlcoinCurrencyPluginFactory = makeCurrencyPluginFactory(
+  groestlcoin
+)

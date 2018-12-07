@@ -231,7 +231,11 @@ export class CurrencyEngine {
       throw new Error('Transaction not found')
     }
 
-    const { fee, ourReceiveAddresses, nativeAmount } = sumTransaction(bcoinTransaction, this.network, this.engineState)
+    const { fee, ourReceiveAddresses, nativeAmount } = sumTransaction(
+      bcoinTransaction,
+      this.network,
+      this.engineState
+    )
 
     const edgeTransaction: EdgeTransaction = {
       ourReceiveAddresses,
