@@ -1,5 +1,7 @@
 // @flow
-import type { EdgeIo, DiskletFolder } from 'edge-core-js'
+
+import type { DiskletFolder } from 'disklet'
+import type { EdgeIo } from 'edge-core-js'
 
 import { type PluginState } from '../plugin/pluginState.js'
 // import { scoreServer2 } from '../plugin/pluginState.js'

@@ -1,4 +1,7 @@
 // @flow
+
+import { bns } from 'biggystring'
+import type { DiskletFolder } from 'disklet'
 import type {
   EdgeTransaction,
   EdgeWalletInfo,
@@ -11,8 +14,7 @@ import type {
   EdgeSpendInfo,
   EdgeSpendTarget,
   EdgeDataDump,
-  EdgeIo,
-  DiskletFolder
+  EdgeIo
 } from 'edge-core-js'
 
 import { EngineState } from './engineState.js'
@@ -31,7 +33,6 @@ import {
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import { broadcastFactories } from './broadcastApi.js'
-import { bns } from 'biggystring'
 import { getAllAddresses } from '../utils/formatSelector.js'
 import { InfoServer } from '../info/constants'
 import {
