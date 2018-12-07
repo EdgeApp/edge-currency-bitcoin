@@ -18,6 +18,7 @@ import { zcoin } from './info/zcoin'
 import { smartcash } from './info/smartcash'
 import { eboost } from './info/eboost'
 import { bitcoinsv } from './info/bitcoinsv'
+import { groestlcoin } from './info/groestlcoin'
 
 export const bitcoinCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoin)
 export const bitcoinTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(
@@ -53,3 +54,4 @@ export const eboostCurrencyPluginFactory = makeCurrencyPluginFactory(eboost)
 export const bitcoinsvCurrencyPluginFactory = makeCurrencyPluginFactory(
   bitcoinsv
 )
+export const groestlcoinCurrencyPluginFactory = makeCurrencyPluginFactory(groestlcoin)
