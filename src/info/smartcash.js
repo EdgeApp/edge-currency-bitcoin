@@ -84,7 +84,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
   // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:smartcash-bip44', 'wallet:smartcash'],
+  walletTypes: ['wallet:smartcash'],
 
   // Configuration options:
   defaultSettings: {
@@ -109,8 +109,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://insight.smartcash.cc/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/dash-logo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/dash-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/smartcash-logo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/smartcash-logo-grey-64.png`
 }
 
 export const smartcash = { bcoinInfo, engineInfo, currencyInfo }
