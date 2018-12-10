@@ -1,6 +1,10 @@
 # edge-currency-bitcoin
 
-# 3.7.3
+## 3.7.4
+
+* Fix smartcash icons
+
+## 3.7.3
 
 * Add Groestlcoin
 * Add SmartCash
