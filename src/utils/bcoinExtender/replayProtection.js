@@ -163,7 +163,6 @@ export const patchTransaction = function (bcoin) {
           input.prevout.toWriter(bw)
         }
 
-        // prevouts = bcoin.crypto.digest.hash256(bw.render())
         prevouts = serializers.signatureHash
           ? serializers.signatureHash(bw.render())
           : bcoin.crypto.digest.hash256(bw.render())
@@ -188,7 +187,6 @@ export const patchTransaction = function (bcoin) {
           bw.writeU32(input.sequence)
         }
 
-        // sequences = bcoin.crypto.digest.hash256(bw.render())
         sequences = serializers.signatureHash
           ? serializers.signatureHash(bw.render())
           : bcoin.crypto.digest.hash256(bw.render())
@@ -218,7 +216,6 @@ export const patchTransaction = function (bcoin) {
           output.toWriter(bw)
         }
 
-        // outputs = bcoin.crypto.digest.hash256(bw.render())
         outputs = serializers.signatureHash
           ? serializers.signatureHash(bw.render())
           : bcoin.crypto.digest.hash256(bw.render())
@@ -230,7 +227,6 @@ export const patchTransaction = function (bcoin) {
     } else if ((type & 0x1f) === bcoin.script.hashType.SINGLE) {
       if (index < this.outputs.length) {
         const output = this.outputs[index]
-        // outputs = bcoin.crypto.digest.hash256(output.toRaw())
         outputs = serializers.signatureHash
           ? serializers.signatureHash(output.toRaw())
           : bcoin.crypto.digest.hash256(output.toRaw())
@@ -252,9 +248,8 @@ export const patchTransaction = function (bcoin) {
     bw.writeU32(this.locktime)
     bw.writeU32(type)
 
-    const sigHash = serializers.signatureHash
+    return serializers.signatureHash
       ? serializers.signatureHash(bw.render())
       : bcoin.crypto.digest.hash256(bw.render())
-    return bcoin.crypto.digest.hash256(sigHash)
   }
 }
