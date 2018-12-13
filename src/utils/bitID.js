@@ -11,15 +11,21 @@ import { addressFromKey } from '../utils/coinUtils'
 
 // parse bitid uri
 // bitid://www.site.com/callback?x=NONCE
-//
+// bitid:www.site.com/callback?x=NONCE
 export const bitIDParseUri = (
   uri: string,
   { currencyCode }: EdgeCurrencyInfo
 ): EdgeParsedUri | null => {
-  const uriObj = parse(uri, {}, true)
-  const { protocol, pathname, query, port, hostname } = uriObj
+  let uriToParse = uri
+  // in case of bitid:www without //
+  if (uri.indexOf('//') === -1) {
+    uriToParse = 'bitid://' + uri.substr(uri.indexOf(':') + 1)
+  }
+  const uriObj = parse(uriToParse, {}, true)
+  const { protocol, pathname, query, hostname } = uriObj
+
   // check bitid protocl validation
-  if (protocol !== 'bitid' && port !== 'bitid') {
+  if (protocol !== 'bitid:') {
     return null
   }
   // Get x (nonce) from  query
@@ -30,8 +36,25 @@ export const bitIDParseUri = (
     currncyCode: currencyCode,
     bitIDURI: uri,
     bitIDDomain: hostname,
-    bitIDCallbackUri: pathname
+    bitIDCallbackUri: 'http://' + hostname + pathname // callback url is an http
   }
+}
+
+export const biIDMakePath = (uri: string, index: number = 0) => {
+  const uriBuffer = Buffer.from(uri)
+  const indexBuffer = Buffer.alloc(4)
+  indexBuffer.writeUInt32LE(index, 0)
+
+  const preHashBuffer = Buffer.concat([indexBuffer, uriBuffer])
+  const pathBuffer256 = hash256Sync(preHashBuffer)
+
+  const a = pathBuffer256.readUInt32LE(0)
+  const b = pathBuffer256.readUInt32LE(4)
+  const c = pathBuffer256.readUInt32LE(8)
+  const d = pathBuffer256.readUInt32LE(12)
+
+  const path = `m/13’/${a}’/${b}’/${c}’/${d}’/${index}`
+  return path
 }
 
 export const deriveBitIDMakeAddress = async (index: number, bitIDURI: string, seed: string, network: string) => {
@@ -76,21 +99,4 @@ export const broadcastBitIDMessage = async (
   }
   const bitIDACK = await result.json()
   return bitIDACK
-}
-
-export const biIDMakePath = (uri: string, index: number = 0) => {
-  const uriBuffer = Buffer.from(uri)
-  const indexBuffer = Buffer.alloc(4)
-  indexBuffer.writeUInt32LE(index, 0)
-
-  const preHashBuffer = Buffer.concat([indexBuffer, uriBuffer])
-  const pathBuffer256 = hash256Sync(preHashBuffer)
-
-  const a = pathBuffer256.readUInt32LE(0)
-  const b = pathBuffer256.readUInt32LE(4)
-  const c = pathBuffer256.readUInt32LE(8)
-  const d = pathBuffer256.readUInt32LE(12)
-
-  const path = `m/13’/${a}’/${b}’/${c}’/${d}’/${index}`
-  return path
 }
