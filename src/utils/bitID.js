@@ -53,14 +53,18 @@ export const biIDMakePath = (uri: string, index: number = 0) => {
   const c = pathBuffer256.readUInt32LE(8)
   const d = pathBuffer256.readUInt32LE(12)
 
-  const path = `m/13’/${a}’/${b}’/${c}’/${d}’/${index}`
+  const path = `m/13'/${a}'/${b}'/${c}'/${d}'`
   return path
 }
 
 export const deriveBitIDMakeAddress = async (index: number, bitIDURI: string, seed: string, network: string) => {
   const masterPath = biIDMakePath(bitIDURI, index)
-  const masterKeys = await FormatSelector('bip32', network).getMasterKeys(seed, masterPath)
-  const publicAddress = await addressFromKey(masterKeys.pubKey, network)
+  const formatSelector = FormatSelector('bip32', network)
+  const masterKeys = await formatSelector.getMasterKeys(seed, masterPath)
+  const pubKey = await formatSelector.deriveKeyRing(masterKeys.pubKey, index)
+  const publicAddress = await addressFromKey(pubKey, network)
+  console.warn(publicAddress.address)
+
   return {
     ...publicAddress,
     masterPath

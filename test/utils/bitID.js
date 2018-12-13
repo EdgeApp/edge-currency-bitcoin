@@ -4,6 +4,8 @@ import type {
   EdgeCurrencyInfo
 } from 'edge-core-js'
 
+// eslint-disable-next-line no-unused-vars
+import * as Factories from '../../src/index'
 import { describe, it, before } from 'mocha'
 import { assert } from 'chai'
 import { biIDMakePath, bitIDParseUri, deriveBitIDMakeAddress } from '../../src/utils/bitID.js'
@@ -30,11 +32,12 @@ describe(`BitID Process`, function () {
   })
 
   it('Test BitID master path', function () {
-    const masterPath = `m/13’/${0xbe553112}’/${0xc0af82cf}’/${0x4361fb3b}’/${0xedd2bf37}’/${index}`
+    const masterPath = `m/13'/${0xbe553112}'/${0xc0af82cf}'/${0x4361fb3b}'/${0xedd2bf37}'`
     assert.equal(biIDMakePath(bitIDCallbackUri, index), masterPath)
   })
 
-  it('Test BitID make address', function () {
-    assert.equal(deriveBitIDMakeAddress(index, bitIDCallbackUri, bitIDSeed, network).address, bitIDAddress)
+  it('Test BitID make address', async function () {
+    const publicAddress = await deriveBitIDMakeAddress(index, bitIDCallbackUri, bitIDSeed, network)
+    assert.equal(publicAddress.address, bitIDAddress)
   })
 })
