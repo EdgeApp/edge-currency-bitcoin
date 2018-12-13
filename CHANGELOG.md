@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 3.7.6
+
+* Use new colored icons
+
 ## 3.7.5
 
 * Fix sigHash for segwit transactions
