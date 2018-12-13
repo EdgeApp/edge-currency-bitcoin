@@ -109,8 +109,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://live.blockcypher.com/ltc/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/litecoin-logo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/litecoin-logo-64.png`
+  symbolImage: `${imageServerUrl}/litecoin-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/litecoin-logo-solo-64.png`
 }
 
 export const litecoin = { bcoinInfo, engineInfo, currencyInfo }

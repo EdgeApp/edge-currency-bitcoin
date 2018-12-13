@@ -76,8 +76,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://insight.zcoin.io/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/zcoin-logo-color-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/zcoin-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/zcoin-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/zcoin-logo-solo-64.png`
 }
 
 export const zcoin = { bcoinInfo, engineInfo, currencyInfo }

@@ -117,8 +117,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'http://groestlsight.groestlcoin.org/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/groestlcoin-logo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/groestlcoin-logo-64.png`
+  symbolImage: `${imageServerUrl}/groestlcoin-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/groestlcoin-logo-solo-64.png`
 }
 
 export const groestlcoin = { bcoinInfo, engineInfo, currencyInfo }

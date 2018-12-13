@@ -156,8 +156,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://blockchair.com/bitcoin-cash/transaction/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/bitcoincash-logo-color-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bitcoincash-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/bitcoincash-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/bitcoincash-logo-solo-64.png`
 }
 
 export const bitcoincash = { bcoinInfo, engineInfo, currencyInfo }

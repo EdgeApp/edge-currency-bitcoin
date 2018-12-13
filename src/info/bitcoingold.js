@@ -89,8 +89,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://explorer.bitcoingold.org/insight/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/bitcoingold-logo-color-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bitcoingold-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/bitcoingold-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/bitcoingold-logo-solo-64.png`
 }
 
 export const bitcoingold = { bcoinInfo, engineInfo, currencyInfo }
