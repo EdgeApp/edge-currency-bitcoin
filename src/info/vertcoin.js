@@ -77,8 +77,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://bitinfocharts.com/vertcoin/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/vertcoin-logo-color-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/vertcoin-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/vertcoin-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/vertcoin-logo-solo-64.png`
 }
 
 export const vertcoin = { bcoinInfo, engineInfo, currencyInfo }

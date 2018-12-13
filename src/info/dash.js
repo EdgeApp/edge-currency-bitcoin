@@ -79,8 +79,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://live.blockcypher.com/dash/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/dash-logo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/dash-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/dash-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/dash-logo-solo-64.png`
 }
 
 export const dash = { bcoinInfo, engineInfo, currencyInfo }

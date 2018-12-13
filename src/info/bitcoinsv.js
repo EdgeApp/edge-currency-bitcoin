@@ -86,8 +86,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://bsvexplorer.info/#/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/bitcoinsv-logo-color-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bitcoinsv-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/bitcoinsv-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/bitcoinsv-logo-solo-64.png`
 }
 
 export const bitcoinsv = { bcoinInfo, engineInfo, currencyInfo }

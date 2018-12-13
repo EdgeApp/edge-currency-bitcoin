@@ -76,8 +76,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://explorer.qtum.org/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/qtum-logo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/qtum-logo-mono-64.png`
+  symbolImage: `${imageServerUrl}/qtum-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/qtum-logo-solo-64.png`
 }
 
 export const qtum = { bcoinInfo, engineInfo, currencyInfo }

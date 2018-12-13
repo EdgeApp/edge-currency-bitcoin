@@ -82,8 +82,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://fsight.chain.tips/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/feathercoin-logo-color-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/feathercoin-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/feathercoin-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/feathercoin-logo-solo-64.png`
 }
 
 export const feathercoin = { bcoinInfo, engineInfo, currencyInfo }

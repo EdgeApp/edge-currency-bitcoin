@@ -79,8 +79,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://explorer.ufobject.com/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/ufo_64_white.png`,
-  symbolImageDarkMono: `${imageServerUrl}/ufo_64_87939D.png`
+  symbolImage: `${imageServerUrl}/ufo-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/ufo-logo-solo-64.png`
 }
 
 export const ufo = { bcoinInfo, engineInfo, currencyInfo }

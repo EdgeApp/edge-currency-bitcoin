@@ -70,8 +70,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://live.blockcypher.com/doge/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/dogecoin-logo-color-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/dogecoin-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/dogecoin-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/dogecoin-logo-solo-64.png`
 }
 
 export const dogecoin = { bcoinInfo, engineInfo, currencyInfo }

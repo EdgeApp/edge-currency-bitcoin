@@ -78,8 +78,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://digiexplorer.info/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/digibyte-logo-color-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/digibyte-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/digibyte-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/digibyte-logo-solo-64.png`
 }
 
 export const digibyte = { bcoinInfo, engineInfo, currencyInfo }

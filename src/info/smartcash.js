@@ -109,8 +109,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://insight.smartcash.cc/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/smartcash-logo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/smartcash-logo-grey-64.png`
+  symbolImage: `${imageServerUrl}/smartcash-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/smartcash-logo-solo-64.png`
 }
 
 export const smartcash = { bcoinInfo, engineInfo, currencyInfo }
