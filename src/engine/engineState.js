@@ -233,9 +233,9 @@ export class EngineState extends EventEmitter {
     try {
       const json = JSON.stringify({ keys: keys })
       await this.encryptedLocalFolder.file('keys.json').setText(json)
-      console.log(`${this.walletId.slice(0, 6)}: Saved keys cache`)
+      console.log(`${this.walletId}: Saved keys cache`)
     } catch (e) {
-      console.log(`${this.walletId.slice(0, 6)}: ${e.toString()}`)
+      console.log(`${this.walletId}: ${e.toString()}`)
     }
   }
 
@@ -248,7 +248,7 @@ export class EngineState extends EventEmitter {
       // TODO: Validate JSON
       return keysCacheJson.keys
     } catch (e) {
-      console.log(`${this.walletId.slice(0, 6)}: ${e.toString()}`)
+      console.log(`${this.walletId}: ${e.toString()}`)
       return {}
     }
   }
@@ -270,9 +270,7 @@ export class EngineState extends EventEmitter {
       const task = broadcastTx(
         rawTx,
         (txid: string) => {
-          console.log(
-            `${this.walletId.slice(0, 6)}: broadcastTx success: ${txid}`
-          )
+          console.log(`${this.walletId}: broadcastTx success: ${txid}`)
           // We resolve if any server succeeds:
           if (!resolved) {
             resolved = true
@@ -283,9 +281,7 @@ export class EngineState extends EventEmitter {
           // We fail if every server failed:
           if (++bad === uris.length) {
             const msg = e ? `With error ${e.toString()}` : ''
-            console.log(
-              `${this.walletId.slice(0, 6)} broadcastTx fail: ${rawTx}\n${msg}}`
-            )
+            console.log(`${this.walletId} broadcastTx fail: ${rawTx}\n${msg}}`)
             reject(e)
           }
         }
@@ -524,10 +520,7 @@ export class EngineState extends EventEmitter {
       )
     }
     console.log(
-      `${this.walletId.slice(
-        0,
-        6
-      )}: refillServers: Top ${NEW_CONNECTIONS} servers:`,
+      `${this.walletId} : refillServers: Top ${NEW_CONNECTIONS} servers:`,
       this.serverList
     )
     let chanceToBePicked = 1.25
@@ -556,10 +549,7 @@ export class EngineState extends EventEmitter {
         this.reconnect()
         break
       }
-      const prefix = `${this.walletId.slice(0, 6)} ${uri.replace(
-        'electrum://',
-        ''
-      )}:`
+      const prefix = `${this.walletId} ${uri.replace('electrum://', '')}:`
       const callbacks: StratumCallbacks = {
         onOpen: () => {
           this.reconnectCounter = 0
@@ -626,10 +616,7 @@ export class EngineState extends EventEmitter {
   pickNextTask (uri: string): StratumTask | void {
     const serverState = this.serverStates[uri]
     const connection = this.connections[uri]
-    const prefix = `${this.walletId.slice(0, 6)} ${uri.replace(
-      'electrum://',
-      ''
-    )}:`
+    const prefix = `${this.walletId} ${uri.replace('electrum://', '')}:`
 
     // Subscribe to height if this has never happened:
     if (serverState.height === void 0 && !serverState.fetchingHeight) {
@@ -830,7 +817,7 @@ export class EngineState extends EventEmitter {
   }
 
   async load () {
-    console.log(`${this.walletId.slice(0, 6)} - Loading wallet engine caches`)
+    console.log(`${this.walletId} - Loading wallet engine caches`)
 
     // Load transaction data cache:
     try {
@@ -925,12 +912,10 @@ export class EngineState extends EventEmitter {
           throw new Error('Missing addressFile')
         }
         await this.localFolder.file(this.addressFile).setText(json)
-        console.log(`${this.walletId.slice(0, 6)} - Saved address cache`)
+        console.log(`${this.walletId} - Saved address cache`)
         this.addressCacheDirty = false
       } catch (e) {
-        console.log(
-          `${this.walletId.slice(0, 6)} - saveAddressCache - ${e.toString()}`
-        )
+        console.log(`${this.walletId} - saveAddressCache - ${e.toString()}`)
       }
     }
   }
@@ -943,13 +928,10 @@ export class EngineState extends EventEmitter {
         }
         const json = JSON.stringify({ txs: this.txCache })
         await this.localFolder.file(this.txFile).setText(json)
-        console.log(`${this.walletId} - Saved tx cache`)
-        console.log(`${this.walletId.slice(0, 6)}: Saved txCache`)
+        console.log(`${this.walletId}: Saved txCache`)
         this.txCacheDirty = false
       } catch (e) {
-        console.log(
-          `${this.walletId.slice(0, 6)}: Error saving txCache: ${e.toString()}`
-        )
+        console.log(`${this.walletId}: Error saving txCache: ${e.toString()}`)
       }
     }
   }
@@ -1243,7 +1225,7 @@ export class EngineState extends EventEmitter {
   onConnectionClose (uri: string, task: string, e?: Error) {
     const msg = e ? `connection closed ERROR: ${e.message}` : `closed no error`
     console.log(
-      `${this.walletId.slice(0, 6)}: ${uri.replace(
+      `${this.walletId}: ${uri.replace(
         'electrum://',
         ''
       )}: ${msg}: task: ${task}`

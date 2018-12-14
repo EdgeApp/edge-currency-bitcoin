@@ -92,6 +92,7 @@ export type CurrencyEngineSettings = {
 export class CurrencyEngine {
   walletInfo: EdgeWalletInfo
   walletId: string
+  prunedWalletId: string
   engineInfo: EngineCurrencyInfo
   currencyCode: string
   network: string
@@ -121,6 +122,7 @@ export class CurrencyEngine {
     const test: EdgeCurrencyEngine = this
     this.walletInfo = walletInfo
     this.walletId = walletInfo.id || ''
+    this.prunedWalletId = this.walletId.slice(0, 6)
     this.pluginState = pluginState
     this.callbacks = options.callbacks
     this.walletLocalFolder = options.walletLocalFolder
@@ -133,9 +135,7 @@ export class CurrencyEngine {
 
     this.fees = { ...engineInfo.simpleFeeSettings, timestamp: 0 }
     console.log(
-      `${this.walletId.slice(0, 6)}: create engine type: ${
-        this.walletInfo.type
-      }`
+      `${this.prunedWalletId}: create engine type: ${this.walletInfo.type}`
     )
   }
 
@@ -156,7 +156,7 @@ export class CurrencyEngine {
       localFolder: this.walletLocalFolder,
       encryptedLocalFolder: this.walletLocalEncryptedFolder,
       pluginState: this.pluginState,
-      walletId: this.walletId
+      walletId: this.prunedWalletId
     })
 
     await this.engineState.load()
@@ -272,7 +272,7 @@ export class CurrencyEngine {
         }
       }
     } catch (err) {
-      console.log(`${this.walletId.slice(0, 6)} - ${err.toString()}`)
+      console.log(`${this.prunedWalletId} - ${err.toString()}`)
     }
   }
 
@@ -295,7 +295,7 @@ export class CurrencyEngine {
     } catch (e) {
       console.log(
         `${
-          this.walletId
+          this.prunedWalletId
         } - Error while trying to update fee table ${e.toString()}`
       )
     }
@@ -347,7 +347,7 @@ export class CurrencyEngine {
       log += JSON.stringify(jsonObj, null, 2) + '\n'
     }
     log += '------------------------------------------------------------------'
-    console.log(`${this.walletId.slice(0, 6)}: ${log}`)
+    console.log(`${this.prunedWalletId}: ${log}`)
   }
   // ------------------------------------------------------------------------
   // Public API
@@ -437,7 +437,7 @@ export class CurrencyEngine {
         this.engineState.markAddressesUsed(scriptHashs)
         if (this.keyManager) this.keyManager.setLookAhead()
       })
-      .catch(e => console.log(`${this.walletId.slice(0, 6)}: ${e.toString()}`))
+      .catch(e => console.log(`${this.prunedWalletId}: ${e.toString()}`))
   }
 
   isAddressUsed (address: string, options: any): boolean {
@@ -492,7 +492,7 @@ export class CurrencyEngine {
       localFolder: this.walletLocalFolder,
       encryptedLocalFolder: this.walletLocalEncryptedFolder,
       pluginState: this.pluginState,
-      walletId: this.walletId
+      walletId: this.prunedWalletId
     })
 
     await engineState.load()
@@ -516,7 +516,7 @@ export class CurrencyEngine {
         this.io.fetch
       )
     } catch (err) {
-      console.log(`${this.walletId} - ${err.toString()}`)
+      console.log(`${this.prunedWalletId} - ${err.toString()}`)
       throw err
     }
   }
