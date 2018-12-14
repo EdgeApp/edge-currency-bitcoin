@@ -102,10 +102,9 @@ export const FormatSelector = (
         })
         .then(() => {
           const { serializers = {} } = networks[network] || {}
-          const rawTx = tx.toRaw().toString('hex')
-          if (serializers.txHash) tx._hash = serializers.txHash(rawTx)
+          if (serializers.txHash) tx._hash = serializers.txHash(tx.toNormal().toString('hex'))
           const txid = tx.rhash()
-          return { txid, signedTx: rawTx }
+          return { txid, signedTx: tx.toRaw().toString('hex') }
         }),
 
     getMasterKeys: async (seed: string, masterPath: string, privKey?: any) => {

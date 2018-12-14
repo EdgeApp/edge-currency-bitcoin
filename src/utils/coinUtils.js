@@ -209,7 +209,7 @@ export const createTX = async ({
     const coin = primitives.Coin.fromTX(tx, index, height)
     const { serializers = {} } = networks[network] || {}
     if (serializers.txHash) {
-      coin.hash = serializers.txHash(tx.toRaw().toString('hex'))
+      coin.hash = serializers.txHash(tx.toNormal().toString('hex'))
     }
     return coin
   })
