@@ -1,5 +1,12 @@
 # edge-currency-bitcoin
 
+## 3.7.7
+
+* Fixed the issue with sending Digibyte.
+* Fixed the issue with sending Segwit transaction from a currency with a custom txHash (Like groestlcoin)
+* Changed some comments to have better wording and less junk in them
+* Removed some dependencies that were unused for faster build times
+
 ## 3.7.6
 
 * Use new colored icons
