@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 3.7.8
+
+* Fix Groestlcoin spelling
+
 ## 3.7.7
 
 * Fixed the issue with sending Digibyte.

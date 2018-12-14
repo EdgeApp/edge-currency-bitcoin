@@ -75,7 +75,7 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'GRS',
-  currencyName: 'GroestlCoin',
+  currencyName: 'Groestlcoin',
   pluginName: 'groestlcoin',
   denominations: [
     { name: 'GRS', multiplier: '100000000', symbol: 'G' },
