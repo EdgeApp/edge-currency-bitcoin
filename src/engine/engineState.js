@@ -284,9 +284,7 @@ export class EngineState extends EventEmitter {
           if (++bad === uris.length) {
             const msg = e ? `With error ${e.toString()}` : ''
             console.log(
-              `${
-                this.walletId.slice(0, 6)
-              } broadcastTx fail: ${rawTx}\n${msg}}`
+              `${this.walletId.slice(0, 6)} broadcastTx fail: ${rawTx}\n${msg}}`
             )
             reject(e)
           }
@@ -526,9 +524,10 @@ export class EngineState extends EventEmitter {
       )
     }
     console.log(
-      `${
-        this.walletId.slice(0, 6)
-      }: refillServers: Top ${NEW_CONNECTIONS} servers:`,
+      `${this.walletId.slice(
+        0,
+        6
+      )}: refillServers: Top ${NEW_CONNECTIONS} servers:`,
       this.serverList
     )
     let chanceToBePicked = 1.25
@@ -557,7 +556,10 @@ export class EngineState extends EventEmitter {
         this.reconnect()
         break
       }
-      const prefix = `${this.walletId.slice(0, 6)} ${uri.replace('electrum://', '')}:`
+      const prefix = `${this.walletId.slice(0, 6)} ${uri.replace(
+        'electrum://',
+        ''
+      )}:`
       const callbacks: StratumCallbacks = {
         onOpen: () => {
           this.reconnectCounter = 0
@@ -624,7 +626,10 @@ export class EngineState extends EventEmitter {
   pickNextTask (uri: string): StratumTask | void {
     const serverState = this.serverStates[uri]
     const connection = this.connections[uri]
-    const prefix = `${this.walletId.slice(0, 6)} ${uri.replace('electrum://', '')}:`
+    const prefix = `${this.walletId.slice(0, 6)} ${uri.replace(
+      'electrum://',
+      ''
+    )}:`
 
     // Subscribe to height if this has never happened:
     if (serverState.height === void 0 && !serverState.fetchingHeight) {
@@ -765,7 +770,9 @@ export class EngineState extends EventEmitter {
           address,
           (hash: string | null) => {
             console.log(
-              `${prefix} subscribed to ${address} at ${hash ? hash.slice(0, 6) : 'null'}`
+              `${prefix} subscribed to ${address} at ${
+                hash ? hash.slice(0, 6) : 'null'
+              }`
             )
             addressState.subscribing = false
             addressState.subscribed = true
@@ -921,7 +928,9 @@ export class EngineState extends EventEmitter {
         console.log(`${this.walletId.slice(0, 6)} - Saved address cache`)
         this.addressCacheDirty = false
       } catch (e) {
-        console.log(`${this.walletId.slice(0, 6)} - saveAddressCache - ${e.toString()}`)
+        console.log(
+          `${this.walletId.slice(0, 6)} - saveAddressCache - ${e.toString()}`
+        )
       }
     }
   }
@@ -938,7 +947,9 @@ export class EngineState extends EventEmitter {
         console.log(`${this.walletId.slice(0, 6)}: Saved txCache`)
         this.txCacheDirty = false
       } catch (e) {
-        console.log(`${this.walletId.slice(0, 6)}: Error saving txCache: ${e.toString()}`)
+        console.log(
+          `${this.walletId.slice(0, 6)}: Error saving txCache: ${e.toString()}`
+        )
       }
     }
   }
@@ -1231,7 +1242,12 @@ export class EngineState extends EventEmitter {
 
   onConnectionClose (uri: string, task: string, e?: Error) {
     const msg = e ? `connection closed ERROR: ${e.message}` : `closed no error`
-    console.log(`${this.walletId.slice(0, 6)}: ${uri.replace('electrum://', '')}: ${msg}: task: ${task}`)
+    console.log(
+      `${this.walletId.slice(0, 6)}: ${uri.replace(
+        'electrum://',
+        ''
+      )}: ${msg}: task: ${task}`
+    )
     if (this.connections[uri]) {
       this.connections[uri].close(e)
     }

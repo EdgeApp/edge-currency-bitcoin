@@ -102,7 +102,9 @@ export const FormatSelector = (
         })
         .then(() => {
           const { serializers = {} } = networks[network] || {}
-          if (serializers.txHash) tx._hash = serializers.txHash(tx.toNormal().toString('hex'))
+          if (serializers.txHash) {
+            tx._hash = serializers.txHash(tx.toNormal().toString('hex'))
+          }
           const txid = tx.rhash()
           return { txid, signedTx: tx.toRaw().toString('hex') }
         }),

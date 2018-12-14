@@ -133,7 +133,9 @@ export class CurrencyEngine {
 
     this.fees = { ...engineInfo.simpleFeeSettings, timestamp: 0 }
     console.log(
-      `${this.walletId.slice(0, 6)}: create engine type: ${this.walletInfo.type}`
+      `${this.walletId.slice(0, 6)}: create engine type: ${
+        this.walletInfo.type
+      }`
     )
   }
 

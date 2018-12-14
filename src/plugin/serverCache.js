@@ -153,9 +153,7 @@ export class ServerCache {
       this.setResponseTime(serverUrl, 9999)
     }
 
-    console.log(
-      `${serverUrl}: score DOWN to ${serverInfo.serverScore}`
-    )
+    console.log(`${serverUrl}: score DOWN to ${serverInfo.serverScore}`)
     this.dirtyServerCache(serverUrl)
   }
 
