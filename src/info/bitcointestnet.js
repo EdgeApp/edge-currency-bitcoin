@@ -3,6 +3,12 @@ import type { EdgeCurrencyInfo } from 'edge-core-js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
+import { crypto } from 'bcoin'
+
+const hash256 = (rawTx: string) => {
+  const buf = Buffer.from(rawTx, 'hex')
+  return crypto.digest.hash256(buf)
+}
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcointestnet',
@@ -23,6 +29,9 @@ const bcoinInfo: BcoinCurrencyInfo = {
     witnesspubkeyhash: 0x03,
     witnessscripthash: 0x28,
     bech32: 'tb'
+  },
+  serializers: {
+    txHash: (rawTx: string) => hash256(rawTx).toString('hex')
   }
 }
 
