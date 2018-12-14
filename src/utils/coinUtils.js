@@ -163,8 +163,9 @@ export const createTX = async ({
   const toBcoinFormat = (address: string, network: string): string => {
     const { addressPrefix = {}, serializers = {} } = networks[network] || {}
     if (serializers.address) address = serializers.address.decode(address)
-    else if (addressPrefix.cashAddress) address = toLegacyFormat(address, network)
-    else address = toNewFormat(address, network)
+    else if (addressPrefix.cashAddress) {
+      address = toLegacyFormat(address, network)
+    } else address = toNewFormat(address, network)
     return primitives.Address.fromString(address, network)
   }
 
