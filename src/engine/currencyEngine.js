@@ -49,6 +49,7 @@ import {
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000
+let uuidCounter_ = 1
 
 export function snooze (ms: number): Promise<void> {
   return new Promise((resolve: any) => setTimeout(resolve, ms))
@@ -105,6 +106,7 @@ export class CurrencyEngine {
   io: EdgeIo
   feeUpdateInterval: number
   feeTimer: any
+  pendingSpends: { [uuid: number]: Object }
   fees: BitcoinFees
 
   // ------------------------------------------------------------------------
@@ -129,6 +131,7 @@ export class CurrencyEngine {
     this.walletLocalEncryptedFolder = options.walletLocalEncryptedFolder
     this.io = io
     this.engineInfo = engineInfo
+    this.pendingSpends = {}
     this.feeUpdateInterval = this.engineInfo.feeUpdateInterval
     this.currencyCode = this.engineInfo.currencyCode
     this.network = this.engineInfo.network
@@ -342,8 +345,15 @@ export class CurrencyEngine {
     log += `Transaction id: ${edgeTransaction.txid}\n`
     log += `Our Receiving addresses are: ${edgeTransaction.ourReceiveAddresses.toString()}\n`
     log += 'Transaction details:\n'
-    if (edgeTransaction.otherParams && edgeTransaction.otherParams.bcoinTx) {
-      const jsonObj = edgeTransaction.otherParams.bcoinTx.getJSON(this.network)
+    if (
+      edgeTransaction.otherParams &&
+      edgeTransaction.otherParams.bcoinTxUuid
+    ) {
+      const bcoinTxUuid = edgeTransaction.otherParams.bcoinTxUuid
+      const bcoinTx = this.pendingSpends[bcoinTxUuid]
+      if (!bcoinTx) return
+
+      const jsonObj = bcoinTx.getJSON(this.network)
       log += JSON.stringify(jsonObj, null, 2) + '\n'
     }
     log += '------------------------------------------------------------------'
@@ -525,6 +535,7 @@ export class CurrencyEngine {
     edgeSpendInfo: EdgeSpendInfo,
     txOptions?: TxOptions = {}
   ): Promise<EdgeTransaction> {
+    this.pendingSpends = {}
     const { spendTargets } = edgeSpendInfo
     // Can't spend without outputs
     if (!txOptions.CPFP && (!spendTargets || spendTargets.length < 1)) {
@@ -586,9 +597,11 @@ export class CurrencyEngine {
         address => scriptHashes[address]
       )
 
+      const bcoinTxUuid = uuidCounter_++
+      this.pendingSpends[bcoinTxUuid] = bcoinTx
       const edgeTransaction: EdgeTransaction = {
         ourReceiveAddresses,
-        otherParams: { bcoinTx, edgeSpendInfo, rate },
+        otherParams: { bcoinTxUuid, edgeSpendInfo, rate },
         currencyCode: this.currencyCode,
         txid: '',
         date: 0,
@@ -606,7 +619,9 @@ export class CurrencyEngine {
 
   async signTx (edgeTransaction: EdgeTransaction): Promise<EdgeTransaction> {
     this.logEdgeTransaction(edgeTransaction, 'Signing')
-    const { edgeSpendInfo, bcoinTx } = edgeTransaction.otherParams || {}
+    const { edgeSpendInfo, bcoinTxUuid } = edgeTransaction.otherParams || {}
+    const bcoinTx = this.pendingSpends[bcoinTxUuid]
+    if (!bcoinTx) throw new Error('InvalidEdgeTransaction')
     const { privateKeys = [], otherParams = {} } = edgeSpendInfo
     const { paymentProtocolInfo } = otherParams
     const { signedTx, txid } = await this.keyManager.sign(bcoinTx, privateKeys)
@@ -636,7 +651,10 @@ export class CurrencyEngine {
   ): Promise<EdgeTransaction> {
     const { otherParams = {}, signedTx, currencyCode } = edgeTransaction
 
-    const { bcoinTx, paymentProtocolInfo } = otherParams
+    const { bcoinTxUuid, paymentProtocolInfo } = otherParams
+    const bcoinTx = this.pendingSpends[bcoinTxUuid]
+    if (!bcoinTx) throw new Error('InvalidEdgeTransaction')
+
     if (paymentProtocolInfo && paymentProtocolInfo.payment) {
       const paymentAck = await sendPayment(
         this.io.fetch,
@@ -653,7 +671,7 @@ export class CurrencyEngine {
 
     const tx = verifyTxAmount(signedTx, bcoinTx)
     if (!tx) throw new Error('Wrong spend amount')
-    edgeTransaction.otherParams.bcoinTx = tx
+    this.pendingSpends[bcoinTxUuid] = tx
     this.logEdgeTransaction(edgeTransaction, 'Broadcasting')
 
     // Try APIs
@@ -673,6 +691,8 @@ export class CurrencyEngine {
   saveTx (edgeTransaction: EdgeTransaction): Promise<void> {
     this.logEdgeTransaction(edgeTransaction, 'Saving')
     this.engineState.saveTx(edgeTransaction.txid, edgeTransaction.signedTx)
+    const bcoinTxUuid = edgeTransaction.otherParams.bcoinTxUuid
+    delete this.pendingSpends[bcoinTxUuid]
     return Promise.resolve()
   }
 
