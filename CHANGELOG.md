@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+## 3.7.9
+
+* Sanitize edgeTransaction returned from makeSpend to make it bridge compatible
+
 ## 3.7.8
 
 * Fix Groestlcoin spelling
