@@ -10,8 +10,18 @@ import { imageServerUrl } from './constants.js'
 
 const { Buffer } = buffer
 
+const isBech32 = address => {
+  try {
+    const hrp = utils.bech32.decode(address).hrp
+    return hrp === bcoinInfo.addressPrefix.bech32
+  } catch (e) {
+    return false
+  }
+}
+
 const base58 = {
   decode: (address: string) => {
+    if (isBech32(address)) return address
     const payload = bs58grscheck.decode(address)
     const bw = new utils.StaticWriter(payload.length + 4)
     bw.writeBytes(payload)
@@ -19,6 +29,7 @@ const base58 = {
     return utils.base58.encode(bw.render())
   },
   encode: (address: string) => {
+    if (isBech32(address)) return address
     const payload = utils.base58.decode(address)
     return bs58grscheck.encode(payload.slice(0, -4))
   }
@@ -34,7 +45,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
   magic: 0xf9beb4d4,
   formats: ['bip49', 'bip84', 'bip44', 'bip32'],
   keyPrefix: {
-    privkey: 0xa4,
+    privkey: 0x80,
     xpubkey: 0x0488b21e,
     xprivkey: 0x0488ade4,
     xpubkey58: 'xpub',

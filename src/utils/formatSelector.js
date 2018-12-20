@@ -29,11 +29,12 @@ export const getAllKeyRings = (
   network: string
 ): Promise<any[]> => {
   const keysPromises = []
-  const { formats } = networks[network]
+  const { formats, serializers = {} } = networks[network] || {}
   for (const bip of formats) {
     for (const key of privateKeys) {
       const fSelector = FormatSelector(bip, network)
-      const keyRing = primitives.KeyRing.fromSecret(key, network)
+      const standardKey = serializers.wif ? serializers.wif.decode(key) : key
+      const keyRing = primitives.KeyRing.fromSecret(standardKey, network)
       keysPromises.push(Promise.resolve(keyRing).then(fSelector.setKeyType))
     }
   }
