@@ -40,7 +40,8 @@ import {
   verifyTxAmount,
   sumUtxos,
   sumTransaction,
-  getReceiveAddresses
+  getReceiveAddresses,
+  parseJsonTransaction
 } from '../utils/coinUtils.js'
 import {
   toLegacyFormat,
@@ -342,9 +343,8 @@ export class CurrencyEngine {
     log += `Transaction id: ${edgeTransaction.txid}\n`
     log += `Our Receiving addresses are: ${edgeTransaction.ourReceiveAddresses.toString()}\n`
     log += 'Transaction details:\n'
-    if (edgeTransaction.otherParams && edgeTransaction.otherParams.bcoinTx) {
-      const jsonObj = edgeTransaction.otherParams.bcoinTx.getJSON(this.network)
-      log += JSON.stringify(jsonObj, null, 2) + '\n'
+    if (edgeTransaction.otherParams && edgeTransaction.otherParams.txJson) {
+      log += JSON.stringify(edgeTransaction.otherParams.txJson, null, 2) + '\n'
     }
     log += '------------------------------------------------------------------'
     console.log(`${this.prunedWalletId}: ${log}`)
@@ -588,7 +588,11 @@ export class CurrencyEngine {
 
       const edgeTransaction: EdgeTransaction = {
         ourReceiveAddresses,
-        otherParams: { bcoinTx, edgeSpendInfo, rate },
+        otherParams: {
+          txJson: bcoinTx.getJSON(this.network),
+          edgeSpendInfo,
+          rate
+        },
         currencyCode: this.currencyCode,
         txid: '',
         date: 0,
@@ -606,7 +610,8 @@ export class CurrencyEngine {
 
   async signTx (edgeTransaction: EdgeTransaction): Promise<EdgeTransaction> {
     this.logEdgeTransaction(edgeTransaction, 'Signing')
-    const { edgeSpendInfo, bcoinTx } = edgeTransaction.otherParams || {}
+    const { edgeSpendInfo, txJson } = edgeTransaction.otherParams || {}
+    const bcoinTx = parseJsonTransaction(txJson)
     const { privateKeys = [], otherParams = {} } = edgeSpendInfo
     const { paymentProtocolInfo } = otherParams
     const { signedTx, txid } = await this.keyManager.sign(bcoinTx, privateKeys)
@@ -635,8 +640,8 @@ export class CurrencyEngine {
     edgeTransaction: EdgeTransaction
   ): Promise<EdgeTransaction> {
     const { otherParams = {}, signedTx, currencyCode } = edgeTransaction
+    const { paymentProtocolInfo } = otherParams
 
-    const { bcoinTx, paymentProtocolInfo } = otherParams
     if (paymentProtocolInfo && paymentProtocolInfo.payment) {
       const paymentAck = await sendPayment(
         this.io.fetch,
@@ -651,9 +656,9 @@ export class CurrencyEngine {
       }
     }
 
-    const tx = verifyTxAmount(signedTx, bcoinTx)
+    const tx = verifyTxAmount(signedTx)
     if (!tx) throw new Error('Wrong spend amount')
-    edgeTransaction.otherParams.bcoinTx = tx
+    edgeTransaction.otherParams.txJson = tx.getJSON(this.network)
     this.logEdgeTransaction(edgeTransaction, 'Broadcasting')
 
     // Try APIs
