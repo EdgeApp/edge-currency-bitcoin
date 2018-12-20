@@ -159,6 +159,41 @@ export const createTX = async ({
     setRBF = false
   }
 }: CreateTxOptions) => {
+  console.log('********************************')
+  console.log('utxos')
+  console.log(utxos)
+  console.log('outputs')
+  console.log(outputs)
+  console.log('changeAddress')
+  console.log(changeAddress)
+  console.log('rate')
+  console.log(rate)
+  console.log('maxFee')
+  console.log(maxFee)
+  console.log('height')
+  console.log(height)
+  console.log('estimate')
+  console.log(estimate)
+  console.log('network')
+  console.log(network)
+  console.log('estimate')
+  console.log(estimate)
+
+  console.log('txOptions.selection')
+  console.log(selection)
+  console.log('txOptions.RBFraw')
+  console.log(RBFraw)
+  console.log('txOptions.CPFP')
+  console.log(CPFP)
+  console.log('txOptions.CPFPlimit')
+  console.log(CPFPlimit)
+  console.log('txOptions.subtractFee')
+  console.log(subtractFee)
+  console.log('txOptions.setRBF')
+  console.log(setRBF)
+
+  console.log('********************************')
+
   // Convert an address to the correct format that bcoin supports
   const toBcoinFormat = (address: string, network: string): string => {
     const { addressPrefix = {}, serializers = {} } = networks[network] || {}
