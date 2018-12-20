@@ -282,6 +282,14 @@ export const parseTransaction = (
     output.scriptHash = reverseBufferToHex(hash256Sync(output.script.toRaw()))
   }) && bcoinTx
 
+export const parseJsonTransaction = (
+  txJson: Object,
+  bcoinTx: any = primitives.MTX.fromJSON(txJson)
+) =>
+  !txJson.inputs.forEach(({ coin, prevout }) => {
+    bcoinTx.view.addCoin(primitives.Coin.fromJSON({ ...coin, ...prevout }))
+  }) && bcoinTx
+
 export const parsePath = (
   path: string = '',
   masterPath: string
