@@ -282,6 +282,21 @@ export const parseTransaction = (
     output.scriptHash = reverseBufferToHex(hash256Sync(output.script.toRaw()))
   }) && bcoinTx
 
+// Creates a Bcoin Transaction instance from a static JSON object
+export const parseJsonTransaction = (txJson: Object): Object => {
+  // Create a bcoin transaction instance. At this stage it WON'T contain the utxo information for the inputs
+  const bcoinTx = primitives.MTX.fromJSON(txJson)
+  // Import all the 'coins' (utxos) from txJson
+  for (const input of txJson.inputs) {
+    // Create a bcoin Coin Object from the input's coin and prevout
+    const opts = Object.assign({}, input.coin, input.prevout)
+    const bcoinCoin = primitives.Coin.fromJSON(opts)
+    // Add the `Coin` (UTXO) to the transaction's view (where a bcoin TX/MTX Object keeps it's `Coins`)
+    bcoinTx.view.addCoin(bcoinCoin)
+  }
+  return bcoinTx
+}
+
 export const parsePath = (
   path: string = '',
   masterPath: string
