@@ -1,10 +1,19 @@
 // @flow
-import { parseTransaction, isCompressed, verifyWIF, verifyUriProtocol, keysFromEntropy, createTX } from '../../../src/utils/coinUtils.js'
+import { parseTransaction,
+  isCompressed,
+  verifyWIF,
+  verifyUriProtocol,
+  keysFromEntropy,
+  createTX,
+  getPrivateFromSeed,
+  addressToScriptHash,
+  getReceiveAddresses } from '../../../src/utils/coinUtils.js'
+
 import type { CreateTxOptions } from '../../../src/utils/coinUtils.js'
 import { FormatSelector } from '../../../src/utils/formatSelector.js'
 import { describe, it } from 'mocha'
 import { expect, assert } from 'chai'
-import { networks } from 'bcoin'
+import { networks, primitives } from 'bcoin'
 // eslint-disable-next-line no-unused-vars
 import * as Factories from '../../../src/index'
 
@@ -154,72 +163,29 @@ describe('keysFromEntropy', function () {
 })
 
 describe('creatTx', function () {
+  // tx b6f6991d03df0e2e04dafffcd6bc418aac66049e2cd74b80f14ac86db1e3f0da
+  const rawTx1 = '010000000101820e2169131a77976cf204ce28685e49a6d2278861c33b6241ba3ae3e0a49f020000008b48304502210098a2851420e4daba656fd79cb60cb565bd7218b6b117fda9a512ffbf17f8f178022005c61f31fef3ce3f906eb672e05b65f506045a65a80431b5eaf28e0999266993014104f0f86fa57c424deb160d0fc7693f13fce5ed6542c29483c51953e4fa87ebf247487ed79b1ddcf3de66b182217fcaf3fcef3fcb44737eb93b1fcb8927ebecea26ffffffff02805cd705000000001976a91429d6a3540acfa0a950bef2bfdc75cd51c24390fd88ac80841e00000000001976a91417b5038a413f5c5ee288caa64cfab35a0c01914e88ac00000000'
+  // tx cf1316e67e665b252cd55a50632e37a2a04fe53181cfcb562e621826bbeff5cc
+  const rawTx2 = '0100000001382daab19d01ffd186c4c7c8d71342e5df61fdf6abfdd5fc704e3e9925a1e7be000000008a47304402203c4916a8534d5ebbf42993aa161ce60679e996046d1fa2b075e02dc85caabe7f02202ab020212dddecb0723b1975e87a5e7737f67a18e6581187b50c5b5335a16752014104050d83c611aaf880a50d9a8be3cddbc3a1a502665bdceccbcd8af131e93b2254c08da401f36e5ecf67fcea5b9b29620627cb32e23d7545570f3051a705861785ffffffff0200e57692020000001976a914ace3d76444582f14778b8ad83a32128172adbfea88ac40933402000000001976a914902155f5a64149db0baf41c8b13286736742513b88ac00000000'
+  const output1: any = primitives.TX.fromRaw(rawTx1, 'hex')
+  const output2: any = primitives.TX.fromRaw(rawTx2, 'hex')
   const utxos = [
     { index: 0,
-      tx: { hash: 'f389be2868968e5985f625e7a9861e128f366877ea1372f26f1506e6f09a2c10',
-        witnessHash: '12d13897bfdfcb5925949c49274b4301874f22e6c5c2d9c6537fdf4e66f5af9b',
-        size: 247,
-        virtualSize: 166,
-        value: '33.89979885',
-        fee: '0.0',
-        rate: '0.0',
-        minFee: '0.00000166',
-        height: -1,
-        block: null,
-        time: 0,
-        date: null,
-        index: -1,
-        version: 1,
-        inputs: [Array],
-        outputs: [Array],
-        locktime: 0 },
-      height: 1326320 },
-    { index: 0,
-      tx: { hash: '25d9425efea7dba41613aec608e7ffe634fc413e0fc6c287ffafe1848d967ecf',
-        witnessHash: 'f112c0c0d940a702d3935aa921e35d6ca514cfc8fb83c90ce613d6fd693411af',
-        size: 250,
-        virtualSize: 168,
-        value: '956.51664095',
-        fee: '0.0',
-        rate: '0.0',
-        minFee: '0.00000168',
-        height: -1,
-        block: null,
-        time: 0,
-        date: null,
-        index: -1,
-        version: 1,
-        inputs: [Array],
-        outputs: [Array],
-        locktime: 0 },
-      height: 1293577 },
+      tx: output1,
+      height: 154598
+    },
     { index: 1,
-      tx: { hash: 'c119958d1262b5bfe2cc1fc6ef8bf83f0c7cf94b0f5415c8c0c479c1dc436cd1',
-        witnessHash: 'c119958d1262b5bfe2cc1fc6ef8bf83f0c7cf94b0f5415c8c0c479c1dc436cd1',
-        size: 225,
-        virtualSize: 225,
-        value: '2839.08439724',
-        fee: '0.0',
-        rate: '0.0',
-        minFee: '0.00000225',
-        height: -1,
-        block: null,
-        time: 0,
-        date: null,
-        index: -1,
-        version: 2,
-        inputs: [Array],
-        outputs: [Array],
-        locktime: 1293576 },
-      height: 1293577 }
+      tx: output2,
+      height: 154598
+    }
   ]
-  const outputs = [ { address: '2N9DbpGaQEeLLZgPQP4gc9oKkrFHdsj5Eew', value: 250491781 } ]
-  const changeAddress = '2MutS8m3G227LZntB6Qe8vMin92uRcePLA6'
+  const outputs = [ { address: '1E96EqP5kArwuN6jGcv3nCdGYEaKNCBLJC', value: 10491781 } ]
+  const changeAddress = '1ju2Ph97z9DE9Ue6KC8PbGg1EpDv4U9TW'
   const rate = 1000000
   const maxFee = 1000000
-  const height = 1448672
+  const height = 154599
   const estimate = prev => FormatSelector.estimateSize(prev)
-  const network = 'bitcointestnet'
+  const network = 'bitcoin'
 
   const txOpts: CreateTxOptions = {
     utxos,
@@ -240,7 +206,42 @@ describe('creatTx', function () {
     }
   }
   it('Test createTx', async function () {
-    const res = await createTX(txOpts)
-    console.log(res.test)
+    const tx = await createTX(txOpts)
+    // console.log(tx.toJSON())
+    assert.equal(tx.toJSON().hash, '2905e85863b890a169e659f35d053afa1e98ac803ee7f8009772540e5b831d15')
+    assert.equal(tx.toJSON().hex, '0100000001daf0e3b16dc84af1804bd72c9e0466ac8a41bcd6fcffda042e0edf031d99f6b60000000000ffffffff028517a000000000001976a914902155f5a64149db0baf41c8b13286736742513b88ac43ce3305000000001976a914081ce5d85910bf71b232f7c6301aa74cc60a8ba588ac00000000')
+  })
+})
+
+describe('getPrivateFromSeed', function () {
+  it('Verify Private From Seed', async function () {
+    const seed = 'will dust merge tunnel day horror myself penalty return stem choose track'
+    const key = Buffer.from('xprv9s21ZrQH143K4BxU1U4xwFfBCx7XLB8RgGo96CFWeUU3Pi6BWJkc7xCQhCkwe2CBskuK4wpSecis1fdHBbE7CoLfnvRppsEqnm7NueyqKvJ')
+    const network = 'bitcoin'
+    const resKey = await getPrivateFromSeed(seed, network)
+    assert.equal(resKey.xprivkey(), key)
+  })
+})
+
+describe('addressToScriptHash', function () {
+  it('Test addressToScriptHash', async function () {
+    const address = '12cjLQhXwZxGTTonXetiBA9ibEBWxZGa1v'
+    const network = 'bitcoin'
+    const expectedScriptHash = '865f133970cacf284360e0932da8c14e8a06d4338fe7c131bea3954a920d8f63'
+    const scriptHash = await addressToScriptHash(address, network)
+    console.log(scriptHash)
+    assert.equal(scriptHash, expectedScriptHash)
+  })
+})
+
+describe('getReceiveAddresses', function () {
+  it('Test getReceiveAddresses', async function () {
+    // tx b6f6991d03df0e2e04dafffcd6bc418aac66049e2cd74b80f14ac86db1e3f0da
+    const rawTx1 = '010000000101820e2169131a77976cf204ce28685e49a6d2278861c33b6241ba3ae3e0a49f020000008b48304502210098a2851420e4daba656fd79cb60cb565bd7218b6b117fda9a512ffbf17f8f178022005c61f31fef3ce3f906eb672e05b65f506045a65a80431b5eaf28e0999266993014104f0f86fa57c424deb160d0fc7693f13fce5ed6542c29483c51953e4fa87ebf247487ed79b1ddcf3de66b182217fcaf3fcef3fcb44737eb93b1fcb8927ebecea26ffffffff02805cd705000000001976a91429d6a3540acfa0a950bef2bfdc75cd51c24390fd88ac80841e00000000001976a91417b5038a413f5c5ee288caa64cfab35a0c01914e88ac00000000'
+    const tx: any = primitives.TX.fromRaw(rawTx1, 'hex')
+    const expectedAddress = '14pDqB95GWLWCjFxM4t96H2kXH7QMKSsgG'
+    const network = 'bitcoin'
+    const address = await getReceiveAddresses(tx, network)
+    assert.equal(address[0], expectedAddress)
   })
 })
