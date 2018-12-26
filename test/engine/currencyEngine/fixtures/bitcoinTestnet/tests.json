@@ -22,6 +22,14 @@
       "electrumServers": [["electrum.hsmiths.com", "8080"]]
     }
   },
+  "Sign message": {
+    "success": {
+      "message": "e38ee6739bf1e94c078192aaae7405bdcae28f927f1d509d2691ff212a4f0dfe",
+      "address": "2MwgwSSqcRaNyc6ULeHU6xkfaD57ayie1Nn",
+      "signature": "3044022055addeb86bc1a00e5d2f3e0bef0e2a35166d14364a20c2d382fa275f26908e7702206e7067d4e6aee442a0c243eb00ec952ca6fd70ea453220e51bff07fae2edc25c",
+      "publicKey": "03f3c3fd4551b057c8ab841dc960e0a90351b29fd0fdeb9bfc4279c29526886521"
+    }
+  },
   "BlockHeight": {
     "uri": "https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY",
     "defaultHeight": 1286739

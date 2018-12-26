@@ -57,6 +57,11 @@ export type createTxOptions = {
   txOptions: TxOptions
 }
 
+export type SignMessage = {
+  message: string,
+  address: string
+}
+
 export interface KeyManagerCallbacks {
   // When deriving new address send it to caching and subscribing
   +onNewAddress?: (
@@ -79,6 +84,7 @@ export type KeyManagerOptions = {
   network: string,
   callbacks: KeyManagerCallbacks,
   addressInfos?: AddressInfos,
+  scriptHashes?: { [displayAddress: string]: string },
   txInfos?: { [txid: string]: any }
 }
 
@@ -99,6 +105,7 @@ export class KeyManager {
   ) => void
   onNewKey: (keys: any) => void
   addressInfos: AddressInfos
+  scriptHashes: { [displayAddress: string]: string }
   txInfos: { [txid: string]: any }
 
   constructor ({
@@ -111,6 +118,7 @@ export class KeyManager {
     network,
     callbacks,
     addressInfos = {},
+    scriptHashes = {},
     txInfos = {}
   }: KeyManagerOptions) {
     // Check for any way to init the wallet with either a seed or master keys
@@ -135,6 +143,8 @@ export class KeyManager {
     this.onNewKey = onNewKey
     // Set the addresses and txs state objects
     this.addressInfos = addressInfos
+    // Maps from display addresses to script hashes
+    this.scriptHashes = scriptHashes
     this.txInfos = txInfos
     // Create KeyRings while tring to load as many of the pubKey/privKey from the cache
     this.keys = this.fSelector.keysFromRaw(rawKeys)
@@ -260,6 +270,39 @@ export class KeyManager {
       }
     }
     return this.fSelector.sign(tx, keyRings)
+  }
+
+  async signMessage ({ message, address }: SignMessage) {
+    if (!this.keys.master.privKey && this.seed === '') {
+      throw new Error("Can't sign without private key")
+    }
+    await this.initMasterKeys()
+    if (!address) throw new Error('Missing address to sign with')
+    const scriptHash = this.scriptHashes[address]
+    if (!scriptHash) throw new Error('Address is not part of this wallet')
+    const addressInfo = this.addressInfos[scriptHash]
+    if (!addressInfo) throw new Error('Address is not part of this wallet')
+    const { path } = addressInfo
+    const pathSuffix = path.split(this.masterPath + '/')[1]
+    const [branch: string, index: string] = pathSuffix.split('/')
+    const branchName = this.fSelector.branches[`${branch}`]
+    const keyRing = this.keys[branchName]
+    if (!keyRing.privKey) {
+      keyRing.privKey = await this.fSelector.deriveHdKey(
+        this.keys.master.privKey,
+        parseInt(branch)
+      )
+      this.saveKeysToCache()
+    }
+    const key = await this.fSelector.deriveKeyRing(
+      keyRing.privKey,
+      parseInt(index)
+    )
+    const signature = await key.sign(Buffer.from(message, 'hex'))
+    return {
+      signature: signature.toString('hex'),
+      publicKey: key.publicKey.toString('hex')
+    }
   }
 
   getSeed (): string | null {
