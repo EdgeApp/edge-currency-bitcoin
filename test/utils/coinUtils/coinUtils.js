@@ -229,7 +229,6 @@ describe('addressToScriptHash', function () {
     const network = 'bitcoin'
     const expectedScriptHash = '865f133970cacf284360e0932da8c14e8a06d4338fe7c131bea3954a920d8f63'
     const scriptHash = await addressToScriptHash(address, network)
-    console.log(scriptHash)
     assert.equal(scriptHash, expectedScriptHash)
   })
 })
