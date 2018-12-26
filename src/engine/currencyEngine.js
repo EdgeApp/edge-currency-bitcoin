@@ -202,6 +202,7 @@ export class CurrencyEngine {
       gapLimit: this.engineInfo.gapLimit,
       network: this.network,
       addressInfos: this.engineState.addressInfos,
+      scriptHashes: this.engineState.scriptHashes,
       txInfos: this.engineState.parsedTxs
     })
 
@@ -609,8 +610,20 @@ export class CurrencyEngine {
   }
 
   async signTx (edgeTransaction: EdgeTransaction): Promise<EdgeTransaction> {
+    const { edgeSpendInfo, txJson, signMessage } =
+      edgeTransaction.otherParams || {}
+    if (signMessage) {
+      const { signature, publicKey } = await this.keyManager.signMessage(
+        signMessage
+      )
+      const signedMessage = { ...signMessage, signature, publicKey }
+      const otherParams = {
+        ...edgeTransaction.otherParams,
+        signMessage: signedMessage
+      }
+      return { ...edgeTransaction, otherParams }
+    }
     this.logEdgeTransaction(edgeTransaction, 'Signing')
-    const { edgeSpendInfo, txJson } = edgeTransaction.otherParams || {}
     const bcoinTx = parseJsonTransaction(txJson)
     const { privateKeys = [], otherParams = {} } = edgeSpendInfo
     const { paymentProtocolInfo } = otherParams
