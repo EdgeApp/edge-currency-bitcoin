@@ -8,7 +8,22 @@ import type {
   StandardOutput,
   Script
 } from '../utils/coinUtils.js'
-import { getAllKeyRings, FormatSelector } from '../utils/formatSelector.js'
+import type { DerivationConfig } from '../utils/formatSelector.js'
+import {
+  getDerivationConfiguration,
+  getAllKeyRings,
+  createMasterPath,
+  keysFromRaw,
+  estimateSize,
+  deriveHdKey,
+  deriveKeyRing,
+  sign,
+  parseSeed,
+  getMasterKeys,
+  hasScript,
+  deriveAddress,
+  deriveScriptAddress
+} from '../utils/formatSelector.js'
 import { parsePath, createTX, getLock } from '../utils/coinUtils.js'
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 
@@ -90,7 +105,6 @@ export class KeyManager {
   seed: string
   gapLimit: number
   network: string
-  fSelector: any
   onNewAddress: (
     scriptHash: string,
     address: string,
@@ -100,6 +114,7 @@ export class KeyManager {
   onNewKey: (keys: any) => void
   addressInfos: AddressInfos
   txInfos: { [txid: string]: any }
+  derivationConfiguration: DerivationConfig
 
   constructor ({
     account = 0,
@@ -124,11 +139,15 @@ export class KeyManager {
     this.gapLimit = gapLimit
     this.network = network
     this.bip = bip
-    this.fSelector = FormatSelector(bip, network)
+    this.derivationConfiguration = getDerivationConfiguration(bip, network)
     // Create a lock for when deriving addresses
     this.writeLock = getLock()
     // Create the master derivation path
-    this.masterPath = this.fSelector.createMasterPath(account, coinType)
+    this.masterPath = createMasterPath(
+      this.derivationConfiguration,
+      account,
+      coinType
+    )
     // Set the callbacks with nops as default
     const { onNewAddress = nop, onNewKey = nop } = callbacks
     this.onNewAddress = onNewAddress
@@ -137,9 +156,8 @@ export class KeyManager {
     this.addressInfos = addressInfos
     this.txInfos = txInfos
     // Create KeyRings while tring to load as many of the pubKey/privKey from the cache
-    this.keys = this.fSelector.keysFromRaw(rawKeys)
+    this.keys = keysFromRaw(this.derivationConfiguration, rawKeys)
     // Load addresses from Cache
-    const { branches } = this.fSelector
     for (const scriptHash in addressInfos) {
       const addressObj: AddressInfo = addressInfos[scriptHash]
       const path = parsePath(addressObj.path, this.masterPath)
@@ -154,7 +172,7 @@ export class KeyManager {
           branch,
           redeemScript
         }
-        const branchName = branches[`${branch}`]
+        const branchName = this.derivationConfiguration.branches[`${branch}`]
         this.keys[branchName].children.push(address)
       }
     }
@@ -192,7 +210,7 @@ export class KeyManager {
   async createTX (options: createTxOptions): any {
     const { outputs = [], ...rest } = options
     const standardOutputs: Array<StandardOutput> = []
-    const branches = this.fSelector.branches
+    const branches = this.derivationConfiguration.branches
     for (const output of outputs) {
       let { address = '' } = output
       if (output.script) {
@@ -206,7 +224,7 @@ export class KeyManager {
           if (!branch) throw new Error(`Branch does not exist`)
           const addressObj = await this.deriveAddress(
             keyRing,
-            branch,
+            parseInt(branch),
             index,
             output.script
           )
@@ -224,7 +242,7 @@ export class KeyManager {
       ...rest,
       outputs: standardOutputs,
       changeAddress: this.getChangeAddress(),
-      estimate: prev => this.fSelector.estimateSize(prev),
+      estimate: prev => estimateSize(this.derivationConfiguration, prev),
       network: this.network
     })
   }
@@ -236,36 +254,31 @@ export class KeyManager {
         throw new Error("Can't sign without private key")
       }
       await this.initMasterKeys()
-      const { branches } = this.fSelector
       for (const input: any of tx.inputs) {
         const { prevout } = input
         if (prevout) {
           const { branch, index, redeemScript } = this.utxoToAddress(prevout)
-          const branchName = branches[`${branch}`]
+          const branchName = this.derivationConfiguration.branches[`${branch}`]
           const keyRing = this.keys[branchName]
           if (!keyRing.privKey) {
-            keyRing.privKey = await this.fSelector.deriveHdKey(
+            keyRing.privKey = await deriveHdKey(
               this.keys.master.privKey,
               branch
             )
             this.saveKeysToCache()
           }
-          const key = await this.fSelector.deriveKeyRing(
-            keyRing.privKey,
-            index,
-            redeemScript
-          )
+          const key = await deriveKeyRing(this.derivationConfiguration, keyRing.privKey, index, redeemScript)
           keyRings.push(key)
         }
       }
     }
-    return this.fSelector.sign(tx, keyRings)
+    return sign(this.derivationConfiguration, tx, keyRings)
   }
 
   getSeed (): string | null {
     if (this.seed && this.seed !== '') {
       try {
-        return this.fSelector.parseSeed(this.seed)
+        return parseSeed(this.derivationConfiguration)(this.seed)
       } catch (e) {
         console.log(e)
         return null
@@ -318,7 +331,8 @@ export class KeyManager {
   }
 
   async initMasterKeys () {
-    const keys = await this.fSelector.getMasterKeys(
+    const keys = await getMasterKeys(
+      this.derivationConfiguration,
       this.seed,
       this.masterPath,
       this.keys.master.privKey
@@ -348,8 +362,8 @@ export class KeyManager {
   async setLookAhead (closeGaps: boolean = false) {
     const unlock = await this.writeLock.lock()
     try {
-      for (const branchNum in this.fSelector.branches) {
-        const branchName = this.fSelector.branches[branchNum]
+      for (const branchNum in this.derivationConfiguration.branches) {
+        const branchName = this.derivationConfiguration.branches[branchNum]
         await this.deriveNewKeys(
           this.keys[branchName],
           parseInt(branchNum),
@@ -367,10 +381,7 @@ export class KeyManager {
     const { children } = keyRing
     // If we never derived a public key for this branch before
     if (!keyRing.pubKey) {
-      keyRing.pubKey = await this.fSelector.deriveHdKey(
-        this.keys.master.pubKey,
-        branch
-      )
+      keyRing.pubKey = await deriveHdKey(this.keys.master.pubKey, branch)
       this.saveKeysToCache()
     }
 
@@ -420,10 +431,15 @@ export class KeyManager {
   ): Promise<Address | null> {
     let newAddress = {}
 
-    if (!this.fSelector.hasScript(branch, scriptObj)) {
-      newAddress = await this.fSelector.deriveAddress(keyRing.pubKey, index)
+    if (!hasScript(this.derivationConfiguration, branch, scriptObj)) {
+      newAddress = await deriveAddress(
+        this.derivationConfiguration,
+        keyRing.pubKey,
+        index
+      )
     } else {
-      newAddress = await this.fSelector.deriveScriptAddress(
+      newAddress = await deriveScriptAddress(
+        this.derivationConfiguration,
         keyRing.pubKey,
         index,
         branch,
