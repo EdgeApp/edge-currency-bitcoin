@@ -12,7 +12,10 @@ import {
 } from '../../../src/utils/coinUtils.js'
 
 import type { CreateTxOptions } from '../../../src/utils/coinUtils.js'
-import { FormatSelector } from '../../../src/utils/formatSelector.js'
+import {
+  estimateSize,
+  getDerivationConfiguration
+} from '../../../src/utils/formatSelector.js'
 import { describe, it } from 'mocha'
 import { expect, assert } from 'chai'
 import { primitives } from 'bcoin'
@@ -59,15 +62,14 @@ for (const fixture of fixtures) {
   })
 
   describe('addressToScriptHash', function () {
-    fixture['scriptHashAddresses'].forEach(([network, address, expectedScriptHash]) => {
-      it('Test addressToScriptHash', async function () {
-        const scriptHash = await addressToScriptHash(
-          address,
-          network
-        )
-        assert.equal(scriptHash, expectedScriptHash)
-      })
-    })
+    fixture['scriptHashAddresses'].forEach(
+      ([network, address, expectedScriptHash]) => {
+        it('Test addressToScriptHash', async function () {
+          const scriptHash = await addressToScriptHash(address, network)
+          assert.equal(scriptHash, expectedScriptHash)
+        })
+      }
+    )
   })
 
   describe('verifyUriProtocol', function () {
@@ -93,20 +95,22 @@ for (const fixture of fixtures) {
   })
 
   describe('keysFromEntropy', function () {
-    fixture['entropyKeys'].forEach(([network, coinType, format, entropy, seed]) => {
-      const randomBuffer = Buffer.from(entropy, 'hex')
-      it('Test keysFromEntropy', function () {
-        const opts = { format, coinType }
-        const res = keysFromEntropy(randomBuffer, network, opts)
-        assert.equal(res[network + 'Key'], seed)
-        assert.equal(res.format, format)
-        assert.equal(res.coinType, coinType)
-      })
-    })
+    fixture['entropyKeys'].forEach(
+      ([network, coinType, format, entropy, seed]) => {
+        const randomBuffer = Buffer.from(entropy, 'hex')
+        it('Test keysFromEntropy', function () {
+          const opts = { format, coinType }
+          const res = keysFromEntropy(randomBuffer, network, opts)
+          assert.equal(res[network + 'Key'], seed)
+          assert.equal(res.format, format)
+          assert.equal(res.coinType, coinType)
+        })
+      }
+    )
   })
 
   describe('createTx', function () {
-    fixture['createTx'].forEach(([network, txData]) => {
+    fixture['createTx'].forEach(([bip, network, txData]) => {
       const utxos = []
       txData.utxos.forEach(utxo => {
         utxos.push({
@@ -119,7 +123,8 @@ for (const fixture of fixtures) {
       txData.outputs.forEach(output => {
         outputs.push({ address: output.address, value: output.value })
       })
-      const estimate = prev => FormatSelector.estimateSize(prev)
+      const config = getDerivationConfiguration(bip, network)
+      const estimate = prev => estimateSize(config, prev)
       const txOpts: CreateTxOptions = {
         utxos,
         outputs,

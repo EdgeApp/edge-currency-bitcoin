@@ -48,6 +48,7 @@
     ],
     "createTx": [
       [
+        "bip49",
         "bitcoin",
         {
           "utxos":
