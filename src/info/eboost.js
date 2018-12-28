@@ -7,7 +7,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'eboost',
   magic: 0xd9b4bef9,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
+  formats: ['bip44', 'bip32'],
   keyPrefix: {
     privkey: 0xb0,
     xpubkey: 0x0488b21e,
@@ -18,11 +18,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
   },
   addressPrefix: {
     pubkeyhash: 0x5c,
-    scripthash: 0x0a,
-    scripthashLegacy: 0x05,
-    witnesspubkeyhash: 0x06,
-    witnessscripthash: 0x0a,
-    bech32: 'ebst'
+    scripthash: 0x05
   }
 }
 
