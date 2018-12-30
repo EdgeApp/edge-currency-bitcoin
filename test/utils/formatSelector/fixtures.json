@@ -1,0 +1,43 @@
+[
+  {
+    "derivationConfiguration": [
+      [
+        "main",
+        "bip32",
+        {
+          "nested": false,
+          "witness": false,
+          "branches": { "0": "receive", "1": "change" },
+          "network": "main",
+          "bip": "32",
+          "scriptTemplates": {}
+        }
+      ]
+    ],
+    "pubFromSeed" : [
+      [
+        "bitcoin",
+        "bip32",
+        "step comfort exact can oxygen fever couch horn consider welcome song parrot",
+        0,
+        0,
+        "xpub6CRnyVP6oVSghZbfi33xBwrfjtWVd7Pe2KpLhoG2BQL5jQQfGyBedPm7qnBNAw9WWg7h7bYGiTWV6ZLEMJJt1knsmMaSLepWKwrLxJXDGP3"]
+    ],
+    "allAddresses" : [
+      [
+        "bitcoin",
+        "L2GJtBbpU2dbhakUMaVyYzyVkzR4ktAeRarCVi7QySmf5TQoSWSZ",
+        [
+          { "address": "3AGp2d5QEBYhcW9h5zFMoPaGtYB3cZXHkx",
+            "scriptHash": "cd1ea0e915a60125b5f444c44895f9d117dce639e5745af3da34ca9ac860870b" },
+          { "address": "bc1q89a207xydk4a8g243lsmv4j6yf4phvzdy0fh82",
+            "scriptHash": "faf6d68f88a795b1e98b9b7b128bab4df548eac1d416564512bd3babf330347e" },
+          { "address": "16EvTEUXnVwgqJH47QZCjGhj8WepzaEBiR",
+            "scriptHash": "806327bbfbbed6b1f90f3f7097f5d30285d4243b556c34fb5e268433aabdfcec" },
+          { "address": "16EvTEUXnVwgqJH47QZCjGhj8WepzaEBiR",
+            "scriptHash": "806327bbfbbed6b1f90f3f7097f5d30285d4243b556c34fb5e268433aabdfcec" }
+        ]
+      ]
+    ]
+  }
+]

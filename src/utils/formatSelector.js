@@ -46,7 +46,7 @@ export const getAllKeyRings = (
     for (const key of privateKeys) {
       const keyRing = primitives.KeyRing.fromSecret(key, network)
       keysPromises.push(
-        Promise.resolve(keyRing).then(key => setKeyTypeWrap(config, keyRing))
+        Promise.resolve(keyRing).then(async (key) => setKeyTypeWrap(config, key))
       )
     }
   }
