@@ -29,7 +29,7 @@ export type DerivationConfig = {
   witness: boolean,
   branches: Branches,
   network: string,
-  bip: string,
+  bip: number,
   scriptTemplates: any
 }
 
@@ -99,7 +99,7 @@ export const getDerivationConfiguration = (
     witness,
     branches,
     network,
-    bip: bip.toString(),
+    bip: bip,
     scriptTemplates
   }
 }

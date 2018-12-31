@@ -9,7 +9,7 @@
           "witness": false,
           "branches": { "0": "receive", "1": "change" },
           "network": "main",
-          "bip": "32",
+          "bip": 32,
           "scriptTemplates": {}
         }
       ]
