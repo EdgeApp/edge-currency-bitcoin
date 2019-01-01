@@ -18,24 +18,40 @@
       [
         "bitcoin",
         "bip32",
-        "step comfort exact can oxygen fever couch horn consider welcome song parrot",
+        "refuse ticket panther aspect joke heart punch autumn draft goose agent depart",
         0,
         0,
-        "xpub6CRnyVP6oVSghZbfi33xBwrfjtWVd7Pe2KpLhoG2BQL5jQQfGyBedPm7qnBNAw9WWg7h7bYGiTWV6ZLEMJJt1knsmMaSLepWKwrLxJXDGP3"]
+        "xpub69iMRvqoC61AkWmLxr1DzeeTQT9f59sEyVcYidKr7J8qKmokH4HygNQMYCswpQ894BMZLR2w4R2RTcPy5xU6TsQyRhrhaq6qS5a4KQyUxSC"]
+    ],
+    "allKeyRings" : [
+      [
+        "bitcoin",
+        ["KyEAkMosXa6DUreDpemJDRBcagLwMs3bBpufh9L54ebz8JMNQzSu"],
+        [
+          { "address": "37TP987SgNhrxVc5Zcb9asqGAsDnADfyT7",
+            "publicKey": "0390fd12b9e581529571ba76770bff473557075bb7587dce1620db3c012a1a6ce9" },
+          { "address": "bc1q4nyxxlkz5xx6cerpjeknxfk85xs40xmenzx4rp",
+            "publicKey": "0390fd12b9e581529571ba76770bff473557075bb7587dce1620db3c012a1a6ce9" },
+          { "address": "1GkbHF4se9SVTtWedhzc3LvZFZMitDJynV",
+            "publicKey": "0390fd12b9e581529571ba76770bff473557075bb7587dce1620db3c012a1a6ce9" },
+          { "address": "1GkbHF4se9SVTtWedhzc3LvZFZMitDJynV",
+            "publicKey": "0390fd12b9e581529571ba76770bff473557075bb7587dce1620db3c012a1a6ce9" }
+        ]
+      ]
     ],
     "allAddresses" : [
       [
         "bitcoin",
-        "L2GJtBbpU2dbhakUMaVyYzyVkzR4ktAeRarCVi7QySmf5TQoSWSZ",
+        ["KyEAkMosXa6DUreDpemJDRBcagLwMs3bBpufh9L54ebz8JMNQzSu"],
         [
-          { "address": "3AGp2d5QEBYhcW9h5zFMoPaGtYB3cZXHkx",
-            "scriptHash": "cd1ea0e915a60125b5f444c44895f9d117dce639e5745af3da34ca9ac860870b" },
-          { "address": "bc1q89a207xydk4a8g243lsmv4j6yf4phvzdy0fh82",
-            "scriptHash": "faf6d68f88a795b1e98b9b7b128bab4df548eac1d416564512bd3babf330347e" },
-          { "address": "16EvTEUXnVwgqJH47QZCjGhj8WepzaEBiR",
-            "scriptHash": "806327bbfbbed6b1f90f3f7097f5d30285d4243b556c34fb5e268433aabdfcec" },
-          { "address": "16EvTEUXnVwgqJH47QZCjGhj8WepzaEBiR",
-            "scriptHash": "806327bbfbbed6b1f90f3f7097f5d30285d4243b556c34fb5e268433aabdfcec" }
+          { "address": "37TP987SgNhrxVc5Zcb9asqGAsDnADfyT7",
+            "scriptHash": "79ffb8a0420e568fea06761eaa7f404add3f24e57ab20042b16bc73b6bb215fa" },
+          { "address": "bc1q4nyxxlkz5xx6cerpjeknxfk85xs40xmenzx4rp",
+            "scriptHash": "1cdc7db336edb160410a00f6cd372e21dd464c18f77f347322f0c6cc90ae3fae" },
+          { "address": "1GkbHF4se9SVTtWedhzc3LvZFZMitDJynV",
+            "scriptHash": "98b77ccd3030e414e876cf8b0b7a8f150f9be5f192f8250649a571d98ad0bf8f" },
+          { "address": "1GkbHF4se9SVTtWedhzc3LvZFZMitDJynV",
+            "scriptHash": "98b77ccd3030e414e876cf8b0b7a8f150f9be5f192f8250649a571d98ad0bf8f" }
         ]
       ]
     ]

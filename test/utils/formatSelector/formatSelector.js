@@ -40,12 +40,12 @@ for (const fixture of fixtures) {
   })
 
   describe('getAllKeyRings', function () {
-    fixture['allAddresses'].forEach(([network, keys, expected]) => {
+    fixture['allKeyRings'].forEach(([network, keys, expected]) => {
       it('Test getAllKeyRings', async function () {
-        const addresses = await getAllKeyRings(keys, network)
-        for (let index = 0; index < addresses.length; index++) {
-          assert.equal(addresses[index].address, expected[index].address)
-          assert.equal(addresses[index].scriptHash, expected[index].scriptHash)
+        const keyRings = await getAllKeyRings(keys, network)
+        for (let index = 0; index < keyRings.length; index++) {
+          assert.equal(keyRings[index].toJSON().address, expected[index].address)
+          assert.equal(keyRings[index].toJSON().publicKey, expected[index].publicKey)
         }
       })
     })
