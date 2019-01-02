@@ -54,6 +54,74 @@
             "scriptHash": "98b77ccd3030e414e876cf8b0b7a8f150f9be5f192f8250649a571d98ad0bf8f" }
         ]
       ]
+    ],
+    "deriveHdKey": [
+      [
+        "bitcoin",
+        "xprv9s21ZrQH143K4Z1vun58EGtggzDiMHziRdoBzN5YhKqGiTXMJ9re2htHoqqeMZiEBHrtFNKMj9NVgNEshbT9jqiy4SfCwdqZKsYJC71heoJ",
+        0,
+        "xprv9ucihoTuu1VLc57pcW6V3VbXWhykzSN441LjW411byT9gsmnip8tY647TXVXEfbPMAd7VUkkjmyZ1amoTfTF2r1YkJzE9PgwmbyD2LRnsG2"
+      ]
+    ],
+    "signTxs": [
+      [
+        "bitcoin",
+        "bip32",
+        "010000000101820e2169131a77976cf204ce28685e49a6d2278861c33b6241ba3ae3e0a49f020000008b48304502210098a2851420e4daba656fd79cb60cb565bd7218b6b117fda9a512ffbf17f8f178022005c61f31fef3ce3f906eb672e05b65f506045a65a80431b5eaf28e0999266993014104f0f86fa57c424deb160d0fc7693f13fce5ed6542c29483c51953e4fa87ebf247487ed79b1ddcf3de66b182217fcaf3fcef3fcb44737eb93b1fcb8927ebecea26ffffffff02805cd705000000001976a91429d6a3540acfa0a950bef2bfdc75cd51c24390fd88ac80841e00000000001976a91417b5038a413f5c5ee288caa64cfab35a0c01914e88ac00000000"
+      ]
+    ],
+    "masterKeys": [
+      [
+        "bitcoin",
+        "bip49",
+        "drum general mosquito combine lobster squeeze glove pony allow reform divorce tonight",
+        "m/49'/0'/0'",
+        "xprv9zQ5vouMxZxVpnSB2WNMcfqB3MAnoVrjrJ3FeB3CbqwzB5hsBAuo8torAozeK2up11WF8xV5PS6zJfZZp6gBda98id9VPtgUHrgqoN5mTQC"
+      ]
+    ],
+    "parseSeed": [
+      [
+        "bitcoin",
+        "bip49",
+        "drum general mosquito combine lobster squeeze glove pony allow reform divorce tonight",
+        "drum general mosquito combine lobster squeeze glove pony allow reform divorce tonight"
+      ]
+    ],
+    "deriveAddress": [
+      [
+        "bitcoin",
+        "bip49",
+        "xprv9s21ZrQH143K4Z1vun58EGtggzDiMHziRdoBzN5YhKqGiTXMJ9re2htHoqqeMZiEBHrtFNKMj9NVgNEshbT9jqiy4SfCwdqZKsYJC71heoJ",
+        0,
+        "3CtXdUjHseQcBYDCqnNb9jdmqFQCNrjqYR"
+      ]
+    ],
+    "deriveKeyRing": [
+      [
+        "bitcoin",
+        "bip49",
+        "xprv9s21ZrQH143K4Z1vun58EGtggzDiMHziRdoBzN5YhKqGiTXMJ9re2htHoqqeMZiEBHrtFNKMj9NVgNEshbT9jqiy4SfCwdqZKsYJC71heoJ",
+        0,
+        "3CtXdUjHseQcBYDCqnNb9jdmqFQCNrjqYR"
+      ]
+    ],
+    "deriveScriptAddress": [
+      [
+        "bitcoin",
+        "bip49",
+        0,
+        0,
+        "xprv9s21ZrQH143K4Z1vun58EGtggzDiMHziRdoBzN5YhKqGiTXMJ9re2htHoqqeMZiEBHrtFNKMj9NVgNEshbT9jqiy4SfCwdqZKsYJC71heoJ",
+        "3CtXdUjHseQcBYDCqnNb9jdmqFQCNrjqYR"
+      ]
+    ],
+    "keysFromRaw": [
+      [
+        "bitcoin",
+        "bip49",
+        "xprv9s21ZrQH143K4Z1vun58EGtggzDiMHziRdoBzN5YhKqGiTXMJ9re2htHoqqeMZiEBHrtFNKMj9NVgNEshbT9jqiy4SfCwdqZKsYJC71heoJ",
+        "3CtXdUjHseQcBYDCqnNb9jdmqFQCNrjqYR"
+      ]
     ]
   }
 ]
