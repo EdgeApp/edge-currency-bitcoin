@@ -1,5 +1,5 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -7,7 +7,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'litecoin',
   magic: 0xd9b4bef9,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
+  supportedBips: ['bip49', 'bip84', 'bip44', 'bip32'],
   keyPrefix: {
     privkey: 0xb0,
     xpubkey: 0x0488b21e,
@@ -52,16 +52,6 @@ const currencyInfo: EdgeCurrencyInfo = {
   denominations: [
     { name: 'LTC', multiplier: '100000000', symbol: 'Ł' },
     { name: 'mLTC', multiplier: '100000', symbol: 'mŁ' }
-  ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:litecoin',
-    'wallet:litecoin-bip84',
-    'wallet:litecoin-bip49',
-    'wallet:litecoin-bip44'
   ],
 
   // Configuration options:

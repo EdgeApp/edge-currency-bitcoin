@@ -1,5 +1,5 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -7,7 +7,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'digibyte',
   magic: 0xd9b4bef9,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
+  supportedBips: ['bip49', 'bip84', 'bip44', 'bip32'],
   forks: [],
   keyPrefix: {
     privkey: 0x9e,
@@ -54,11 +54,6 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'DGB', multiplier: '100000000', symbol: 'Ɗ' },
     { name: 'mDGB', multiplier: '100000', symbol: 'mƊ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:digibyte'],
 
   // Configuration options:
   defaultSettings: {

@@ -1,7 +1,7 @@
 // @flow
 // $FlowFixMe
 import buffer from 'buffer-hack'
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { utils, crypto } from 'bcoin'
@@ -43,7 +43,7 @@ const sha256 = (rawTx: string) => {
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'groestlcoin',
   magic: 0xf9beb4d4,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
+  supportedBips: ['bip49', 'bip84', 'bip44', 'bip32'],
   keyPrefix: {
     privkey: 0x80,
     xpubkey: 0x0488b21e,
@@ -92,11 +92,6 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'GRS', multiplier: '100000000', symbol: 'G' },
     { name: 'mGRS', multiplier: '100000', symbol: 'mG' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:groestlcoin'],
 
   // Configuration options:
   defaultSettings: {

@@ -1,5 +1,5 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -7,7 +7,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'uniformfiscalobject',
   magic: 0xfcd9b7dd,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
+  supportedBips: ['bip49', 'bip84', 'bip44', 'bip32'],
   keyPrefix: {
     privkey: 0x9b,
     xpubkey: 0x0488b21e,
@@ -53,11 +53,6 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'UFO', multiplier: '100000000', symbol: 'Ʉ' },
     { name: 'kUFO', multiplier: '100000000000', symbol: 'kɄ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:ufo', 'wallet:ufo-bip84', 'wallet:ufo-bip49'],
 
   // Configuration options:
   defaultSettings: {
