@@ -7,10 +7,13 @@ import type {
   TxOptions,
   Output,
   StandardOutput,
-  Script
-} from '../utils/coinUtils.js'
-import { getAllKeyRings, FormatSelector } from '../utils/formatSelector.js'
-import { parsePath, createTX, getLock } from '../utils/coinUtils.js'
+  Script,
+  Branches
+} from '../utils/bcoinUtils/types.js'
+import * as Hd from '../utils/bcoinUtils/hd.js'
+import * as Misc from '../utils/bcoinUtils/misc.js'
+import * as Tx from '../utils/bcoinUtils/tx.js'
+import * as Key from '../utils/bcoinUtils/key.js'
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 
 const GAP_LIMIT = 10
@@ -39,7 +42,7 @@ export type RawKey = string
 
 export type RawKeyRing = {
   xpriv?: RawKey,
-  xpub?: string
+  xpub?: RawKey
 }
 
 export type RawKeys = {
@@ -47,6 +50,34 @@ export type RawKeys = {
   receive?: RawKeyRing,
   change?: RawKeyRing
 }
+
+// export type Address2 = {
+//   displayAddress: string,
+//   scriptHash: string,
+//   index: number,
+//   branch: number,
+//   redeemScript?: string
+// }
+
+// export type RawKeys2 = {
+//   keys?: RawKeyRing,
+//   index?: number,
+//   scriptType?: string,
+//   children?: { [index: number]: RawKeys2 }
+// }
+
+// export type KeyRing2 = {
+//   pubKey: any,
+//   privKey: any,
+//   index?: number,
+//   children?: { [index: number]: RawKeys2 }
+// }
+
+// export type Keys2 = {
+//   master: KeyRing2,
+//   receive: KeyRing2,
+//   change: KeyRing2
+// }
 
 export type createTxOptions = {
   outputs?: Array<Output>,
@@ -62,10 +93,9 @@ export type SignMessage = {
   address: string
 }
 
-
 export type KeyManagerOptions = {
   account?: number,
-  bip?: string,
+  forceBranch?: string,
   coinType?: number,
   rawKeys?: RawKeys,
   seed?: string,
@@ -79,19 +109,23 @@ export type KeyManagerOptions = {
 export class KeyManager extends EventEmitter {
   masterPath: string
   writeLock: any
-  bip: string
+  defaultBranchNumber: number
   keys: Keys
+  nested: boolean
+  witness: boolean
+  branches: Branches
+  scriptTemplates: any
   seed: string
   gapLimit: number
   network: string
-  fSelector: any
+
   addressInfos: AddressInfos
   scriptHashes: { [displayAddress: string]: string }
   txInfos: { [txid: string]: any }
 
   constructor ({
     account = 0,
-    bip = 'bip32',
+    forceBranch,
     coinType = -1,
     rawKeys = {},
     seed = '',
@@ -112,28 +146,37 @@ export class KeyManager extends EventEmitter {
     this.seed = seed
     this.gapLimit = gapLimit
     this.network = network
-    this.bip = bip
-    this.fSelector = FormatSelector(bip, network)
+    // Get Settings for this bip
+    const { scriptTemplates, branches } = Hd.getBranchesSettings(
+      network,
+      forceBranch
+    )
+    const { path, branchNumber, nested, witness, addresses } = branches[
+      'default'
+    ]
+    this.branches = addresses.reduce((branches, { index = 0, purpose }) => {
+      return { ...branches, [index]: purpose }
+    }, {})
+
+    this.defaultBranchNumber = branchNumber
+    this.nested = nested
+    this.witness = witness
+    this.scriptTemplates = scriptTemplates
     // Create a lock for when deriving addresses
-    this.writeLock = getLock()
+    this.writeLock = Misc.getLock()
     // Create the master derivation path
-    this.masterPath = this.fSelector.createMasterPath(account, coinType)
-    // Set the callbacks with nops as default
-    const { onNewAddress = nop, onNewKey = nop } = callbacks
-    this.onNewAddress = onNewAddress
-    this.onNewKey = onNewKey
+    this.masterPath = path(account, coinType, network)
     // Set the addresses and txs state objects
     this.addressInfos = addressInfos
     // Maps from display addresses to script hashes
     this.scriptHashes = scriptHashes
     this.txInfos = txInfos
     // Create KeyRings while tring to load as many of the pubKey/privKey from the cache
-    this.keys = this.fSelector.keysFromRaw(rawKeys)
+    this.keys = Key.keysFromRaw(this.branches, network, rawKeys)
     // Load addresses from Cache
-    const { branches } = this.fSelector
     for (const scriptHash in addressInfos) {
       const addressObj: AddressInfo = addressInfos[scriptHash]
-      const path = parsePath(addressObj.path, this.masterPath)
+      const path = Hd.parsePath(addressObj.path, this.masterPath)
       if (path.length) {
         const [branch, index] = path
         const displayAddress = toNewFormat(addressObj.displayAddress, network)
@@ -145,7 +188,7 @@ export class KeyManager extends EventEmitter {
           branch,
           redeemScript
         }
-        const branchName = branches[`${branch}`]
+        const branchName = this.branches[`${branch}`]
         this.keys[branchName].children.push(address)
       }
     }
@@ -176,14 +219,13 @@ export class KeyManager extends EventEmitter {
   }
 
   getChangeAddress (): string {
-    if (this.bip === 'bip32') return this.getReceiveAddress()
+    if (this.defaultBranchNumber === 32) return this.getReceiveAddress()
     return this.getNextAvailable(this.keys.change.children)
   }
 
   async createTX (options: createTxOptions): any {
     const { outputs = [], ...rest } = options
     const standardOutputs: Array<StandardOutput> = []
-    const branches = this.fSelector.branches
     for (const output of outputs) {
       let { address = '' } = output
       if (output.script) {
@@ -191,13 +233,13 @@ export class KeyManager extends EventEmitter {
         const keyRing = this.keys[type]
         if (params && params.length) {
           const index = keyRing.children.length
-          const branch = Object.keys(branches).find(
-            num => type === branches[num]
+          const branch = Object.keys(this.branches).find(
+            num => type === this.branches[num]
           )
           if (!branch) throw new Error(`Branch does not exist`)
           const addressObj = await this.deriveAddress(
             keyRing,
-            branch,
+            parseInt(branch),
             index,
             output.script
           )
@@ -211,46 +253,48 @@ export class KeyManager extends EventEmitter {
       }
       if (address) standardOutputs.push({ address, value: output.value })
     }
-    return createTX({
+    return Tx.createTX({
       ...rest,
       outputs: standardOutputs,
       changeAddress: this.getChangeAddress(),
-      estimate: prev => this.fSelector.estimateSize(prev),
+      estimate: prev => Tx.estimateSize(this.defaultBranchNumber, prev),
       network: this.network
     })
   }
 
   async sign (tx: any, privateKeys: Array<string> = []) {
-    const keyRings = await getAllKeyRings(privateKeys, this.network)
+    const keyRings = await Key.getAllKeyRings(privateKeys, this.network)
     if (!keyRings.length) {
       if (!this.keys.master.privKey && this.seed === '') {
         throw new Error("Can't sign without private key")
       }
       await this.initMasterKeys()
-      const { branches } = this.fSelector
       for (const input: any of tx.inputs) {
         const { prevout } = input
         if (prevout) {
           const { branch, index, redeemScript } = this.utxoToAddress(prevout)
-          const branchName = branches[`${branch}`]
+          const branchName = this.branches[`${branch}`]
           const keyRing = this.keys[branchName]
           if (!keyRing.privKey) {
-            keyRing.privKey = await this.fSelector.deriveHdKey(
+            keyRing.privKey = await Hd.deriveHdKey(
               this.keys.master.privKey,
               branch
             )
             this.saveKeysToCache()
           }
-          const key = await this.fSelector.deriveKeyRing(
+          const key = await Hd.deriveKeyRing(
             keyRing.privKey,
             index,
+            this.nested,
+            this.witness,
+            this.network,
             redeemScript
           )
           keyRings.push(key)
         }
       }
     }
-    return this.fSelector.sign(tx, keyRings)
+    return Tx.sign(tx, keyRings, this.network)
   }
 
   async signMessage ({ message, address }: SignMessage) {
@@ -266,18 +310,21 @@ export class KeyManager extends EventEmitter {
     const { path } = addressInfo
     const pathSuffix = path.split(this.masterPath + '/')[1]
     const [branch: string, index: string] = pathSuffix.split('/')
-    const branchName = this.fSelector.branches[`${branch}`]
+    const branchName = this.branches[`${branch}`]
     const keyRing = this.keys[branchName]
     if (!keyRing.privKey) {
-      keyRing.privKey = await this.fSelector.deriveHdKey(
+      keyRing.privKey = await Hd.deriveHdKey(
         this.keys.master.privKey,
         parseInt(branch)
       )
       this.saveKeysToCache()
     }
-    const key = await this.fSelector.deriveKeyRing(
+    const key = await Hd.deriveKeyRing(
       keyRing.privKey,
-      parseInt(index)
+      parseInt(index),
+      this.nested,
+      this.witness,
+      this.network
     )
     const signature = await key.sign(Buffer.from(message, 'hex'))
     return {
@@ -289,7 +336,7 @@ export class KeyManager extends EventEmitter {
   getSeed (): string | null {
     if (this.seed && this.seed !== '') {
       try {
-        return this.fSelector.parseSeed(this.seed)
+        return Key.parseSeed(this.defaultBranchNumber, this.seed)
       } catch (e) {
         console.log(e)
         return null
@@ -342,9 +389,10 @@ export class KeyManager extends EventEmitter {
   }
 
   async initMasterKeys () {
-    const keys = await this.fSelector.getMasterKeys(
+    const keys = await Key.getMasterKeys(
       this.seed,
       this.masterPath,
+      this.network,
       this.keys.master.privKey
     )
     this.keys.master = { ...this.keys.master, ...keys }
@@ -372,8 +420,8 @@ export class KeyManager extends EventEmitter {
   async setLookAhead (closeGaps: boolean = false) {
     const unlock = await this.writeLock.lock()
     try {
-      for (const branchNum in this.fSelector.branches) {
-        const branchName = this.fSelector.branches[branchNum]
+      for (const branchNum in this.branches) {
+        const branchName = this.branches[branchNum]
         await this.deriveNewKeys(
           this.keys[branchName],
           parseInt(branchNum),
@@ -391,10 +439,7 @@ export class KeyManager extends EventEmitter {
     const { children } = keyRing
     // If we never derived a public key for this branch before
     if (!keyRing.pubKey) {
-      keyRing.pubKey = await this.fSelector.deriveHdKey(
-        this.keys.master.pubKey,
-        branch
-      )
+      keyRing.pubKey = await Hd.deriveHdKey(this.keys.master.pubKey, branch)
       this.saveKeysToCache()
     }
 
@@ -444,14 +489,30 @@ export class KeyManager extends EventEmitter {
   ): Promise<Address | null> {
     let newAddress = {}
 
-    if (!this.fSelector.hasScript(branch, scriptObj)) {
-      newAddress = await this.fSelector.deriveAddress(keyRing.pubKey, index)
-    } else {
-      newAddress = await this.fSelector.deriveScriptAddress(
+    if (
+      (scriptObj && this.scriptTemplates[scriptObj.type]) ||
+      this.scriptTemplates[this.branches[`${branch}`]]
+    ) {
+      newAddress = await Hd.deriveScriptAddress(
         keyRing.pubKey,
         index,
         branch,
+        this.nested,
+        this.witness,
+        this.network,
+        this.branches,
+        this.scriptTemplates,
         scriptObj
+      )
+    } else if (scriptObj && !this.scriptTemplates[scriptObj.type]) {
+      throw new Error('Unkown script template')
+    } else {
+      newAddress = await Hd.deriveAddress(
+        keyRing.pubKey,
+        index,
+        this.nested,
+        this.witness,
+        this.network
       )
     }
 

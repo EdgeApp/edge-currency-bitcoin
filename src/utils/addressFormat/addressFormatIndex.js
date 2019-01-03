@@ -2,6 +2,7 @@
 
 import bcoin from 'bcoin'
 import { toCashAddress, cashAddressToHash } from './cashAddress'
+import { getNetworkSettings } from '../bcoinUtils/misc.js'
 import * as base32 from './base32.js'
 
 const legacyToCashAddress = (address: string, network: string) => {
@@ -39,7 +40,7 @@ const getPrefixes = (addressObj: Object, addressPrefix: Object) => {
 }
 
 export const toLegacyFormat = (address: string, network: string): string => {
-  const { serializers = {}, addressPrefix = {} } = bcoin.networks[network] || {}
+  const { addressPrefix, serializers } = getNetworkSettings(network)
   if (addressPrefix.cashAddress) return cashAddressToLegacy(address, network)
   try {
     const addressToDecode = serializers.address
@@ -72,13 +73,14 @@ export const toNewFormat = (address: string, network: string): string => {
 }
 
 const cashAddressToLegacy = (address: string, network: string) => {
-  const { addressPrefix = {} } = bcoin.networks[network] || {}
-  if (!address.includes(`${addressPrefix.cashAddress}`)) {
+  const { addressPrefix } = getNetworkSettings(network)
+  const cashAddress = addressPrefix.cashAddress || network
+  if (!address.includes(`${cashAddress}`)) {
     try {
       bcoin.primitives.Address.fromBase58(address)
       return address
     } catch (e) {
-      address = `${addressPrefix.cashAddress}:${address}`
+      address = `${cashAddress}:${address}`
     }
   }
   // Convert the Address string into hash, network and type
@@ -93,7 +95,7 @@ const cashAddressToLegacy = (address: string, network: string) => {
 }
 
 export const validAddress = (address: string, network: string) => {
-  const { addressPrefix = {}, serializers = {} } = bcoin.networks[network] || {}
+  const { addressPrefix, serializers } = getNetworkSettings(network)
   if (addressPrefix.cashAddress) {
     // verify address for cashAddress format
     try {
@@ -129,7 +131,7 @@ export const validAddress = (address: string, network: string) => {
 }
 
 export const sanitizeAddress = (address: string, network: string) => {
-  const { addressPrefix = {} } = bcoin.networks[network] || {}
+  const { addressPrefix } = getNetworkSettings(network)
   if (
     addressPrefix.cashAddress &&
     address.includes(addressPrefix.cashAddress)
@@ -140,7 +142,7 @@ export const sanitizeAddress = (address: string, network: string) => {
 }
 
 export const dirtyAddress = (address: string, network: string) => {
-  const { addressPrefix = {} } = bcoin.networks[network] || {}
+  const { addressPrefix } = getNetworkSettings(network)
   if (
     addressPrefix.cashAddress &&
     !address.includes(addressPrefix.cashAddress)

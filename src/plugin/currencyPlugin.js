@@ -20,12 +20,9 @@ import {
 } from '../engine/currencyEngine.js'
 import { PluginState } from './pluginState.js'
 import { parseUri, encodeUri } from './uri.js'
-import { getXPubFromSeed } from '../utils/formatSelector.js'
-import {
-  keysFromEntropy,
-  getFromatsForNetwork,
-  getForksForNetwork
-} from '../utils/coinUtils.js'
+import { keysFromEntropy, getXPubFromSeed } from '../utils/bcoinUtils/key.js'
+import { getNetworkSettings } from '../utils/bcoinUtils/misc.js'
+
 import {
   addNetwork,
   patchCrypto,
@@ -98,12 +95,14 @@ export class CurrencyPlugin {
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
     const network = this.network
     const { format, coinType = -1 } = walletInfo.keys
-    if (!format || !getFromatsForNetwork(network).includes(format)) {
-      throw new Error('InvalidWalletType')
-    }
     const seed = walletInfo.keys[`${network}Key`] || ''
     if (!seed) throw new Error('InvalidKeyName')
-    const xpub = await getXPubFromSeed({ seed, network, format, coinType })
+    const xpub = await getXPubFromSeed({
+      seed,
+      network,
+      forceBranch: format,
+      coinType
+    })
     return { ...walletInfo.keys, [`${network}Xpub`]: xpub }
   }
 
@@ -132,9 +131,11 @@ export class CurrencyPlugin {
 
   getSplittableTypes (walletInfo: EdgeWalletInfo): Array<string> {
     const { keys: { format = 'bip32' } = {} } = walletInfo
-    const forks = getForksForNetwork(this.network)
+    const { forks } = getNetworkSettings(this.network)
     return forks
-      .filter(network => getFromatsForNetwork(network).includes(format))
+      .filter(network =>
+        getNetworkSettings(network).supportedBips.includes(format)
+      )
       .map(network => `wallet:${network}`)
   }
 
