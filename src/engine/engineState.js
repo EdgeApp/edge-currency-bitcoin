@@ -19,6 +19,7 @@ import {
   fetchTransaction,
   subscribeHeight,
   subscribeScriptHash,
+  estimateFee,
   fetchBlockHeader
 } from '../stratum/stratumMessages.js'
 import type {
@@ -402,6 +403,7 @@ export class EngineState extends EventEmitter {
 
   addressCacheDirty: boolean
   txCacheDirty: boolean
+  feeQueryIndex: number
   reconnectTimer: TimeoutID
   reconnectCounter: number
   progressRatio: number
@@ -423,6 +425,7 @@ export class EngineState extends EventEmitter {
     this.missingTxs = {}
     this.fetchingHeaders = {}
     this.missingHeaders = {}
+    this.feeQueryIndex = 0
     this.walletId = options.walletId || ''
     this.io = options.io
     this.txFile = options.files.txs
@@ -748,6 +751,22 @@ export class EngineState extends EventEmitter {
         )
       }
     )
+
+    // Fetch fees
+    if (this.feeQueryIndex < feeDelays.length) {
+      const i = this.feeQueryIndex
+      this.feeQueryIndex++
+      return estimateFee(
+        feeDelays[i],
+        (satKByte: number | null) => {
+
+        },
+        (e?: Error) => {
+          this.onConnectionClose(uri, `querying fee ${feeDelays[i]}`, e)
+        }
+      )  
+    }
+
     // Subscribe to addresses:
     for (const address of priorityAddressList) {
       const addressState = serverState.addresses[address]

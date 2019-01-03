@@ -40,6 +40,9 @@ export class PluginState extends ServerCache {
   // On-disk server information:
   serverCache: ServerCache
 
+  addFeeEstimate (delayBlocks: number, satKbyte: number): void {
+
+  }
   /**
    * Begins notifying the engine of state changes. Used at connection time.
    */
@@ -75,6 +78,7 @@ export class PluginState extends ServerCache {
 
   headerCacheDirty: boolean
   serverCacheJson: Object
+  feeCacheJson: Object
   pluginName: string
 
   constructor ({
@@ -99,6 +103,7 @@ export class PluginState extends ServerCache {
     this.pluginName = pluginName
     this.headerCacheDirty = false
     this.serverCacheJson = {}
+    this.feeCacheJson = {}
   }
 
   async load () {

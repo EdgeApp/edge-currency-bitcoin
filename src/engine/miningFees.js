@@ -3,7 +3,7 @@
  * @flow
  */
 
-import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
+import type { EarnComFees, BitcoinFees, ElectrumFee } from '../utils/flowTypes.js'
 import { EarnComFeesSchema } from '../utils/jsonSchemas.js'
 import { bns } from 'biggystring'
 import { validateObject } from '../utils/utils.js'
@@ -16,6 +16,19 @@ export const ES_FEE_CUSTOM = 'custom'
 const MAX_FEE = 999999999.0
 const MAX_STANDARD_DELAY = 3
 const MIN_STANDARD_DELAY = 1
+
+
+/**
+ * Calculate the BitcoinFees object given a default BitcoinFees object and Electrum estimatefee
+ * @param {} bitcoinFees 
+ * @param {*} earnComFeesJson 
+ */
+export function calcFeesFromElectrum (
+  bitcoinFees: BitcoinFees,
+  electrumFee: ElectrumFee
+): BitcoinFees {
+
+}
 
 /**
  * Calculate the BitcoinFees object given a default BitcoinFees object and EarnComFees

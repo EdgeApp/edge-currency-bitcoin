@@ -19,6 +19,10 @@
 //   tokenTransaction: string
 // }
 //
+export type ElectrumFee = {
+  delayBlocks: number,
+  satKbyte: number
+}
 export type BitcoinFees = {
   lowFee: string,
   standardFeeLow: string,
@@ -32,7 +36,10 @@ export type BitcoinFees = {
   highFee: string,
 
   // The last time the fees were updated
-  timestamp: number
+  timestamp: number,
+
+  // Number of servers reporting fees. Used to average results
+  serversReporting: number
 }
 
 export type EarnComFee = {

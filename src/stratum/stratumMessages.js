@@ -143,6 +143,32 @@ export function fetchTransaction (
 }
 
 /**
+ * Gets a fee estimate.
+ * @param {number} blockdelay block delay to query fee for (1-20)
+ * @param {*} onDone Called when block header data is available.
+ * @param {*} onFail Called if the request fails.
+ */
+export function estimateFee (
+  blockDelay: number,
+  onDone: (txData: string) => void,
+  onFail: OnFailHandler
+): StratumTask {
+  return {
+    method: 'blockchain.estimatefee',
+    params: [blockDelay],
+    onDone (reply: number) {
+      if (typeof reply === 'number') {
+        return onDone(reply)
+      }
+      throw new Error(
+        `Bad Stratum estimatefee reply ${JSON.stringify(reply)}`
+      )
+    },
+    onFail
+  }
+}
+
+/**
  * Subscribes to a script hash (address in script hash format).
  * @param {string} scriptHash Script hash to fetch change hash for
  * @param {*} onDone Called each time the script hash's hash changes.
