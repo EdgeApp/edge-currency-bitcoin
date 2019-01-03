@@ -1,4 +1,5 @@
 // @flow
+import EventEmitter from 'eventemitter3'
 import type { AddressInfo, AddressInfos } from './engineState.js'
 import type {
   Utxo,
@@ -13,7 +14,6 @@ import { parsePath, createTX, getLock } from '../utils/coinUtils.js'
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 
 const GAP_LIMIT = 10
-const nop = () => {}
 
 export type Address = {
   displayAddress: string,
@@ -62,17 +62,6 @@ export type SignMessage = {
   address: string
 }
 
-export interface KeyManagerCallbacks {
-  // When deriving new address send it to caching and subscribing
-  +onNewAddress?: (
-    scriptHash: string,
-    address: string,
-    path: string,
-    redeemScript?: string
-  ) => void;
-  // When deriving new key send it to caching
-  +onNewKey?: (keys: any) => void;
-}
 
 export type KeyManagerOptions = {
   account?: number,
@@ -82,13 +71,12 @@ export type KeyManagerOptions = {
   seed?: string,
   gapLimit: number,
   network: string,
-  callbacks: KeyManagerCallbacks,
   addressInfos?: AddressInfos,
   scriptHashes?: { [displayAddress: string]: string },
   txInfos?: { [txid: string]: any }
 }
 
-export class KeyManager {
+export class KeyManager extends EventEmitter {
   masterPath: string
   writeLock: any
   bip: string
@@ -97,13 +85,6 @@ export class KeyManager {
   gapLimit: number
   network: string
   fSelector: any
-  onNewAddress: (
-    scriptHash: string,
-    address: string,
-    path: string,
-    redeemScript?: string
-  ) => void
-  onNewKey: (keys: any) => void
   addressInfos: AddressInfos
   scriptHashes: { [displayAddress: string]: string }
   txInfos: { [txid: string]: any }
@@ -116,11 +97,11 @@ export class KeyManager {
     seed = '',
     gapLimit = GAP_LIMIT,
     network,
-    callbacks,
     addressInfos = {},
     scriptHashes = {},
     txInfos = {}
   }: KeyManagerOptions) {
+    super()
     // Check for any way to init the wallet with either a seed or master keys
     if (
       seed === '' &&
@@ -382,7 +363,7 @@ export class KeyManager {
           keys[type].xpub = this.keys[type].pubKey.toBase58(this.network)
         }
       }
-      this.onNewKey(keys)
+      this.emit('newKey', keys)
     } catch (e) {
       console.log(e)
     }
@@ -486,7 +467,7 @@ export class KeyManager {
       redeemScript
     }
     keyRing.children.push(addressObj)
-    this.onNewAddress(scriptHash, displayAddress, keyPath, redeemScript)
+    this.emit('newAddress', scriptHash, displayAddress, keyPath, redeemScript)
     return addressObj
   }
 }

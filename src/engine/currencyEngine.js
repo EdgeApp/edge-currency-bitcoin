@@ -162,23 +162,6 @@ export class CurrencyEngine {
 
     await this.engineState.load()
 
-    const callbacks: KeyManagerCallbacks = {
-      onNewAddress: (
-        scriptHash: string,
-        address: string,
-        path: string,
-        redeemScript?: string
-      ) => {
-        return this.engineState.addAddress(
-          scriptHash,
-          address,
-          path,
-          redeemScript
-        )
-      },
-      onNewKey: (keys: any) => this.engineState.saveKeys(keys)
-    }
-
     const cachedRawKeys = await this.engineState.loadKeys()
     const { master = {}, ...otherKeys } = cachedRawKeys || {}
     const keys = this.walletInfo.keys || {}
@@ -205,6 +188,13 @@ export class CurrencyEngine {
       scriptHashes: this.engineState.scriptHashes,
       txInfos: this.engineState.parsedTxs
     })
+
+    this.keyManager.on(
+      'newAddress',
+      this.engineState.addAddress,
+      this.engineState
+    )
+    this.keyManager.on('newKey', this.engineState.saveKeys, this.engineState)
 
     this.engineState.onAddressUsed = () => {
       this.keyManager.setLookAhead()
