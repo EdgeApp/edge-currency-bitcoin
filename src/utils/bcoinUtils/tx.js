@@ -1,145 +1,18 @@
 // @flow
-// $FlowFixMe
-import buffer from 'buffer-hack'
-import {
-  utils,
-  hd,
-  primitives,
-  script,
-  networks,
-  network as Network
-} from 'bcoin'
-import { hash256, hash256Sync, reverseBufferToHex } from './utils.js'
+import type { Utxo, CreateTxOptions } from './types.js'
+import { consensus, primitives, script, networks } from 'bcoin'
+import { hash256Sync, reverseBufferToHex } from '../utils.js'
+import { getNetworkSettings } from './misc.js'
 import {
   toLegacyFormat,
   toNewFormat
-} from './addressFormat/addressFormatIndex.js'
+} from '../addressFormat/addressFormatIndex.js'
 
-const { Buffer } = buffer
+const witScale = consensus.WITNESS_SCALE_FACTOR
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
 
-export type RawTx = string
-export type BlockHeight = number
-export type Txid = string
-
-export type Script = {
-  type: string,
-  params?: Array<string>
-}
-
-export type Output = {
-  address?: string,
-  script?: Script,
-  value: number
-}
-
-export type StandardOutput = {
-  address: string,
-  value: number
-}
-
-export type Utxo = {
-  tx: any,
-  index: number,
-  height?: BlockHeight
-}
-
-export type TxOptions = {
-  utxos?: Array<Utxo>,
-  setRBF?: boolean,
-  RBFraw?: RawTx,
-  CPFP?: Txid,
-  CPFPlimit?: number,
-  selection?: string,
-  subtractFee?: boolean
-}
-
-export type CreateTxOptions = {
-  utxos: Array<Utxo>,
-  rate: number,
-  maxFee: number,
-  changeAddress: string,
-  network: string,
-  outputs?: Array<StandardOutput>,
-  height?: BlockHeight,
-  estimate?: Function,
-  txOptions: TxOptions
-}
-
-export const isCompressed = (key: any): boolean =>
-  Buffer.isBuffer(key) &&
-  key.length === 33 &&
-  (key[0] === 0x02 || key[0] === 0x03)
-
-export const keysFromEntropy = (
-  entropy: Buffer,
-  network: string,
-  opts: any = {}
-) => {
-  const { formats = [], keyPrefix = {} } = networks[network] || {}
-  return {
-    [`${network}Key`]: hd.Mnemonic.fromEntropy(entropy).getPhrase(),
-    format: opts.format || formats[0] || 'bip44',
-    coinType: opts.coinType || keyPrefix.coinType || 0
-  }
-}
-
-export const verifyWIF = (data: any, network: string) => {
-  const base58 = utils.base58
-  const { serializers = {} } = networks[network] || {}
-  if (serializers.wif) data = serializers.wif.decode(data)
-  const br = new utils.BufferReader(base58.decode(data), true)
-  const version = br.readU8()
-  network = Network.fromWIF(version, network)
-  br.readBytes(32)
-  if (br.left() > 4 && br.readU8() !== 1) {
-    throw new Error('Bad compression flag.')
-  }
-  br.verifyChecksum()
-  return true
-}
-
-export const verifyUriProtocol = (
-  protocol: string | null,
-  network: string,
-  pluginName: string
-) => {
-  const { addressPrefix = {} } = networks[network] || {}
-  if (protocol) {
-    const prot = protocol.replace(':', '').toLowerCase()
-    return prot === pluginName || prot === addressPrefix.cashAddress
-  }
-  return true
-}
-
-export const setKeyType = async (
-  key: any,
-  nested: boolean,
-  witness: boolean,
-  network: string,
-  redeemScript?: string
-): Promise<any> => {
-  let keyRing = {}
-  if (redeemScript) {
-    nested = false
-    witness = false
-    keyRing = await primitives.KeyRing.fromScript(
-      key.privateKey || key.publicKey,
-      script.fromString(redeemScript),
-      isCompressed(key.publicKey),
-      network
-    )
-  } else {
-    keyRing = await primitives.KeyRing.fromKey(
-      key.privateKey || key.publicKey,
-      isCompressed(key.publicKey),
-      network
-    )
-  }
-
-  Object.assign(keyRing, { nested, witness, network: Network.get(network) })
-  return keyRing
-}
+export const sumUtxos = (utxos: Array<Utxo>) =>
+  utxos.reduce((s, { tx, index }) => s + parseInt(tx.outputs[index].value), 0)
 
 export const createTX = async ({
   utxos,
@@ -161,7 +34,7 @@ export const createTX = async ({
 }: CreateTxOptions) => {
   // Convert an address to the correct format that bcoin supports
   const toBcoinFormat = (address: string, network: string): string => {
-    const { addressPrefix = {}, serializers = {} } = networks[network] || {}
+    const { addressPrefix, serializers } = getNetworkSettings(network)
     if (serializers.address) address = serializers.address.decode(address)
     else if (addressPrefix.cashAddress) {
       address = toLegacyFormat(address, network)
@@ -208,7 +81,7 @@ export const createTX = async ({
   // Create coins
   const coins = utxos.map(({ tx, index, height }) => {
     const coin = primitives.Coin.fromTX(tx, index, height)
-    const { serializers = {} } = networks[network] || {}
+    const { serializers } = getNetworkSettings(network)
     if (serializers.txHash) {
       coin.hash = serializers.txHash(tx.toNormal().toString('hex'))
     }
@@ -246,26 +119,6 @@ export const createTX = async ({
   return mtx
 }
 
-export const getPrivateFromSeed = async (seed: string, network: string) => {
-  try {
-    const mnemonic = hd.Mnemonic.fromPhrase(seed)
-    return hd.PrivateKey.fromMnemonic(mnemonic, network)
-  } catch (e) {
-    console.log('Not a mnemonic, treating the seed as base64')
-    return hd.PrivateKey.fromSeed(Buffer.from(seed, 'base64'), network)
-  }
-}
-
-export const addressToScriptHash = (
-  address: string,
-  network: string
-): Promise<string> => {
-  const addressObj = primitives.Address.fromString(address, network)
-  return Promise.resolve(script.fromAddress(addressObj).toRaw())
-    .then(scriptRaw => hash256(scriptRaw))
-    .then(scriptHashRaw => reverseBufferToHex(scriptHashRaw))
-}
-
 export const verifyTxAmount = (
   rawTx: string,
   bcoinTx: any = primitives.TX.fromRaw(rawTx, 'hex')
@@ -297,41 +150,6 @@ export const parseJsonTransaction = (txJson: Object): Object => {
   return bcoinTx
 }
 
-export const parsePath = (
-  path: string = '',
-  masterPath: string
-): Array<number> =>
-  (path.split(`${masterPath}`)[1] || '')
-    .split('/')
-    .filter(i => i !== '')
-    .map(i => parseInt(i))
-
-export const sumUtxos = (utxos: Array<Utxo>) =>
-  utxos.reduce((s, { tx, index }) => s + parseInt(tx.outputs[index].value), 0)
-
-export const getLock = () => new utils.Lock()
-
-export const getForksForNetwork = (network: string) =>
-  networks[network] && networks[network].forks ? networks[network].forks : []
-
-export const getFromatsForNetwork = (network: string) =>
-  networks[network] ? networks[network].formats : []
-
-export const addressFromKey = async (
-  key: any,
-  network: string
-): Promise<{ address: string, scriptHash: string }> => {
-  const { serializers = {} } = networks[network] || {}
-  const standardAddress = key.getAddress().toString()
-  let address = standardAddress
-  if (serializers.address) address = serializers.address.encode(address)
-  const scriptHash = await addressToScriptHash(standardAddress, network)
-  return {
-    address,
-    scriptHash
-  }
-}
-
 export const sumTransaction = (
   bcoinTransaction: any,
   network: string,
@@ -358,7 +176,7 @@ export const sumTransaction = (
     value = output.value
     try {
       address = toNewFormat(output.address, network)
-      const { serializers = {} } = networks[network] || {}
+      const { serializers } = getNetworkSettings(network)
       address = serializers.address
         ? serializers.address.encode(address)
         : address
@@ -393,7 +211,7 @@ export const sumTransaction = (
         output = prevoutBcoinTX.outputs[index].getJSON(network)
         value = output.value
         address = toNewFormat(output.address, network)
-        const { serializers = {} } = networks[network] || {}
+        const { serializers } = getNetworkSettings(network)
         address = serializers.address
           ? serializers.address.encode(address)
           : address
@@ -423,3 +241,52 @@ export const getReceiveAddresses = (
     const address = output.getAddress().toString(network)
     return toNewFormat(address, network)
   })
+
+export const sign = (
+  tx: any,
+  keys: Array<any>,
+  network: string
+): Promise<{ txid: string, signedTx: string }> =>
+  Promise.resolve(tx.template(keys))
+    .then(() => {
+      tx.network = network
+      return tx.sign(keys, networks[network].replayProtection)
+    })
+    .then(() => {
+      const { serializers } = getNetworkSettings(network)
+      if (serializers.txHash) {
+        tx._hash = serializers.txHash(tx.toNormal().toString('hex'))
+      }
+      const txid = tx.rhash()
+      return { txid, signedTx: tx.toRaw().toString('hex') }
+    })
+
+export const estimateSize = (bip: number, prev: any) => {
+  const address = prev.getAddress()
+  if (!address) return -1
+
+  let size = 0
+
+  if (prev.isScripthash()) {
+    if (bip === 49) {
+      size += 23 // redeem script
+      size *= 4 // vsize
+      // Varint witness items length.
+      size += 1
+      // Calculate vsize
+      size = ((size + witScale - 1) / witScale) | 0
+    }
+  }
+
+  // P2PKH
+  if (bip !== 49) {
+    // varint script size
+    size += 1
+    // OP_PUSHDATA0 [signature]
+    size += 1 + 73
+    // OP_PUSHDATA0 [key]
+    size += 1 + 33
+  }
+
+  return size || -1
+}

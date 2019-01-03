@@ -6,7 +6,7 @@ import type { EdgePaymentProtocolInfo } from 'edge-core-js'
 import {
   toNewFormat,
   toLegacyFormat
-} from '../utils/addressFormat/addressFormatIndex.js'
+} from '../addressFormat/addressFormatIndex.js'
 
 const getSpendTargets = (
   outputs: Array<any>,
