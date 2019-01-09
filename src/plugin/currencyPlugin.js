@@ -20,12 +20,9 @@ import {
 } from '../engine/currencyEngine.js'
 import { PluginState } from './pluginState.js'
 import { parseUri, encodeUri } from './uri.js'
-import { getXPubFromSeed } from '../utils/formatSelector.js'
-import {
-  keysFromEntropy,
-  getFromatsForNetwork,
-  getForksForNetwork
-} from '../utils/coinUtils.js'
+import { keysFromEntropy, getXPubFromSeed } from '../utils/bcoinUtils/key.js'
+import { getNetworkSettings } from '../utils/bcoinUtils/misc.js'
+
 import {
   addNetwork,
   patchCrypto,
@@ -97,13 +94,14 @@ export class CurrencyPlugin {
   async derivePublicKey (walletInfo: EdgeWalletInfo) {
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
     const network = this.network
-    const { format, coinType = -1 } = walletInfo.keys
-    if (!format || !getFromatsForNetwork(network).includes(format)) {
-      throw new Error('InvalidWalletType')
-    }
+    const { coinType = -1 } = walletInfo.keys
     const seed = walletInfo.keys[`${network}Key`] || ''
     if (!seed) throw new Error('InvalidKeyName')
-    const xpub = await getXPubFromSeed({ seed, network, format, coinType })
+    const xpub = await getXPubFromSeed({
+      seed,
+      network,
+      coinType
+    })
     return { ...walletInfo.keys, [`${network}Xpub`]: xpub }
   }
 
@@ -132,9 +130,12 @@ export class CurrencyPlugin {
 
   getSplittableTypes (walletInfo: EdgeWalletInfo): Array<string> {
     const { keys: { format = 'bip32' } = {} } = walletInfo
-    const forks = getForksForNetwork(this.network)
+    const { forks } = getNetworkSettings(this.network)
+    const bip = parseInt(format.replace('bip', ''))
     return forks
-      .filter(network => getFromatsForNetwork(network).includes(format))
+      .filter(network =>
+        getNetworkSettings(network).supportedBips.includes(bip)
+      )
       .map(network => `wallet:${network}`)
   }
 
@@ -149,9 +150,13 @@ export const makeCurrencyPluginFactory = ({
   bcoinInfo
 }: CurrencyPluginFactorySettings) => {
   addNetwork(bcoinInfo)
+  currencyInfo = {
+    walletTypes: [`wallet:${currencyInfo.pluginName}`],
+    ...currencyInfo
+  }
   return {
     pluginType: 'currency',
-    currencyInfo: currencyInfo,
+    currencyInfo,
     pluginName: currencyInfo.pluginName,
     makePlugin: async (
       options: EdgeCorePluginOptions

@@ -2,23 +2,13 @@
  * Created by Paul Puey 2017/11/09.
  * @flow
  */
+import type { EdgeCurrencyInfo as EdgeCurrencyInfoLegacy } from 'edge-core-js'
 
-// import type { EdgeTransaction } from 'edge-core-js'
-// import { txLibInfo } from './currencyInfoETH.js'
-// export const DATA_STORE_FOLDER = 'txEngineFolder'
-// export const DATA_STORE_FILE = 'walletLocalData.json'
-// export const PRIMARY_CURRENCY = txLibInfo.currencyInfo.currencyCode
+export type EdgeCurrencyInfo = {
+  ...EdgeCurrencyInfoLegacy,
+  walletTypes?: any
+}
 
-// export type EthereumSettings = {
-//   etherscanApiServers:Array<string>,
-//   superethServers:Array<string>
-// }
-
-// type EthereumFeesGasLimit = {
-//   regularTransaction: string,
-//   tokenTransaction: string
-// }
-//
 export type BitcoinFees = {
   lowFee: string,
   standardFeeLow: string,
