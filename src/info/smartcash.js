@@ -1,7 +1,7 @@
 // @flow
 // $FlowFixMe
 import buffer from 'buffer-hack'
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -32,7 +32,7 @@ const sha256 = (rawTx: string) => {
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'smartcash',
   magic: 0x5ca1ab1e,
-  formats: ['bip44', 'bip32'],
+  supportedBips: [44, 32],
   keyPrefix: {
     privkey: 0xbf,
     xpubkey: 0x0488b21e,
@@ -80,11 +80,6 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'SMART', multiplier: '100000000', symbol: 'S' },
     { name: 'mSMART', multiplier: '100000', symbol: 'mS' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:smartcash'],
 
   // Configuration options:
   defaultSettings: {

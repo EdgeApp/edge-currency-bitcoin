@@ -1,5 +1,5 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -13,7 +13,7 @@ const hash256 = (rawTx: string) => {
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcointestnet',
   magic: 0x0709110b,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
+  supportedBips: [84, 49, 44, 32],
   forks: ['bitcoincash', 'bitcoingold', 'bitcoindiamond'],
   keyPrefix: {
     privkey: 0xef,
@@ -63,16 +63,6 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'TBTC', multiplier: '100000000', symbol: '₿' },
     { name: 'mTBTC', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
-  ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:bitcoin-testnet',
-    'wallet:bitcoin-bip84-testnet',
-    'wallet:bitcoin-bip49-testnet',
-    'wallet:bitcoin-bip44-testnet'
   ],
 
   // Configuration options:

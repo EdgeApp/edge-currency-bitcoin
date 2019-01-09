@@ -1,5 +1,5 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -43,7 +43,7 @@ const cds = (sig: string, msg: string, pubKey: string, hdKey: any) => {
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcoincash',
   magic: 0xd9b4bef9,
-  formats: ['bip44', 'bip32'],
+  supportedBips: [44, 32],
   forks: ['bitcoincashsv'],
   keyPrefix: {
     privkey: 0x80,
@@ -107,11 +107,6 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'mBCH', multiplier: '100000', symbol: 'm₿' },
     { name: 'cash', multiplier: '100', symbol: 'ƀ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:bitcoincash', 'wallet:bitcoincash-bip44'],
 
   // Configuration options:
   defaultSettings: {
