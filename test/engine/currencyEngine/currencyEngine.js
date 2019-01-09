@@ -158,6 +158,9 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
           { type: WALLET_TYPE, keys, id },
           {
             callbacks,
+            walletLocalEncryptedFolder: walletLocalFolder.folder(
+              DATA_STORE_FOLDER
+            ),
             walletLocalFolder: walletLocalFolder.folder(DATA_STORE_FOLDER),
             optionalSettings
           }
