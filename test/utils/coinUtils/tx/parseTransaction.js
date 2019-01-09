@@ -1,5 +1,5 @@
 // @flow
-import { parseTransaction } from '../../../src/utils/coinUtils.js'
+import { parseTransaction } from '../../../../src/utils/bcoinUtils/tx.js'
 
 import { describe, it } from 'mocha'
 import { expect } from 'chai'
