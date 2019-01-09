@@ -24,24 +24,14 @@ import type { EngineStateCallbacks } from './engineState.js'
 import type { TxOptions } from '../utils/bcoinUtils/types.js'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
 import { validateObject, promiseAny } from '../utils/utils.js'
-import {
-  getPaymentDetails,
-  createPayment,
-  sendPayment
-} from './paymentRequest.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import { broadcastFactories } from './broadcastApi.js'
-import { getAllAddresses } from '../utils/formatSelector.js'
 import { InfoServer } from '../info/constants'
-import {
-  addressToScriptHash,
-  verifyTxAmount,
-  sumUtxos,
-  sumTransaction,
-  getReceiveAddresses,
-  parseJsonTransaction
-} from '../utils/coinUtils.js'
+import * as PaymentRequest from '../utils/bcoinUtils/paymentRequest.js'
+import * as Tx from '../utils/bcoinUtils/tx.js'
+import * as Address from '../utils/bcoinUtils/address.js'
+import { scriptTypesToEdgeTypes } from '../utils/bcoinUtils/misc.js'
 import {
   toLegacyFormat,
   validAddress
@@ -165,27 +155,23 @@ export class CurrencyEngine {
 
     await this.engineState.load()
 
-
-    const cachedRawKeys = await this.engineState.loadKeys()
-    const { master = {}, ...otherKeys } = cachedRawKeys || {}
     const keys = this.walletInfo.keys || {}
     const { coinType = -1 } = keys
     const seed = keys[`${this.network}Key`]
     const xpub = keys[`${this.network}Xpub`]
-    const rawKeys = { ...otherKeys, master: { xpub, ...master } }
+    const base58Key = await this.engineState.loadKeys()
 
     console.log(
-      `${this.walletId} - Created Wallet Type ${format} for Currency Plugin ${
+      `${this.walletId} - Created Wallet for Currency Plugin ${
         this.pluginState.pluginName
       }`
     )
 
     this.keyManager = new KeyManager({
-      seed: seed,
-      bip: format,
-      coinType: coinType,
-      rawKeys: rawKeys,
-      callbacks: callbacks,
+      seed,
+      xpub,
+      base58Key,
+      coinType,
       gapLimit: this.engineInfo.gapLimit,
       network: this.network,
       addressInfos: this.engineState.addressInfos,
@@ -233,7 +219,7 @@ export class CurrencyEngine {
       throw new Error('Transaction not found')
     }
 
-    const { fee, ourReceiveAddresses, nativeAmount } = sumTransaction(
+    const { fee, ourReceiveAddresses, nativeAmount } = Tx.sumTransaction(
       bcoinTransaction,
       this.network,
       this.engineState
@@ -416,16 +402,16 @@ export class CurrencyEngine {
   }
 
   getFreshAddress (options: any): EdgeFreshAddress {
-    const publicAddress = this.keyManager.getReceiveAddress()
-    const legacyAddress = toLegacyFormat(publicAddress, this.network)
-    return { publicAddress, legacyAddress }
+    const addresses = scriptTypesToEdgeTypes(this.keyManager.getReceiveAddress())
+    const legacyAddress = toLegacyFormat(addresses.publicAddress, this.network)
+    return { ...addresses, legacyAddress }
   }
 
   addGapLimitAddresses (addresses: Array<string>, options: any): void {
     const scriptHashPromises = addresses.map(address => {
       const scriptHash = this.engineState.scriptHashes[address]
       if (typeof scriptHash === 'string') return Promise.resolve(scriptHash)
-      else return addressToScriptHash(address, this.network)
+      else return Address.addressToScriptHash(address, this.network)
     })
     Promise.all(scriptHashPromises)
       .then((scriptHashs: Array<string>) => {
@@ -469,7 +455,8 @@ export class CurrencyEngine {
           if (!utxos || !utxos.length) {
             failure(new Error('Private key has no funds'))
           }
-          const publicAddress = this.getFreshAddress().publicAddress
+          const freshAddress = this.getFreshAddress()
+          const publicAddress = freshAddress.publicAddress
           const nativeAmount = engineState.getBalance()
           options.utxos = utxos
           edgeSpendInfo.spendTargets = [{ publicAddress, nativeAmount }]
@@ -481,7 +468,7 @@ export class CurrencyEngine {
     }
 
     const engineState = new EngineState({
-      files: { txs: '', addresses: '' },
+      files: { txs: '', addresses: '', keys: '' },
       callbacks: engineStateCallbacks,
       io: this.io,
       localFolder: this.walletLocalFolder,
@@ -491,9 +478,9 @@ export class CurrencyEngine {
     })
 
     await engineState.load()
-    const addresses = await getAllAddresses(privateKeys, this.network)
-    addresses.forEach(({ address, scriptHash }) =>
-      engineState.addAddress(scriptHash, address)
+    const addresses = await Address.getAllAddresses(privateKeys, this.network)
+    addresses.forEach(({ displayAddress, scriptHash }) =>
+      engineState.addAddress(scriptHash, displayAddress)
     )
     engineState.connect()
 
@@ -504,7 +491,7 @@ export class CurrencyEngine {
     paymentProtocolURL: string
   ): Promise<EdgePaymentProtocolInfo> {
     try {
-      return getPaymentDetails(
+      return PaymentRequest.getPaymentDetails(
         paymentProtocolURL,
         this.network,
         this.currencyCode,
@@ -533,7 +520,7 @@ export class CurrencyEngine {
     // Try and get UTXOs from `txOptions`, if unsuccessful use our own utxo's
     const { utxos = this.engineState.getUTXOs() } = txOptions
     // Test if we have enough to spend
-    if (bns.gt(totalAmountToSend, `${sumUtxos(utxos)}`)) {
+    if (bns.gt(totalAmountToSend, `${Tx.sumUtxos(utxos)}`)) {
       throw new Error('InsufficientFundsError')
     }
     try {
@@ -575,7 +562,7 @@ export class CurrencyEngine {
         0
       )
 
-      const addresses = getReceiveAddresses(bcoinTx, this.network)
+      const addresses = Tx.getReceiveAddresses(bcoinTx, this.network)
 
       const ourReceiveAddresses = addresses.filter(
         address => scriptHashes[address]
@@ -618,14 +605,14 @@ export class CurrencyEngine {
       return { ...edgeTransaction, otherParams }
     }
     this.logEdgeTransaction(edgeTransaction, 'Signing')
-    const bcoinTx = parseJsonTransaction(txJson)
+    const bcoinTx = Tx.parseJsonTransaction(txJson)
     const { privateKeys = [], otherParams = {} } = edgeSpendInfo
     const { paymentProtocolInfo } = otherParams
     const { signedTx, txid } = await this.keyManager.sign(bcoinTx, privateKeys)
     if (paymentProtocolInfo) {
       const publicAddress = this.getFreshAddress().publicAddress
       const address = toLegacyFormat(publicAddress, this.network)
-      const payment = createPayment(
+      const payment = PaymentRequest.createPayment(
         paymentProtocolInfo,
         address,
         signedTx,
@@ -650,7 +637,7 @@ export class CurrencyEngine {
     const { paymentProtocolInfo } = otherParams
 
     if (paymentProtocolInfo && paymentProtocolInfo.payment) {
-      const paymentAck = await sendPayment(
+      const paymentAck = await PaymentRequest.sendPayment(
         this.io.fetch,
         this.network,
         paymentProtocolInfo.paymentUrl,
@@ -663,7 +650,7 @@ export class CurrencyEngine {
       }
     }
 
-    const tx = verifyTxAmount(signedTx)
+    const tx = Tx.verifyTxAmount(signedTx)
     if (!tx) throw new Error('Wrong spend amount')
     edgeTransaction.otherParams.txJson = tx.getJSON(this.network)
     this.logEdgeTransaction(edgeTransaction, 'Broadcasting')
