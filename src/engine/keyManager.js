@@ -62,18 +62,6 @@ export type SignMessage = {
   address: string
 }
 
-export interface KeyManagerCallbacks {
-  // When deriving new address send it to caching and subscribing
-  +onNewAddress?: (
-    scriptHash: string,
-    address: string,
-    path: string,
-    redeemScript?: string
-  ) => void;
-  // When deriving new key send it to caching
-  +onNewKey?: (keys: any) => void;
-}
-
 export type KeyManagerOptions = {
   account?: number,
   bip?: string,
@@ -82,7 +70,6 @@ export type KeyManagerOptions = {
   seed?: string,
   gapLimit: number,
   network: string,
-  callbacks: KeyManagerCallbacks,
   addressInfos?: AddressInfos,
   scriptHashes?: { [displayAddress: string]: string },
   txInfos?: { [txid: string]: any }
@@ -138,9 +125,6 @@ export class KeyManager {
     // Create the master derivation path
     this.masterPath = this.fSelector.createMasterPath(account, coinType)
     // Set the callbacks with nops as default
-    const { onNewAddress = nop, onNewKey = nop } = callbacks
-    this.onNewAddress = onNewAddress
-    this.onNewKey = onNewKey
     // Set the addresses and txs state objects
     this.addressInfos = addressInfos
     // Maps from display addresses to script hashes

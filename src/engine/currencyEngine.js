@@ -21,9 +21,8 @@ import { EngineState } from './engineState.js'
 import { PluginState } from '../plugin/pluginState.js'
 import { KeyManager } from './keyManager'
 import type { EngineStateCallbacks } from './engineState.js'
-import type { KeyManagerCallbacks } from './keyManager'
+import type { TxOptions } from '../utils/bcoinUtils/types.js'
 import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
-import type { TxOptions } from '../utils/coinUtils.js'
 import { validateObject, promiseAny } from '../utils/utils.js'
 import {
   getPaymentDetails,
@@ -166,27 +165,11 @@ export class CurrencyEngine {
 
     await this.engineState.load()
 
-    const callbacks: KeyManagerCallbacks = {
-      onNewAddress: (
-        scriptHash: string,
-        address: string,
-        path: string,
-        redeemScript?: string
-      ) => {
-        return this.engineState.addAddress(
-          scriptHash,
-          address,
-          path,
-          redeemScript
-        )
-      },
-      onNewKey: (keys: any) => this.engineState.saveKeys(keys)
-    }
 
     const cachedRawKeys = await this.engineState.loadKeys()
     const { master = {}, ...otherKeys } = cachedRawKeys || {}
     const keys = this.walletInfo.keys || {}
-    const { format, coinType = -1 } = keys
+    const { coinType = -1 } = keys
     const seed = keys[`${this.network}Key`]
     const xpub = keys[`${this.network}Xpub`]
     const rawKeys = { ...otherKeys, master: { xpub, ...master } }
@@ -209,6 +192,13 @@ export class CurrencyEngine {
       scriptHashes: this.engineState.scriptHashes,
       txInfos: this.engineState.parsedTxs
     })
+
+    this.keyManager.on(
+      'newAddress',
+      this.engineState.addAddress,
+      this.engineState
+    )
+    this.keyManager.on('newKey', this.engineState.saveKeys, this.engineState)
 
     this.engineState.onAddressUsed = () => {
       this.keyManager.setLookAhead()
