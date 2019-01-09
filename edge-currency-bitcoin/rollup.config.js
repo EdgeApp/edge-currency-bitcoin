@@ -1,12 +1,13 @@
 import alias from 'rollup-plugin-alias'
 import babel from 'rollup-plugin-babel'
+import flowEntry from 'rollup-plugin-flow-entry'
 import json from 'rollup-plugin-json'
-import resolve from 'rollup-plugin-node-resolve'
 
 import repoPackageJson from '../package.json'
 import packageJson from './package.json'
 
 const babelOptions = {
+  babelrc: false,
   presets: ['@babel/preset-flow'],
   plugins: ['@babel/plugin-proposal-object-rest-spread']
 }
@@ -31,6 +32,6 @@ export default {
     json(),
     alias({ 'buffer-hack': 'buffer/' }),
     babel(babelOptions),
-    resolve()
+    flowEntry()
   ]
 }
