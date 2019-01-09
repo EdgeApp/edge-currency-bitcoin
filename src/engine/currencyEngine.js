@@ -151,7 +151,11 @@ export class CurrencyEngine {
     }
 
     this.engineState = new EngineState({
-      files: { txs: 'txs.json', addresses: 'addresses.json' },
+      files: {
+        txs: 'txs.json',
+        addresses: 'addresses.json',
+        keys: 'hdKey.json'
+      },
       callbacks: engineStateCallbacks,
       io: this.io,
       localFolder: this.walletLocalFolder,

@@ -10,11 +10,11 @@ import {
   dirtyAddress,
   toNewFormat
 } from '../utils/addressFormat/addressFormatIndex.js'
-import { verifyWIF, verifyUriProtocol } from '../utils/coinUtils.js'
+import { verifyUriProtocol } from '../utils/bcoinUtils/misc.js'
+import { verifyWIF } from '../utils/bcoinUtils/key.js'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
 import { bns } from 'biggystring'
-// import bcoin from 'bcoin'
 
 const parsePathname = (pathname: string, network: string) => {
   // Check if the pathname type is a wif
