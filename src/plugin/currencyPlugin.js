@@ -77,12 +77,12 @@ export class CurrencyPlugin {
     const { defaultSettings, pluginName, currencyCode } = this.currencyInfo
     this.state = new PluginState({
       io,
+      files: { headers: 'headers.json', serverCache: 'serverCache.json' },
       defaultSettings,
       currencyCode,
       pluginName
     })
   }
-
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
