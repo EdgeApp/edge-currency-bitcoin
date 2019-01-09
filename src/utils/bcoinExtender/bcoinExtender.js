@@ -1,12 +1,13 @@
 // @flow
 import { patchSecp256k1, patchPbkdf2 } from './patchCrypto.js'
 import { patchTransaction } from './replayProtection.js'
+import { getHDSettings } from './bips.js'
 import bcoin from 'bcoin'
 
 export type BcoinCurrencyInfo = {
   type: string,
   magic: number,
-  formats: Array<string>,
+  supportedBips: Array<number>,
   forks?: Array<string>,
   keyPrefix: {
     privkey: number,
@@ -37,11 +38,24 @@ let cryptoReplaced = false
 patchTransaction(bcoin)
 
 export const addNetwork = (bcoinInfo: BcoinCurrencyInfo) => {
-  const type = bcoinInfo.type
-
+  const { supportedBips, keyPrefix, type } = bcoinInfo
   if (bcoin.networks.types.indexOf(type) === -1) {
     bcoin.networks.types.push(type)
-    bcoin.networks[type] = { ...bcoin.networks.main, ...bcoinInfo }
+    const hdSettings = getHDSettings(supportedBips, keyPrefix.coinType)
+    const scriptTemplates = {
+      addresses: [],
+      purpose: 0,
+      path: () => '',
+      nested: false,
+      witness: false,
+      scriptType: ''
+    }
+    bcoin.networks[type] = {
+      ...bcoin.networks.main,
+      ...bcoinInfo,
+      hdSettings,
+      scriptTemplates
+    }
   }
 }
 
