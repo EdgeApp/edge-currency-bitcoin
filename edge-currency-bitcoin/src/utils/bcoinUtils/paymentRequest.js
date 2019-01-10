@@ -1,5 +1,4 @@
 // @flow
-// $FlowFixMe
 import { primitives } from 'bcoin'
 import type { EdgePaymentProtocolInfo } from 'edge-core-js'
 import parse from 'url-parse'

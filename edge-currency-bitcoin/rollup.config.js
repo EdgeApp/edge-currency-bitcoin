@@ -1,4 +1,3 @@
-import alias from 'rollup-plugin-alias'
 import babel from 'rollup-plugin-babel'
 import flowEntry from 'rollup-plugin-flow-entry'
 import json from 'rollup-plugin-json'
@@ -17,7 +16,7 @@ export default {
     ...Object.keys(packageJson.dependencies),
     ...Object.keys(packageJson.devDependencies),
     ...Object.keys(repoPackageJson.devDependencies),
-    'buffer/',
+    'buffer',
     'crypto',
     'events',
     'net',
@@ -28,10 +27,5 @@ export default {
     { file: packageJson.main, format: 'cjs', sourcemap: true },
     { file: packageJson.module, format: 'es', sourcemap: true }
   ],
-  plugins: [
-    json(),
-    alias({ 'buffer-hack': 'buffer/' }),
-    babel(babelOptions),
-    flowEntry()
-  ]
+  plugins: [json(), babel(babelOptions), flowEntry()]
 }

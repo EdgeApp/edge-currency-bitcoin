@@ -1,6 +1,6 @@
 // @flow
-// $FlowFixMe
-import buffer from 'buffer-hack'
+
+import { Buffer } from 'buffer'
 import { crypto, utils } from 'bcoin'
 import bs58sc from 'bs58smartcheck'
 
@@ -8,8 +8,6 @@ import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
 import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import { imageServerUrl } from './constants.js'
-
-const { Buffer } = buffer
 
 const base58 = {
   decode: (address: string) => {

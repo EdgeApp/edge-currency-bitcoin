@@ -1,4 +1,3 @@
-import alias from 'rollup-plugin-alias'
 import babel from 'rollup-plugin-babel'
 import json from 'rollup-plugin-json'
 import multiEntry from 'rollup-plugin-multi-entry'
@@ -15,10 +14,5 @@ export default {
   external: config.external,
   input: './test/**/*.js',
   output: [{ file: 'build/tests.js', format: 'cjs', sourcemap: true }],
-  plugins: [
-    multiEntry(),
-    json(),
-    alias({ 'buffer-hack': 'buffer' }),
-    babel(babelOptions)
-  ]
+  plugins: [multiEntry(), json(), babel(babelOptions)]
 }
