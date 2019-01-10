@@ -1,5 +1,7 @@
 // @flow
 
+import { Buffer } from 'buffer'
+
 import {
   network as Network,
   hd,
@@ -8,8 +10,6 @@ import {
   script,
   utils
 } from 'bcoin'
-// $FlowFixMe
-import buffer from 'buffer-hack'
 
 import {
   toLegacyFormat,
@@ -17,7 +17,6 @@ import {
 } from './addressFormat/addressFormatIndex.js'
 import { hash256, hash256Sync, reverseBufferToHex } from './utils.js'
 
-const { Buffer } = buffer
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
 
 export type RawTx = string

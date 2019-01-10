@@ -1,16 +1,14 @@
 // @flow
 
+import { Buffer } from 'buffer'
+
 import { crypto, utils } from 'bcoin'
 import bs58grscheck from 'bs58grscheck'
-// $FlowFixMe
-import buffer from 'buffer-hack'
 import type { EdgeCurrencyInfo } from 'edge-core-js'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
-
-const { Buffer } = buffer
 
 const isBech32 = address => {
   try {

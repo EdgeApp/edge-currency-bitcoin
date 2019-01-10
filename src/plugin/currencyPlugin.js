@@ -1,7 +1,7 @@
 // @flow
 
-// $FlowFixMe
-import buffer from 'buffer-hack'
+import { Buffer } from 'buffer'
+
 import type {
   EdgeCorePluginOptions,
   EdgeCreatePrivateKeyOptions,
@@ -32,8 +32,6 @@ import {
 import { getXPubFromSeed } from '../utils/formatSelector.js'
 import { PluginState } from './pluginState.js'
 import { encodeUri, parseUri } from './uri.js'
-
-const { Buffer } = buffer
 
 export type CurrencyPluginFactorySettings = {
   currencyInfo: EdgeCurrencyInfo,
