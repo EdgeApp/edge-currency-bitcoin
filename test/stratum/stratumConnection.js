@@ -1,26 +1,33 @@
 // @flow
-import { expect, assert } from 'chai'
-import { describe, it } from 'mocha'
+
 import net from 'net'
 import tls from 'tls'
 
-import type { StratumCallbacks } from '../../src/stratum/stratumConnection.js'
-import { StratumConnection } from '../../src/stratum/stratumConnection.js'
+import { assert, expect } from 'chai'
+import { makeFakeIos } from 'edge-core-js'
+import { describe, it } from 'mocha'
+
 import {
-  subscribeHeight,
+  type StratumCallbacks,
+  StratumConnection
+} from '../../src/stratum/stratumConnection.js'
+import {
+  type StratumBlockHeader,
+  type StratumHistoryRow,
+  type StratumUtxo,
   fetchBlockHeader,
-  fetchTransaction,
-  subscribeScriptHash,
   fetchScriptHashHistory,
   fetchScriptHashUtxo,
-  type StratumHistoryRow,
-  type StratumBlockHeader
+  fetchTransaction,
+  subscribeHeight,
+  subscribeScriptHash
 } from '../../src/stratum/stratumMessages.js'
-import type { StratumUtxo } from '../../src/stratum/stratumMessages.js'
 
 // const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
 const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'
+const [fakeIo] = makeFakeIos(1)
 const io = {
+  ...fakeIo,
   Socket: net.Socket,
   TLSSocket: tls.TLSSocket
 }
@@ -32,7 +39,7 @@ describe('StratumConnection', function () {
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion (version) {
-        connection.close()
+        connection.disconnect()
         expect(parseFloat(version)).to.be.at.least(1.1)
         gotReply = true
       },
@@ -54,11 +61,11 @@ describe('StratumConnection', function () {
       data => {
         expect(data).to.be.at.least(400000)
         gotReply = true
-        connection.close()
+        connection.disconnect()
       },
       e => {
         console.error(e)
-        connection.close()
+        connection.disconnect()
       }
     )
     let taskQueued = false
@@ -92,11 +99,11 @@ describe('StratumConnection', function () {
         )
         expect(data.timestamp).to.equal(1456417484)
         gotReply = true
-        connection.close()
+        connection.disconnect()
       },
       e => {
         console.error(e)
-        connection.close()
+        connection.disconnect()
       }
     )
     let taskQueued = false
@@ -128,11 +135,11 @@ describe('StratumConnection', function () {
           '01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec11600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf621e73a82cbf2342c858eeac00000000'
         )
         gotReply = true
-        connection.close()
+        connection.disconnect()
       },
       e => {
         console.error(e)
-        connection.close()
+        connection.disconnect()
       }
     )
     let taskQueued = false
@@ -165,11 +172,11 @@ describe('StratumConnection', function () {
           'a1e0a04e5c66342aca0171a398ff131f9cb51edb30c1e68cf67dd28bb3615b57'
         )
         gotReply = true
-        connection.close()
+        connection.disconnect()
       },
       e => {
         console.error(e)
-        connection.close()
+        connection.disconnect()
       }
     )
     let taskQueued = false
@@ -204,11 +211,11 @@ describe('StratumConnection', function () {
         )
         assert.equal(data[0].height, 496162)
         gotReply = true
-        connection.close()
+        connection.disconnect()
       },
       e => {
         console.error(e)
-        connection.close()
+        connection.disconnect()
       }
     )
     let taskQueued = false
@@ -245,11 +252,11 @@ describe('StratumConnection', function () {
         assert.equal(data[0].tx_pos, 0)
         assert.equal(data[0].value, 10874)
         gotReply = true
-        connection.close()
+        connection.disconnect()
       },
       e => {
         console.error(e)
-        connection.close()
+        connection.disconnect()
       }
     )
     let taskQueued = false
