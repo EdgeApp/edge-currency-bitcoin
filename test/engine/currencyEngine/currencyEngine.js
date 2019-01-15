@@ -1,4 +1,5 @@
 // @flow
+
 import EventEmitter from 'events'
 
 import { makeFakeIos } from 'edge-core-js'
@@ -51,14 +52,15 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   const [fakeIo] = makeFakeIos(1)
   const walletLocalFolder = fakeIo.folder
   const opts = {
-    io: Object.assign(fakeIo, {
+    io: {
+      ...fakeIo,
       secp256k1: bcoin.crypto.secp256k1,
       pbkdf2: bcoin.crypto.pbkdf2,
       random: size => fixture['key'],
       Socket: require('net').Socket,
       TLSSocket: require('tls').TLSSocket,
       fetch: fetch
-    })
+    }
   }
 
   const callbacks = {

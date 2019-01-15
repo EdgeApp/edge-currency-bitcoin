@@ -6,7 +6,7 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import type { BitcoinFees } from '../../src/utils/flowTypes.js'
+import type { BitcoinFees } from '../../../src/utils/flowTypes.js'
 import {
   calcFeesFromEarnCom,
   calcMinerFeePerByte
