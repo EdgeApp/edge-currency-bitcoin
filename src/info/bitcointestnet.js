@@ -82,15 +82,13 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrum://testnet.hsmiths.com:53011',
       'electrum://testnet1.bauerj.eu:50001',
       'electrum://electrum.akinbo.org:51001',
-      'electrum://testnetnode.arihanc.com:51001',
       'electrum://electrum.akinbo.org:51001',
       'electrum://testnet1.bauerj.eu:50001',
       'electrum://testnet.qtornado.com:51001',
       'electrum://testnet.hsmiths.com:53011',
       'electrums://testnet.hsmiths.com:53012',
       'electrums://testnet.qtornado.com:51002',
-      'electrums://electrum.akinbo.org:51002',
-      'electrum://testnetnode.arihanc.com:51001'
+      'electrums://electrum.akinbo.org:51002'
     ],
     disableFetchingServers: true
   },
