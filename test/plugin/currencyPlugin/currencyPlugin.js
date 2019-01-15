@@ -1,12 +1,15 @@
 // @flow
-import { makeFakeIos } from 'edge-core-js'
-import { describe, it, before } from 'mocha'
-import * as Factories from '../../../src/index.js'
+
 import { assert } from 'chai'
+import { type EdgeCurrencyPluginFactory, makeFakeIos } from 'edge-core-js'
+import { before, describe, it } from 'mocha'
+
+import * as Factories from '../../../src/index.js'
 import fixtures from './fixtures.json'
 
 for (const fixture of fixtures) {
-  const CurrencyPluginFactory = Factories[fixture['factory']]
+  const currencyPluginFactory: EdgeCurrencyPluginFactory =
+    Factories[fixture['factory']]
   const WALLET_TYPE = fixture['WALLET_TYPE']
   const WALLET_FORMAT = fixture['WALLET_FORMAT']
   const keyName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Key'
@@ -25,7 +28,7 @@ for (const fixture of fixtures) {
 
   describe(`Info for Wallet type ${WALLET_TYPE}`, function () {
     before('Plugin', function (done) {
-      CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
+      currencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
         plugin = currencyPlugin
         assert.equal(
           currencyPlugin.currencyInfo.currencyCode,
@@ -45,7 +48,7 @@ for (const fixture of fixtures) {
 
   describe(`createPrivateKey for Wallet type ${WALLET_TYPE}`, function () {
     before('Plugin', function (done) {
-      CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
+      currencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
         plugin = currencyPlugin
         done()
       })
@@ -75,7 +78,8 @@ for (const fixture of fixtures) {
           keys: {
             [keyName]: keys[keyName],
             format: WALLET_FORMAT
-          }
+          },
+          id: '!'
         })
         .then(keys => {
           assert.equal(keys[xpubName], fixture['xpub'])
@@ -132,7 +136,14 @@ for (const fixture of fixtures) {
     const getSplittableTypes = fixture['getSplittableTypes'] || []
     Object.keys(getSplittableTypes).forEach(format => {
       it(`Test for the wallet type ${format}`, function () {
-        const walletTypes = plugin.getSplittableTypes({ keys: { format } })
+        if (plugin.getSplittableTypes == null) {
+          throw new Error('No getSplittableTypes')
+        }
+        const walletTypes = plugin.getSplittableTypes({
+          type: WALLET_TYPE,
+          keys: { format },
+          id: '!'
+        })
         assert.deepEqual(walletTypes, getSplittableTypes[format])
       })
     })
