@@ -59,23 +59,14 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'TBTC',
-  currencyName: 'Bitcoin Testnet',
+  displayName: 'Bitcoin Testnet',
   pluginName: 'bitcointestnet',
   denominations: [
     { name: 'TBTC', multiplier: '100000000', symbol: '₿' },
     { name: 'mTBTC', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:bitcoin-testnet',
-    'wallet:bitcoin-bip84-testnet',
-    'wallet:bitcoin-bip49-testnet',
-    'wallet:bitcoin-bip44-testnet'
-  ],
+  walletType: 'wallet:bitcoin-testnet',
 
   // Configuration options:
   defaultSettings: {

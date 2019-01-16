@@ -1,8 +1,8 @@
 // @flow
 
-import { type EdgeIo } from 'edge-core-js/types'
 import { parse } from 'uri-js'
 
+import { type EdgeSocket, type PluginIo } from '../plugin/pluginIo.js'
 import { fetchPing, fetchVersion } from './stratumMessages.js'
 import type { StratumBlockHeader } from './stratumMessages.js'
 
@@ -35,7 +35,7 @@ export interface StratumCallbacks {
 
 export interface StratumOptions {
   callbacks: StratumCallbacks;
-  io: EdgeIo;
+  io: PluginIo;
   queueSize?: number; // defaults to 10
   timeout?: number; // seconds, defaults to 30
   walletId?: string; // for logging purposes
@@ -102,23 +102,27 @@ export class StratumConnection {
     }
 
     // Connect to the server:
-    const socket: net$Socket =
-      parsed.scheme === 'electrums' // $FlowFixMe
-        ? new this.io.TLSSocket() // $FlowFixMe
-        : new this.io.Socket()
-    socket.setEncoding('utf8')
-    socket.on('close', (hadError: boolean) => this.onSocketClose())
-    socket.on('error', (e: Error) => {
-      this.error = e
-    })
-    socket.on('connect', () => this.onSocketConnect(socket))
-    socket.on('data', (data: string) => this.onSocketData(data))
-    socket.connect({
-      host: parsed.host,
-      port: Number(parsed.port)
-    })
-    this.socket = socket
-    this.cancelConnect = false
+    const io: PluginIo = this.io
+    return io
+      .makeSocket({
+        host: parsed.host,
+        port: Number(parsed.port),
+        type: parsed.scheme === 'electrum' ? 'tcp' : 'tls'
+      })
+      .then(socket => {
+        socket.on('close', () => this.onSocketClose())
+        socket.on('error', (e: Error) => {
+          this.error = e
+        })
+        socket.on('open', () => this.onSocketConnect())
+        socket.on('message', (data: string) => this.onSocketData(data))
+        this.socket = socket
+        this.cancelConnect = false
+        return socket.connect()
+      })
+      .catch(e => {
+        this.handleError(e)
+      })
   }
 
   /**
@@ -163,7 +167,7 @@ export class StratumConnection {
     clearTimeout(this.timer)
     this.sigkill = true
     this.connected = false
-    if (this.socket) this.socket.destroy(this.error)
+    if (this.socket) this.socket.close()
   }
 
   // ------------------------------------------------------------------------
@@ -171,7 +175,7 @@ export class StratumConnection {
   // ------------------------------------------------------------------------
 
   // Options:
-  io: EdgeIo
+  io: PluginIo
   queueSize: number
   timeout: number // Converted to ms
   callbacks: StratumCallbacks
@@ -185,7 +189,7 @@ export class StratumConnection {
   cancelConnect: boolean
   lastKeepAlive: number
   partialMessage: string
-  socket: net$Socket | void
+  socket: EdgeSocket | void
   timer: TimeoutID
   error: Error | void
   sigkill: boolean
@@ -219,9 +223,9 @@ export class StratumConnection {
   /**
    * Called when the socket completes its connection.
    */
-  onSocketConnect (socket: net$Socket) {
+  onSocketConnect () {
     if (this.cancelConnect) {
-      if (this.socket) this.socket.end()
+      if (this.socket) this.socket.close()
       return
     }
 
@@ -384,7 +388,7 @@ export class StratumConnection {
         method: pending.task.method,
         params: pending.task.params
       }
-      this.socket.write(JSON.stringify(message) + '\n')
+      this.socket.send(JSON.stringify(message) + '\n')
     }
   }
 }

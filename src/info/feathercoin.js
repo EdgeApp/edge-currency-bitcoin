@@ -48,22 +48,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'FTC',
-  currencyName: 'Feathercoin',
+  displayName: 'Feathercoin',
   pluginName: 'feathercoin',
   denominations: [
     { name: 'FTC', multiplier: '100000000', symbol: 'F' },
     { name: 'mFTC', multiplier: '100000', symbol: 'mF' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:feathercoin',
-    'wallet:feathercoin-bip84',
-    'wallet:feathercoin-bip49',
-    'wallet:feathercoin-bip44'
-  ],
+  walletType: 'wallet:feathercoin',
 
   // Configuration options:
   defaultSettings: {

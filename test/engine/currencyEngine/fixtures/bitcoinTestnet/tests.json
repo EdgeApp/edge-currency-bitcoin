@@ -1,5 +1,5 @@
 {
-  "factory": "bitcoinTestnetCurrencyPluginFactory",
+  "pluginName": "bitcointestnet",
   "WALLET_TYPE": "wallet:bitcoin-testnet",
   "WALLET_FORMAT": "bip49",
   "TX_AMOUNT": 6,
@@ -17,7 +17,7 @@
   "Make Engine": {
     "network": "bitcointestnet",
     "id": "1",
-    "optionalSettings": {
+    "userSettings": {
       "enableOverrideServers": true,
       "electrumServers": [["electrum.hsmiths.com", "8080"]]
     }

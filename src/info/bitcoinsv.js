@@ -51,18 +51,14 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BSV',
-  currencyName: 'Bitcoin SV',
+  displayName: 'Bitcoin SV',
   pluginName: 'bitcoinsv',
   denominations: [
     { name: 'BSV', multiplier: '100000000', symbol: '₿' },
     { name: 'mBSV', multiplier: '100000', symbol: 'm₿' },
     { name: 'cash', multiplier: '100', symbol: 'ƀ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:bitcoinsv', 'wallet:bitcoinsv-bip44'],
+  walletType: 'wallet:bitcoinsv',
 
   // Configuration options:
   defaultSettings: {

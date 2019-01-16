@@ -9,7 +9,6 @@ import {
   type EdgeDataDump,
   type EdgeFreshAddress,
   type EdgeGetTransactionsOptions,
-  type EdgeIo,
   type EdgePaymentProtocolInfo,
   type EdgeSpendInfo,
   type EdgeSpendTarget,
@@ -18,6 +17,7 @@ import {
 } from 'edge-core-js/types'
 
 import { InfoServer } from '../info/constants'
+import { type PluginIo } from '../plugin/pluginIo.js'
 import { PluginState } from '../plugin/pluginState.js'
 import {
   toLegacyFormat,
@@ -83,7 +83,7 @@ export type CurrencyEngineSettings = {
   engineInfo: EngineCurrencyInfo,
   pluginState: PluginState,
   options: EdgeCurrencyEngineOptions,
-  io: EdgeIo
+  io: PluginIo
 }
 /**
  * The core currency plugin.
@@ -103,7 +103,7 @@ export class CurrencyEngine {
   callbacks: EdgeCurrencyEngineCallbacks
   walletLocalDisklet: Disklet
   walletLocalEncryptedDisklet: Disklet
-  io: EdgeIo
+  io: PluginIo
   feeUpdateInterval: number
   feeTimer: any
   fees: BitcoinFees
@@ -350,9 +350,15 @@ export class CurrencyEngine {
     log += '------------------------------------------------------------------'
     console.log(`${this.prunedWalletId}: ${log}`)
   }
+
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
+
+  async changeUserSettings (userSettings: Object): Promise<mixed> {
+    await this.pluginState.updateServers(userSettings)
+  }
+
   async startEngine (): Promise<void> {
     this.callbacks.onBalanceChanged(this.currencyCode, this.getBalance())
     this.updateFeeTable()
