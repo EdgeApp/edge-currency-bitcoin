@@ -55,7 +55,7 @@ export const parseUri = (
     throw new Error('InvalidUriError')
   }
   // Get all posible query params
-  const { label, message, amount, r } = query
+  const { label, message, amount, r, category } = query
   // If we don't have a pathname or a paymentProtocolURL uri then we bail
   if (!pathname && !r) throw new Error('InvalidUriError')
   // Create the returned object
@@ -72,6 +72,7 @@ export const parseUri = (
   if (label) Object.assign(metadata, { name: label })
   if (message) Object.assign(metadata, { message })
   if (r) parsedUri.paymentProtocolURL = r
+  if (category) Object.assign(metadata, { category: category })
   Object.assign(parsedUri, { metadata })
   // Get amount in native denomination if exists
   if (amount && typeof amount === 'string') {
