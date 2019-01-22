@@ -70,7 +70,7 @@ export const parseUri = (
   // Assign the query params to the parsedUri object
   const metadata = {}
   if (label) Object.assign(metadata, { name: label })
-  if (message) Object.assign(metadata, { message })
+  if (message) Object.assign(metadata, { notes: message })
   if (r) parsedUri.paymentProtocolURL = r
   if (category) Object.assign(metadata, { category: category })
   Object.assign(parsedUri, { metadata })
