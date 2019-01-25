@@ -32,9 +32,9 @@ export const createTX = async ({
     setRBF = false
   }
 }: CreateTxOptions) => {
+  const { addressPrefix, serializers } = getNetworkSettings(network)
   // Convert an address to the correct format that bcoin supports
   const toBcoinFormat = (address: string, network: string): string => {
-    const { addressPrefix, serializers } = getNetworkSettings(network)
     if (serializers.address) address = serializers.address.decode(address)
     else if (addressPrefix.cashAddress) {
       address = toLegacyFormat(address, network)
@@ -81,7 +81,6 @@ export const createTX = async ({
   // Create coins
   const coins = utxos.map(({ tx, index, height }) => {
     const coin = primitives.Coin.fromTX(tx, index, height)
-    const { serializers } = getNetworkSettings(network)
     if (serializers.txHash) {
       coin.hash = serializers.txHash(tx.toNormal().toString('hex'))
     }
@@ -163,7 +162,7 @@ export const sumTransaction = (
   let value = 0
   let output = null
   let type = null
-
+  const { serializers } = getNetworkSettings(network)
   // Process tx outputs
   const outputsLength = bcoinTransaction.outputs.length
   for (let i = 0; i < outputsLength; i++) {
@@ -176,7 +175,6 @@ export const sumTransaction = (
     value = output.value
     try {
       address = toNewFormat(output.address, network)
-      const { serializers } = getNetworkSettings(network)
       address = serializers.address
         ? serializers.address.encode(address)
         : address
@@ -211,7 +209,6 @@ export const sumTransaction = (
         output = prevoutBcoinTX.outputs[index].getJSON(network)
         value = output.value
         address = toNewFormat(output.address, network)
-        const { serializers } = getNetworkSettings(network)
         address = serializers.address
           ? serializers.address.encode(address)
           : address

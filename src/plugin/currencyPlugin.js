@@ -22,11 +22,11 @@ import { PluginState } from './pluginState.js'
 import { parseUri, encodeUri } from './uri.js'
 import { keysFromEntropy, getXPubFromSeed } from '../utils/bcoinUtils/key.js'
 import { getNetworkSettings } from '../utils/bcoinUtils/misc.js'
-
+import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
+import { Networks } from '../coinUtils/network.js'
 import {
   addNetwork,
-  patchCrypto,
-  type BcoinCurrencyInfo
+  patchCrypto
 } from '../utils/bcoinExtender/bcoinExtender.js'
 
 const { Buffer } = buffer
@@ -34,7 +34,7 @@ const { Buffer } = buffer
 export type CurrencyPluginFactorySettings = {
   currencyInfo: EdgeCurrencyInfo,
   engineInfo: EngineCurrencyInfo,
-  bcoinInfo: BcoinCurrencyInfo
+  bcoinInfo: NetworkInfo
 }
 
 export type CurrencyPluginSettings = {
@@ -150,6 +150,7 @@ export const makeCurrencyPluginFactory = ({
   bcoinInfo
 }: CurrencyPluginFactorySettings) => {
   addNetwork(bcoinInfo)
+  Networks[bcoinInfo.type] = { ...bcoinInfo }
   currencyInfo = {
     walletTypes: [`wallet:${currencyInfo.pluginName}`],
     ...currencyInfo

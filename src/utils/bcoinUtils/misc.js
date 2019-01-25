@@ -48,6 +48,7 @@ export const getNetworkSettings = (network: string): NetworkSettings => {
     forks = [],
     supportedBips = [],
     serializers = {},
+    keyPrefix,
     addressPrefix
   } = networks[network] || {}
   return {
@@ -56,6 +57,7 @@ export const getNetworkSettings = (network: string): NetworkSettings => {
     forks,
     supportedBips,
     serializers,
+    keyPrefix,
     addressPrefix
   }
 }

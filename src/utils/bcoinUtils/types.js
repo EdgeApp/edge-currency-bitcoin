@@ -3,13 +3,26 @@
 export type BcoinHDPrivateKey = Object | null
 export type BcoinHDPublicKey = Object
 export type Base58String = string
-export type HexString = string
 export type ScriptType = string
 export type RawTx = string
 export type BlockHeight = number
 export type Txid = string
 export type HDKeyType = 'privateKey' | 'publicKey' | 'address'
 export type Addresses = { [path: string]: string }
+
+export type ReplayProtection = {
+  SIGHASH_FORKID: number,
+  forcedMinVersion: number,
+  forkId: number
+}
+export type KeyPrefix = {
+  privkey: number,
+  xpubkey: number,
+  xprivkey: number,
+  xpubkey58: string,
+  xprivkey58: string,
+  coinType: number
+}
 
 export type AddressPrefix = {
   pubkeyhash: number,
@@ -22,10 +35,20 @@ export type AddressPrefix = {
   bech32?: string
 }
 
+export type NetworkInfo = {
+  type: string,
+  magic: number,
+  supportedBips: Array<number>,
+  keyPrefix: KeyPrefix,
+  addressPrefix: AddressPrefix,
+  forks?: Array<string>,
+  replayProtection?: ReplayProtection
+}
+
 export type Address = {
   displayAddress: Base58String,
-  scriptHash: HexString,
-  redeemScript?: HexString
+  scriptHash: string,
+  redeemScript?: string
 }
 
 export type Base58KeyPair = {
@@ -111,7 +134,8 @@ export type NetworkSettings = {
   forks: Array<string>,
   supportedBips: Array<number>,
   serializers: Object,
-  addressPrefix: AddressPrefix
+  addressPrefix: AddressPrefix,
+  keyPrefix: KeyPrefix
 }
 
 export type KeySettings = {

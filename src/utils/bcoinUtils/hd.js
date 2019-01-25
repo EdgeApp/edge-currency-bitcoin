@@ -30,7 +30,11 @@ export const toBase58 = (key: HDKey, network: string): Base58Key =>
     })
   )
 
-export const getKeyForPath = (hdKey: HDKey, path: string, createNew?: boolean = false): HDKey | null => {
+export const getKeyForPath = (
+  hdKey: HDKey,
+  path: string,
+  createNew?: boolean = false
+): HDKey | null => {
   const { path: parentPath, children } = hdKey
   if (path === parentPath) return hdKey
 
@@ -139,9 +143,17 @@ export const initHDKey = async (
   // Init the HDKey children and append them to the returned masterHDkey
   for (const childPath in hdKey.children) {
     const childKey = hdKey.children[childPath]
-    masterHDkey.children[childPath] = childKey.keyType === 'address'
-      ? childKey
-      : await initHDKey(childKey, network, seed, key.pub.xpubkey(), masterHDkey)
+    if (childKey.keyType === 'address') {
+      masterHDkey.children[childPath] = childKey
+    } else {
+      masterHDkey.children[childPath] = await initHDKey(
+        childKey,
+        network,
+        seed,
+        key.pub.xpubkey(),
+        masterHDkey
+      )
+    }
   }
 
   return masterHDkey
