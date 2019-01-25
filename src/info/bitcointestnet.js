@@ -1,7 +1,7 @@
 // @flow
 import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
 import { imageServerUrl } from './constants.js'
 import { crypto } from 'bcoin'
 
@@ -10,7 +10,7 @@ const hash256 = (rawTx: string) => {
   return crypto.digest.hash256(buf)
 }
 
-const bcoinInfo: BcoinCurrencyInfo = {
+const bcoinInfo: NetworkInfo = {
   type: 'bitcointestnet',
   magic: 0x0709110b,
   supportedBips: [84, 49, 44, 32],

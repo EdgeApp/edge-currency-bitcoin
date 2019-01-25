@@ -1,10 +1,10 @@
 // @flow
 import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
 import { imageServerUrl } from './constants.js'
 
-const bcoinInfo: BcoinCurrencyInfo = {
+const bcoinInfo: NetworkInfo = {
   type: 'qtum',
   magic: 0xf1cfa6d3,
   supportedBips: [44, 32],

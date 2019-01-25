@@ -3,7 +3,7 @@
 import buffer from 'buffer-hack'
 import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
 import { utils, crypto } from 'bcoin'
 import bs58grscheck from 'bs58grscheck'
 import { imageServerUrl } from './constants.js'
@@ -40,7 +40,7 @@ const sha256 = (rawTx: string) => {
   return crypto.digest.sha256(buf)
 }
 
-const bcoinInfo: BcoinCurrencyInfo = {
+const bcoinInfo: NetworkInfo = {
   type: 'groestlcoin',
   magic: 0xf9beb4d4,
   supportedBips: [84, 49, 44, 32],

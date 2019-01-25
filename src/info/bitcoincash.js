@@ -1,7 +1,7 @@
 // @flow
 import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
 import { imageServerUrl } from './constants.js'
 import { hexToVarByte } from '../utils/utils.js'
 import { script } from 'bcoin'
@@ -40,7 +40,7 @@ const cds = (sig: string, msg: string, pubKey: string, hdKey: any) => {
   return [cdsPrefix, cdsSuffix]
 }
 
-const bcoinInfo: BcoinCurrencyInfo = {
+const bcoinInfo: NetworkInfo = {
   type: 'bitcoincash',
   magic: 0xd9b4bef9,
   supportedBips: [44, 32],

@@ -1,10 +1,10 @@
 // @flow
 import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
 import { imageServerUrl } from './constants.js'
 
-const bcoinInfo: BcoinCurrencyInfo = {
+const bcoinInfo: NetworkInfo = {
   type: 'uniformfiscalobject',
   magic: 0xfcd9b7dd,
   supportedBips: [84, 49, 44, 32],
