@@ -14,7 +14,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
     xprivkey: 0x0488ade4,
     xpubkey58: 'xpub',
     xprivkey58: 'xprv',
-    coinType: 2
+    coinType: 3
   },
   addressPrefix: {
     pubkeyhash: 0x5c,
@@ -26,8 +26,8 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'eboost',
   currencyCode: 'EBST',
   gapLimit: 10,
-  maxFee: 1000000,
-  defaultFee: 50000,
+  maxFee: 10000000,
+  defaultFee: 500000,
   feeUpdateInterval: 60000,
   infoServer: 'https://info1.edgesecure.co:8444/v1',
   customFeeSettings: ['satPerByte'],
