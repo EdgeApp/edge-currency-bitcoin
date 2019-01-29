@@ -202,10 +202,10 @@ export class PluginState extends ServerCache {
 
   async fetchStratumServers (): Promise<void> {
     const { io } = this
-    console.log(`${this.pluginName} - GET ${this.infoServerUris}`)
     let serverList = this.defaultServers
     if (!this.disableFetchingServers) {
       try {
+        console.log(`${this.pluginName} - GET ${this.infoServerUris}`)
         const result = await io.fetch(this.infoServerUris)
         if (!result.ok) {
           console.log(

@@ -19,7 +19,6 @@
 .*/oldtest/.*
 
 <PROJECT_ROOT>/lib/.*.js.flow
-<PROJECT_ROOT>/test/
 
 [include]
 

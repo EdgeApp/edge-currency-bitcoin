@@ -32,7 +32,7 @@ describe('parseTransaction', function () {
         }
       ]
     }
-    const parsedData = parseTransaction(txData)
+    const parsedData: any = parseTransaction(txData)
     expect(parsedData.inputs[0].prevout.rhash()).to.equal(
       expected.inputs[0].txid
     )
@@ -70,7 +70,7 @@ describe('parseTransaction', function () {
         }
       ]
     }
-    const parsedData = parseTransaction(txData)
+    const parsedData: any = parseTransaction(txData)
     expect(parsedData.inputs[0].prevout.rhash()).to.equal(
       expected.inputs[0].txid
     )

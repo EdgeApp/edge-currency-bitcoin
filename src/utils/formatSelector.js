@@ -182,10 +182,8 @@ export const FormatSelector = (
 
     keysFromRaw: (rawKeys: any = {}) => {
       const keyRings = {}
-      const branchesNames: Array<string> = [
-        'master',
-        ...(Object.values(branches): any)
-      ]
+      const branchesNames: Array<string> = ['master']
+      for (const n in branches) branchesNames.push(branches[n])
       for (const branchName of branchesNames) {
         const { xpub, xpriv } = rawKeys[branchName] || {}
         keyRings[branchName] = {

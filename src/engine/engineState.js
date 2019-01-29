@@ -630,9 +630,9 @@ export class EngineState extends EventEmitter {
           this.pluginState.updateHeight(height)
           this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
         },
-        (e?: Error) => {
+        (e: Error) => {
           serverState.fetchingHeight = false
-          this.onConnectionClose(uri, 'subscribing to height', e)
+          this.handleMessageError(uri, 'subscribing to height', e)
         }
       )
     }
@@ -642,7 +642,7 @@ export class EngineState extends EventEmitter {
     // TODO: Check block headers to ensure we are on the right chain.
     if (connection.version == null) return
     if (connection.version < '1.1') {
-      this.connections[uri].close(
+      this.connections[uri].handleError(
         new Error('Server protocol version is too old')
       )
       this.pluginState.serverScoreDown(uri, 100)
@@ -665,10 +665,10 @@ export class EngineState extends EventEmitter {
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleHeaderFetch(height, header)
           },
-          (e?: Error) => {
+          (e: Error) => {
             this.fetchingHeaders[height] = false
             if (!serverState.headers[height]) {
-              this.onConnectionClose(
+              this.handleMessageError(
                 uri,
                 `getting header for block number ${height}`,
                 e
@@ -695,10 +695,10 @@ export class EngineState extends EventEmitter {
             this.handleTxFetch(txid, txData)
             this.updateProgressRatio()
           },
-          (e?: Error) => {
+          (e: Error) => {
             this.fetchingTxs[txid] = false
             if (!serverState.txids[txid]) {
-              this.onConnectionClose(uri, `getting transaction ${txid}`, e)
+              this.handleMessageError(uri, `getting transaction ${txid}`, e)
             } else {
               // TODO: Don't penalize the server score either.
             }
@@ -731,9 +731,9 @@ export class EngineState extends EventEmitter {
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleUtxoFetch(address, addressState.hash || '', utxos)
           },
-          (e?: Error) => {
+          (e: Error) => {
             addressState.fetchingUtxos = false
-            this.onConnectionClose(uri, `fetching utxos for: ${address}`, e)
+            this.handleMessageError(uri, `fetching utxos for: ${address}`, e)
           }
         )
       }
@@ -771,9 +771,9 @@ export class EngineState extends EventEmitter {
               this.updateProgressRatio()
             }
           },
-          (e?: Error) => {
+          (e: Error) => {
             addressState.subscribing = false
-            this.onConnectionClose(uri, `subscribing to ${address}`, e)
+            this.handleMessageError(uri, `subscribing to ${address}`, e)
           }
         )
       }
@@ -803,9 +803,9 @@ export class EngineState extends EventEmitter {
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleHistoryFetch(address, addressState, history)
           },
-          (e?: Error) => {
+          (e: Error) => {
             addressState.fetchingTxids = false
-            this.onConnectionClose(
+            this.handleMessageError(
               uri,
               `getting history for address ${address}`,
               e
@@ -1222,8 +1222,8 @@ export class EngineState extends EventEmitter {
     return txids
   }
 
-  onConnectionClose (uri: string, task: string, e?: Error) {
-    const msg = e ? `connection closed ERROR: ${e.message}` : `closed no error`
+  handleMessageError (uri: string, task: string, e: Error) {
+    const msg = `connection closed ERROR: ${e.message}`
     console.log(
       `${this.walletId}: ${uri.replace(
         'electrum://',
@@ -1231,7 +1231,7 @@ export class EngineState extends EventEmitter {
       )}: ${msg}: task: ${task}`
     )
     if (this.connections[uri]) {
-      this.connections[uri].close(e)
+      this.connections[uri].handleError(e)
     }
   }
 

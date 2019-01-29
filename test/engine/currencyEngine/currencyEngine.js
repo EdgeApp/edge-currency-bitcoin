@@ -1,18 +1,22 @@
 // @flow
-import EventEmitter from 'events'
 
-import { makeFakeIos } from 'edge-core-js'
-import { assert } from 'chai'
-import { before, describe, it } from 'mocha'
-import { statSync, readdirSync } from 'fs'
-import { readFileSync } from 'jsonfile'
+import EventEmitter from 'events'
+import { readdirSync, statSync } from 'fs'
 import { join } from 'path'
 
+import bcoin from 'bcoin'
+import { assert } from 'chai'
+import {
+  type EdgeCurrencyEngineOptions,
+  type EdgeCurrencyPluginFactory,
+  makeFakeIos
+} from 'edge-core-js'
+import { readFileSync } from 'jsonfile'
+import { before, describe, it } from 'mocha'
 import fetch from 'node-fetch'
 import request from 'request'
 
 import * as Factories from '../../../src/index.js'
-import bcoin from 'bcoin'
 
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const ROOT_FOLDER = join(__dirname, '../')
@@ -41,7 +45,8 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     join(fixtureDataPath, dummyTransactionsDataFile)
   )
 
-  const CurrencyPluginFactory = Factories[fixture['factory']]
+  const currencyPluginFactory: EdgeCurrencyPluginFactory =
+    Factories[fixture['factory']]
   const WALLET_FORMAT = fixture['WALLET_FORMAT']
   const WALLET_TYPE = fixture['WALLET_TYPE']
   const TX_AMOUNT = fixture['TX_AMOUNT']
@@ -49,16 +54,16 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   let plugin, keys, engine
   const emitter = new EventEmitter()
   const [fakeIo] = makeFakeIos(1)
-  const walletLocalFolder = fakeIo.folder
-  const opts = {
-    io: Object.assign(fakeIo, {
+  const pluginOpts = {
+    io: {
+      ...fakeIo,
       secp256k1: bcoin.crypto.secp256k1,
       pbkdf2: bcoin.crypto.pbkdf2,
       random: size => fixture['key'],
       Socket: require('net').Socket,
       TLSSocket: require('tls').TLSSocket,
       fetch: fetch
-    })
+    }
   }
 
   const callbacks = {
@@ -77,12 +82,19 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     onTransactionsChanged (transactionList) {
       // console.log('onTransactionsChanged:', transactionList)
       emitter.emit('onTransactionsChanged', transactionList)
-    }
+    },
+    onTxidsChanged () {}
+  }
+  const walletLocalFolder = fakeIo.folder.folder(DATA_STORE_FOLDER)
+  const engineOpts: EdgeCurrencyEngineOptions = {
+    callbacks,
+    walletLocalFolder,
+    walletLocalEncryptedFolder: walletLocalFolder
   }
 
   describe(`Engine Creation Errors for Wallet type ${WALLET_TYPE}`, function () {
     before('Plugin', function (done) {
-      CurrencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
+      currencyPluginFactory.makePlugin(pluginOpts).then(currencyPlugin => {
         assert.equal(
           currencyPlugin.currencyInfo.currencyCode,
           fixture['Test Currency code']
@@ -93,16 +105,18 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
           coinType: 0,
           format: WALLET_FORMAT
         })
-        plugin.derivePublicKey({ type: WALLET_TYPE, keys }).then(result => {
-          keys = result
-          done()
-        })
+        plugin
+          .derivePublicKey({ type: WALLET_TYPE, keys, id: '!' })
+          .then(result => {
+            keys = result
+            done()
+          })
       })
     })
 
     it('Error when Making Engine without local folder', function () {
       return plugin
-        .makeEngine({ type: WALLET_TYPE, keys }, { callbacks })
+        .makeEngine({ type: WALLET_TYPE, keys, id: '!' }, engineOpts)
         .catch(e => {
           assert.equal(
             e.message,
@@ -112,18 +126,21 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     })
 
     it('Error when Making Engine without keys', function () {
-      return plugin
-        .makeEngine({ type: WALLET_TYPE }, { callbacks, walletLocalFolder })
-        .catch(e => {
-          assert.equal(e.message, 'Missing Master Key')
-        })
+      return (
+        plugin
+          // $FlowFixMe
+          .makeEngine({ type: WALLET_TYPE, id: '!' }, engineOpts)
+          .catch(e => {
+            assert.equal(e.message, 'Missing Master Key')
+          })
+      )
     })
 
     it('Error when Making Engine without key', function () {
       return plugin
         .makeEngine(
-          { type: WALLET_TYPE, keys: { ninjaXpub: keys.pub } },
-          { callbacks, walletLocalFolder }
+          { type: WALLET_TYPE, keys: { ninjaXpub: keys.pub }, id: '!' },
+          engineOpts
         )
         .catch(e => {
           assert.equal(e.message, 'Missing Master Key')
@@ -133,18 +150,15 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   describe(`Start Engine for Wallet type ${WALLET_TYPE}`, function () {
     before('Create local cache file', function (done) {
       walletLocalFolder
-        .folder(DATA_STORE_FOLDER)
         .file('addresses.json')
         .setText(JSON.stringify(dummyAddressData))
         .then(() =>
           walletLocalFolder
-            .folder(DATA_STORE_FOLDER)
             .file('txs.json')
             .setText(JSON.stringify(dummyTransactionsData))
         )
         .then(() =>
           walletLocalFolder
-            .folder(DATA_STORE_FOLDER)
             .file('headers.json')
             .setText(JSON.stringify(dummyHeadersData))
         )
@@ -156,11 +170,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
       return plugin
         .makeEngine(
           { type: WALLET_TYPE, keys, id },
-          {
-            callbacks,
-            walletLocalFolder: walletLocalFolder.folder(DATA_STORE_FOLDER),
-            optionalSettings
-          }
+          { ...engineOpts, optionalSettings }
         )
         .then(e => {
           engine = e
@@ -214,6 +224,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
             address
           }
         }
+        // $FlowFixMe
         engine.signTx({ otherParams }).then(edgeTransaction => {
           const signedMessage = edgeTransaction.otherParams.signMessage
           assert.equal(publicKey, signedMessage.publicKey, 'publicKey')
@@ -234,7 +245,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     wrongFormat.forEach(address => {
       it('Checking a wrong formated address', function (done) {
         try {
-          engine.isAddressUsed(address)
+          engine.isAddressUsed(address, {})
         } catch (e) {
           assert(e, 'Should throw')
           assert.equal(e.message, 'Wrong formatted address')
@@ -246,7 +257,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     notInWallet.forEach(address => {
       it("Checking an address we don't own", function () {
         try {
-          assert.equal(engine.isAddressUsed(address), false)
+          assert.equal(engine.isAddressUsed(address, {}), false)
         } catch (e) {
           assert(e, 'Should throw')
           assert.equal(e.message, 'Address not found in wallet')
@@ -256,14 +267,14 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
 
     Object.keys(empty).forEach(test => {
       it(`Checking an empty ${test}`, function (done) {
-        assert.equal(engine.isAddressUsed(empty[test]), false)
+        assert.equal(engine.isAddressUsed(empty[test], {}), false)
         done()
       })
     })
 
     Object.keys(nonEmpty).forEach(test => {
       it(`Checking a non empty ${test}`, function (done) {
-        assert.equal(engine.isAddressUsed(nonEmpty[test]), true)
+        assert.equal(engine.isAddressUsed(nonEmpty[test], {}), true)
         done()
       })
     })
@@ -272,7 +283,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   describe(`Get Transactions from Wallet type ${WALLET_TYPE}`, function () {
     it('Should get number of transactions from cache', function (done) {
       assert.equal(
-        engine.getNumTransactions(),
+        engine.getNumTransactions({}),
         TX_AMOUNT,
         `should have ${TX_AMOUNT} tx from cache`
       )
@@ -280,7 +291,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     })
 
     it('Should get transactions from cache', function (done) {
-      engine.getTransactions().then(txs => {
+      engine.getTransactions({}).then(txs => {
         assert.equal(
           txs.length,
           TX_AMOUNT,
@@ -291,6 +302,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     })
 
     it('Should get transactions from cache with options', function (done) {
+      // $FlowFixMe
       engine.getTransactions({ startIndex: 1, startEntries: 2 }).then(txs => {
         assert.equal(txs.length, 2, 'should have 2 tx from cache')
         done()
@@ -304,12 +316,12 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     // const future = gapAddresses.future || []
 
     it('Add Empty Array', function (done) {
-      engine.addGapLimitAddresses([])
+      engine.addGapLimitAddresses([], {})
       done()
     })
 
     it('Add Already Derived Addresses', function (done) {
-      engine.addGapLimitAddresses(derived)
+      engine.addGapLimitAddresses(derived, {})
       done()
     })
 
@@ -383,7 +395,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
       this.timeout(10000)
       const { uri } = fixture.FreshAddress
       setTimeout(() => {
-        const address = engine.getFreshAddress() // TODO
+        const address = engine.getFreshAddress({}) // TODO
         request.get(
           `${uri}${address.publicAddress}?api_key=MY_APIKEY`,
           (err, res, body) => {
@@ -399,10 +411,10 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
                 'Should have never received coins'
               )
             } else {
-              const scriptHash =
-                engine.engineState.scriptHashes[address.publicAddress]
-              const transactions =
-                engine.engineState.addressInfos[scriptHash].txids
+              // $FlowFixMe
+              const engineState: any = engine.engineState
+              const scriptHash = engineState.scriptHashes[address.publicAddress]
+              const transactions = engineState.addressInfos[scriptHash].txids
               assert(
                 transactions.length === 0,
                 'Should have never received coins'
@@ -420,14 +432,15 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     const insufficientTests = fixture.InsufficientFundsError || {}
 
     it('Should fail since no spend target is given', function () {
-      const abcSpendInfo = {
+      const spendInfo = {
         networkFeeOption: 'high',
         metadata: {
           name: 'Transfer to College Fund',
           category: 'Transfer:Wallet:College Fund'
-        }
+        },
+        spendTargets: []
       }
-      return engine.makeSpend(abcSpendInfo).catch(e => {
+      return engine.makeSpend(spendInfo).catch(e => {
         assert(e, 'Should throw')
       })
     })
@@ -464,6 +477,9 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
       it(`Should build transaction with ${test}`, function () {
         this.timeout(10000)
         const templateSpend = sweepTests[test]
+        if (engine.sweepPrivateKeys == null) {
+          throw new Error('No sweepPrivateKeys')
+        }
         return engine
           .sweepPrivateKeys(templateSpend)
           .then(a => {
@@ -482,12 +498,16 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
       const { id, network } = fixture['Make Engine']
       assert(dataDump.walletId === id, 'walletId')
       assert(dataDump.walletType === WALLET_TYPE, 'walletType')
+      // $FlowFixMe
       assert(dataDump.walletFormat === WALLET_FORMAT, 'walletFormat')
       assert(dataDump.pluginType === network, 'pluginType')
       done()
     })
 
     it('changeSettings', function (done) {
+      if (plugin.changeSettings == null) {
+        throw new Error('No changeSettings')
+      }
       plugin.changeSettings(fixture.ChangeSettings).then(done)
     })
 
