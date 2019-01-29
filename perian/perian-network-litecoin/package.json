@@ -1,0 +1,7 @@
+{
+  "name": "@perian/network-litecoin",
+  "version": "0.0.1",
+  "description": "litecoin network plugin",
+  "author": "thehobbit85",
+  "files": [ "index.js" ]
+}

@@ -1,56 +1,21 @@
 {
-  "name": "edge-currency-bitcoin",
-  "version": "3.7.10",
-  "description": "Edge Bitcoin currency plugin",
-  "homepage": "https://edge.app",
-  "license": "SEE LICENSE IN LICENSE",
-  "author": "Edge",
-  "contributors": [
-    "Eliran Zach <eliran@edge.app>",
-    "William Swanson <william@edge.app>",
-    "Paul Puey <paul@edge.app>",
-    "Stan Synko <stan@airbitz.co>"
+  "private": true,
+  "workspaces": [
+    "edge-currency-bitcoin",
+    "perian/*"
   ],
-  "files": [
-    "changelog.md",
-    "lib/*"
-  ],
-  "main": "./lib/index.js",
-  "module": "./lib/index.es.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:Airbitz/edge-currency-bitcoin.git"
+    "url": "git@github.com:edgeapp/edge-currency-bitcoin.git"
   },
   "scripts": {
-    "build": "rollup -c && flow-copy-source src lib && npm run build:flow",
-    "build:flow": "flow-copy-source -i '**/*.test.js' src lib",
-    "build:test": "rollup -c rollup.config.test.js",
-    "precommit": "lint-staged && npm test && npm run build",
+    "precommit": "lint-staged && flow",
     "flow": "flow status",
-    "format": "prettier-eslint --write '*.js' 'src/**/*.js' 'test/**/*.js'",
-    "lint": "eslint '*.js' 'src/**/*.js' 'test/**/*.js' && npm run flow",
-    "prepare": "npm run build",
-    "security": "yarn audit",
-    "pretest": "npm run build:test && npm run lint",
-    "test": "nyc mocha --inspect --require source-map-support/register build/tests.cjs.js --reporter mocha-multi-reporters --reporter-options configFile=./mocha-config.json",
-    "posttest": "nyc report --reporter=cobertura --reporter=html",
-    "updot": "updot"
-  },
-  "dependencies": {
-    "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
-    "biggystring": "3.0.2",
-    "bn.js": "^4.11.8",
-    "bs58grscheck": "https://github.com/Groestlcoin/bs58grscheck",
-    "bs58smartcheck": "^2.0.4",
-    "buffer": "^5.2.1",
-    "chai": "^4.2.0",
-    "coinselect": "^3.1.11",
-    "eventemitter3": "^3.1.0",
-    "jsonschema": "^1.2.4",
-    "stable": "^0.1.8",
-    "unorm": "^1.4.1",
-    "uri-js": "^4.2.2",
-    "url-parse": "^1.4.3"
+    "format": "prettier-eslint --write 'packages/*/src/**/*.js' 'packages/*/test/**/*.js'",
+    "lint": "eslint '*.js' 'packages/*/src/**/*.js' 'packages/*/test/**/*.js' && npm run flow",
+    "prepare": "lerna exec yarn",
+    "test": "lerna run test",
+    "link": "lerna link"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",
@@ -58,7 +23,7 @@
     "@babel/plugin-transform-flow-strip-types": "7.2.0",
     "@babel/preset-flow": "^7.0.0",
     "babel-eslint": "^10.0.1",
-    "edge-core-js": "0.12.21",
+    "chai": "^4.2.0",
     "eslint": "^5.6.1",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-flowtype": "^3.2.0",
@@ -66,19 +31,19 @@
     "eslint-plugin-node": "^8.0.0",
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
-    "flow-bin": "^0.82.0",
     "flow-copy-source": "^2.0.2",
-    "husky": "^1.1.1",
-    "jsonfile": "^5.0.0",
-    "lint-staged": "^8.1.0",
+    "husky": "^1.1.4",
+    "import-sort-cli": "^5.2.0",
+    "import-sort-parser-babylon": "^5.2.0",
+    "import-sort-style-module": "^5.0.0",
+    "lerna": "^3.10.7",
+    "lint-staged": "^8.0.4",
     "mocha": "^5.2.0",
     "mocha-junit-reporter": "^1.18.0",
     "mocha-multi-reporters": "^1.1.7",
     "mochawesome": "^3.0.3",
-    "node-fetch": "^2.2.0",
     "nyc": "^13.0.1",
     "prettier-eslint-cli": "^4.7.1",
-    "request": "^2.88.0",
     "rollup": "0.64.0",
     "rollup-plugin-alias": "^1.4.0",
     "rollup-plugin-babel": "^4.0.1",
@@ -87,6 +52,11 @@
     "rollup-plugin-node-resolve": "^3.4.0",
     "source-map-support": "^0.5.9",
     "updot": "^1.1.7"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run precommit"
+    }
   },
   "importSort": {
     ".js, .es": {
@@ -98,5 +68,6 @@
     "*.js": [
       "prettier-eslint --list-different"
     ]
-  }
+  },
+  "name": "edge-currency-bitcoin"
 }

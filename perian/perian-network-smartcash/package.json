@@ -1,0 +1,11 @@
+{
+  "name": "@perian/network-smartcash",
+  "version": "0.0.1",
+  "description": "smartcash network plugin",
+  "author": "thehobbit85",
+  "files": [ "index.js" ],
+  "dependencies": {
+    "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
+    "bs58smartcheck": "^2.0.4"
+  }
+}

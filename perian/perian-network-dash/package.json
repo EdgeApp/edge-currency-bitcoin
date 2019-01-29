@@ -1,0 +1,7 @@
+{
+  "name": "@perian/network-dash",
+  "version": "0.0.1",
+  "description": "dash network plugin",
+  "author": "thehobbit85",
+  "files": [ "index.js" ]
+}

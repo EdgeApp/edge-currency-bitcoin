@@ -1,0 +1,7 @@
+{
+  "name": "@perian/network-vertcoin",
+  "version": "0.0.1",
+  "description": "vertcoin network plugin",
+  "author": "thehobbit85",
+  "files": [ "index.js" ]
+}

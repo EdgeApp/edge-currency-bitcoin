@@ -1,0 +1,7 @@
+{
+  "name": "@perian/network-uniformfiscalobject",
+  "version": "0.0.1",
+  "description": "uniformfiscalobject network plugin",
+  "author": "thehobbit85",
+  "files": [ "index.js" ]
+}

@@ -1,0 +1,8 @@
+{
+  "useWorkspaces": true,
+  "version": "0.5.16",
+  "packages": [
+    "edge-currency-bitcoin",
+    "perian/*"
+  ]
+}
