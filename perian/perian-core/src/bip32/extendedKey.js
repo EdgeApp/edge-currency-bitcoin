@@ -4,15 +4,15 @@ import type {
   ExtendedKeyPair,
   ExtendedMasterKeys
 } from '../../types/extendedKeys.js'
-import { deriveKeyPair, deriveMasterKeyPair } from './derive.js'
 import * as KeyPair from '../commons/keyPair.js'
-import { hash160, publicKeyCreate } from '../utils/crypto.js'
 import {
-  getNetwork,
-  getVersion,
   checkVersion,
-  getSerializer
+  getNetwork,
+  getSerializer,
+  getVersion
 } from '../commons/network.js'
+import { hash160, publicKeyCreate } from '../utils/crypto.js'
+import { deriveKeyPair, deriveMasterKeyPair } from './derive.js'
 
 const MAX_DEPTH = 0xff
 

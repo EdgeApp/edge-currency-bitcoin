@@ -1,7 +1,8 @@
+import { assert } from 'chai'
+import { describe, it } from 'mocha'
+
 // @flow
 import * as HDKey from '../../src/bip44/hdKey.js'
-import { describe, it } from 'mocha'
-import { assert } from 'chai'
 import fixtures from './fixtures.json'
 
 const HDKeyFixtures = fixtures.hdKey
@@ -15,7 +16,9 @@ describe('Testing HD Key', function () {
     })
   })
   HDKeyFixtures.fromString.forEach(test => {
-    it(`Creating HD key from xkey ${test[0]} with path ${test[1]}`, async function () {
+    it(`Creating HD key from xkey ${test[0]} with path ${
+      test[1]
+    }`, async function () {
       const opts = {}
       if (test[1]) opts.path = test[1].split('/')
       const hdKey = await HDKey.fromString(test[0], opts)
@@ -33,9 +36,13 @@ describe('Testing HD Key', function () {
     })
   })
   HDKeyFixtures.fromParent.forEach(test => {
-    it(`Deriving HD key from xkey ${test[0]} with path ${test[1]}`, async function () {
+    it(`Deriving HD key from xkey ${test[0]} with path ${
+      test[1]
+    }`, async function () {
       const parentKey = await HDKey.fromString(test[0])
-      const hdKey = await HDKey.fromParent(parentKey, { path: test[1].split('/') })
+      const hdKey = await HDKey.fromParent(parentKey, {
+        path: test[1].split('/')
+      })
       console.log('hdKey', hdKey)
     })
   })

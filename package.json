@@ -11,8 +11,8 @@
   "scripts": {
     "precommit": "lint-staged && flow",
     "flow": "flow status",
-    "format": "prettier-eslint --write 'packages/*/src/**/*.js' 'packages/*/test/**/*.js'",
-    "lint": "eslint '*.js' 'packages/*/src/**/*.js' 'packages/*/test/**/*.js' && npm run flow",
+    "format": "lerna run format",
+    "lint": "lerna run lint",
     "prepare": "lerna exec yarn",
     "test": "lerna run test",
     "link": "lerna link"

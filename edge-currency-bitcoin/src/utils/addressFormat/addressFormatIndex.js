@@ -1,9 +1,10 @@
 // @flow
 
 import bcoin from 'bcoin'
-import { toCashAddress, cashAddressToHash } from './cashAddress'
+
 import { getNetworkSettings } from '../bcoinUtils/misc.js'
 import * as base32 from './base32.js'
+import { cashAddressToHash, toCashAddress } from './cashAddress'
 
 const legacyToCashAddress = (address: string, network: string) => {
   if (validAddress(address, network)) return dirtyAddress(address, network)

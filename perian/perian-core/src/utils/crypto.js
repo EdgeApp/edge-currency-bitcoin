@@ -1,8 +1,8 @@
 // @flow
 import hashjs from 'hash.js'
 import {
-  publicKeyCreate as PublicKeyCreate,
   privateKeyTweakAdd as PrivateKeyTweakAdd,
+  publicKeyCreate as PublicKeyCreate,
   publicKeyTweakAdd as PublicKeyTweakAdd,
   sign as Sign,
   verify as Verify

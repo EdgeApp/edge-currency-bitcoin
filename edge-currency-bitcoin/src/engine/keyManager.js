@@ -1,25 +1,26 @@
 // @flow
 import EventEmitter from 'eventemitter3'
-import type { AddressInfos } from './engineState.js'
-import type {
-  HDMasterKey,
-  HDKey,
-  Address,
-  Base58Key,
-  Utxo,
-  BlockHeight,
-  TxOptions,
-  Output,
-  StandardOutput,
-  Script,
-  Addresses
-} from '../utils/bcoinUtils/types.js'
+
+import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
+import { addressFromKey } from '../utils/bcoinUtils/address.js'
 import * as HD from '../utils/bcoinUtils/hd.js'
+import * as Key from '../utils/bcoinUtils/key.js'
 import * as Misc from '../utils/bcoinUtils/misc.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
-import * as Key from '../utils/bcoinUtils/key.js'
-import { addressFromKey } from '../utils/bcoinUtils/address.js'
-import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
+import type {
+  Address,
+  Addresses,
+  Base58Key,
+  BlockHeight,
+  HDKey,
+  HDMasterKey,
+  Output,
+  Script,
+  StandardOutput,
+  TxOptions,
+  Utxo
+} from '../utils/bcoinUtils/types.js'
+import type { AddressInfos } from './engineState.js'
 
 const GAP_LIMIT = 10
 
@@ -116,7 +117,9 @@ export class KeyManager extends EventEmitter {
   // ////////////////////////////////////////////// //
   async initMasterKey () {
     if (!this.masterKey || !this.masterKey.key || !this.masterKey.key.priv) {
-      if (this.seed === '') throw new Error("Can't init wallet without private key")
+      if (this.seed === '') {
+        throw new Error("Can't init wallet without private key")
+      }
       this.masterKey = await HD.initHDKey(
         this.masterKey,
         this.network,

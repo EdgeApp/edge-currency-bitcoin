@@ -1,9 +1,9 @@
 // @flow
 import type { KeyPair } from '../../types/keyPair.js'
 import {
-  publicKeyCreate,
   sign as Sign,
-  verify as Verify
+  verify as Verify,
+  publicKeyCreate
 } from '../utils/crypto.js'
 
 export const fromHex = (keyHex: string): KeyPair<string> => {

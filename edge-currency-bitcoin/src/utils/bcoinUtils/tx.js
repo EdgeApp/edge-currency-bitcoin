@@ -1,12 +1,13 @@
-// @flow
-import type { Utxo, CreateTxOptions } from './types.js'
-import { consensus, primitives, script, networks } from 'bcoin'
-import { hash256Sync, reverseBufferToHex } from '../utils.js'
-import { getNetworkSettings } from './misc.js'
+import { consensus, networks, primitives, script } from 'bcoin'
+
 import {
   toLegacyFormat,
   toNewFormat
 } from '../addressFormat/addressFormatIndex.js'
+import { hash256Sync, reverseBufferToHex } from '../utils.js'
+import { getNetworkSettings } from './misc.js'
+// @flow
+import type { CreateTxOptions, Utxo } from './types.js'
 
 const witScale = consensus.WITNESS_SCALE_FACTOR
 const RBF_SEQUENCE_NUM = 0xffffffff - 2

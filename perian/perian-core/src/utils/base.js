@@ -1,7 +1,8 @@
-// @flow
-import type { Base, Bases, Alphabet, HashFunction } from '../../types/base.js'
-import { hash256 } from './crypto.js'
 import basex from 'base-x'
+
+// @flow
+import type { Alphabet, Base, Bases, HashFunction } from '../../types/base.js'
+import { hash256 } from './crypto.js'
 
 // The default ALPHABETS, the name of the base codec will be the alphabet's length
 export const ALPHABETS: Array<Alphabet> = [

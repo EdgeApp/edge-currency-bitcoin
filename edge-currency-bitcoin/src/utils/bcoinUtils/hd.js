@@ -1,16 +1,17 @@
-// @flow
-import type {
-  HDKeyType,
-  HDMasterKey,
-  HDSettings,
-  Base58KeyPair,
-  Base58Key,
-  HDKey,
-  BcoinHDKeyPair
-} from './types.js'
+import { hd } from 'bcoin'
+
 import { getPrivateFromSeed } from './key.js'
 import keyMap from './keyMap.js'
-import { hd } from 'bcoin'
+// @flow
+import type {
+  Base58Key,
+  Base58KeyPair,
+  BcoinHDKeyPair,
+  HDKey,
+  HDKeyType,
+  HDMasterKey,
+  HDSettings
+} from './types.js'
 
 export const fromBase58 = (base58Key: Base58Key, network: string): HDKey =>
   keyMap(

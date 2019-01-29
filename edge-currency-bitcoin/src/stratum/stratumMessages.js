@@ -1,14 +1,14 @@
-// @flow
-import type { OnFailHandler, StratumTask } from './stratumConnection.js'
-import { validateObject } from '../utils/utils.js'
 import {
   electrumFetchHeaderSchema,
-  electrumSubscribeHeadersSchema,
   electrumFetchHistorySchema,
-  electrumSubscribeScriptHashSchema,
+  electrumFetchUtxoSchema,
   electrumHeaderSchema,
-  electrumFetchUtxoSchema
+  electrumSubscribeHeadersSchema,
+  electrumSubscribeScriptHashSchema
 } from '../utils/jsonSchemas.js'
+import { validateObject } from '../utils/utils.js'
+// @flow
+import type { OnFailHandler, StratumTask } from './stratumConnection.js'
 
 /**
  * Creates a server ping message.

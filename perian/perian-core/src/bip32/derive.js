@@ -1,16 +1,16 @@
 // @flow
 import type {
-  KeyHmac,
-  DerivedPoint,
   DerivedKeyPair,
-  DerivedMasterKeys
+  DerivedMasterKeys,
+  DerivedPoint,
+  KeyHmac
 } from '../../types/derivedKey.js'
 import type { KeyPair } from '../../types/keyPair.js'
 import {
   hmac as Hmac,
+  privateKeyTweakAdd,
   publicKeyCreate,
-  publicKeyTweakAdd,
-  privateKeyTweakAdd
+  publicKeyTweakAdd
 } from '../utils/crypto.js'
 
 export const SEED = '426974636f696e2073656564'

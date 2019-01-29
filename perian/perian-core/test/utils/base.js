@@ -1,7 +1,8 @@
+import { assert } from 'chai'
+import { describe, it } from 'mocha'
+
 // @flow
 import { base } from '../../src/utils/base.js'
-import { describe, it } from 'mocha'
-import { assert } from 'chai'
 import fixtures from './fixtures.json'
 
 const baseFixtures = fixtures.base

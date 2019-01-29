@@ -1,7 +1,8 @@
+import { networks, utils } from 'bcoin'
 // @flow
 import type { EdgeFreshAddress } from 'edge-core-js'
-import type { NetworkSettings, BcoinHDConf, Addresses } from './types.js'
-import { utils, networks } from 'bcoin'
+
+import type { Addresses, BcoinHDConf, NetworkSettings } from './types.js'
 
 export const scriptTypeToBcoin = (
   scriptType?: string = 'P2PKH'

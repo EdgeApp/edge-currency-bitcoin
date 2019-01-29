@@ -1,16 +1,17 @@
+import {
+  network as Network,
+  hd,
+  networks,
+  primitives,
+  script,
+  utils
+} from 'bcoin'
 // @flow
 // $FlowFixMe
 import buffer from 'buffer-hack'
-import {
-  utils,
-  hd,
-  primitives,
-  script,
-  networks,
-  network as Network
-} from 'bcoin'
+
 import { base64regex } from '../utils.js'
-import { scriptTypeToBcoin, getNetworkSettings } from './misc.js'
+import { getNetworkSettings, scriptTypeToBcoin } from './misc.js'
 
 const { Buffer } = buffer
 

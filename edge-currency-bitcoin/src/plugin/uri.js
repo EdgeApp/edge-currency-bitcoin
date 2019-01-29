@@ -1,20 +1,21 @@
+import { bns } from 'biggystring'
 // @flow
 import type {
+  EdgeCurrencyInfo,
   EdgeEncodeUri,
-  EdgeParsedUri,
-  EdgeCurrencyInfo
+  EdgeParsedUri
 } from 'edge-core-js'
-import {
-  validAddress,
-  sanitizeAddress,
-  dirtyAddress,
-  toNewFormat
-} from '../utils/addressFormat/addressFormatIndex.js'
-import { verifyUriProtocol } from '../utils/bcoinUtils/misc.js'
-import { verifyWIF } from '../utils/bcoinUtils/key.js'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
-import { bns } from 'biggystring'
+
+import {
+  dirtyAddress,
+  sanitizeAddress,
+  toNewFormat,
+  validAddress
+} from '../utils/addressFormat/addressFormatIndex.js'
+import { verifyWIF } from '../utils/bcoinUtils/key.js'
+import { verifyUriProtocol } from '../utils/bcoinUtils/misc.js'
 
 const parsePathname = (pathname: string, network: string) => {
   // Check if the pathname type is a wif

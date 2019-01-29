@@ -1,33 +1,33 @@
+// $FlowFixMe
+import buffer from 'buffer-hack'
 // @flow
 import type {
-  EdgeCreatePrivateKeyOptions,
   EdgeCorePluginOptions,
+  EdgeCreatePrivateKeyOptions,
   EdgeCurrencyEngine,
   EdgeCurrencyEngineOptions,
   EdgeCurrencyInfo,
   EdgeCurrencyPlugin,
-  EdgeIo,
-  EdgeWalletInfo,
   EdgeEncodeUri,
-  EdgeParsedUri
+  EdgeIo,
+  EdgeParsedUri,
+  EdgeWalletInfo
 } from 'edge-core-js'
 
-// $FlowFixMe
-import buffer from 'buffer-hack'
 import {
   CurrencyEngine,
   type EngineCurrencyInfo
 } from '../engine/currencyEngine.js'
-import { PluginState } from './pluginState.js'
-import { parseUri, encodeUri } from './uri.js'
-import { keysFromEntropy, getXPubFromSeed } from '../utils/bcoinUtils/key.js'
-import { getNetworkSettings } from '../utils/bcoinUtils/misc.js'
-import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
 // import { Networks } from '../coinUtils/network.js'
 import {
   addNetwork,
   patchCrypto
 } from '../utils/bcoinExtender/bcoinExtender.js'
+import { getXPubFromSeed, keysFromEntropy } from '../utils/bcoinUtils/key.js'
+import { getNetworkSettings } from '../utils/bcoinUtils/misc.js'
+import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
+import { PluginState } from './pluginState.js'
+import { encodeUri, parseUri } from './uri.js'
 
 const { Buffer } = buffer
 

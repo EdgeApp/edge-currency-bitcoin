@@ -1,9 +1,10 @@
-// @flow
-import type { Address } from './types.js'
-import { hash256, reverseBufferToHex } from '../utils.js'
 import { primitives, script } from 'bcoin'
+
+import { hash256, reverseBufferToHex } from '../utils.js'
 import { getAllKeyRings } from './key.js'
 import { getNetworkSettings } from './misc.js'
+// @flow
+import type { Address } from './types.js'
 
 export const addressToScriptHash = (
   address: string,

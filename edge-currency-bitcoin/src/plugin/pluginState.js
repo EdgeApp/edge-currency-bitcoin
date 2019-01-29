@@ -4,9 +4,9 @@ import type { DiskletFolder } from 'disklet'
 import type { EdgeIo } from 'edge-core-js'
 
 import type { EngineState } from '../engine/engineState.js'
-import { InfoServer, FixCurrencyCode } from '../info/constants'
-import { ServerCache } from './serverCache.js'
+import { FixCurrencyCode, InfoServer } from '../info/constants'
 import { type SaveCache, saveCache } from '../utils/utils.js'
+import { ServerCache } from './serverCache.js'
 
 export type CurrencySettings = {
   customFeeSettings: Array<string>,

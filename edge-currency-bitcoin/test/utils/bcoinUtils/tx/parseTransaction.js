@@ -1,8 +1,8 @@
+import { expect } from 'chai'
+import { describe, it } from 'mocha'
+
 // @flow
 import { parseTransaction } from '../../../../src/utils/bcoinUtils/tx.js'
-
-import { describe, it } from 'mocha'
-import { expect } from 'chai'
 
 describe('parseTransaction', function () {
   it('Matches a known transaction', function () {

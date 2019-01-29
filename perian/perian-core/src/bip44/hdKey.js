@@ -1,6 +1,6 @@
-// @flow
-import type { Path, HDPath, HDKey } from '../../types/hd.js'
 import type { ExtendedKeyPair } from '../../types/extendedKeys.js'
+// @flow
+import type { HDKey, HDPath, Path } from '../../types/hd.js'
 import { HARDENED } from '../bip32/derive.js'
 import * as ExtendedKey from '../bip32/extendedKey.js'
 
@@ -22,7 +22,10 @@ export const fromString = async (
   hdPath?: HDPath,
   network?: string
 ): Promise<HDKey> => {
-  const keyPair: ExtendedKeyPair = await ExtendedKey.fromString(extendedKey, network)
+  const keyPair: ExtendedKeyPair = await ExtendedKey.fromString(
+    extendedKey,
+    network
+  )
   return fromExtendedKey(keyPair, hdPath)
 }
 

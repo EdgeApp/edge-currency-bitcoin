@@ -1,7 +1,8 @@
+import { assert } from 'chai'
+import { describe, it } from 'mocha'
+
 // @flow
 import * as ExtendedKey from '../../src/bip32/extendedKey.js'
-import { describe, it } from 'mocha'
-import { assert } from 'chai'
 import fixtures from './fixtures.json'
 
 const XKeyFixtures = fixtures.extendedKey

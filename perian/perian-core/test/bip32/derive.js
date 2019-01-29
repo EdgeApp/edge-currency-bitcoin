@@ -1,7 +1,8 @@
+import { assert } from 'chai'
+import { describe, it } from 'mocha'
+
 // @flow
 import * as Derive from '../../src/bip32/derive.js'
-import { describe, it } from 'mocha'
-import { assert } from 'chai'
 import fixtures from './fixtures.json'
 
 const deriveFixtures = fixtures.derive

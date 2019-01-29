@@ -3,39 +3,39 @@
 import { bns } from 'biggystring'
 import type { DiskletFolder } from 'disklet'
 import type {
-  EdgeTransaction,
-  EdgeWalletInfo,
   EdgeCurrencyEngine,
-  EdgeCurrencyEngineOptions,
   EdgeCurrencyEngineCallbacks,
-  EdgeGetTransactionsOptions,
-  EdgePaymentProtocolInfo,
+  EdgeCurrencyEngineOptions,
+  EdgeDataDump,
   EdgeFreshAddress,
+  EdgeGetTransactionsOptions,
+  EdgeIo,
+  EdgePaymentProtocolInfo,
   EdgeSpendInfo,
   EdgeSpendTarget,
-  EdgeDataDump,
-  EdgeIo
+  EdgeTransaction,
+  EdgeWalletInfo
 } from 'edge-core-js'
 
-import { EngineState } from './engineState.js'
-import { PluginState } from '../plugin/pluginState.js'
-import { KeyManager } from './keyManager'
-import type { EngineStateCallbacks } from './engineState.js'
-import type { TxOptions } from '../utils/bcoinUtils/types.js'
-import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
-import { validateObject, promiseAny } from '../utils/utils.js'
-import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
-import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
-import { broadcastFactories } from './broadcastApi.js'
 import { InfoServer } from '../info/constants'
-import * as PaymentRequest from '../utils/bcoinUtils/paymentRequest.js'
-import * as Tx from '../utils/bcoinUtils/tx.js'
-import * as Address from '../utils/bcoinUtils/address.js'
-import { scriptTypesToEdgeTypes } from '../utils/bcoinUtils/misc.js'
+import { PluginState } from '../plugin/pluginState.js'
 import {
   toLegacyFormat,
   validAddress
 } from '../utils/addressFormat/addressFormatIndex.js'
+import * as Address from '../utils/bcoinUtils/address.js'
+import { scriptTypesToEdgeTypes } from '../utils/bcoinUtils/misc.js'
+import * as PaymentRequest from '../utils/bcoinUtils/paymentRequest.js'
+import * as Tx from '../utils/bcoinUtils/tx.js'
+import type { TxOptions } from '../utils/bcoinUtils/types.js'
+import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
+import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
+import { promiseAny, validateObject } from '../utils/utils.js'
+import { broadcastFactories } from './broadcastApi.js'
+import { EngineState } from './engineState.js'
+import type { EngineStateCallbacks } from './engineState.js'
+import { KeyManager } from './keyManager'
+import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000
@@ -402,7 +402,9 @@ export class CurrencyEngine {
   }
 
   getFreshAddress (options: any): EdgeFreshAddress {
-    const addresses = scriptTypesToEdgeTypes(this.keyManager.getReceiveAddress())
+    const addresses = scriptTypesToEdgeTypes(
+      this.keyManager.getReceiveAddress()
+    )
     const legacyAddress = toLegacyFormat(addresses.publicAddress, this.network)
     return { ...addresses, legacyAddress }
   }

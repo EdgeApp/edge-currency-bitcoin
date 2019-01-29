@@ -1,15 +1,14 @@
 // @flow
 
+import { assert } from 'chai'
+import { describe, it } from 'mocha'
+
+import { KeyManager } from '../../../src/engine/keyManager.js'
 // InfoFiles for networks
 import { bitcoin } from '../../../src/info/bitcoin.js'
 import { bitcoincash } from '../../../src/info/bitcoincash.js'
-
 // Bcoin extender function
 import { addNetwork } from '../../../src/utils/bcoinExtender/bcoinExtender.js'
-
-import { describe, it } from 'mocha'
-import { assert } from 'chai'
-import { KeyManager } from '../../../src/engine/keyManager.js'
 import fixtures from './fixtures.json'
 
 // Add network to bcoin

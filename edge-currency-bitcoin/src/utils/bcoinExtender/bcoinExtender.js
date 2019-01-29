@@ -1,9 +1,10 @@
+import bcoin from 'bcoin'
+
 // @flow
 import type { NetworkInfo } from '../bcoinUtils/types.js'
-import { patchSecp256k1, patchPbkdf2 } from './patchCrypto.js'
-import { patchTransaction } from './replayProtection.js'
 import { getHDSettings } from './bips.js'
-import bcoin from 'bcoin'
+import { patchPbkdf2, patchSecp256k1 } from './patchCrypto.js'
+import { patchTransaction } from './replayProtection.js'
 
 let cryptoReplaced = false
 patchTransaction(bcoin)

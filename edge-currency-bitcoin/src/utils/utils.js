@@ -3,9 +3,10 @@
  * @flow
  */
 
-import { validate } from 'jsonschema'
 import crypto from 'crypto'
+
 import { utils } from 'bcoin'
+import { validate } from 'jsonschema'
 
 export const base64regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
 

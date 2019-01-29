@@ -1,11 +1,12 @@
 // @flow
 // $FlowFixMe
 import buffer from 'buffer-hack'
-import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
+import { crypto, utils } from 'bcoin'
+import bs58grscheck from 'bs58grscheck'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
-import { utils, crypto } from 'bcoin'
-import bs58grscheck from 'bs58grscheck'
+import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import { imageServerUrl } from './constants.js'
 
 const { Buffer } = buffer

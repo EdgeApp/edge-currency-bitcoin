@@ -1,32 +1,32 @@
 // @flow
 import type { DiskletFolder } from 'disklet'
 import type { EdgeIo } from 'edge-core-js'
+import EventEmitter from 'eventemitter3'
+import stable from 'stable'
+import { parse } from 'uri-js'
 
 import { type PluginState } from '../plugin/pluginState.js'
 import type {
   StratumCallbacks,
   StratumTask
 } from '../stratum/stratumConnection.js'
-import EventEmitter from 'eventemitter3'
-import stable from 'stable'
 import { StratumConnection } from '../stratum/stratumConnection.js'
 import {
   broadcastTx,
+  fetchBlockHeader,
   fetchScriptHashHistory,
   fetchScriptHashUtxo,
   fetchTransaction,
   subscribeHeight,
-  subscribeScriptHash,
-  fetchBlockHeader
+  subscribeScriptHash
 } from '../stratum/stratumMessages.js'
 import type {
   StratumBlockHeader,
   StratumHistoryRow,
   StratumUtxo
 } from '../stratum/stratumMessages.js'
-import { type SaveCache, saveCache } from '../utils/utils.js'
 import { parseTransaction } from '../utils/bcoinUtils/tx.js'
-import { parse } from 'uri-js'
+import { type SaveCache, saveCache } from '../utils/utils.js'
 
 export type UtxoInfo = {
   txid: string, // tx_hash from Stratum
