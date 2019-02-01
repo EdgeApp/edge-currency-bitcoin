@@ -56,6 +56,12 @@ const testnet: NetworkInfo = {
 
 export const Networks: NetworkInfos = { main, testnet }
 
+export const addNetworks = (networks: { [network: string]: NetworkInfos }) => {
+  for (const network in networks) {
+    addNetwork(network, networks[network])
+  }
+}
+
 export const addNetwork = (network: string, infos: NetworkInfos = {}) => {
   for (const netType in infos) {
     const newInfo = infos[netType]
@@ -71,7 +77,7 @@ export const addNetwork = (network: string, infos: NetworkInfos = {}) => {
         mergedInfo[setting] = [...newSetting, ...oldSetting]
       } else if (typeof baseSetting === 'object') {
         newInfo[setting] = newInfo[setting] || {}
-        mergedInfo[setting] = { ...newInfo[setting], ...baseSetting }
+        mergedInfo[setting] = { ...baseSetting, ...newInfo[setting] }
       } else if (typeof newInfo[setting] !== 'undefined') {
         mergedInfo[setting] = newInfo[setting]
       } else {
