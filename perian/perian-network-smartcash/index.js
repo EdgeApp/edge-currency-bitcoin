@@ -1,25 +1,23 @@
-// @flow
-
-import bs58sc from 'bs58smartcheck'
-import { utils, crypto } from 'bcoin'
+const bs58sc = require('bs58smartcheck')
+const bcoin = require('bcoin')
 
 const base58 = {
-  decode: (address: string) => {
+  decode: (address) => {
     const payload = bs58sc.decode(address)
-    const bw = new utils.StaticWriter(payload.length + 4)
+    const bw = new bcoin.utils.StaticWriter(payload.length + 4)
     bw.writeBytes(payload)
     bw.writeChecksum()
-    return utils.base58.encode(bw.render())
+    return bcoin.utils.base58.encode(bw.render())
   },
-  encode: (address: string) => {
-    const payload = utils.base58.decode(address)
+  encode: (address) => {
+    const payload = bcoin.utils.base58.decode(address)
     return bs58sc.encode(payload.slice(0, -4))
   }
 }
 
-const sha256 = (rawTx: string) => {
+const sha256 = (rawTx) => {
   const buf = Buffer.from(rawTx, 'hex')
-  return crypto.digest.sha256(buf)
+  return bcoin.crypto.digest.sha256(buf)
 }
 
 const main = {
@@ -40,7 +38,7 @@ const main = {
   serializers: {
     address: base58,
     wif: base58,
-    txHash: (rawTx: string) => sha256(rawTx).toString('hex'),
+    txHash: (rawTx) => sha256(rawTx).toString('hex'),
     signatureHash: sha256
   }
 }

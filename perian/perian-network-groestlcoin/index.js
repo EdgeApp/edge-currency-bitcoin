@@ -1,11 +1,9 @@
-// @flow
-
-import { utils, crypto } from 'bcoin'
-import bs58grscheck from 'bs58grscheck'
+const bcoin = require('bcoin')
+const bs58grscheck = require('bs58grscheck')
 
 const isBech32 = address => {
   try {
-    const hrp = utils.bech32.decode(address).hrp
+    const hrp = bcoin.utils.bech32.decode(address).hrp
     return hrp === 'grs'
   } catch (e) {
     return false
@@ -13,24 +11,24 @@ const isBech32 = address => {
 }
 
 const base58 = {
-  decode: (address: string) => {
+  decode: (address) => {
     if (isBech32(address)) return address
     const payload = bs58grscheck.decode(address)
-    const bw = new utils.StaticWriter(payload.length + 4)
+    const bw = new bcoin.utils.StaticWriter(payload.length + 4)
     bw.writeBytes(payload)
     bw.writeChecksum()
-    return utils.base58.encode(bw.render())
+    return bcoin.utils.base58.encode(bw.render())
   },
-  encode: (address: string) => {
+  encode: (address) => {
     if (isBech32(address)) return address
-    const payload = utils.base58.decode(address)
+    const payload = bcoin.utils.base58.decode(address)
     return bs58grscheck.encode(payload.slice(0, -4))
   }
 }
 
-const sha256 = (rawTx: string) => {
+const sha256 = (rawTx) => {
   const buf = Buffer.from(rawTx, 'hex')
-  return crypto.digest.sha256(buf)
+  return bcoin.crypto.digest.sha256(buf)
 }
 
 const main = {
@@ -52,7 +50,7 @@ const main = {
   serializers: {
     address: base58,
     wif: base58,
-    txHash: (rawTx: string) => sha256(rawTx).toString('hex'),
+    txHash: (rawTx) => sha256(rawTx).toString('hex'),
     signatureHash: sha256
   }
 }

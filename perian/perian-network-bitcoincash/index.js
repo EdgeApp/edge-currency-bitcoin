@@ -1,7 +1,6 @@
-// @flow
 const bcoin = require('bcoin')
 
-const toVarByteString = (hex: string): string => {
+const toVarByteString = (hex) => {
   const len = hex.length / 2
   const str = len.toString(16)
   const hexLen = str.length % 2 === 0 ? str : `0${str}`
@@ -10,7 +9,7 @@ const toVarByteString = (hex: string): string => {
 
 const scriptProto = bcoin.script.prototype
 const getPubkey = scriptProto.getPubkey
-scriptProto.getPubkey = function (minimal: boolean) {
+scriptProto.getPubkey = function (minimal) {
   if (this.code.length === 6) {
     const size = this.getLength(4)
 
@@ -32,7 +31,7 @@ const SIGNATURE =
 const MESSAGE = ''
 const PUBKEY =
   '038282263212c609d9ea2a6e3e172de238d8c39cabd5ac1ca10646e23fd5f51508'
-const cds = (sig: string, msg: string, pubKey: string, hdKey: any) => {
+const cds = (sig, msg, pubKey, hdKey) => {
   const cdsSuffix = `${toVarByteString(
     hdKey ? hdKey.publicKey.toString('hex') : ''
   )}${OP_CHECKSIG}`
@@ -55,18 +54,12 @@ const main = {
     forcedMinVersion: 1
   },
   scriptTemplates: {
-    replayProtection: (hdKey: any) =>
+    replayProtection: (hdKey) =>
       cds(SIGNATURE, MESSAGE, PUBKEY, hdKey).join(OP_CHECKDATASIGVERIFY),
-    checkdatasig: (hdKey: any) => (
-      sig: string = '',
-      msg: string = '',
-      pubKey: string = ''
-    ) => cds(sig, msg, pubKey, hdKey).join(OP_CHECKDATASIG),
-    checkdatasigverify: (hdKey: any) => (
-      sig: string = '',
-      msg: string = '',
-      pubKey: string = ''
-    ) => cds(sig, msg, pubKey, hdKey).join(OP_CHECKDATASIGVERIFY)
+    checkdatasig: (hdKey) => (sig = '', msg = '', pubKey = '') =>
+      cds(sig, msg, pubKey, hdKey).join(OP_CHECKDATASIG),
+    checkdatasigverify: (hdKey) => (sig = '', msg = '', pubKey = '') =>
+      cds(sig, msg, pubKey, hdKey).join(OP_CHECKDATASIGVERIFY)
   }
 }
 
