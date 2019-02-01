@@ -2,6 +2,7 @@
 
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
+
 import * as HDKey from '../../src/bip44/hdKey.js'
 import fixtures from './fixtures.json'
 

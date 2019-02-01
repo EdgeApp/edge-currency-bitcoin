@@ -1,6 +1,7 @@
 // @flow
 
 import basex from 'base-x'
+
 import type { Alphabet, Base, Bases, HashFunction } from '../../types/base.js'
 import { hash256 } from './crypto.js'
 
