@@ -1,7 +1,7 @@
-import { networks, utils } from 'bcoin'
 // @flow
-import type { EdgeFreshAddress } from 'edge-core-js'
 
+import { networks, utils } from 'bcoin'
+import type { EdgeFreshAddress } from 'edge-core-js'
 import type { Addresses, BcoinHDConf, NetworkSettings } from './types.js'
 
 export const scriptTypeToBcoin = (

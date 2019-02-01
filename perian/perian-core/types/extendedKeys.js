@@ -1,4 +1,5 @@
 // @flow
+
 import type { MasterKeyPair } from './keyPair.js'
 import type { DerivedKey } from './derivedKey.js'
 

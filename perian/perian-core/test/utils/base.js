@@ -1,7 +1,7 @@
+// @flow
+
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
-
-// @flow
 import { base } from '../../src/utils/base.js'
 import fixtures from './fixtures.json'
 

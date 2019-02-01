@@ -1,4 +1,5 @@
 // @flow
+
 import type { HDSettings } from '../../types/hd.js'
 
 export const bip44Path = (bip: number) => (account: number, coinType: number) =>

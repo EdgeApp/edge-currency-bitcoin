@@ -1,6 +1,6 @@
-import bcoin from 'bcoin'
-
 // @flow
+
+import bcoin from 'bcoin'
 import type { NetworkInfo } from '../bcoinUtils/types.js'
 import { getHDSettings } from './bips.js'
 import { patchPbkdf2, patchSecp256k1 } from './patchCrypto.js'

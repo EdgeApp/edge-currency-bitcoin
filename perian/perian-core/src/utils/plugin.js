@@ -1,4 +1,5 @@
 // @flow
+
 import type { Plugin } from '../../types/types.js'
 import { addNetwork } from '../commons/network.js'
 

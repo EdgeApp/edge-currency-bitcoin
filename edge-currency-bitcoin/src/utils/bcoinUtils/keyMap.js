@@ -1,4 +1,5 @@
 // @flow
+
 import type { KeyTree } from './types.js'
 
 const keyMap = <In, Out>(

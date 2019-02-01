@@ -1,4 +1,5 @@
 // @flow
+
 import hashjs from 'hash.js'
 import {
   privateKeyTweakAdd as PrivateKeyTweakAdd,

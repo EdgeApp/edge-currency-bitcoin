@@ -1,5 +1,6 @@
-import { bns } from 'biggystring'
 // @flow
+
+import { bns } from 'biggystring'
 import type {
   EdgeCurrencyInfo,
   EdgeEncodeUri,

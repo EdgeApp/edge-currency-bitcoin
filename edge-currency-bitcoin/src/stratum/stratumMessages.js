@@ -1,3 +1,5 @@
+// @flow
+
 import {
   electrumFetchHeaderSchema,
   electrumFetchHistorySchema,
@@ -7,7 +9,6 @@ import {
   electrumSubscribeScriptHashSchema
 } from '../utils/jsonSchemas.js'
 import { validateObject } from '../utils/utils.js'
-// @flow
 import type { OnFailHandler, StratumTask } from './stratumConnection.js'
 
 /**

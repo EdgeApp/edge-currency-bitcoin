@@ -1,4 +1,5 @@
 // @flow
+
 import type { KeyPair } from '../../types/keyPair.js'
 import {
   sign as Sign,

@@ -1,6 +1,6 @@
 // @flow
-import EventEmitter from 'eventemitter3'
 
+import EventEmitter from 'eventemitter3'
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 import { addressFromKey } from '../utils/bcoinUtils/address.js'
 import * as HD from '../utils/bcoinUtils/hd.js'

@@ -1,8 +1,8 @@
-import { crypto } from 'bcoin'
+// @flow
 
+import { crypto } from 'bcoin'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
-// @flow
 import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import { imageServerUrl } from './constants.js'
 

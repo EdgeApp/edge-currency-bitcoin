@@ -1,4 +1,5 @@
 // @flow
+
 import type { DiskletFolder } from 'disklet'
 import type { EdgeIo } from 'edge-core-js'
 import EventEmitter from 'eventemitter3'

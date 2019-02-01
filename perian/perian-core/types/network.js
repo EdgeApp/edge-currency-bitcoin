@@ -1,4 +1,5 @@
 // @flow
+
 import type { Base, HashFunction } from './base.js'
 
 export type Serializers = {

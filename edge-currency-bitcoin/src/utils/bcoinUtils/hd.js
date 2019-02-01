@@ -1,8 +1,8 @@
-import { hd } from 'bcoin'
+// @flow
 
+import { hd } from 'bcoin'
 import { getPrivateFromSeed } from './key.js'
 import keyMap from './keyMap.js'
-// @flow
 import type {
   Base58Key,
   Base58KeyPair,

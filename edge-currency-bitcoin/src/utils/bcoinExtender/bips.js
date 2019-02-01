@@ -1,4 +1,5 @@
 // @flow
+
 import type { HDSettings } from '../bcoinUtils/types.js'
 
 const bips: HDSettings = {

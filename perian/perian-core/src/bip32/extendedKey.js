@@ -1,4 +1,5 @@
 // @flow
+
 import type { DerivedKey } from '../../types/derivedKey.js'
 import type {
   ExtendedKeyPair,

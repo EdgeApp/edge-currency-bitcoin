@@ -1,4 +1,5 @@
 // @flow
+
 import bs58sc from 'bs58smartcheck'
 import { utils, crypto } from 'bcoin'
 

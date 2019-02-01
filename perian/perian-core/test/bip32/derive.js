@@ -1,7 +1,7 @@
+// @flow
+
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
-
-// @flow
 import * as Derive from '../../src/bip32/derive.js'
 import fixtures from './fixtures.json'
 

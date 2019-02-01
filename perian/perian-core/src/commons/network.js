@@ -1,4 +1,5 @@
 // @flow
+
 import type { Base } from '../../types/base.js'
 import type { NetworkInfo, NetworkInfos } from '../../types/network.js'
 import { base } from '../utils/base.js'

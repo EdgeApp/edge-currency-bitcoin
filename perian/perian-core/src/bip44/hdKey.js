@@ -1,5 +1,6 @@
-import type { ExtendedKeyPair } from '../../types/extendedKeys.js'
 // @flow
+
+import type { ExtendedKeyPair } from '../../types/extendedKeys.js'
 import type { HDKey, HDPath, Path } from '../../types/hd.js'
 import { HARDENED } from '../bip32/derive.js'
 import * as ExtendedKey from '../bip32/extendedKey.js'
@@ -67,20 +68,21 @@ export const fromExtendedKey = (
 
 export const fromParent = async (
   parentKeys: HDKey,
-  hdPath: HDPath = { path: [] },
+  hdPath?: HDPath,
   network?: string
 ): Promise<HDKey> => {
-  const parentPath = parentKeys.path
-  const relativePath = hdPath.path.slice(parentPath.length)
-  if (!relativePath.length) return parentKeys
+  const { path = [] } = hdPath || {}
 
-  const { path, parentKey } = getParentKey(parentKeys, relativePath)
+  const directParent = getParentKey(parentKeys, path)
 
-  let childHDKey = parentKey
-
-  while (path.length) {
-    const index = path.shift()
+  let childHDKey = directParent.key
+  const newParentPath = directParent.path
+  while (newParentPath.length) {
+    const index = newParentPath.shift()
     const childKey = await ExtendedKey.fromParent(childHDKey, index, network)
+    console.log('childKey', childKey)
+    console.log('parentKeys', parentKeys)
+    console.log('hdPath', hdPath)
     const newChildHDKey = fromExtendedKey(childKey, {
       ...parentKeys,
       ...hdPath
@@ -96,11 +98,11 @@ export const fromParent = async (
 export const getParentKey = (
   parentKey: HDKey,
   path: Path
-): { parentKey: HDKey, path: Path } => {
+): { key: HDKey, path: Path } => {
   while (parentKey.children[path[0]] && path.length) {
     parentKey = parentKey.children[path.shift()]
   }
-  return { parentKey, path }
+  return { key: parentKey, path }
 }
 
 export const getHDKey = (parentKey: HDKey, path: Path): HDKey | null => {

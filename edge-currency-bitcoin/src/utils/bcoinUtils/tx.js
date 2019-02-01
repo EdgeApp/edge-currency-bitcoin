@@ -1,12 +1,12 @@
-import { consensus, networks, primitives, script } from 'bcoin'
+// @flow
 
+import { consensus, networks, primitives, script } from 'bcoin'
 import {
   toLegacyFormat,
   toNewFormat
 } from '../addressFormat/addressFormatIndex.js'
 import { hash256Sync, reverseBufferToHex } from '../utils.js'
 import { getNetworkSettings } from './misc.js'
-// @flow
 import type { CreateTxOptions, Utxo } from './types.js'
 
 const witScale = consensus.WITNESS_SCALE_FACTOR

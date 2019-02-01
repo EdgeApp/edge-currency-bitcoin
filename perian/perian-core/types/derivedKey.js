@@ -1,4 +1,5 @@
 // @flow
+
 import type { KeyPair, MasterKeyPair } from './keyPair.js'
 
 export type KeyHmac = {

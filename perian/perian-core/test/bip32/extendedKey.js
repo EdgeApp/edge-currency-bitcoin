@@ -1,7 +1,7 @@
+// @flow
+
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
-
-// @flow
 import * as ExtendedKey from '../../src/bip32/extendedKey.js'
 import fixtures from './fixtures.json'
 

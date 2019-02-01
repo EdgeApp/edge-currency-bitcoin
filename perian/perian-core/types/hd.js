@@ -1,4 +1,5 @@
 // @flow
+
 import type { ExtendedKey } from './extendedKeys.js'
 
 export type ScriptType = 'P2PKH' | 'P2PKH-AIRBITZ' | 'P2WPKH-P2SH' | 'P2WPKH'
