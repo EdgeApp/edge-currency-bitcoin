@@ -1,5 +1,13 @@
 # edge-currency-bitcoin
 
+## 3.7.11
+
+* Fix error when 2 makeSpends are done back to back and previous one is used for signTx
+
+## 3.7.10
+
+* Adjust BTC mining fees to target higher range
+
 ## 3.7.9
 
 * Sanitize edgeTransaction returned from makeSpend to make it bridge compatible
