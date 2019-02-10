@@ -2,7 +2,7 @@
 
 import type { ExtendedKey } from './extendedKeys.js'
 
-export type ScriptType = 'P2PKH' | 'P2PKH-AIRBITZ' | 'P2WPKH-P2SH' | 'P2WPKH'
+export type ScriptType = 'P2PKH' | 'P2PKH-AIRBITZ' | 'P2SH' | 'P2WPKH-P2SH' | 'P2WPKH' | 'P2WSH'
 export type Chain = 'external' | 'internal'
 export type Index = string
 export type Path = Array<Index>
@@ -13,10 +13,16 @@ export type HDPath = {
   scriptType?: ScriptType
 }
 
+export type HDStandardPathParams = {
+  account?: number,
+  coinType?: number
+}
+
 export type HDSettings = {
   [path: string]: {
-    ...HDPath,
-    path?: (...settings: any) => string,
+    chain?: Chain,
+    scriptType?: ScriptType,
+    path?: (pathParams?: HDStandardPathParams) => Path,
     children?: HDSettings
   }
 }

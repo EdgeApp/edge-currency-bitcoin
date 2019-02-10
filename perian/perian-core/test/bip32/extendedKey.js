@@ -23,14 +23,14 @@ describe(`Testing Extended Key functions`, function () {
     if (test[1].length === 64) xkey = { ...xkey, privateKey: test[1] }
     if (test[1].length === 66) xkey = { ...xkey, publicKey: test[1] }
 
-    it(`Extended key from string: ${test[0]}`, async function () {
-      const resultedXkey = await ExtendedKey.fromString(base58Key, network)
+    it(`Extended key from string: ${test[0]}`, function () {
+      const resultedXkey = ExtendedKey.fromString(base58Key, network)
       assert.deepEqual(resultedXkey, xkey)
     })
 
-    it(`Extended key to string: ${test[1]}`, async function () {
+    it(`Extended key to string: ${test[1]}`, function () {
       if (!xkey.publicKey) xkey = { ...xkey, publicKey: `02${test[1]}` }
-      const resultedBase58Key = await ExtendedKey.toString(xkey, network)
+      const resultedBase58Key = ExtendedKey.toString(xkey, network)
       assert.equal(resultedBase58Key, base58Key)
     })
   })
