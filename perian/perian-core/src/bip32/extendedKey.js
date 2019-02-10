@@ -1,10 +1,13 @@
 // @flow
 
+import { Crypto } from '@perian/core-utils'
+
 import type { DerivedKey } from '../../types/derivedKey.js'
 import type {
   ExtendedKeyPair,
   ExtendedMasterKeys
 } from '../../types/extendedKeys.js'
+import type { KeyPair as KeyPairs } from '../../types/keyPair.js'
 import * as KeyPair from '../commons/keyPair.js'
 import {
   checkVersion,
@@ -12,7 +15,6 @@ import {
   getNetworkForVersion,
   networks
 } from '../commons/network.js'
-import { hash160, publicKeyCreate } from '../utils/crypto.js'
 import { deriveKeyPair, deriveMasterKeyPair } from './derive.js'
 
 const MAX_DEPTH = 0xff
@@ -30,8 +32,15 @@ export const fromHex = (keyHex: string, network?: string): ExtendedKeyPair => {
   }
 }
 
-export const toHex = (hdKey: ExtendedKeyPair, network?: string): string => {
+export const toHex = (
+  hdKey: ExtendedKeyPair,
+  network?: string,
+  forcePublic: boolean = false
+): string => {
   if (network) checkVersion(hdKey.version, network)
+  const { privateKey, publicKey } = hdKey
+  const keyPair: KeyPairs<string> = { publicKey }
+  if (!forcePublic) keyPair.privateKey = privateKey
   return (
     getExtendedKeyVersion(keyPair, network)
       .toString(16)
@@ -40,7 +49,7 @@ export const toHex = (hdKey: ExtendedKeyPair, network?: string): string => {
     hdKey.parentFingerPrint.toString(16).padStart(8, '0') +
     hdKey.childIndex.toString(16).padStart(8, '0') +
     hdKey.chainCode +
-    KeyPair.toHex(hdKey).slice(0, 66)
+    KeyPair.toHex(keyPair).slice(0, 66)
   )
 }
 
@@ -73,9 +82,12 @@ export const fromParent = async (
     if (!parentKeys.privateKey) {
       throw new Error('Cannot create parentFingerPrint without keys')
     }
-    parentKeys.publicKey = await publicKeyCreate(parentKeys.privateKey, true)
+    parentKeys.publicKey = await Crypto.publicKeyCreate(
+      parentKeys.privateKey,
+      true
+    )
   }
-  const parentFingerPrint = await hash160(parentKeys.publicKey)
+  const parentFingerPrint = await Crypto.hash160(parentKeys.publicKey)
   network = network || getNetworkForVersion(parentKeys.version)
 
   return {

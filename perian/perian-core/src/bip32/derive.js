@@ -1,5 +1,7 @@
 // @flow
 
+import { Crypto } from '@perian/core-utils'
+
 import type {
   DerivedKeyPair,
   DerivedMasterKeys,
@@ -7,25 +9,14 @@ import type {
   KeyHmac
 } from '../../types/derivedKey.js'
 import type { KeyPair } from '../../types/keyPair.js'
-import {
-  hmac as Hmac,
-  privateKeyTweakAdd,
-  publicKeyCreate,
-  publicKeyTweakAdd
-} from '../utils/crypto.js'
 
 export const SEED = '426974636f696e2073656564'
-export const ZERO_HEX =
-  '0000000000000000000000000000000000000000000000000000000000000000'
 export const HARDENED = 0x80000000
 export const MAX_INDEX = 0xffffffff
 export const TWEAK_OUT_OF_RANGE_ERROR = 'tweak out of range'
-export const UINT8_ZERO = Buffer.from(ZERO_HEX.slice(0, 2), 'hex')
-export const UINT32_ZERO = Buffer.from(ZERO_HEX.slice(0, 8), 'hex')
-export const UINT256_ZERO = Buffer.from(ZERO_HEX, 'hex')
 
 const hmac = (key: string, data: string): KeyHmac => {
-  const hash = Hmac('sha512', key, data)
+  const hash = Crypto.sha512Hmac(key, data)
   const left = hash.slice(0, 64)
   const right = hash.slice(64, 128)
   return { left, right }
@@ -48,7 +39,7 @@ export const deriveKeyPoint = async (
   } else if (publicKey) {
     key = publicKey
   } else if (privateKey) {
-    key = await publicKeyCreate(privateKey, true)
+    key = await Crypto.publicKeyCreate(privateKey, true)
   } else {
     throw new Error('Cannot derive without keys.')
   }
@@ -71,7 +62,7 @@ export const derivePublic = async (
       index,
       hardened
     )
-    const childKey = await publicKeyTweakAdd(publicKey, tweakPoint, true)
+    const childKey = await Crypto.publicKeyTweakAdd(publicKey, tweakPoint, true)
     return { publicKey: childKey, ...rest }
   } catch (e) {
     if (!e.message.includes(TWEAK_OUT_OF_RANGE_ERROR)) throw e
@@ -94,7 +85,7 @@ export const derivePrivate = async (
       index,
       hardened
     )
-    const childKey = await privateKeyTweakAdd(privateKey, tweakPoint)
+    const childKey = await Crypto.privateKeyTweakAdd(privateKey, tweakPoint)
     return { privateKey: childKey, ...rest }
   } catch (e) {
     if (!e.message.includes(TWEAK_OUT_OF_RANGE_ERROR)) throw e
@@ -111,10 +102,10 @@ export const deriveKeyPair = async (
   const index = hardened ? parseInt(keyIndex.slice(0, -1)) : parseInt(keyIndex)
   const { chainCode, privateKey } = parentKeys
   let publicKey = parentKeys.publicKey
-  if (hardened || index >= HARDENED) {
-    if (!privateKey) {
-      throw new Error('Cannot derive hardened index without a private key.')
-    }
+  if ((hardened || index >= HARDENED) && !privateKey) {
+    throw new Error('Cannot derive hardened index without a private key.')
+  }
+  if (privateKey) {
     const childKey = await derivePrivate(
       privateKey,
       index,
@@ -122,12 +113,15 @@ export const deriveKeyPair = async (
       hardened,
       publicKey
     )
-    const childPublicKey = await publicKeyCreate(childKey.privateKey, true)
+    const childPublicKey = await Crypto.publicKeyCreate(
+      childKey.privateKey,
+      true
+    )
     return { ...childKey, publicKey: childPublicKey }
   }
   if (!publicKey) {
     if (!privateKey) throw new Error('Cannot derive without keys.')
-    publicKey = await publicKeyCreate(privateKey, true)
+    publicKey = await Crypto.publicKeyCreate(privateKey, true)
   }
   return derivePublic(publicKey, index, chainCode, hardened)
 }
@@ -136,6 +130,6 @@ export const deriveMasterKeyPair = async (
   seed: string
 ): Promise<DerivedMasterKeys> => {
   const { left, right } = hmac(seed, SEED)
-  const publicKey = await publicKeyCreate(left, true)
+  const publicKey = await Crypto.publicKeyCreate(left, true)
   return { privateKey: left, publicKey, chainCode: right, childIndex: 0 }
 }

@@ -1,11 +1,8 @@
 // @flow
 
+import { Crypto } from '@perian/core-utils'
+
 import type { KeyPair } from '../../types/keyPair.js'
-import {
-  sign as Sign,
-  verify as Verify,
-  publicKeyCreate
-} from '../utils/crypto.js'
 
 export const fromHex = (keyHex: string): KeyPair<string> => {
   if (keyHex.length !== 66 && keyHex.length !== 132) {
@@ -44,8 +41,7 @@ export const sign = async (
   msg: string
 ): Promise<string> => {
   if (!keyPair.privateKey) throw new Error('Cannot sign without private key.')
-  const signature = await Sign(msg, keyPair.privateKey)
-  return signature
+  return Crypto.sign(msg, keyPair.privateKey)
 }
 
 export const verify = async (
@@ -55,10 +51,10 @@ export const verify = async (
 ): Promise<Boolean> => {
   let publicKey = keyPair.publicKey
   if (!publicKey && keyPair.privateKey) {
-    publicKey = await publicKeyCreate(keyPair.privateKey, true)
+    publicKey = await Crypto.publicKeyCreate(keyPair.privateKey, true)
   } else {
     throw new Error('Cannot verify without keys.')
   }
-  const verified = await Verify(msg, signature, publicKey)
+  const verified = await Crypto.verify(msg, signature, publicKey)
   return verified
 }
