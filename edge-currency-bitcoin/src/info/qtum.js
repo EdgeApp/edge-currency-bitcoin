@@ -1,27 +1,8 @@
 // @flow
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
 import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: NetworkInfo = {
-  type: 'qtum',
-  magic: 0xf1cfa6d3,
-  supportedBips: [44, 32],
-  keyPrefix: {
-    privkey: 0x80,
-    xpubkey: 0x0488b21e,
-    xprivkey: 0x0488ade4,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 2301
-  },
-  addressPrefix: {
-    pubkeyhash: 0x3a,
-    scripthash: 0x32
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'qtum',
@@ -76,4 +57,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/qtum-logo-solo-64.png`
 }
 
-export const qtum = { bcoinInfo, engineInfo, currencyInfo }
+export const qtum = { engineInfo, currencyInfo }

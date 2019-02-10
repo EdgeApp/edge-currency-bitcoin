@@ -1,7 +1,6 @@
 // @flow
 
 import { Buffer } from 'buffer'
-
 import type {
   EdgeCorePluginOptions,
   EdgeCreatePrivateKeyOptions,
@@ -14,26 +13,22 @@ import type {
   EdgeParsedUri,
   EdgeWalletInfo
 } from 'edge-core-js'
-
+import { Commons } from 'perian'
 import {
   CurrencyEngine,
   type EngineCurrencyInfo
 } from '../engine/currencyEngine.js'
-// import { Networks } from '../coinUtils/network.js'
 import {
   addNetwork,
   patchCrypto
 } from '../utils/bcoinExtender/bcoinExtender.js'
 import { getXPubFromSeed, keysFromEntropy } from '../utils/bcoinUtils/key.js'
-import { getNetworkSettings } from '../utils/bcoinUtils/misc.js'
-import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
 import { PluginState } from './pluginState.js'
 import { encodeUri, parseUri } from './uri.js'
 
 export type CurrencyPluginFactorySettings = {
   currencyInfo: EdgeCurrencyInfo,
-  engineInfo: EngineCurrencyInfo,
-  bcoinInfo: NetworkInfo
+  engineInfo: EngineCurrencyInfo
 }
 
 export type CurrencyPluginSettings = {
@@ -129,12 +124,13 @@ export class CurrencyPlugin {
 
   getSplittableTypes (walletInfo: EdgeWalletInfo): Array<string> {
     const { keys: { format = 'bip32' } = {} } = walletInfo
-    const { forks } = getNetworkSettings(this.network)
+    const { forks } = Commons.Network.networks[this.network]
     const bip = parseInt(format.replace('bip', ''))
     return forks
-      .filter(network =>
-        getNetworkSettings(network).supportedBips.includes(bip)
-      )
+      .filter(network => {
+        const networkInfo = Commons.Network.networks[network]
+        return networkInfo && networkInfo.supportedBips.includes(bip)
+      })
       .map(network => `wallet:${network}`)
   }
 
@@ -145,11 +141,11 @@ export class CurrencyPlugin {
 
 export const makeCurrencyPluginFactory = ({
   currencyInfo,
-  engineInfo,
-  bcoinInfo
+  engineInfo
 }: CurrencyPluginFactorySettings) => {
-  addNetwork(bcoinInfo)
-  // Networks[bcoinInfo.type] = { ...bcoinInfo }
+  const network = engineInfo.network
+  const networkInfo = Commons.Network.networks[network]
+  addNetwork(network, networkInfo)
   currencyInfo = {
     walletTypes: [`wallet:${currencyInfo.pluginName}`],
     ...currencyInfo

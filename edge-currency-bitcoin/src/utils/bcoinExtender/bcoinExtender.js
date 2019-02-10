@@ -1,8 +1,8 @@
 // @flow
 
 import bcoin from 'bcoin'
-import type { NetworkInfo } from '../bcoinUtils/types.js'
 import { getHDSettings } from './bips.js'
+import type { FullNetworkInfo } from 'perian'
 import { patchPbkdf2, patchSecp256k1 } from './patchCrypto.js'
 import { patchTransaction } from './replayProtection.js'
 
@@ -14,6 +14,9 @@ export const addNetwork = (networkInfo: NetworkInfo) => {
   if (bcoin.networks.types.indexOf(type) === -1) {
     bcoin.networks.types.push(type)
     const hdSettings = getHDSettings(supportedBips, keyPrefix.coinType)
+export const addNetwork = (network: string, networkInfo: FullNetworkInfo) => {
+  if (bcoin.networks.types.indexOf(network) === -1) {
+    bcoin.networks.types.push(network)
     const scriptTemplates = {
       addresses: [],
       purpose: 0,
@@ -22,10 +25,14 @@ export const addNetwork = (networkInfo: NetworkInfo) => {
       witness: false,
       scriptType: ''
     }
-    bcoin.networks[type] = {
+    bcoin.networks[network] = {
       ...bcoin.networks.main,
       ...networkInfo,
       hdSettings,
+      serializers: {
+        ...networkInfo.serializers,
+        signatureHash: networkInfo.serializers.sigHash
+      },
       scriptTemplates
     }
   }

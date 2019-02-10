@@ -1,31 +1,8 @@
 // @flow
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
 import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: NetworkInfo = {
-  type: 'uniformfiscalobject',
-  magic: 0xfcd9b7dd,
-  supportedBips: [84, 49, 44, 32],
-  keyPrefix: {
-    privkey: 0x9b,
-    xpubkey: 0x0488b21e,
-    xprivkey: 0x0488ade4,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 202
-  },
-  addressPrefix: {
-    pubkeyhash: 0x1b,
-    scripthash: 0x44,
-    scripthashLegacy: 0x05,
-    witnesspubkeyhash: 0x06,
-    witnessscripthash: 0x0a,
-    bech32: 'uf'
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'uniformfiscalobject',
@@ -79,4 +56,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/ufo-logo-solo-64.png`
 }
 
-export const ufo = { bcoinInfo, engineInfo, currencyInfo }
+export const ufo = { engineInfo, currencyInfo }

@@ -1,35 +1,8 @@
 // @flow
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
 import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: NetworkInfo = {
-  type: 'bitcoingoldtestnet',
-  magic: 0x0709110b,
-  supportedBips: [84, 49, 44, 32],
-  keyPrefix: {
-    privkey: 0xef,
-    xpubkey: 0x043587cf,
-    xprivkey: 0x04358394,
-    xpubkey58: 'tpub',
-    xprivkey58: 'tprv',
-    coinType: 156
-  },
-  addressPrefix: {
-    pubkeyhash: 0x6f,
-    scripthash: 0xc4,
-    witnesspubkeyhash: 0x03,
-    witnessscripthash: 0x28,
-    bech32: 'tb'
-  },
-  replayProtection: {
-    SIGHASH_FORKID: 64,
-    forcedMinVersion: 1,
-    forkId: 79
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'bitcoingold',
@@ -92,4 +65,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/bitcoingold-logo-solo-64.png`
 }
 
-export const bitcoingoldTestnet = { bcoinInfo, engineInfo, currencyInfo }
+export const bitcoingoldTestnet = { engineInfo, currencyInfo }

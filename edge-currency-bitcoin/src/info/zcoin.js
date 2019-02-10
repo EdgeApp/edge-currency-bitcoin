@@ -1,27 +1,8 @@
 // @flow
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
 import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: NetworkInfo = {
-  type: 'zcoin',
-  magic: 0xd9b4bef9,
-  supportedBips: [44, 32],
-  keyPrefix: {
-    privkey: 0xd2,
-    xpubkey: 0x0488b21e,
-    xprivkey: 0x0488ade4,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 136
-  },
-  addressPrefix: {
-    pubkeyhash: 0x52,
-    scripthash: 0x7
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'zcoin',
@@ -76,4 +57,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/zcoin-logo-solo-64.png`
 }
 
-export const zcoin = { bcoinInfo, engineInfo, currencyInfo }
+export const zcoin = { engineInfo, currencyInfo }

@@ -1,27 +1,8 @@
 // @flow
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { NetworkInfo } from '../utils/bcoinUtils/types.js'
 import type { EdgeCurrencyInfo } from '../utils/flowTypes.js'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: NetworkInfo = {
-  type: 'dash',
-  magic: 0xd9b4bef9,
-  supportedBips: [44, 32],
-  keyPrefix: {
-    privkey: 0xcc,
-    xpubkey: 0x02fe52cc,
-    xprivkey: 0x02fe52f8,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 5
-  },
-  addressPrefix: {
-    pubkeyhash: 0x4c,
-    scripthash: 0x10
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'dash',
@@ -79,4 +60,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/dash-logo-solo-64.png`
 }
 
-export const dash = { bcoinInfo, engineInfo, currencyInfo }
+export const dash = { engineInfo, currencyInfo }
