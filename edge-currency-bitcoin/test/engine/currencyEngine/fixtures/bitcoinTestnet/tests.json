@@ -31,11 +31,11 @@
     }
   },
   "BlockHeight": {
-    "uri": "https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY",
+    "uri": "https://api.blockcypher.com/v1/btc/test3",
     "defaultHeight": 1286739
   },
   "FreshAddress": {
-    "uri": "https://api.blocktrail.com/v1/tBTC/address/"
+    "uri": "https://api.blockcypher.com/v1/btc/test3/addrs/"
   },
   "ChangeSettings": {
     "electrumServers": ["electrum://testnet.qtornado.com:51001"],
