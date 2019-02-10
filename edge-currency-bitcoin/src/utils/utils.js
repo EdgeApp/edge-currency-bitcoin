@@ -5,6 +5,7 @@
 
 import { getLock } from './bcoinUtils/misc.js'
 import { validate } from 'jsonschema'
+import type { DiskletFolder } from 'disklet'
 
 export const base64regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
 
@@ -50,8 +51,8 @@ export function promiseAny (promises: Array<Promise<any>>): Promise<any> {
   })
 }
 
-export function saveCache (folder: any, id: string) {
-  const saveCacheLock = new utils.Lock()
+export function saveCache (folder: DiskletFolder, id: string) {
+  const saveCacheLock = getLock()
   return async (
     fileName: string,
     cacheDirty: boolean,
