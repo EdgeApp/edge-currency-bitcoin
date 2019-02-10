@@ -8,9 +8,9 @@ import type {
 import * as KeyPair from '../commons/keyPair.js'
 import {
   checkVersion,
-  getNetwork,
-  getSerializer,
-  getVersion
+  getExtendedKeyVersion,
+  getNetworkForVersion,
+  networks
 } from '../commons/network.js'
 import { hash160, publicKeyCreate } from '../utils/crypto.js'
 import { deriveKeyPair, deriveMasterKeyPair } from './derive.js'
@@ -33,7 +33,9 @@ export const fromHex = (keyHex: string, network?: string): ExtendedKeyPair => {
 export const toHex = (hdKey: ExtendedKeyPair, network?: string): string => {
   if (network) checkVersion(hdKey.version, network)
   return (
-    hdKey.version.toString(16).padStart(8, '0') +
+    getExtendedKeyVersion(keyPair, network)
+      .toString(16)
+      .padStart(8, '0') +
     hdKey.depth.toString(16).padStart(2, '0') +
     hdKey.parentFingerPrint.toString(16).padStart(8, '0') +
     hdKey.childIndex.toString(16).padStart(8, '0') +
@@ -42,20 +44,21 @@ export const toHex = (hdKey: ExtendedKeyPair, network?: string): string => {
   )
 }
 
-export const fromString = async (
+export const fromString = (
   hdKey: string,
-  network?: string
-): Promise<ExtendedKeyPair> => {
-  const keyHex = await getSerializer(network, 'xkey').decode(hdKey)
+  network: string = 'main'
+): ExtendedKeyPair => {
+  const keyHex = networks[network].serializers.xkey.decode(hdKey)
   return fromHex(keyHex, network)
 }
 
-export const toString = async (
+export const toString = (
   hdKey: ExtendedKeyPair,
-  network?: string
-): Promise<string> => {
-  const keyHex = toHex(hdKey, network)
-  return getSerializer(network, 'xkey').encode(keyHex)
+  network: string = 'main',
+  forcePublic: boolean = false
+): string => {
+  const keyHex = toHex(hdKey, network, forcePublic)
+  return networks[network].serializers.xkey.encode(keyHex)
 }
 
 export const fromParent = async (
@@ -73,12 +76,12 @@ export const fromParent = async (
     parentKeys.publicKey = await publicKeyCreate(parentKeys.privateKey, true)
   }
   const parentFingerPrint = await hash160(parentKeys.publicKey)
-  network = network || getNetwork(parentKeys.version)
+  network = network || getNetworkForVersion(parentKeys.version)
 
   return {
     ...derivedKey,
-    parentFingerPrint: parseInt(parentFingerPrint.slice(0, 4)),
-    version: getVersion(derivedKey, network),
+    parentFingerPrint: parseInt(parentFingerPrint.slice(0, 8), 16),
+    version: getExtendedKeyVersion(derivedKey, network),
     depth: parentKeys.depth + 1
   }
 }
@@ -91,7 +94,7 @@ export const fromSeed = async (
   return {
     ...masterKeyPair,
     parentFingerPrint: 0,
-    version: getVersion(masterKeyPair, network),
+    version: getExtendedKeyVersion(masterKeyPair, network),
     depth: 0
   }
 }
