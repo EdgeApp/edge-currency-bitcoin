@@ -3,9 +3,7 @@
  * @flow
  */
 
-import crypto from 'crypto'
-
-import { utils } from 'bcoin'
+import { getLock } from './bcoinUtils/misc.js'
 import { validate } from 'jsonschema'
 
 export const base64regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
@@ -36,33 +34,8 @@ export const hexToVarByte = (hex: string) => {
   return hexLen + hex
 }
 
-export async function hash256 (hex: any) {
-  return Promise.resolve(hash256Sync(hex))
-}
-
-export function hash256Sync (hex: any) {
-  return crypto
-    .createHash('sha256')
-    .update(hex)
-    .digest()
-}
-
-export async function hash160 (hex: any) {
-  return Promise.resolve(
-    crypto
-      .createHash('ripemd160')
-      .update(await hash256(hex))
-      .digest()
-  )
-}
-
-export function reverseBufferToHex (rawBuffer: any) {
-  return rawBuffer
-    .toString('hex')
-    .match(/../g)
-    .reverse()
-    .join('')
-}
+export const reverseHexString = (hexString: string) =>
+  (hexString.match(/../g) || []).reverse().join('')
 
 /**
  * Waits for the first successful promise.
