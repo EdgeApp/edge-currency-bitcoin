@@ -1,5 +1,5 @@
 {
-  "name": "@perian/core",
+  "name": "perian",
   "version": "0.0.1",
   "description": "",
   "license": "SEE LICENSE IN LICENSE",
@@ -16,17 +16,31 @@
     "precommit": "lint-staged && npm test && npm run build",
     "flow": "flow status",
     "format": "import-sort -l --write '*.js' 'src/**/*.js' 'test/**/*.js'; prettier-eslint --write '*.js' 'src/**/*.js' 'test/**/*.js'",
-    "lint": "eslint '*.js' 'src/**/*.js' 'test/**/*.js' && npm run flow",
+    "lint": "eslint '*.js' && npm run flow",
     "prepare": "npm run build",
     "security": "yarn audit",
-    "pretest": "npm run build:test",
-    "test": "nyc mocha --require source-map-support/register build/tests.cjs.js --reporter mocha-multi-reporters --reporter-options configFile=./mocha-config.json",
-    "posttest": "nyc report --reporter=cobertura --reporter=html",
     "updot": "updot"
   },
   "dependencies": {
+    "@perian/core": "0.0.1",
     "@perian/core-utils": "0.0.1",
-    "@perian/network-info": "0.0.1"
+    "@perian/network-info": "0.0.1",
+    "@perian/network-bitcoin": "0.0.1",
+    "@perian/network-bitcoincash": "0.0.1",
+    "@perian/network-bitcoinsv": "0.0.1",
+    "@perian/network-dash": "0.0.1",
+    "@perian/network-digibyte": "0.0.1",
+    "@perian/network-dogecoin": "0.0.1",
+    "@perian/network-eboost": "0.0.1",
+    "@perian/network-feathercoin": "0.0.1",
+    "@perian/network-bitcoingold": "0.0.1",
+    "@perian/network-groestlcoin": "0.0.1",
+    "@perian/network-litecoin": "0.0.1",
+    "@perian/network-qtum": "0.0.1",
+    "@perian/network-smartcash": "0.0.1",
+    "@perian/network-uniformfiscalobject": "0.0.1",
+    "@perian/network-vertcoin": "0.0.1",
+    "@perian/network-zcoin": "0.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",
