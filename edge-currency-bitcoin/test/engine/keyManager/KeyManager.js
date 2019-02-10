@@ -3,18 +3,12 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
+// eslint-disable-next-line no-unused-vars
+import * as Factories from '../../../src/index.js'
 import { KeyManager } from '../../../src/engine/keyManager.js'
-// InfoFiles for networks
-import { bitcoin } from '../../../src/info/bitcoin.js'
-import { bitcoincash } from '../../../src/info/bitcoincash.js'
-// Bcoin extender function
-import { addNetwork } from '../../../src/utils/bcoinExtender/bcoinExtender.js'
 import fixtures from './fixtures.json'
 
 // Add network to bcoin
-addNetwork(bitcoin.bcoinInfo)
-addNetwork(bitcoincash.bcoinInfo)
-
 for (const fixture of fixtures) {
   describe(`Key Manager for ${fixture.network}`, function () {
     let keyManager
@@ -35,14 +29,9 @@ for (const fixture of fixtures) {
         const seed = keyManager.getSeed()
         assert.equal(seed, options.seed)
         assert.equal(pubSeed, options.rawKeys.master.xpub)
-        const masterKeyChildren = keyManager.masterKey.children
-        for (const path in masterKeyChildren) {
-          const childKey = masterKeyChildren[path]
-          const addressKeys = childKey.children
-          for (const addressKeyPath in addressKeys) {
-            const addressKey = addressKeys[addressKeyPath]
-            assert.equal(Object.keys(addressKey.children).length, 10)
-          }
+        for (const path in keyManager.addressesMap) {
+          const addresses = keyManager.addressesMap[path]
+          assert.equal(Object.keys(addresses).length, 10)
         }
       })
     })

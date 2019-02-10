@@ -49,11 +49,11 @@
         "nativeAmount": "123456789000",
         "currencyCode": "BTC"
       }],
-      "uri address with amount, label & message": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.56789&label=Johnny%20Bitcoin&message=Hello%20World,%20I%20miss%20you%20!", {
+      "uri address with amount, label & notes": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.56789&label=Johnny%20Bitcoin&message=Hello%20World,%20I%20miss%20you%20!", {
         "publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX",
         "metadata": {
           "name": "Johnny Bitcoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "BTC"
@@ -189,11 +189,11 @@
         "nativeAmount": "123456789000",
         "currencyCode": "LTC"
       }],
-      "uri address with amount, label & message": ["litecoin:LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T?amount=1234.56789&label=Johnny%20Litecoin&message=Hello%20World,%20I%20miss%20you%20!", {
+      "uri address with amount, label & notes": ["litecoin:LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T?amount=1234.56789&label=Johnny%20Litecoin&message=Hello%20World,%20I%20miss%20you%20!", {
         "publicAddress": "LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T",
         "metadata": {
           "name": "Johnny Litecoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "LTC"
@@ -230,11 +230,11 @@
         "currencyCode": "LTC",
         "legacyAddress": "3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN"
       }],
-      "legacy uri address with amount, label & message": ["litecoin:3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN?amount=1234.56789&label=Johnny%20Litecoin&message=Hello%20World,%20I%20miss%20you%20!", {
+      "legacy uri address with amount, label & notes": ["litecoin:3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN?amount=1234.56789&label=Johnny%20Litecoin&message=Hello%20World,%20I%20miss%20you%20!", {
         "publicAddress": "MLh6oJm8tWbTNKTXpiREMoAMqE3CbYzgi6",
         "metadata": {
           "name": "Johnny Litecoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "LTC",
@@ -368,11 +368,11 @@
         "nativeAmount": "123456789000",
         "currencyCode": "BCH"
       }],
-      "uri address with amount, label & message": ["bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a?amount=1234.56789&label=Johnny%20BitcoinCash&message=Hello%20World,%20I%20miss%20you%20!", {
+      "uri address with amount, label & notes": ["bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a?amount=1234.56789&label=Johnny%20BitcoinCash&message=Hello%20World,%20I%20miss%20you%20!", {
         "publicAddress": "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a",
         "metadata": {
           "name": "Johnny BitcoinCash",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "BCH"
@@ -409,11 +409,11 @@
         "currencyCode": "BCH",
         "legacyAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu"
       }],
-      "legacy uri address with amount, label & message": ["bitcoincash:1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu?amount=1234.56789&label=Johnny%20BitcoinCash&message=Hello%20World,%20I%20miss%20you%20!", {
+      "legacy uri address with amount, label & notes": ["bitcoincash:1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu?amount=1234.56789&label=Johnny%20BitcoinCash&message=Hello%20World,%20I%20miss%20you%20!", {
         "publicAddress": "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a",
         "metadata": {
           "name": "Johnny BitcoinCash",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "BCH",
@@ -531,11 +531,11 @@
         "nativeAmount": "123456789000",
         "currencyCode": "XZC"
       }],
-      "uri address with amount, label & message": ["zcoin:aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty?amount=1234.56789&label=Johnny%20Zcoin&message=Hello%20World,%20I%20miss%20you%20!", {
+      "uri address with amount, label & notes": ["zcoin:aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty?amount=1234.56789&label=Johnny%20Zcoin&message=Hello%20World,%20I%20miss%20you%20!", {
         "publicAddress": "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty",
         "metadata": {
           "name": "Johnny Zcoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "XZC"
@@ -654,11 +654,11 @@
         "nativeAmount": "123456789000",
         "currencyCode": "FTC"
       }],
-      "uri address with amount, label & message": ["feathercoin:6fLKmA19ESYgg5HPq9q3UvY3EJ6HThr5DD?amount=1234.56789&label=Johnny%20feathercoin&message=Hello%20World,%20I%20miss%20you%20!", {
+      "uri address with amount, label & notes": ["feathercoin:6fLKmA19ESYgg5HPq9q3UvY3EJ6HThr5DD?amount=1234.56789&label=Johnny%20feathercoin&message=Hello%20World,%20I%20miss%20you%20!", {
         "publicAddress": "6fLKmA19ESYgg5HPq9q3UvY3EJ6HThr5DD",
         "metadata": {
           "name": "Johnny feathercoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "FTC"
@@ -776,11 +776,11 @@
         "nativeAmount": "123456789000",
         "currencyCode": "SMART"
       }],
-      "uri address with amount, label & message": ["smartcash:ScZ5enspA3DpbSkX1SYxkCLyu8gh4qzTWH?amount=1234.56789&label=Johnny%20smartcash&message=Hello%20World,%20I%20miss%20you%20!", {
+      "uri address with amount, label & notes": ["smartcash:ScZ5enspA3DpbSkX1SYxkCLyu8gh4qzTWH?amount=1234.56789&label=Johnny%20smartcash&message=Hello%20World,%20I%20miss%20you%20!", {
         "publicAddress": "ScZ5enspA3DpbSkX1SYxkCLyu8gh4qzTWH",
         "metadata": {
           "name": "Johnny smartcash",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "SMART"
@@ -890,11 +890,11 @@
         "nativeAmount": "123456789000",
         "currencyCode": "GRS"
       }],
-      "uri address with amount, label & message": ["groestlcoin:3933BTHZdySDxk7PBqtPjARNfcj1ULbatY?amount=1234.56789&label=Johnny%20groestlcoin&message=Hello%20World,%20I%20miss%20you%20!", {
+      "uri address with amount, label & notes": ["groestlcoin:3933BTHZdySDxk7PBqtPjARNfcj1ULbatY?amount=1234.56789&label=Johnny%20groestlcoin&message=Hello%20World,%20I%20miss%20you%20!", {
         "publicAddress": "3933BTHZdySDxk7PBqtPjARNfcj1ULbatY",
         "metadata": {
           "name": "Johnny groestlcoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "GRS"
