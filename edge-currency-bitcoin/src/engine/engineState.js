@@ -1,9 +1,9 @@
 // @flow
 
+import type { HDKey } from 'perian'
 import type { DiskletFolder } from 'disklet'
 import type { EdgeIo } from 'edge-core-js'
 import EventEmitter from 'eventemitter3'
-import stable from 'stable'
 import { parse } from 'uri-js'
 
 import { type PluginState } from '../plugin/pluginState.js'
@@ -205,7 +205,7 @@ export class EngineState extends EventEmitter {
       path,
       redeemScript
     }
-    this.scriptHashes[displayAddress] = scriptHash
+
     this.refreshAddressInfo(scriptHash)
 
     this.dirtyAddressCache()
@@ -229,10 +229,10 @@ export class EngineState extends EventEmitter {
     }
   }
 
-  async saveKeys (keys: any) {
+  async saveKeys (keys: HDKey) {
     try {
-      const json = JSON.stringify({ keys: keys })
-      await this.encryptedLocalFolder.file(this.keysFile).setText(json)
+      const keysText = JSON.stringify(keys)
+      await this.encryptedLocalFolder.file(this.keysFile).setText(keysText)
       console.log(`${this.walletId}: Saved keys cache`)
     } catch (e) {
       console.log(`${this.walletId}: ${e.toString()}`)
@@ -244,9 +244,9 @@ export class EngineState extends EventEmitter {
       const keysCacheText = await this.encryptedLocalFolder
         .file(this.keysFile)
         .getText()
-      const keysCacheJson = JSON.parse(keysCacheText)
+      const keysCacheJson: HDKey = JSON.parse(keysCacheText)
       // TODO: Validate JSON
-      return keysCacheJson.keys
+      return keysCacheJson
     } catch (e) {
       console.log(`${this.walletId}: ${e.toString()}`)
       return null
@@ -373,6 +373,7 @@ export class EngineState extends EventEmitter {
       'engineState.addressCache': this.addressCache,
       'engineState.addressInfos': this.addressInfos,
       'engineState.scriptHashes': this.scriptHashes,
+      'engineState.scriptHashesMap': this.scriptHashesMap,
       'engineState.usedAddresses': this.usedAddresses,
       'engineState.txCache': this.txCache,
       'engineState.txHeightCache': this.txHeightCache,
@@ -415,6 +416,7 @@ export class EngineState extends EventEmitter {
     this.addressCache = {}
     this.addressInfos = {}
     this.scriptHashes = {}
+    this.scriptHashesMap = {}
     this.usedAddresses = {}
     this.txCache = {}
     this.parsedTxs = {}
@@ -742,17 +744,9 @@ export class EngineState extends EventEmitter {
       }
     }
 
-    const priorityAddressList = stable(
-      Object.keys(this.addressInfos),
-      (address1: string, address2: string) => {
-        return (
-          (this.addressInfos[address1].used ? 1 : 0) >
-          (this.addressInfos[address2].used ? 1 : 0)
-        )
-      }
-    )
     // Subscribe to addresses:
-    for (const address of priorityAddressList) {
+    const addresses = Object.keys(this.addressInfos)
+    for (const address of addresses) {
       const addressState = serverState.addresses[address]
       if (!addressState.subscribed && !addressState.subscribing) {
         addressState.subscribing = true
@@ -856,6 +850,10 @@ export class EngineState extends EventEmitter {
       if (!cacheJson.heights) throw new Error('Missing heights in cache')
 
       // Update the cache:
+      if (cacheJson.scriptHashes) this.scriptHashes = cacheJson.scriptHashes
+      if (cacheJson.scriptHashesMap) {
+        this.scriptHashesMap = cacheJson.scriptHashesMap
+      }
       this.addressCache = cacheJson.addresses
       this.txHeightCache = cacheJson.heights
 
@@ -872,7 +870,6 @@ export class EngineState extends EventEmitter {
         const address = this.addressCache[scriptHash]
         for (const txid of address.txids) this.handleNewTxid(txid)
         for (const utxo of address.utxos) this.handleNewTxid(utxo.txid)
-        this.scriptHashes[address.displayAddress] = scriptHash
         this.refreshAddressInfo(scriptHash)
       }
     } catch (e) {
@@ -888,6 +885,7 @@ export class EngineState extends EventEmitter {
     this.addressCache = {}
     this.addressInfos = {}
     this.scriptHashes = {}
+    this.scriptHashesMap = {}
     this.usedAddresses = {}
     this.txCache = {}
     this.parsedTxs = {}
@@ -910,6 +908,8 @@ export class EngineState extends EventEmitter {
       this.addressCacheDirty,
       'address',
       {
+        scriptHashes: this.scriptHashes,
+        scriptHashesMap: this.scriptHashesMap,
         addresses: this.addressCache,
         heights: this.txHeightCache
       }
