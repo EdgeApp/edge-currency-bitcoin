@@ -6,9 +6,11 @@ const main = {
     coinType: 145
   },
   addressPrefix: {
-    pubkeyhash: 0x00,
-    scripthash: 0x05,
     cashAddress: 'bitcoincash'
+  },
+  legacyAddressPrefix: {
+    pubkeyhash: 0x00,
+    scripthash: 0x05
   },
   replayProtection: {
     forkSighash: 0x40,

@@ -3,9 +3,12 @@
   "version": "0.0.1",
   "description": "groestlcoin network plugin",
   "author": "thehobbit85",
-  "files": [ "index.js" ],
+  "files": [
+    "src/*",
+    "index.js"
+  ],
   "dependencies": {
-    "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
-    "bs58grscheck": "https://github.com/Groestlcoin/bs58grscheck"
+    "@perian/core-utils": "0.0.1",
+    "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild"
   }
 }

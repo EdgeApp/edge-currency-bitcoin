@@ -1,5 +1,17 @@
+const { Crypto, Base } = require('@perian/core-utils')
 const bcoin = require('bcoin')
-const bs58grscheck = require('bs58grscheck')
+const groestl = require('./src/groestl.js')
+
+const groestl2hash = str => {
+  str = Buffer.from(str, 'hex')
+  let a = groestl(str, 1, 1)
+  a = groestl(a, 1, 1)
+  a = a.slice(0, 32)
+  return Buffer.from(a).toString('hex')
+}
+
+const { createHexEncoder, base } = Base
+const bs58grscheck = createHexEncoder(base['58'], groestl2hash).check
 
 const isBech32 = address => {
   try {
@@ -13,22 +25,12 @@ const isBech32 = address => {
 const base58 = {
   decode: (address) => {
     if (isBech32(address)) return address
-    const payload = bs58grscheck.decode(address)
-    const bw = new bcoin.utils.StaticWriter(payload.length + 4)
-    bw.writeBytes(payload)
-    bw.writeChecksum()
-    return bcoin.utils.base58.encode(bw.render())
+    return bs58grscheck.decode(address).toString('hex')
   },
   encode: (address) => {
     if (isBech32(address)) return address
-    const payload = bcoin.utils.base58.decode(address)
-    return bs58grscheck.encode(payload.slice(0, -4))
+    return bs58grscheck.encode(Buffer.from(address))
   }
-}
-
-const sha256 = (rawTx) => {
-  const buf = Buffer.from(rawTx, 'hex')
-  return bcoin.crypto.digest.sha256(buf)
 }
 
 const main = {
@@ -50,8 +52,8 @@ const main = {
   serializers: {
     address: base58,
     wif: base58,
-    txHash: (rawTx) => sha256(rawTx).toString('hex'),
-    signatureHash: sha256
+    txHash: Crypto.sha256,
+    sigHash: buf => Buffer.from(Crypto.sha256(buf.toString('hex')), 'hex')
   }
 }
 

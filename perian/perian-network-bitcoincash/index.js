@@ -49,6 +49,10 @@ const main = {
   addressPrefix: {
     cashAddress: 'bitcoincash'
   },
+  legacyAddressPrefix: {
+    pubkeyhash: 0x00,
+    scripthash: 0x05
+  },
   replayProtection: {
     forkSighash: 0x40,
     forcedMinVersion: 1
@@ -69,9 +73,11 @@ const testnet = {
     coinType: 1
   },
   addressPrefix: {
-    pubkeyhash: 0x6f,
-    scripthash: 0xc4,
     cashAddress: 'bchtest'
+  },
+  legacyAddressPrefix: {
+    pubkeyhash: 0x6f,
+    scripthash: 0xc4
   }
 }
 

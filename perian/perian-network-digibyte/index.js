@@ -14,10 +14,12 @@ const main = {
   addressPrefix: {
     pubkeyhash: 0x1e,
     scripthash: 0x3f,
-    scripthashLegacy: 0x05,
     witnesspubkeyhash: 0x06,
     witnessscripthash: 0x0a,
     bech32: 'dgb'
+  },
+  legacyAddressPrefix: {
+    scripthash: 0x05
   }
 }
 

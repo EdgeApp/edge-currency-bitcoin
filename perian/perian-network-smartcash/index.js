@@ -1,24 +1,9 @@
-const bs58sc = require('bs58smartcheck')
-const bcoin = require('bcoin')
+const sha3 = require('js-sha3').keccak256
+const { Crypto, Base } = require('@perian/core-utils')
 
-const base58 = {
-  decode: (address) => {
-    const payload = bs58sc.decode(address)
-    const bw = new bcoin.utils.StaticWriter(payload.length + 4)
-    bw.writeBytes(payload)
-    bw.writeChecksum()
-    return bcoin.utils.base58.encode(bw.render())
-  },
-  encode: (address) => {
-    const payload = bcoin.utils.base58.decode(address)
-    return bs58sc.encode(payload.slice(0, -4))
-  }
-}
-
-const sha256 = (rawTx) => {
-  const buf = Buffer.from(rawTx, 'hex')
-  return bcoin.crypto.digest.sha256(buf)
-}
+const { createHexEncoder, base } = Base
+const sha3Hash = Crypto.digest(() => sha3)
+const bs58sc = createHexEncoder(base['58'], sha3Hash).check
 
 const main = {
   magic: 0x5ca1ab1e,
@@ -36,10 +21,10 @@ const main = {
     scripthash: 0x12
   },
   serializers: {
-    address: base58,
-    wif: base58,
-    txHash: (rawTx) => sha256(rawTx).toString('hex'),
-    signatureHash: sha256
+    address: bs58sc,
+    wif: bs58sc,
+    txHash: Crypto.sha256,
+    sigHash: str => Buffer.from(Crypto.sha256(str.toString('hex')), 'hex')
   }
 }
 

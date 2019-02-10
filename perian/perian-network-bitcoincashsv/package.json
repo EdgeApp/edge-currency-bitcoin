@@ -1,7 +1,0 @@
-{
-  "name": "@perian/network-bitcoincashsv",
-  "version": "0.0.1",
-  "description": "bitcoincashsv network plugin",
-  "author": "thehobbit85",
-  "files": [ "index.js" ]
-}

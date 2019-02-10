@@ -5,7 +5,7 @@
   "author": "thehobbit85",
   "files": [ "index.js" ],
   "dependencies": {
-    "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
-    "bs58smartcheck": "^2.0.4"
+    "js-sha3": "^0.6.1",
+    "@perian/core-utils": "0.0.1"
   }
 }

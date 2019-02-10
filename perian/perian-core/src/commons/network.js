@@ -1,60 +1,16 @@
 // @flow
 
-import type { Base } from '../../types/base.js'
-import type { NetworkInfo, NetworkInfos } from '../../types/network.js'
-import { base } from '../utils/base.js'
-import { hash256 } from '../utils/crypto.js'
+import { main, testnet } from '@perian/network-info'
+import type { NetworkInfos } from '@perian/network-info'
 
-const bs58check = base['58'].check
+import type { HDPath, HDStandardPathParams } from '../../types/hd.js'
+import type { FullNetworkInfos } from '../../types/network.js'
+import { fromBips, fromSettings } from '../bip44/paths.js'
 
-const main: NetworkInfo = {
-  magic: 0xd9b4bef9,
-  supportedBips: [44, 32],
-  forks: [],
-  keyPrefix: {
-    privkey: 0x80,
-    xpubkey: 0x0488b21e,
-    xprivkey: 0x0488ade4,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 0
-  },
-  addressPrefix: {
-    pubkeyhash: 0x00,
-    scripthash: 0x05
-  },
-  replayProtection: {
-    forkSighash: 0x00,
-    forcedMinVersion: 0,
-    forkId: 0
-  },
-  serializers: {
-    address: bs58check,
-    wif: bs58check,
-    xkey: bs58check,
-    txHash: hash256,
-    sigHash: hash256
-  }
+export const networks: FullNetworkInfos = {
+  main: { ...main, hdSettings: fromBips(main.supportedBips) },
+  testnet: { ...testnet, hdSettings: fromBips(testnet.supportedBips) }
 }
-
-const testnet: NetworkInfo = {
-  ...main,
-  magic: 0x0709110b,
-  keyPrefix: {
-    privkey: 0xef,
-    xpubkey: 0x043587cf,
-    xprivkey: 0x04358394,
-    xpubkey58: 'tpub',
-    xprivkey58: 'tprv',
-    coinType: 1
-  },
-  addressPrefix: {
-    pubkeyhash: 0x6f,
-    scripthash: 0xc4
-  }
-}
-
-export const Networks: NetworkInfos = { main, testnet }
 
 export const addNetworks = (networks: { [network: string]: NetworkInfos }) => {
   for (const network in networks) {
@@ -65,7 +21,7 @@ export const addNetworks = (networks: { [network: string]: NetworkInfos }) => {
 export const addNetwork = (network: string, infos: NetworkInfos = {}) => {
   for (const netType in infos) {
     const newInfo = infos[netType]
-    const baseInfo = Networks[netType]
+    const baseInfo = networks[netType]
     const mergedInfo = {}
     for (const setting in baseInfo) {
       const baseSetting = baseInfo[setting]
@@ -84,33 +40,30 @@ export const addNetwork = (network: string, infos: NetworkInfos = {}) => {
         mergedInfo[setting] = baseSetting
       }
     }
+    mergedInfo.hdSettings = fromBips(mergedInfo.supportedBips)
+
+    for (const setting in newInfo) {
+      if (!mergedInfo[setting]) mergedInfo[setting] = newInfo[setting]
+    }
+
     let name = network
     if (netType !== 'main') name += netType.toLowerCase()
-    Object.assign(Networks, { [name]: mergedInfo })
+    Object.assign(networks, { [name]: mergedInfo })
   }
 }
 
-export const getVersion = (
+export const getExtendedKeyVersion = (
   hdKey: { privateKey?: any, publicKey?: any },
   network: string = 'main'
 ) => {
-  const { keyPrefix = {} } = Networks[network]
+  const { keyPrefix = {} } = networks[network]
   if (hdKey.privateKey) return keyPrefix.xprivkey
   if (hdKey.publicKey) return keyPrefix.xpubkey
   throw new Error("Can't get version without a key")
 }
 
-export const getSerializer = (
-  network: string = 'main',
-  type?: string
-): Base => {
-  if (!type) return bs58check
-  const { serializers = {} } = Networks[network] || {}
-  return serializers[type] || bs58check
-}
-
-export const getNetwork = (version: number): string => {
-  for (const network in Networks) {
+export const getNetworkForVersion = (version: number): string => {
+  for (const network in networks) {
     try {
       checkVersion(version, network)
       return network
@@ -119,12 +72,52 @@ export const getNetwork = (version: number): string => {
   throw new Error('Unknown network version')
 }
 
+export const getHDPaths = (
+  network: string = 'main',
+  pathParams: HDStandardPathParams = {}
+): Array<HDPath> => {
+  return fromSettings(networks[network].hdSettings, pathParams)
+}
+
 export const checkVersion = (version: number, network: string = 'main') => {
-  const { keyPrefix = {} } = Networks[network]
+  const { keyPrefix = {} } = networks[network]
   if (version) {
     for (const prefix in keyPrefix) {
       if (keyPrefix[prefix] === version) return version
     }
     throw new Error('Wrong key prefix for network')
   }
+}
+
+export const getPrefixType = (prefixNum: number, network: string = 'main') => {
+  const getPrefix = addressPrefix => {
+    for (const prefixType in addressPrefix) {
+      if (addressPrefix[prefixType] === prefixNum) {
+        return prefixType
+      }
+    }
+    return null
+  }
+  const { addressPrefix, legacyAddressPrefix } = networks[network]
+  const type = getPrefix(addressPrefix) || getPrefix(legacyAddressPrefix)
+
+  if (!type) {
+    throw new Error(`Unknown prefix ${prefixNum} for network ${network}`)
+  }
+  return type
+}
+
+export const getPrefixNum = (type: string, network: string = 'main') => {
+  const { addressPrefix, legacyAddressPrefix } = networks[network]
+  const cashAddress = addressPrefix.cashAddress
+  return !cashAddress ? addressPrefix[type] : legacyAddressPrefix[type]
+}
+
+export const getDefaultScriptType = (network: string = 'main'): string => {
+  const { hdSettings, supportedBips } = networks[network]
+  for (const bip of supportedBips) {
+    const scriptType = hdSettings[`${bip}'`].scriptType
+    if (scriptType) return scriptType
+  }
+  return 'P2PKH'
 }

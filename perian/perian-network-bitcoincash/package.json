@@ -5,7 +5,6 @@
   "author": "thehobbit85",
   "files": [ "index.js" ],
   "dependencies": {
-    "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
-    "bs58grscheck": "https://github.com/Groestlcoin/bs58grscheck"
+    "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild"
   }
 }
