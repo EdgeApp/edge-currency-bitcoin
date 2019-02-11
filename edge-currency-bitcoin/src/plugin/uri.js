@@ -1,5 +1,6 @@
 // @flow
 
+import { Commons } from 'perian'
 import { bns } from 'biggystring'
 import type {
   EdgeCurrencyInfo,
@@ -13,35 +14,27 @@ import {
   dirtyAddress,
   sanitizeAddress,
   toNewFormat,
-  validAddress
+  getAddressPrefix,
+  isLegacy
 } from '../utils/addressFormat/addressFormatIndex.js'
-import { verifyWIF } from '../utils/bcoinUtils/key.js'
 import { verifyUriProtocol } from '../utils/bcoinUtils/misc.js'
 
 const parsePathname = (pathname: string, network: string) => {
-  // Check if the pathname type is a wif
   try {
-    verifyWIF(pathname, network)
+    // Check if the pathname type is a wif
+    Commons.KeyPair.privateFromWIF(pathname, network)
     return { privateKeys: [pathname] }
   } catch (e) {}
-  // If the pathname is non of the above, then assume it's an address and check for validity
-  const parsedAddress = {}
-  let address = pathname
-  let legacyAddress = ''
-  address = dirtyAddress(address, network)
-  if (validAddress(address, network)) {
-    parsedAddress.publicAddress = address
-  } else {
-    address = sanitizeAddress(address, network)
-    legacyAddress = address
-    address = toNewFormat(address, network)
-    if (!validAddress(address, network)) {
-      throw new Error('InvalidPublicAddressError')
+  if (getAddressPrefix(pathname, network)) {
+    return { publicAddress: dirtyAddress(pathname, network) }
+  } else if (isLegacy(pathname, network)) {
+    return {
+      publicAddress: toNewFormat(pathname, network),
+      legacyAddress: pathname
     }
-    parsedAddress.publicAddress = address
-    parsedAddress.legacyAddress = legacyAddress
+  } else {
+    throw new Error('InvalidPublicAddressError')
   }
-  return parsedAddress
 }
 
 export const parseUri = (
@@ -96,16 +89,9 @@ export const encodeUri = (
   network: string,
   { pluginName, currencyCode, denominations }: EdgeCurrencyInfo
 ): string => {
-  const { legacyAddress, publicAddress } = obj
-  let address = publicAddress
-  if (
-    legacyAddress &&
-    validAddress(toNewFormat(legacyAddress, network), network)
-  ) {
-    address = legacyAddress
-  } else if (publicAddress && validAddress(publicAddress, network)) {
-    address = dirtyAddress(publicAddress, network)
-  } else {
+  const { publicAddress, legacyAddress } = obj
+  const address = legacyAddress || publicAddress
+  if (!getAddressPrefix(address, network) && !isLegacy(address, network)) {
     throw new Error('InvalidPublicAddressError')
   }
   // $FlowFixMe

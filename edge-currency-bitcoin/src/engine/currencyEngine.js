@@ -21,7 +21,7 @@ import { InfoServer } from '../info/constants'
 import { PluginState } from '../plugin/pluginState.js'
 import {
   toLegacyFormat,
-  validAddress
+  getAddressPrefix
 } from '../utils/addressFormat/addressFormatIndex.js'
 import * as Address from '../utils/bcoinUtils/address.js'
 import { scriptTypesToEdgeTypes } from '../utils/bcoinUtils/misc.js'
@@ -156,10 +156,10 @@ export class CurrencyEngine {
     await this.engineState.load()
 
     const keys = this.walletInfo.keys || {}
-    const { coinType = -1 } = keys
+    const { coinType = 0 } = keys
     const seed = keys[`${this.network}Key`]
     const xpub = keys[`${this.network}Xpub`]
-    const base58Key = await this.engineState.loadKeys()
+    const masterKey = await this.engineState.loadKeys()
 
     console.log(
       `${this.walletId} - Created Wallet for Currency Plugin ${
@@ -170,12 +170,13 @@ export class CurrencyEngine {
     this.keyManager = new KeyManager({
       seed,
       xpub,
-      base58Key,
+      masterKey,
       coinType,
       gapLimit: this.engineInfo.gapLimit,
       network: this.network,
       addressInfos: this.engineState.addressInfos,
       scriptHashes: this.engineState.scriptHashes,
+      scriptHashesMap: this.engineState.scriptHashesMap,
       txInfos: this.engineState.parsedTxs
     })
 
@@ -413,7 +414,10 @@ export class CurrencyEngine {
     const scriptHashPromises = addresses.map(address => {
       const scriptHash = this.engineState.scriptHashes[address]
       if (typeof scriptHash === 'string') return Promise.resolve(scriptHash)
-      else return Address.addressToScriptHash(address, this.network)
+      else {
+        const rawAddress = Address.fromBaseString(address, this.network)
+        return Address.toScriptHash(rawAddress)
+      }
     })
     Promise.all(scriptHashPromises)
       .then((scriptHashs: Array<string>) => {
@@ -424,7 +428,7 @@ export class CurrencyEngine {
   }
 
   isAddressUsed (address: string, options: any): boolean {
-    if (!validAddress(address, this.network)) {
+    if (!getAddressPrefix(address, this.network)) {
       throw new Error('Wrong formatted address')
     }
     for (const scriptHash in this.engineState.addressInfos) {

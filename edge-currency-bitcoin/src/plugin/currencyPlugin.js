@@ -13,7 +13,7 @@ import type {
   EdgeParsedUri,
   EdgeWalletInfo
 } from 'edge-core-js'
-import { Commons } from 'perian'
+import { Commons, Bip32 } from 'perian'
 import {
   CurrencyEngine,
   type EngineCurrencyInfo
@@ -22,7 +22,7 @@ import {
   addNetwork,
   patchCrypto
 } from '../utils/bcoinExtender/bcoinExtender.js'
-import { getXPubFromSeed, keysFromEntropy } from '../utils/bcoinUtils/key.js'
+import { seedToHex, keysFromEntropy } from '../utils/bcoinUtils/key.js'
 import { PluginState } from './pluginState.js'
 import { encodeUri, parseUri } from './uri.js'
 
@@ -88,14 +88,12 @@ export class CurrencyPlugin {
   async derivePublicKey (walletInfo: EdgeWalletInfo) {
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
     const network = this.network
-    const { coinType = -1 } = walletInfo.keys
     const seed = walletInfo.keys[`${network}Key`] || ''
     if (!seed) throw new Error('InvalidKeyName')
-    const xpub = await getXPubFromSeed({
-      seed,
-      network,
-      coinType
-    })
+    const { fromSeed, toString } = Bip32.ExtendedKey
+    const hexSeed = seedToHex(seed, network)
+    const keyPair = await fromSeed(hexSeed, network)
+    const xpub = toString(keyPair, network, true)
     return { ...walletInfo.keys, [`${network}Xpub`]: xpub }
   }
 
