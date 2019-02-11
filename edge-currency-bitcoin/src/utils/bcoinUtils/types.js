@@ -1,88 +1,28 @@
 // @flow
 
-export type BcoinHDPrivateKey = Object | null
-export type BcoinHDPublicKey = Object
-export type Base58String = string
-export type ScriptType = string
-export type RawTx = string
-export type BlockHeight = number
-export type Txid = string
-export type HDKeyType = 'privateKey' | 'publicKey' | 'address'
-export type Addresses = { [path: string]: string }
+import type { KeyPair, ScriptType } from 'perian'
 
-export type ReplayProtection = {
-  SIGHASH_FORKID: number,
-  forcedMinVersion: number,
-  forkId: number
-}
-export type KeyPrefix = {
-  privkey: number,
-  xpubkey: number,
-  xprivkey: number,
-  xpubkey58: string,
-  xprivkey58: string,
-  coinType: number
-}
-
-export type AddressPrefix = {
-  pubkeyhash: number,
-  scripthash: number,
-  cashAddress?: string,
-  pubkeyhashLegacy?: number,
-  scripthashLegacy?: number,
-  witnesspubkeyhash?: number,
-  witnessscripthash?: number,
-  bech32?: string
-}
-
-export type NetworkInfo = {
+export type EdgeAddress = { [scriptType: ScriptType]: string }
+export type RawAddress = {
   type: string,
-  magic: number,
-  supportedBips: Array<number>,
-  keyPrefix: KeyPrefix,
-  addressPrefix: AddressPrefix,
-  forks?: Array<string>,
-  replayProtection?: ReplayProtection
+  hash: string,
+  version: number
 }
-
 export type Address = {
-  displayAddress: Base58String,
+  displayAddress: string,
   scriptHash: string,
   redeemScript?: string
 }
+export type Addresses = { [path: string]: Address }
+export type AddressesMap = { [parentPath: string]: Addresses }
+export type ScriptHashMap = { [parentPath: string]: Array<string> }
 
-export type Base58KeyPair = {
-  priv?: Base58String,
-  pub: Base58String
+export type ScriptTypeSettings = {
+  type: string,
+  version: number,
+  getHash: (data: string) => string,
+  getData: (k?: KeyPair<string>, s?: string) => string
 }
-
-export type BcoinHDKeyPair = {
-  priv?: BcoinHDPrivateKey,
-  pub: BcoinHDPublicKey
-}
-
-export type HDSettings = {
-  [path: string]: {
-    keyType: HDKeyType,
-    getPath?: (...settings: any) => string,
-    scriptType?: ScriptType,
-    children?: HDSettings
-  }
-}
-
-export type KeyTree<KeyPair> = {
-  key?: KeyPair,
-  keyType: HDKeyType,
-  path: string,
-  children: { [childRelativePath: string]: KeyTree<KeyPair> },
-  address?: Address,
-  scriptType?: ScriptType
-}
-
-export type HDKey = KeyTree<BcoinHDKeyPair>
-export type HDMasterKey = { key: BcoinHDKeyPair } & HDKey
-export type Base58Key = KeyTree<Base58KeyPair>
-export type KeyPair = Base58KeyPair | BcoinHDKeyPair
 
 export type Script = {
   type: string,
@@ -103,14 +43,14 @@ export type StandardOutput = {
 export type Utxo = {
   tx: any,
   index: number,
-  height?: BlockHeight
+  height?: number
 }
 
 export type TxOptions = {
   utxos?: Array<Utxo>,
   setRBF?: boolean,
-  RBFraw?: RawTx,
-  CPFP?: Txid,
+  RBFraw?: string,
+  CPFP?: string,
   CPFPlimit?: number,
   selection?: string,
   subtractFee?: boolean
@@ -123,28 +63,19 @@ export type CreateTxOptions = {
   changeAddress: string,
   network: string,
   outputs?: Array<StandardOutput>,
-  height?: BlockHeight,
+  height?: number,
   estimate?: Function,
   txOptions: TxOptions
 }
 
-export type NetworkSettings = {
-  hdSettings: HDSettings,
-  scriptTemplates: Object,
-  forks: Array<string>,
-  supportedBips: Array<number>,
-  serializers: Object,
-  addressPrefix: AddressPrefix,
-  keyPrefix: KeyPrefix
-}
-
-export type KeySettings = {
-  seed: string,
-  network: string,
-  account: number,
-  coinType: number
-}
 export type BcoinHDConf = {
   nested: boolean,
   witness: boolean
 }
+
+export type KeyRings = Array<{
+  publicKey: string,
+  scriptType: ScriptType,
+  privateKey?: string,
+  redeemScript?: string
+}>

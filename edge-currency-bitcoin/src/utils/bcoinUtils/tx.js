@@ -1,15 +1,24 @@
 // @flow
 
-import { consensus, networks, primitives, script } from 'bcoin'
+import type { KeyRings, CreateTxOptions, Utxo } from './types.js'
+
+import bcoin from 'bcoin'
+import { Utils, Commons } from 'perian'
+import { fromBaseString, toScript } from './address.js'
 import {
+  getAddressPrefix,
   toLegacyFormat,
   toNewFormat
 } from '../addressFormat/addressFormatIndex.js'
-import { hash256Sync, reverseBufferToHex } from '../utils.js'
-import { getNetworkSettings } from './misc.js'
-import type { CreateTxOptions, Utxo } from './types.js'
+import { reverseHexString } from '../utils.js'
 
-const witScale = consensus.WITNESS_SCALE_FACTOR
+const { KeyRing } = bcoin.primitives
+const Script = bcoin.script
+
+const { MTX, Coin, TX } = bcoin.primitives
+
+const { networks } = Commons.Network
+const witScale = 4
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
 
 export const sumUtxos = (utxos: Array<Utxo>) =>
@@ -33,18 +42,10 @@ export const createTX = async ({
     setRBF = false
   }
 }: CreateTxOptions) => {
-  const { addressPrefix, serializers } = getNetworkSettings(network)
-  // Convert an address to the correct format that bcoin supports
-  const toBcoinFormat = (address: string, network: string): string => {
-    if (serializers.address) address = serializers.address.decode(address)
-    else if (addressPrefix.cashAddress) {
-      address = toLegacyFormat(address, network)
-    } else address = toNewFormat(address, network)
-    return primitives.Address.fromString(address, network)
-  }
+  const { serializers } = networks[network]
 
   // Create the Mutable Transaction
-  const mtx = new primitives.MTX()
+  const mtx = new MTX()
 
   // Check for CPFP condition
   if (CPFP !== '') {
@@ -73,25 +74,28 @@ export const createTX = async ({
   }
 
   // Add the outputs
-  outputs.forEach(({ address, value }) => {
-    const bcoinAddress = toBcoinFormat(address, network)
-    const addressScript = script.fromAddress(bcoinAddress)
+  outputs.forEach(async ({ address, value }) => {
+    const addressScript = toScript(fromBaseString(address, network))
     mtx.addOutput(addressScript, value)
   })
 
   // Create coins
   const coins = utxos.map(({ tx, index, height }) => {
-    const coin = primitives.Coin.fromTX(tx, index, height)
-    if (serializers.txHash) {
-      coin.hash = serializers.txHash(tx.toNormal().toString('hex'))
-    }
+    const coin = Coin.fromTX(tx, index, height)
+    coin.hash = serializers.txHash(tx.toNormal().toString('hex'))
     return coin
   })
+  const type = getAddressPrefix(changeAddress, network)
+  if (type === 'cashAddress') {
+    changeAddress = toNewFormat(changeAddress, network)
+  } else {
+    changeAddress = toLegacyFormat(changeAddress, network)
+  }
 
   // Try to fund the transaction
   await mtx.fund(coins, {
     selection,
-    changeAddress: toBcoinFormat(changeAddress, network),
+    changeAddress,
     subtractFee,
     height,
     rate,
@@ -121,29 +125,31 @@ export const createTX = async ({
 
 export const verifyTxAmount = (
   rawTx: string,
-  bcoinTx: any = primitives.TX.fromRaw(rawTx, 'hex')
+  bcoinTx: any = TX.fromRaw(rawTx, 'hex')
 ) =>
   filterOutputs(bcoinTx.outputs).find(({ value }) => parseInt(value) <= 0)
     ? false
     : bcoinTx
 
-export const parseTransaction = (
-  rawTx: string,
-  bcoinTx: any = primitives.TX.fromRaw(rawTx, 'hex')
-): any =>
-  !bcoinTx.outputs.forEach(output => {
-    output.scriptHash = reverseBufferToHex(hash256Sync(output.script.toRaw()))
-  }) && bcoinTx
+export const parseTransaction = (rawTx: string, bcoinTx?: Object): Object => {
+  if (!bcoinTx) bcoinTx = TX.fromRaw(rawTx, 'hex')
+  bcoinTx.outputs.forEach(output => {
+    const outputHex = output.script.toRaw().toString('hex')
+    const scriptHash = Utils.Crypto.sha256(outputHex)
+    output.scriptHash = reverseHexString(scriptHash)
+  })
+  return bcoinTx
+}
 
 // Creates a Bcoin Transaction instance from a static JSON object
 export const parseJsonTransaction = (txJson: Object): Object => {
   // Create a bcoin transaction instance. At this stage it WON'T contain the utxo information for the inputs
-  const bcoinTx = primitives.MTX.fromJSON(txJson)
+  const bcoinTx = MTX.fromJSON(txJson)
   // Import all the 'coins' (utxos) from txJson
   for (const input of txJson.inputs) {
     // Create a bcoin Coin Object from the input's coin and prevout
     const opts = Object.assign({}, input.coin, input.prevout)
-    const bcoinCoin = primitives.Coin.fromJSON(opts)
+    const bcoinCoin = Coin.fromJSON(opts)
     // Add the `Coin` (UTXO) to the transaction's view (where a bcoin TX/MTX Object keeps it's `Coins`)
     bcoinTx.view.addCoin(bcoinCoin)
   }
@@ -163,7 +169,6 @@ export const sumTransaction = (
   let value = 0
   let output = null
   let type = null
-  const { serializers } = getNetworkSettings(network)
   // Process tx outputs
   const outputsLength = bcoinTransaction.outputs.length
   for (let i = 0; i < outputsLength; i++) {
@@ -176,9 +181,6 @@ export const sumTransaction = (
     value = output.value
     try {
       address = toNewFormat(output.address, network)
-      address = serializers.address
-        ? serializers.address.encode(address)
-        : address
     } catch (e) {
       console.log(e)
       if (value <= 0) {
@@ -210,9 +212,6 @@ export const sumTransaction = (
         output = prevoutBcoinTX.outputs[index].getJSON(network)
         value = output.value
         address = toNewFormat(output.address, network)
-        address = serializers.address
-          ? serializers.address.encode(address)
-          : address
         totalInputAmount += value
         if (engineState.scriptHashes[address]) {
           nativeAmount -= value
@@ -240,24 +239,33 @@ export const getReceiveAddresses = (
     return toNewFormat(address, network)
   })
 
-export const sign = (
+export const sign = async (
   tx: any,
-  keys: Array<any>,
+  keys: KeyRings,
   network: string
-): Promise<{ txid: string, signedTx: string }> =>
-  Promise.resolve(tx.template(keys))
-    .then(() => {
-      tx.network = network
-      return tx.sign(keys, networks[network].replayProtection)
-    })
-    .then(() => {
-      const { serializers } = getNetworkSettings(network)
-      if (serializers.txHash) {
-        tx._hash = serializers.txHash(tx.toNormal().toString('hex'))
-      }
-      const txid = tx.rhash()
-      return { txid, signedTx: tx.toRaw().toString('hex') }
-    })
+): Promise<{ txid: string, signedTx: string }> => {
+  const keyRings = keys.map(
+    ({ privateKey, publicKey, redeemScript, scriptType }) =>
+      KeyRing.fromOptions({
+        network,
+        key: Buffer.from(privateKey || publicKey, 'hex'),
+        nested: scriptType === 'P2WPKH-P2SH',
+        witness: scriptType.includes('P2WPKH'),
+        script: redeemScript && Script.fromString(redeemScript),
+        compressed:
+          publicKey.length === 66 &&
+          publicKey[0] === '0' &&
+          (publicKey[1] === '2' || publicKey[1] === '3')
+      })
+  )
+  await tx.template(keyRings)
+  tx.network = network
+  await tx.sign(keyRings, networks[network].replayProtection)
+  const { serializers } = networks[network]
+  const txHash = serializers.txHash(tx.toNormal().toString('hex'))
+  const txid = reverseHexString(txHash)
+  return { txid, signedTx: tx.toRaw().toString('hex') }
+}
 
 export const estimateSize = (scriptType: string, prev: any) => {
   const address = prev.getAddress()

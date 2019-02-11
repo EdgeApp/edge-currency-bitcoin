@@ -1,38 +1,26 @@
 // @flow
 
-import { networks, utils } from 'bcoin'
+import { Commons } from 'perian'
+import bcoin from 'bcoin'
 import type { EdgeFreshAddress } from 'edge-core-js'
-import type { Addresses, BcoinHDConf, NetworkSettings } from './types.js'
+import type { EdgeAddress } from './types.js'
 
-export const scriptTypeToBcoin = (
-  scriptType?: string = 'P2PKH'
-): BcoinHDConf => ({
-  nested: scriptType === 'P2WPKH-P2SH',
-  witness: scriptType === 'P2WPKH-P2SH' || scriptType === 'P2WPKH'
-})
+const { networks } = Commons.Network
+const { Lock } = bcoin.utils
 
 export const scriptTypesToEdgeTypes = (
-  addresses: Addresses
+  addresses: EdgeAddress
 ): EdgeFreshAddress => ({
   publicAddress: addresses['P2PKH'],
   segwitAddress: addresses['P2WPKH'] || addresses['P2WPKH-P2SH']
 })
-
-export const defaultScriptType = (network: string): string => {
-  const { hdSettings, supportedBips } = getNetworkSettings(network)
-  for (const bip of supportedBips) {
-    const scriptType = hdSettings[`${bip}`].scriptType
-    if (scriptType) return scriptType
-  }
-  return 'P2PKH'
-}
 
 export const verifyUriProtocol = (
   protocol: string | null,
   network: string,
   pluginName: string
 ) => {
-  const { addressPrefix } = getNetworkSettings(network)
+  const { addressPrefix } = networks[network]
   if (protocol) {
     const prot = protocol.replace(':', '').toLowerCase()
     return prot === pluginName || prot === addressPrefix.cashAddress
@@ -40,25 +28,4 @@ export const verifyUriProtocol = (
   return true
 }
 
-export const getLock = () => new utils.Lock()
-
-export const getNetworkSettings = (network: string): NetworkSettings => {
-  const {
-    hdSettings,
-    scriptTemplates,
-    forks = [],
-    supportedBips = [],
-    serializers = {},
-    keyPrefix,
-    addressPrefix
-  } = networks[network] || {}
-  return {
-    hdSettings,
-    scriptTemplates,
-    forks,
-    supportedBips,
-    serializers,
-    keyPrefix,
-    addressPrefix
-  }
-}
+export const getLock = () => new Lock()

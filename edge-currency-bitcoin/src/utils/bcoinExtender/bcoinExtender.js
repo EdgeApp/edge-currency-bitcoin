@@ -1,7 +1,6 @@
 // @flow
 
 import bcoin from 'bcoin'
-import { getHDSettings } from './bips.js'
 import type { FullNetworkInfo } from 'perian'
 import { patchPbkdf2, patchSecp256k1 } from './patchCrypto.js'
 import { patchTransaction } from './replayProtection.js'
@@ -9,11 +8,6 @@ import { patchTransaction } from './replayProtection.js'
 let cryptoReplaced = false
 patchTransaction(bcoin)
 
-export const addNetwork = (networkInfo: NetworkInfo) => {
-  const { supportedBips, keyPrefix, type } = networkInfo
-  if (bcoin.networks.types.indexOf(type) === -1) {
-    bcoin.networks.types.push(type)
-    const hdSettings = getHDSettings(supportedBips, keyPrefix.coinType)
 export const addNetwork = (network: string, networkInfo: FullNetworkInfo) => {
   if (bcoin.networks.types.indexOf(network) === -1) {
     bcoin.networks.types.push(network)
@@ -28,7 +22,6 @@ export const addNetwork = (network: string, networkInfo: FullNetworkInfo) => {
     bcoin.networks[network] = {
       ...bcoin.networks.main,
       ...networkInfo,
-      hdSettings,
       serializers: {
         ...networkInfo.serializers,
         signatureHash: networkInfo.serializers.sigHash
