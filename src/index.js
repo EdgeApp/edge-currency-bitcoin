@@ -19,6 +19,7 @@ import { smartcash } from './info/smartcash'
 import { eboost } from './info/eboost'
 import { bitcoinsv } from './info/bitcoinsv'
 import { groestlcoin } from './info/groestlcoin'
+import { argentum } from './info/argentum'
 
 export const bitcoinCurrencyPluginFactory = makeCurrencyPluginFactory(bitcoin)
 export const bitcoinTestnetCurrencyPluginFactory = makeCurrencyPluginFactory(
@@ -57,3 +58,4 @@ export const bitcoinsvCurrencyPluginFactory = makeCurrencyPluginFactory(
 export const groestlcoinCurrencyPluginFactory = makeCurrencyPluginFactory(
   groestlcoin
 )
+export const argentumCurrencyPluginFactory = makeCurrencyPluginFactory(argentum)
