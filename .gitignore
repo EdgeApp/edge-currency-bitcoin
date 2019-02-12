@@ -1,13 +1,15 @@
+# Settings
 **/.idea/
 **/.vscode/settings.json
+**/.DS_Store
+**/.favorites.json
+# Build
 **/.nyc_output
 **/build
 **/coverage
 **/lib
 **/libtest
 **/node_modules
-**/.favorites.json
-**/.DS_Store
 **/lerna-debug.log
 **/npm-debug.log
 **/yarn-error.log

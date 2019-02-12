@@ -1,31 +1,16 @@
-import babel from 'rollup-plugin-babel'
-import flowEntry from 'rollup-plugin-flow-entry'
-import json from 'rollup-plugin-json'
-
-import repoPackageJson from '../package.json'
+// import resolve from 'rollup-plugin-node-resolve'
+// import commonjs from 'rollup-plugin-commonjs'
+import { createRollupConfig } from '../rollupConfig.js'
 import packageJson from './package.json'
 
-const babelOptions = {
-  babelrc: false,
-  presets: ['@babel/preset-flow'],
-  plugins: ['@babel/plugin-proposal-object-rest-spread']
-}
+// Normal build:
+const nodeConfig = createRollupConfig('./src/index.js', packageJson, '..')
 
-export default {
-  external: [
-    ...Object.keys(packageJson.dependencies),
-    ...Object.keys(packageJson.devDependencies),
-    ...Object.keys(repoPackageJson.devDependencies),
-    'buffer',
-    'crypto',
-    'events',
-    'net',
-    'tls'
-  ],
-  input: './src/index.js',
-  output: [
-    { file: packageJson.main, format: 'cjs', sourcemap: true },
-    { file: packageJson.module, format: 'es', sourcemap: true }
-  ],
-  plugins: [json(), babel(babelOptions), flowEntry()]
-}
+// React Native build:
+const output = { file: './lib/index.react.js', format: 'cjs', sourcemap: true }
+const external = nodeConfig.external.filter(dep => dep !== 'perian')
+
+const plugins = [...nodeConfig.plugins]
+const reactConfig = { ...nodeConfig, output, external, plugins }
+
+export default [nodeConfig, reactConfig]

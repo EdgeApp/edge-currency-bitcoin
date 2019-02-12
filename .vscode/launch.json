@@ -1,0 +1,100 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "perian-core-utils",
+      "outFiles": ["${workspaceFolder}/perian/perian-core-utils/build/tests.cjs.js"],
+      "program": "${workspaceFolder}/perian/perian-core-utils/node_modules/.bin/_mocha",
+      "args": [
+        "--require",
+        "source-map-support/register",
+        "${workspaceFolder}/perian/perian-core-utils/build/tests.cjs.js",
+        "--reporter",
+        "mocha-multi-reporters",
+        "--reporter-options",
+        "configFile=${workspaceFolder}/perian/perian-core-utils/mocha-config.json",
+        "-u",
+        "tdd",
+        "--timeout",
+        "999999",
+        "--colors",
+        "${workspaceFolder}/perian/perian-core-utils/build/tests.cjs.js"
+      ],
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "edge-currency-bitcoin",
+      "outFiles": ["${workspaceFolder}/edge-currency-bitcoin/build/tests.cjs.js"],
+      "program": "${workspaceFolder}/edge-currency-bitcoin/node_modules/.bin/_mocha",
+      "args": [
+        "--require",
+        "source-map-support/register",
+        "${workspaceFolder}/edge-currency-bitcoin/build/tests.js",
+        "--reporter",
+        "mocha-multi-reporters",
+        "--reporter-options",
+        "configFile=${workspaceFolder}/edge-currency-bitcoin/mocha-config.json",
+        "-u",
+        "tdd",
+        "--timeout",
+        "999999",
+        "--colors",
+        "${workspaceFolder}/edge-currency-bitcoin/build/tests.js"
+      ],
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "perian-core",
+      "outFiles": ["${workspaceFolder}/perian/perian-core/build/tests.cjs.js"],
+      "program": "${workspaceFolder}/perian/perian-core/node_modules/.bin/_mocha",
+      "args": [
+        "--require",
+        "source-map-support/register",
+        "${workspaceFolder}/perian/perian-core/build/tests.cjs.js",
+        "--reporter",
+        "mocha-multi-reporters",
+        "--reporter-options",
+        "configFile=${workspaceFolder}/perian/perian-core/mocha-config.json",
+        "-u",
+        "tdd",
+        "--timeout",
+        "999999",
+        "--colors",
+        "${workspaceFolder}/perian/perian-core/build/tests.cjs.js"
+      ],
+      "internalConsoleOptions": "openOnSessionStart"
+    },
+    
+
+    {
+      "type": "node",
+      "request": "attach",
+      // "cwd": "${workspaceFolder}/perian/perian-core-utils/",
+      // "outFiles": ["${cwd}/build/"],
+      "sourceMaps": true,
+      // "console": "integratedTerminal",
+      "outFiles": [
+        "${workspaceFolder}/perian/perian-core-utils/build/**/*.js"
+      ],
+      // "protocol": "inspector",
+      "name": "Attach",
+      "port": 9229
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Program",
+      "program": "${file}"
+    }
+  ]
+}

@@ -62,7 +62,7 @@ export const getAddressPrefix = (
 
   if (prefixes.cashAddress) {
     try {
-      cashAddressToHash(displayAddress)
+      cashAddressToHash(dirtyAddress(displayAddress, network))
       return 'cashAddress'
     } catch (e) {}
   }
