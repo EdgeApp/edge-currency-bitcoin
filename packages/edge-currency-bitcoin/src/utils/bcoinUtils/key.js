@@ -13,15 +13,14 @@ const { Mnemonic } = bcoin.hd
 export const parseSeed = (seed: string) =>
   base64regex.test(seed) ? Buffer.from(seed, 'base64').toString('hex') : seed
 
-export const seedToHex = (seed: string, network: string): string => {
+export const seedToHex = async (seed: string, network: string): Promise<string> => {
   if (base64regex.test(seed)) {
     const res = Buffer.from(seed, 'base64').toString('hex')
     return res
   } else {
-    const res = Mnemonic.fromPhrase(seed)
-      .toSeed()
-      .toString('hex')
-    return res
+    const rawSeed = Mnemonic.fromPhrase(seed)
+    const hex = await rawSeed.toSeed()
+    return hex.toString('hex')
   }
 }
 

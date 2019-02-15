@@ -151,7 +151,7 @@ export class KeyManager extends EventEmitter {
       if (this.seed === '') {
         throw new Error("Can't init wallet without private key")
       }
-      const hexSeed = Key.seedToHex(this.seed, this.network)
+      const hexSeed = await Key.seedToHex(this.seed, this.network)
       this.masterKey = await HDKey.fromSeed(hexSeed, this.network)
     }
     this.masterKey = await HDKey.fromHDPaths(

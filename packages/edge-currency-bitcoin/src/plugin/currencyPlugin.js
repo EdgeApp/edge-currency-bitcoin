@@ -89,7 +89,7 @@ export class CurrencyPlugin {
     const seed = walletInfo.keys[`${network}Key`] || ''
     if (!seed) throw new Error('InvalidKeyName')
     const { fromSeed, toString } = Bip32.ExtendedKey
-    const hexSeed = seedToHex(seed, network)
+    const hexSeed = await seedToHex(seed, network)
     const keyPair = await fromSeed(hexSeed, network)
     const xpub = toString(keyPair, network, true)
     return { ...walletInfo.keys, [`${network}Xpub`]: xpub }

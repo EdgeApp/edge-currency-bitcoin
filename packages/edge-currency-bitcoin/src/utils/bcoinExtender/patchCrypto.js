@@ -16,23 +16,21 @@ const patchSecp256k1 = function (secp256k1) {
 
 const patchPbkdf2 = function (pbkdf2) {
   if (!patched['pbkdf2'] && pbkdf2) {
-    const privateKey = bcoin.hd.PrivateKey.prototype
-    privateKey.fromMnemonic = async function (mnemonic, network) {
-      const passphrase = mnemonic.passphrase
+    const mnemonic = bcoin.hd.Mnemonic.prototype
 
-      const phrase = nfkd(mnemonic.getPhrase())
+    mnemonic.toSeed = function (passphrase) {
+      if (!passphrase) passphrase = this.passphrase
+      this.passphrase = passphrase
+
+      const phrase = nfkd(this.getPhrase())
       const passwd = nfkd('mnemonic' + passphrase)
 
-      let derived = await pbkdf2.deriveAsync(
+      return pbkdf2.deriveAsync(
         Buffer.from(phrase, 'utf8'),
         Buffer.from(passwd, 'utf8'),
-        2048,
-        64,
-        'sha512'
-      )
-      derived = Buffer.from(derived)
-      return this.fromSeed(derived, network)
+        2048, 64, 'sha512')
     }
+
     patched['pbkdf2'] = true
   }
 }
