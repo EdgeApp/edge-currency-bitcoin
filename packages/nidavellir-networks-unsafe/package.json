@@ -1,6 +1,6 @@
 {
   "name": "@nidavellir/networks-unsafe",
-  "version": "0.0.1",
+  "version": "3.8.0-alpha.0",
   "description": "",
   "license": "SEE LICENSE IN LICENSE",
   "author": "thehobbit85",
@@ -21,10 +21,10 @@
     "updot": "updot"
   },
   "dependencies": {
-    "js-sha3": "^0.6.1",
     "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
     "bs58grscheck": "https://github.com/Groestlcoin/bs58grscheck",
-    "bs58smartcheck": "^2.0.4"
+    "bs58smartcheck": "^2.0.4",
+    "js-sha3": "^0.6.1"
   },
   "peerDependencies": {
     "nidavellir": "3.8.0-alpha.0"
@@ -60,9 +60,9 @@
     "rollup": "0.64.0",
     "rollup-plugin-alias": "^1.4.0",
     "rollup-plugin-babel": "^4.0.1",
-    "rollup-plugin-json": "^3.1.0",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-flow-entry": "^0.2.0",
+    "rollup-plugin-json": "^3.1.0",
     "rollup-plugin-multi-entry": "^2.0.2",
     "rollup-plugin-node-resolve": "^3.4.0",
     "source-map-support": "^0.5.9",
