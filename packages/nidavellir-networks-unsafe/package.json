@@ -27,7 +27,7 @@
     "bs58smartcheck": "^2.0.4"
   },
   "peerDependencies": {
-    "nidavellir": "0.0.1"
+    "nidavellir": "3.8.0-alpha.0"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",
