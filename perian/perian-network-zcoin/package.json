@@ -1,7 +1,0 @@
-{
-  "name": "@perian/network-zcoin",
-  "version": "0.0.1",
-  "description": "zcoin network plugin",
-  "author": "thehobbit85",
-  "files": [ "index.js" ]
-}

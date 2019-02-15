@@ -1,7 +1,0 @@
-{
-  "name": "@perian/network-digibyte",
-  "version": "0.0.1",
-  "description": "digibyte network plugin",
-  "author": "thehobbit85",
-  "files": [ "index.js" ]
-}

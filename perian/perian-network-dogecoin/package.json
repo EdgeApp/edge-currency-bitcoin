@@ -1,7 +1,0 @@
-{
-  "name": "@perian/network-dogecoin",
-  "version": "0.0.1",
-  "description": "dogecoin network plugin",
-  "author": "thehobbit85",
-  "files": [ "index.js" ]
-}

@@ -1,7 +1,0 @@
-{
-  "name": "@perian/network-qtum",
-  "version": "0.0.1",
-  "description": "qtum network plugin",
-  "author": "thehobbit85",
-  "files": [ "index.js" ]
-}
