@@ -8,7 +8,10 @@ import type { RawAddress, Address } from './types.js'
 import { reverseHexString } from '../utils.js'
 import { defaultScriptTypes } from './scriptTypes.js'
 import { dirtyAddress } from '../addressFormat/addressFormatIndex.js'
-import { cashAddressToHash, toCashAddress } from '../addressFormat/cashAddress.js'
+import {
+  cashAddressToHash,
+  toCashAddress
+} from '../addressFormat/cashAddress.js'
 
 const networks = Core.Networks
 const { bech32 } = bcoin.utils

@@ -24,7 +24,10 @@ import {
   getAddressPrefix
 } from '../utils/addressFormat/addressFormatIndex.js'
 import * as Address from '../utils/bcoinUtils/address.js'
-import { scriptTypesToEdgeTypes, formatToBips } from '../utils/bcoinUtils/misc.js'
+import {
+  scriptTypesToEdgeTypes,
+  formatToBips
+} from '../utils/bcoinUtils/misc.js'
 import * as PaymentRequest from '../utils/bcoinUtils/paymentRequest.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
 import type { TxOptions } from '../utils/bcoinUtils/types.js'

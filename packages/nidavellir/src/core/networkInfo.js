@@ -1,10 +1,15 @@
 // @flow
 
 import type { HDPath, HDStandardPathParams } from '../../types/bip44.js'
-import type { NetworkInfo, NetworkInfos, PartialInfo, NewNetworks } from '../../types/core.js'
+import type {
+  NetworkInfo,
+  NetworkInfos,
+  NewNetworks,
+  PartialInfo
+} from '../../types/core.js'
 import { fromBips, fromSettings } from '../bip44/paths.js'
-import * as Networks from '../networks/networks.js'
 import { main } from '../networks/baseInfo.js'
+import * as Networks from '../networks/networks.js'
 
 export const createInfo = (info: PartialInfo): NetworkInfo => {
   const newNetwork: NetworkInfo = ({}: any)

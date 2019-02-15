@@ -8,6 +8,7 @@ import * as Address from '../utils/bcoinUtils/address.js'
 import * as Key from '../utils/bcoinUtils/key.js'
 import * as Misc from '../utils/bcoinUtils/misc.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
+import { isEmptyObject } from '../utils/utils.js'
 import type {
   Address as AddressObj,
   ScriptHashMap,
@@ -81,8 +82,8 @@ export class KeyManager extends EventEmitter {
     gapLimit = GAP_LIMIT,
     network,
     addressInfos = {},
-    scriptHashes,
-    scriptHashesMap,
+    scriptHashes = {},
+    scriptHashesMap = {},
     txInfos = {},
     bips = []
   }: KeyManagerOptions) {
@@ -101,7 +102,11 @@ export class KeyManager extends EventEmitter {
     // Get Settings for this network
     // TODO - Get custom scriptTemplates
     // const { scriptTemplates } = NetworkInfo.networks[network]
-    this.hdPaths = NetworkInfo.getHDPaths({ account, coinType }, this.network, bips)
+    this.hdPaths = NetworkInfo.getHDPaths(
+      { account, coinType },
+      this.network,
+      bips
+    )
     // this.scriptTemplates = scriptTemplates
     // Create a lock for when deriving addresses
     this.writeLock = Misc.getLock()
@@ -113,8 +118,10 @@ export class KeyManager extends EventEmitter {
     this.scriptHashes = scriptHashes
     // Helper map from path to script hash
     this.scriptHashesMap = scriptHashesMap
-
-    if (!this.scriptHashesMap || !this.scriptHashes) {
+    if (
+      isEmptyObject(this.scriptHashesMap) ||
+      isEmptyObject(this.scriptHashes)
+    ) {
       for (const scriptHash in this.addressInfos) {
         const address = this.addressInfos[scriptHash]
         const { displayAddress, path } = address

@@ -1,8 +1,8 @@
 // @flow
 
 import type { NetworkInfo } from '../../types/core.js'
-import { base } from '../utils/base.js'
 import { fromBips } from '../bip44/paths.js'
+import { base } from '../utils/base.js'
 import { hash256 } from '../utils/hash.js'
 
 export const main: NetworkInfo = {
