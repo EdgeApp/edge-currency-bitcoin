@@ -2,16 +2,13 @@
 
 import { Buffer } from 'buffer'
 import bcoin from 'bcoin'
-import { Utils } from 'perian'
-import type { ScriptType, KeyPair } from 'perian'
+import { Utils } from 'nidavellir'
+import type { ScriptType, HexPair } from 'nidavellir'
 import type { ScriptTypeSettings } from './types.js'
 
-const { hash160, sha256 } = Utils.Crypto
+const { hash160, sha256 } = Utils.Hash
 const { fromString, fromProgram } = bcoin.script
-const dataFromPubKey = (
-  keyPair?: KeyPair<string>,
-  scriptHex?: string
-): string => {
+const dataFromPubKey = (keyPair?: HexPair, scriptHex?: string): string => {
   if (!keyPair || !keyPair.publicKey) {
     throw new Error('Cannot get address without Public Key')
   }
@@ -21,10 +18,7 @@ const dataFromPubKey = (
   return keyPair.publicKey
 }
 
-const dataFromScript = (
-  keyPair?: KeyPair<string>,
-  scriptHex?: string
-): string => {
+const dataFromScript = (keyPair?: HexPair, scriptHex?: string): string => {
   if (!scriptHex) throw new Error('Cannot get address without Locking Script')
   return fromString(scriptHex)
     .toRaw()

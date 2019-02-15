@@ -3,7 +3,7 @@
 import { assert } from 'chai'
 import { type EdgeCurrencyPluginFactory, makeFakeIos } from 'edge-core-js'
 import { before, describe, it } from 'mocha'
-
+// import { groestlcoin, bitcoincash, smartcash } from '@nidavellir/networks-unsafe'
 import * as Factories from '../../../src/index.js'
 import fixtures from './fixtures.json'
 

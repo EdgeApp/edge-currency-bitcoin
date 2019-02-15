@@ -1,12 +1,12 @@
 // @flow
 
-import type { AddressPrefix } from 'perian'
+import type { AddressPrefix } from 'nidavellir'
 import bcoin from 'bcoin'
-import { Commons } from 'perian'
+import { Core } from 'nidavellir'
 import { toBaseString, fromBaseString } from '../bcoinUtils/address.js'
-
 import { cashAddressToHash, toCashAddress } from './cashAddress'
-const { networks } = Commons.Network
+
+const networks = Core.Networks
 const { bech32 } = bcoin.utils
 
 export const changeFormat = (
@@ -57,8 +57,11 @@ export const getAddressPrefix = (
   network: string,
   prefixes?: AddressPrefix
 ): string | null => {
-  const { serializers, addressPrefix } = Commons.Network.networks[network]
-  prefixes = prefixes || addressPrefix
+  const { serializers, addressPrefix } = networks[network]
+
+  if (!prefixes || !Object.keys(prefixes).length) {
+    prefixes = addressPrefix
+  }
 
   if (prefixes.cashAddress) {
     try {
@@ -86,7 +89,7 @@ export const getAddressPrefix = (
 }
 
 export const isLegacy = (displayAddress: string, network: string): boolean => {
-  const { legacyAddressPrefix } = Commons.Network.networks[network]
+  const { legacyAddressPrefix } = networks[network]
   const type = getAddressPrefix(displayAddress, network, legacyAddressPrefix)
   return !!type
 }

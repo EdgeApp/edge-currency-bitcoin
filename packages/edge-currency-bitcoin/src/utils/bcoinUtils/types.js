@@ -1,6 +1,6 @@
 // @flow
 
-import type { KeyPair, ScriptType } from 'perian'
+import type { HexPair, ScriptType } from 'nidavellir'
 
 export type EdgeAddress = { [scriptType: ScriptType]: string }
 export type RawAddress = {
@@ -21,7 +21,7 @@ export type ScriptTypeSettings = {
   type: string,
   version: number,
   getHash: (data: string) => string,
-  getData: (k?: KeyPair<string>, s?: string) => string
+  getData: (k?: HexPair, s?: string) => string
 }
 
 export type Script = {

@@ -1202,7 +1202,7 @@ base-x@^1.0.4:
   resolved "https://registry.yarnpkg.com/base-x/-/base-x-1.1.0.tgz#42d3d717474f9ea02207f6d1aa1f426913eeb7ac"
   integrity sha1-QtPXF0dPnqAiB/bRqh9CaRPut6w=
 
-base-x@^3.0.5:
+base-x@^3.0.2, base-x@^3.0.5:
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/base-x/-/base-x-3.0.5.tgz#d3ada59afed05b921ab581ec3112e6444ba0795a"
   integrity sha512-C3picSgzPSLE+jW3tcBzJoGwitOtazb5B+5YmAxZm2ybmTi9LNgAtDO/jjVEBZwHoXmDBZ9m/IELj3elJVRBcA==
@@ -1355,6 +1355,30 @@ browserify-aes@^1.0.6:
     evp_bytestokey "^1.0.3"
     inherits "^2.0.1"
     safe-buffer "^5.0.1"
+
+bs58@^4.0.0:
+  version "4.0.1"
+  resolved "http://localhost:4873/bs58/-/bs58-4.0.1.tgz#be161e76c354f6f788ae4071f63f34e8c4f0a42a"
+  integrity sha1-vhYedsNU9veIrkBx9j806MTwpCo=
+  dependencies:
+    base-x "^3.0.2"
+
+"bs58grscheck@https://github.com/Groestlcoin/bs58grscheck":
+  version "2.1.2"
+  resolved "https://github.com/Groestlcoin/bs58grscheck#020feec2b3153aeb278596ea70ce3579a37f4e21"
+  dependencies:
+    bs58 "^4.0.0"
+    create-hash "^1.1.0"
+    groestl-hash-js "https://github.com/Groestlcoin/groestl-hash-js.git"
+    safe-buffer "^5.1.2"
+
+bs58smartcheck@^2.0.4:
+  version "2.0.4"
+  resolved "http://localhost:4873/bs58smartcheck/-/bs58smartcheck-2.0.4.tgz#deeb7aedcafc9f6094453322f3385a63a0a9eaf5"
+  integrity sha512-EOlnrEcZMtdy/0qwjDkCdrc4EvV+yvK0JMgDwf8GNy65dkkHpFljz5n8APbQNN8VJqWQzjey7gtclLkAM1090Q==
+  dependencies:
+    bs58 "^4.0.0"
+    js-sha3 "^0.6.1"
 
 buffer-from@^1.0.0:
   version "1.1.1"
@@ -3489,6 +3513,10 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   version "4.1.15"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.1.15.tgz#ffb703e1066e8a0eeaa4c8b80ba9253eeefbfb00"
   integrity sha512-6uHUhOPEBgQ24HM+r6b/QwWfZq+yiFcipKFrOFiBEnWdy5sdzYoi+pJeQaPI5qOLRFqWmAXUPQNsielzdLoecA==
+
+"groestl-hash-js@https://github.com/Groestlcoin/groestl-hash-js.git":
+  version "1.0.0"
+  resolved "https://github.com/Groestlcoin/groestl-hash-js.git#ef6a04f1c4d2f0448f0882b5f213ef7a0659baee"
 
 growl@1.10.5:
   version "1.10.5"

@@ -5,7 +5,7 @@ import mainPackageJson from './package.json'
 
 export const createExternalSettings = ({ dependencies, devDependencies }) => {
   const deps = ['bindings', 'elliptic', ...Object.keys({ ...dependencies, ...devDependencies })]
-  const externalFilter = dep => !/^@?perian(\/|-){1}.*$/i.test(dep)
+  const externalFilter = dep => !/^@?nidavellir(\/|-){1}.*$/i.test(dep)
   return deps.filter(externalFilter)
 }
 

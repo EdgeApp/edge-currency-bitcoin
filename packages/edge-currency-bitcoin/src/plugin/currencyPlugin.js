@@ -13,15 +13,13 @@ import type {
   EdgeParsedUri,
   EdgeWalletInfo
 } from 'edge-core-js'
-import { Commons, Bip32 } from 'perian'
+import { Core, Bip32 } from 'nidavellir'
 import {
   CurrencyEngine,
   type EngineCurrencyInfo
 } from '../engine/currencyEngine.js'
-import {
-  addNetwork,
-  patchCrypto
-} from '../utils/bcoinExtender/bcoinExtender.js'
+import { addNetwork } from '../utils/bcoinExtender/bcoinExtender.js'
+import { patchCrypto } from '../utils/bcoinExtender/patchCrypto.js'
 import { seedToHex, keysFromEntropy } from '../utils/bcoinUtils/key.js'
 import { PluginState } from './pluginState.js'
 import { encodeUri, parseUri } from './uri.js'
@@ -122,11 +120,11 @@ export class CurrencyPlugin {
 
   getSplittableTypes (walletInfo: EdgeWalletInfo): Array<string> {
     const { keys: { format = 'bip32' } = {} } = walletInfo
-    const { forks } = Commons.Network.networks[this.network]
+    const { forks } = Core.Networks[this.network]
     const bip = parseInt(format.replace('bip', ''))
     return forks
       .filter(network => {
-        const networkInfo = Commons.Network.networks[network]
+        const networkInfo = Core.Networks[network]
         return networkInfo && networkInfo.supportedBips.includes(bip)
       })
       .map(network => `wallet:${network}`)
@@ -142,7 +140,7 @@ export const makeCurrencyPluginFactory = ({
   engineInfo
 }: CurrencyPluginFactorySettings) => {
   const network = engineInfo.network
-  const networkInfo = Commons.Network.networks[network]
+  const networkInfo = Core.Networks[network]
   addNetwork(network, networkInfo)
   currencyInfo = {
     walletTypes: [`wallet:${currencyInfo.pluginName}`],

@@ -3,7 +3,7 @@
 import type { KeyRings, CreateTxOptions, Utxo } from './types.js'
 
 import bcoin from 'bcoin'
-import { Utils, Commons } from 'perian'
+import { Utils, Core } from 'nidavellir'
 import { fromBaseString, toScript } from './address.js'
 import {
   getAddressPrefix,
@@ -17,7 +17,6 @@ const Script = bcoin.script
 
 const { MTX, Coin, TX } = bcoin.primitives
 
-const { networks } = Commons.Network
 const witScale = 4
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
 
@@ -42,7 +41,7 @@ export const createTX = async ({
     setRBF = false
   }
 }: CreateTxOptions) => {
-  const { serializers } = networks[network]
+  const { serializers } = Core.Networks[network]
 
   // Create the Mutable Transaction
   const mtx = new MTX()
@@ -135,7 +134,7 @@ export const parseTransaction = (rawTx: string, bcoinTx?: Object): Object => {
   if (!bcoinTx) bcoinTx = TX.fromRaw(rawTx, 'hex')
   bcoinTx.outputs.forEach(output => {
     const outputHex = output.script.toRaw().toString('hex')
-    const scriptHash = Utils.Crypto.sha256(outputHex)
+    const scriptHash = Utils.Hash.sha256(outputHex)
     output.scriptHash = reverseHexString(scriptHash)
   })
   return bcoinTx
@@ -260,8 +259,8 @@ export const sign = async (
   )
   await tx.template(keyRings)
   tx.network = network
-  await tx.sign(keyRings, networks[network].replayProtection)
-  const { serializers } = networks[network]
+  await tx.sign(keyRings, Core.Networks[network].replayProtection)
+  const { serializers } = Core.Networks[network]
   const txHash = serializers.txHash(tx.toNormal().toString('hex'))
   const txid = reverseHexString(txHash)
   return { txid, signedTx: tx.toRaw().toString('hex') }

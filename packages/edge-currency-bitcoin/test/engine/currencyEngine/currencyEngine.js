@@ -3,7 +3,7 @@
 import EventEmitter from 'events'
 import { readdirSync, statSync } from 'fs'
 import { join } from 'path'
-
+import { secp256k1 } from 'secp256k1'
 import bcoin from 'bcoin'
 import { assert } from 'chai'
 import {
@@ -57,7 +57,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   const pluginOpts = {
     io: {
       ...fakeIo,
-      secp256k1: bcoin.crypto.secp256k1,
+      secp256k1,
       pbkdf2: bcoin.crypto.pbkdf2,
       random: size => fixture['key'],
       Socket: require('net').Socket,

@@ -24,7 +24,7 @@ import {
   getAddressPrefix
 } from '../utils/addressFormat/addressFormatIndex.js'
 import * as Address from '../utils/bcoinUtils/address.js'
-import { scriptTypesToEdgeTypes } from '../utils/bcoinUtils/misc.js'
+import { scriptTypesToEdgeTypes, formatToBips } from '../utils/bcoinUtils/misc.js'
 import * as PaymentRequest from '../utils/bcoinUtils/paymentRequest.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
 import type { TxOptions } from '../utils/bcoinUtils/types.js'
@@ -156,7 +156,9 @@ export class CurrencyEngine {
     await this.engineState.load()
 
     const keys = this.walletInfo.keys || {}
-    const { coinType = 0 } = keys
+    const { format, coinType = 0 } = keys
+    const bips = formatToBips(this.network, format)
+
     const seed = keys[`${this.network}Key`]
     const xpub = keys[`${this.network}Xpub`]
     const masterKey = await this.engineState.loadKeys()
@@ -172,6 +174,7 @@ export class CurrencyEngine {
       xpub,
       masterKey,
       coinType,
+      bips,
       gapLimit: this.engineInfo.gapLimit,
       network: this.network,
       addressInfos: this.engineState.addressInfos,

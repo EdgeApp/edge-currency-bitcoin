@@ -1,7 +1,7 @@
 // @flow
 
-import { Utils, Commons, Bip44, Bip32 } from 'perian'
-import type { HDPath, HDKey as HDKeyType } from 'perian'
+import { Utils, Core, Bip44, Bip32 } from 'nidavellir'
+import type { HDPath, HDKeyPair } from 'nidavellir'
 import EventEmitter from 'eventemitter3'
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 import * as Address from '../utils/bcoinUtils/address.js'
@@ -22,7 +22,7 @@ import type { AddressInfos } from './engineState.js'
 
 const { HDKey } = Bip44
 const { ExtendedKey } = Bip32
-const { Network } = Commons
+const { NetworkInfo } = Core
 
 const GAP_LIMIT = 10
 
@@ -43,7 +43,7 @@ export type SignMessage = {
 export type KeyManagerOptions = {
   account?: number,
   coinType?: number,
-  masterKey?: HDKeyType,
+  masterKey?: HDKeyPair,
   seed?: string,
   xpub?: string,
   gapLimit: number,
@@ -51,12 +51,13 @@ export type KeyManagerOptions = {
   addressInfos?: AddressInfos,
   scriptHashes?: { [displayAddress: string]: string },
   scriptHashesMap?: ScriptHashMap,
-  txInfos?: { [txid: string]: any }
+  txInfos?: { [txid: string]: any },
+  bips?: Array<number>
 }
 
 export class KeyManager extends EventEmitter {
   writeLock: any
-  masterKey: HDKeyType
+  masterKey: HDKeyPair
   scriptTemplates: any
   seed: string
   xpub: string
@@ -82,7 +83,8 @@ export class KeyManager extends EventEmitter {
     addressInfos = {},
     scriptHashes = {},
     scriptHashesMap = {},
-    txInfos = {}
+    txInfos = {},
+    bips = []
   }: KeyManagerOptions) {
     super()
     // Check for any way to init the wallet with either a seed or master keys
@@ -98,8 +100,8 @@ export class KeyManager extends EventEmitter {
     this.txInfos = txInfos
     // Get Settings for this network
     // TODO - Get custom scriptTemplates
-    // const { scriptTemplates } = Network.networks[network]
-    this.hdPaths = Network.getHDPaths(this.network, { account, coinType })
+    // const { scriptTemplates } = NetworkInfo.networks[network]
+    this.hdPaths = NetworkInfo.getHDPaths({ account, coinType }, this.network, bips)
     // this.scriptTemplates = scriptTemplates
     // Create a lock for when deriving addresses
     this.writeLock = Misc.getLock()
@@ -167,7 +169,7 @@ export class KeyManager extends EventEmitter {
     }
   }
 
-  async deriveKey (path: string): Promise<HDKeyType> {
+  async deriveKey (path: string): Promise<HDKeyPair> {
     const pathArray = path.split('/')
     const index = pathArray.pop()
 
@@ -208,7 +210,7 @@ export class KeyManager extends EventEmitter {
       if (hdKey && hdKey.scriptType) {
         addresses[hdKey.scriptType] = displayAddress
       } else {
-        const defaultScript = Network.getDefaultScriptType(this.network)
+        const defaultScript = NetworkInfo.getDefaultScriptType(this.network)
         addresses[defaultScript] = displayAddress
       }
     }
@@ -216,7 +218,7 @@ export class KeyManager extends EventEmitter {
   }
 
   getChangeAddress (): { changeAddress?: string, scriptType: string } {
-    const scriptType = Network.getDefaultScriptType(this.network)
+    const scriptType = NetworkInfo.getDefaultScriptType(this.network)
     for (const hdPath of this.hdPaths) {
       if (scriptType !== hdPath.scriptType) continue
       const path = hdPath.path.join('/')
@@ -281,7 +283,7 @@ export class KeyManager extends EventEmitter {
         throw new Error('Key is not part of this wallet')
       }
       // sign.
-      const signature = await Utils.Crypto.sign(message, privateKey)
+      const signature = await Utils.Secp256k1.sign(message, privateKey)
       return { signature, publicKey }
     } catch (e) {
       console.log(e)

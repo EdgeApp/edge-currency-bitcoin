@@ -1,6 +1,6 @@
 // @flow
 
-import type { HDKey } from 'perian'
+import type { HDKeyPair } from 'nidavellir'
 import type { DiskletFolder } from 'disklet'
 import type { EdgeIo } from 'edge-core-js'
 import EventEmitter from 'eventemitter3'
@@ -229,7 +229,7 @@ export class EngineState extends EventEmitter {
     }
   }
 
-  async saveKeys (keys: HDKey) {
+  async saveKeys (keys: HDKeyPair) {
     try {
       const keysText = JSON.stringify(keys)
       await this.encryptedLocalFolder.file(this.keysFile).setText(keysText)
@@ -244,7 +244,7 @@ export class EngineState extends EventEmitter {
       const keysCacheText = await this.encryptedLocalFolder
         .file(this.keysFile)
         .getText()
-      const keysCacheJson: HDKey = JSON.parse(keysCacheText)
+      const keysCacheJson: HDKeyPair = JSON.parse(keysCacheText)
       // TODO: Validate JSON
       return keysCacheJson
     } catch (e) {

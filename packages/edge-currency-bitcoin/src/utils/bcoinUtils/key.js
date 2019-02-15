@@ -5,11 +5,10 @@ import bcoin from 'bcoin'
 
 import { Buffer } from 'buffer'
 
-import { Commons } from 'perian'
+import { Core } from 'nidavellir'
 import { base64regex } from '../utils.js'
 
 const { Mnemonic } = bcoin.hd
-const { networks } = Commons.Network
 
 export const parseSeed = (seed: string) =>
   base64regex.test(seed) ? Buffer.from(seed, 'base64').toString('hex') : seed
@@ -31,7 +30,7 @@ export const keysFromEntropy = (
   network: string,
   opts: any = {}
 ) => {
-  const { keyPrefix = {} } = networks[network] || {}
+  const { keyPrefix = {} } = Core.Networks[network] || {}
   return {
     [`${network}Key`]: Mnemonic.fromEntropy(entropy).getPhrase(),
     coinType: opts.coinType || keyPrefix.coinType || 0
@@ -43,11 +42,11 @@ export const getAllKeyRings = async (
   network: string
 ): Promise<KeyRings> => {
   const keys = []
-  const { hdSettings } = networks[network]
+  const { hdSettings } = Core.Networks[network]
   for (const settings in hdSettings) {
     const { scriptType } = hdSettings[settings]
     for (const key of privateKeys) {
-      const keyPair = await Commons.KeyPair.keyPairFromWIF(key, network)
+      const keyPair = await Core.KeyPair.keyPairFromWIF(key, network)
       keys.push({ ...keyPair, scriptType })
     }
   }

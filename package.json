@@ -1,8 +1,6 @@
 {
-  "workspaces": [
-    "edge-currency-bitcoin",
-    "perian/*"
-  ],
+  "private": true,
+  "workspaces": [ "packages/*" ],
   "repository": {
     "type": "git",
     "url": "git@github.com:edgeapp/edge-currency-bitcoin.git"

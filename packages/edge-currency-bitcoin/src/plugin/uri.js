@@ -1,6 +1,6 @@
 // @flow
 
-import { Commons } from 'perian'
+import { Core } from 'nidavellir'
 import { bns } from 'biggystring'
 import type {
   EdgeCurrencyInfo,
@@ -22,7 +22,7 @@ import { verifyUriProtocol } from '../utils/bcoinUtils/misc.js'
 const parsePathname = (pathname: string, network: string) => {
   try {
     // Check if the pathname type is a wif
-    Commons.KeyPair.privateFromWIF(pathname, network)
+    Core.KeyPair.privateFromWIF(pathname, network)
     return { privateKeys: [pathname] }
   } catch (e) {}
   if (getAddressPrefix(pathname, network)) {
