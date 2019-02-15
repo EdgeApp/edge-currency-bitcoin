@@ -81,8 +81,8 @@ export class KeyManager extends EventEmitter {
     gapLimit = GAP_LIMIT,
     network,
     addressInfos = {},
-    scriptHashes = {},
-    scriptHashesMap = {},
+    scriptHashes,
+    scriptHashesMap,
     txInfos = {},
     bips = []
   }: KeyManagerOptions) {
@@ -113,12 +113,8 @@ export class KeyManager extends EventEmitter {
     this.scriptHashes = scriptHashes
     // Helper map from path to script hash
     this.scriptHashesMap = scriptHashesMap
-    for (const hdPath of this.hdPaths) {
-      const path = hdPath.path.join('/')
-      if (!this.scriptHashesMap[path]) this.scriptHashesMap[path] = []
-    }
-    // Fill in the missing maps in case we need to
-    if (Object.keys(scriptHashes).length < Object.keys(addressInfos).length) {
+
+    if (!this.scriptHashesMap || !this.scriptHashes) {
       for (const scriptHash in this.addressInfos) {
         const address = this.addressInfos[scriptHash]
         const { displayAddress, path } = address
@@ -132,6 +128,11 @@ export class KeyManager extends EventEmitter {
         }
         this.scriptHashesMap[parentPath][index] = scriptHash
       }
+    }
+
+    for (const hdPath of this.hdPaths) {
+      const path = hdPath.path.join('/')
+      if (!this.scriptHashesMap[path]) this.scriptHashesMap[path] = []
     }
   }
 
@@ -325,32 +326,32 @@ export class KeyManager extends EventEmitter {
     const unlock = await this.writeLock.lock()
     try {
       for (const path in this.scriptHashesMap) {
-        const scriptHashes = this.scriptHashesMap[path]
-        // Get the last index unused index
-        let index = scriptHashes.length - this.gapLimit - 1
-        let actualGap = 0
-        while (actualGap < this.gapLimit) {
-          // Check if we reached the end of the list
-          if (index > scriptHashes.length) {
-            actualGap = 0
-            const newAddr = await this.deriveAddress(`${path}/${index}`)
-            if (!newAddr) throw new Error('Cannot derive address')
-          } else {
-            // Check if the index is used or not
-            const scriptHash = scriptHashes[index]
-            if (!this.addressInfos[scriptHash]) break
-            const used = this.addressInfos[scriptHash].used
-            if (!used) actualGap++
-            else if (actualGap) actualGap--
-          }
-          // Advance the index
-          index++
-        }
+        await this.deriveNewKeys(path)
       }
     } catch (e) {
       console.log(e)
     } finally {
       unlock()
+    }
+  }
+
+  async deriveNewKeys (path: string) {
+    const hashes = this.scriptHashesMap[path]
+
+    // Find the last used address:
+    let lastUsed =
+      hashes.length < this.gapLimit ? 0 : hashes.length - this.gapLimit
+    for (let i = lastUsed; i < hashes.length; ++i) {
+      const scriptHash = hashes[i]
+      if (this.addressInfos[scriptHash] && this.addressInfos[scriptHash].used) {
+        lastUsed = i
+      }
+    }
+
+    // If the last used address is too close to the end, generate some more:
+    while (lastUsed + this.gapLimit > hashes.length) {
+      const newAddr = await this.deriveAddress(`${path}/${hashes.length}`)
+      if (!newAddr) break
     }
   }
 
