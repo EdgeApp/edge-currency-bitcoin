@@ -462,6 +462,7 @@ export class EngineState extends EventEmitter {
         if (this.reconnectCounter < 30) this.reconnectCounter++
         this.reconnectTimer = setTimeout(() => {
           clearTimeout(this.reconnectTimer)
+          delete this.reconnectTimer
           this.refillServers()
         }, this.reconnectCounter * 1000)
       } else {
