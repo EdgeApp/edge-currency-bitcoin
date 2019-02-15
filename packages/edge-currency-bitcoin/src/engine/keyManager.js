@@ -175,6 +175,7 @@ export class KeyManager extends EventEmitter {
     if (!this.xpub) {
       this.xpub = await HDKey.toString(this.masterKey, this.network, true)
     }
+    this.emit('newKey', this.masterKey)
   }
 
   async deriveKey (path: string): Promise<HDKeyPair> {
