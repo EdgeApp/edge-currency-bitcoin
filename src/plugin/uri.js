@@ -124,8 +124,8 @@ export const encodeUri = (
     if (typeof metadata.name === 'string') {
       queryString += `label=${metadata.name}&`
     }
-    if (typeof metadata.message === 'string') {
-      queryString += `message=${metadata.message}&`
+    if (typeof metadata.notes === 'string') {
+      queryString += `message=${metadata.notes}&`
     }
   }
   queryString = queryString.substr(0, queryString.length - 1)
