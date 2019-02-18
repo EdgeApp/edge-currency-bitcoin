@@ -19,8 +19,7 @@ import request from 'request'
 import * as Factories from '../../../src/index.js'
 
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
-const ROOT_FOLDER = join(__dirname, '../')
-const FIXTURES_FOLDER = join(ROOT_FOLDER, 'test/engine/currencyEngine/fixtures')
+const FIXTURES_FOLDER = join(__dirname, 'fixtures')
 
 const fixtureFile = 'tests.json'
 const dummyAddressDataFile = 'dummyAddressData.json'

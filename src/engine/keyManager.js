@@ -109,19 +109,21 @@ export class KeyManager {
   scriptHashes: { [displayAddress: string]: string }
   txInfos: { [txid: string]: any }
 
-  constructor ({
-    account = 0,
-    bip = 'bip32',
-    coinType = -1,
-    rawKeys = {},
-    seed = '',
-    gapLimit = GAP_LIMIT,
-    network,
-    callbacks,
-    addressInfos = {},
-    scriptHashes = {},
-    txInfos = {}
-  }: KeyManagerOptions) {
+  constructor (opts: KeyManagerOptions) {
+    const {
+      account = 0,
+      bip = 'bip32',
+      coinType = -1,
+      rawKeys = {},
+      seed = '',
+      gapLimit = GAP_LIMIT,
+      network,
+      callbacks,
+      addressInfos = {},
+      scriptHashes = {},
+      txInfos = {}
+    } = opts
+
     // Check for any way to init the wallet with either a seed or master keys
     if (
       seed === '' &&
