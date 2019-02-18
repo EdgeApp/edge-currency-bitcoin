@@ -1,7 +1,7 @@
 pipeline {
   agent any
   tools {
-    nodejs 'v8.12.0'
+    nodejs 'v11.4.0'
   }
   options {
     timestamps()
