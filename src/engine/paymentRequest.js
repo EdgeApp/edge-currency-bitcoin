@@ -2,11 +2,12 @@
 
 // $FlowFixMe
 import { primitives } from 'bcoin'
-import parse from 'url-parse'
 import type { EdgePaymentProtocolInfo } from 'edge-core-js'
+import parse from 'url-parse'
+
 import {
-  toNewFormat,
-  toLegacyFormat
+  toLegacyFormat,
+  toNewFormat
 } from '../utils/addressFormat/addressFormatIndex.js'
 
 const getSpendTargets = (

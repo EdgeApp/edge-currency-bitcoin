@@ -1,17 +1,17 @@
 // @flow
 
-import type { AddressInfo, AddressInfos } from './engineState.js'
-import type {
-  Utxo,
-  BlockHeight,
-  TxOptions,
-  Output,
-  StandardOutput,
-  Script
-} from '../utils/coinUtils.js'
-import { getAllKeyRings, FormatSelector } from '../utils/formatSelector.js'
-import { parsePath, createTX, getLock } from '../utils/coinUtils.js'
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
+import type {
+  BlockHeight,
+  Output,
+  Script,
+  StandardOutput,
+  TxOptions,
+  Utxo
+} from '../utils/coinUtils.js'
+import { createTX, getLock, parsePath } from '../utils/coinUtils.js'
+import { FormatSelector, getAllKeyRings } from '../utils/formatSelector.js'
+import type { AddressInfo, AddressInfos } from './engineState.js'
 
 const GAP_LIMIT = 10
 const nop = () => {}

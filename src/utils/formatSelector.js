@@ -1,12 +1,13 @@
 // @flow
 
+import { consensus, hd, networks, primitives } from 'bcoin'
 // $FlowFixMe
 import buffer from 'buffer-hack'
+
 import type { Script } from '../utils/coinUtils.js'
-import { hd, primitives, consensus, networks } from 'bcoin'
 import {
-  getPrivateFromSeed,
   addressFromKey,
+  getPrivateFromSeed,
   setKeyType
 } from '../utils/coinUtils.js'
 

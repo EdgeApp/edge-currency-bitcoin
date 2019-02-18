@@ -3,50 +3,50 @@
 import { bns } from 'biggystring'
 import type { DiskletFolder } from 'disklet'
 import type {
-  EdgeTransaction,
-  EdgeWalletInfo,
   EdgeCurrencyEngine,
-  EdgeCurrencyEngineOptions,
   EdgeCurrencyEngineCallbacks,
-  EdgeGetTransactionsOptions,
-  EdgePaymentProtocolInfo,
+  EdgeCurrencyEngineOptions,
+  EdgeDataDump,
   EdgeFreshAddress,
+  EdgeGetTransactionsOptions,
+  EdgeIo,
+  EdgePaymentProtocolInfo,
   EdgeSpendInfo,
   EdgeSpendTarget,
-  EdgeDataDump,
-  EdgeIo
+  EdgeTransaction,
+  EdgeWalletInfo
 } from 'edge-core-js'
 
-import { EngineState } from './engineState.js'
-import { PluginState } from '../plugin/pluginState.js'
-import { KeyManager } from './keyManager'
-import type { EngineStateCallbacks } from './engineState.js'
-import type { KeyManagerCallbacks } from './keyManager'
-import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
-import type { TxOptions } from '../utils/coinUtils.js'
-import { validateObject, promiseAny } from '../utils/utils.js'
-import {
-  getPaymentDetails,
-  createPayment,
-  sendPayment
-} from './paymentRequest.js'
-import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
-import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
-import { broadcastFactories } from './broadcastApi.js'
-import { getAllAddresses } from '../utils/formatSelector.js'
 import { InfoServer } from '../info/constants'
-import {
-  addressToScriptHash,
-  verifyTxAmount,
-  sumUtxos,
-  sumTransaction,
-  getReceiveAddresses,
-  parseJsonTransaction
-} from '../utils/coinUtils.js'
+import { PluginState } from '../plugin/pluginState.js'
 import {
   toLegacyFormat,
   validAddress
 } from '../utils/addressFormat/addressFormatIndex.js'
+import type { TxOptions } from '../utils/coinUtils.js'
+import {
+  addressToScriptHash,
+  getReceiveAddresses,
+  parseJsonTransaction,
+  sumTransaction,
+  sumUtxos,
+  verifyTxAmount
+} from '../utils/coinUtils.js'
+import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
+import { getAllAddresses } from '../utils/formatSelector.js'
+import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
+import { promiseAny, validateObject } from '../utils/utils.js'
+import { broadcastFactories } from './broadcastApi.js'
+import { EngineState } from './engineState.js'
+import type { EngineStateCallbacks } from './engineState.js'
+import { KeyManager } from './keyManager'
+import type { KeyManagerCallbacks } from './keyManager'
+import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
+import {
+  createPayment,
+  getPaymentDetails,
+  sendPayment
+} from './paymentRequest.js'
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000

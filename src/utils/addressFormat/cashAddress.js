@@ -1,10 +1,11 @@
 // @flow
 
+import bcoin from 'bcoin'
 // $FlowFixMe
 import buffer from 'buffer-hack'
+
+import { decode, encode } from './base32.js'
 import BN from './bn'
-import { encode, decode } from './base32.js'
-import bcoin from 'bcoin'
 
 const { Buffer } = buffer
 const GENERATOR = [

@@ -1,7 +1,7 @@
-import { assert } from 'chai'
-import { nfkd } from 'unorm'
 // $FlowFixMe
 import buffer from 'buffer-hack'
+import { assert } from 'chai'
+import { nfkd } from 'unorm'
 // $FlowFixMe
 const { Buffer } = buffer
 const SEED_SALT = Buffer.from('Bitcoin seed', 'ascii')

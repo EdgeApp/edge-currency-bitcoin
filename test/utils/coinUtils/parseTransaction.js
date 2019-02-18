@@ -1,9 +1,9 @@
 // @flow
 
-import { parseTransaction } from '../../../src/utils/coinUtils.js'
-
-import { describe, it } from 'mocha'
 import { expect } from 'chai'
+import { describe, it } from 'mocha'
+
+import { parseTransaction } from '../../../src/utils/coinUtils.js'
 
 describe('parseTransaction', function () {
   it('Matches a known transaction', function () {

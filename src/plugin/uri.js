@@ -1,20 +1,22 @@
 // @flow
 
+import { bns } from 'biggystring'
 import type {
+  EdgeCurrencyInfo,
   EdgeEncodeUri,
-  EdgeParsedUri,
-  EdgeCurrencyInfo
+  EdgeParsedUri
 } from 'edge-core-js'
-import {
-  validAddress,
-  sanitizeAddress,
-  dirtyAddress,
-  toNewFormat
-} from '../utils/addressFormat/addressFormatIndex.js'
-import { verifyWIF, verifyUriProtocol } from '../utils/coinUtils.js'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
-import { bns } from 'biggystring'
+
+import {
+  dirtyAddress,
+  sanitizeAddress,
+  toNewFormat,
+  validAddress
+} from '../utils/addressFormat/addressFormatIndex.js'
+import { verifyUriProtocol, verifyWIF } from '../utils/coinUtils.js'
+
 // import bcoin from 'bcoin'
 
 const parsePathname = (pathname: string, network: string) => {
