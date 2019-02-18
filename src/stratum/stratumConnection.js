@@ -1,6 +1,6 @@
 // @flow
 
-import type { EdgeIo } from 'edge-core-js'
+import { type EdgeIo } from 'edge-core-js/types'
 import { parse } from 'uri-js'
 
 import { fetchPing, fetchVersion } from './stratumMessages.js'

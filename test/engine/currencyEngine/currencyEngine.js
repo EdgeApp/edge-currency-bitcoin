@@ -6,6 +6,7 @@ import { join } from 'path'
 
 import bcoin from 'bcoin'
 import { assert } from 'chai'
+import { downgradeDisklet, navigateDisklet } from 'disklet'
 import {
   type EdgeCurrencyEngineOptions,
   type EdgeCurrencyPluginFactory,
@@ -84,11 +85,15 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     },
     onTxidsChanged () {}
   }
-  const walletLocalFolder = fakeIo.folder.folder(DATA_STORE_FOLDER)
+
+  const walletLocalDisklet = navigateDisklet(fakeIo.disklet, DATA_STORE_FOLDER)
+  const walletLocalFolder = downgradeDisklet(walletLocalDisklet)
   const engineOpts: EdgeCurrencyEngineOptions = {
     callbacks,
-    walletLocalFolder,
-    walletLocalEncryptedFolder: walletLocalFolder
+    walletLocalDisklet,
+    walletLocalEncryptedDisklet: walletLocalDisklet,
+    walletLocalEncryptedFolder: walletLocalFolder,
+    walletLocalFolder
   }
 
   describe(`Engine Creation Errors for Wallet type ${WALLET_TYPE}`, function () {

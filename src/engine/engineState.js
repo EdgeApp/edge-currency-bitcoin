@@ -1,7 +1,7 @@
 // @flow
 
 import type { DiskletFolder } from 'disklet'
-import type { EdgeIo } from 'edge-core-js'
+import { type EdgeIo } from 'edge-core-js/types'
 import EventEmitter from 'eventemitter3'
 import stable from 'stable'
 import { parse } from 'uri-js'
@@ -84,9 +84,9 @@ export interface EngineStateCallbacks {
 export interface EngineStateOptions {
   files: { txs: string, addresses: string };
   callbacks: EngineStateCallbacks;
-  io: any;
-  localFolder: any;
-  encryptedLocalFolder: any;
+  io: EdgeIo;
+  localFolder: DiskletFolder;
+  encryptedLocalFolder: DiskletFolder;
   pluginState: PluginState;
   walletId?: string;
 }

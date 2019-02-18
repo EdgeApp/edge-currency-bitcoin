@@ -2,20 +2,20 @@
 
 import { bns } from 'biggystring'
 import type { DiskletFolder } from 'disklet'
-import type {
-  EdgeCurrencyEngine,
-  EdgeCurrencyEngineCallbacks,
-  EdgeCurrencyEngineOptions,
-  EdgeDataDump,
-  EdgeFreshAddress,
-  EdgeGetTransactionsOptions,
-  EdgeIo,
-  EdgePaymentProtocolInfo,
-  EdgeSpendInfo,
-  EdgeSpendTarget,
-  EdgeTransaction,
-  EdgeWalletInfo
-} from 'edge-core-js'
+import {
+  type EdgeCurrencyEngine,
+  type EdgeCurrencyEngineCallbacks,
+  type EdgeCurrencyEngineOptions,
+  type EdgeDataDump,
+  type EdgeFreshAddress,
+  type EdgeGetTransactionsOptions,
+  type EdgeIo,
+  type EdgePaymentProtocolInfo,
+  type EdgeSpendInfo,
+  type EdgeSpendTarget,
+  type EdgeTransaction,
+  type EdgeWalletInfo
+} from 'edge-core-js/types'
 
 import { InfoServer } from '../info/constants'
 import { PluginState } from '../plugin/pluginState.js'

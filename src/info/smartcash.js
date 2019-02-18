@@ -4,7 +4,7 @@ import { Buffer } from 'buffer'
 
 import { crypto, utils } from 'bcoin'
 import bs58sc from 'bs58smartcheck'
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'

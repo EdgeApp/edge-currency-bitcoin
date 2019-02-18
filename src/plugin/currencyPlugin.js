@@ -2,18 +2,18 @@
 
 import { Buffer } from 'buffer'
 
-import type {
-  EdgeCorePluginOptions,
-  EdgeCreatePrivateKeyOptions,
-  EdgeCurrencyEngine,
-  EdgeCurrencyEngineOptions,
-  EdgeCurrencyInfo,
-  EdgeCurrencyPlugin,
-  EdgeEncodeUri,
-  EdgeIo,
-  EdgeParsedUri,
-  EdgeWalletInfo
-} from 'edge-core-js'
+import {
+  type EdgeCorePluginOptions,
+  type EdgeCreatePrivateKeyOptions,
+  type EdgeCurrencyEngine,
+  type EdgeCurrencyEngineOptions,
+  type EdgeCurrencyInfo,
+  type EdgeCurrencyPlugin,
+  type EdgeEncodeUri,
+  type EdgeIo,
+  type EdgeParsedUri,
+  type EdgeWalletInfo
+} from 'edge-core-js/types'
 
 import {
   CurrencyEngine,

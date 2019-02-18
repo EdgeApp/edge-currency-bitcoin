@@ -1,11 +1,11 @@
 // @flow
 
 import { bns } from 'biggystring'
-import type {
-  EdgeCurrencyInfo,
-  EdgeEncodeUri,
-  EdgeParsedUri
-} from 'edge-core-js'
+import {
+  type EdgeCurrencyInfo,
+  type EdgeEncodeUri,
+  type EdgeParsedUri
+} from 'edge-core-js/types'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
 
