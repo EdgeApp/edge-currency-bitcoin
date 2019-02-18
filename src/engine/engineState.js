@@ -1,6 +1,6 @@
 // @flow
 
-import type { DiskletFolder } from 'disklet'
+import { type Disklet } from 'disklet'
 import { type EdgeIo } from 'edge-core-js/types'
 import EventEmitter from 'eventemitter3'
 import stable from 'stable'
@@ -85,8 +85,8 @@ export interface EngineStateOptions {
   files: { txs: string, addresses: string };
   callbacks: EngineStateCallbacks;
   io: EdgeIo;
-  localFolder: DiskletFolder;
-  encryptedLocalFolder: DiskletFolder;
+  localDisklet: Disklet;
+  encryptedLocalDisklet: Disklet;
   pluginState: PluginState;
   walletId?: string;
 }
@@ -232,7 +232,7 @@ export class EngineState extends EventEmitter {
   async saveKeys (keys: any) {
     try {
       const json = JSON.stringify({ keys: keys })
-      await this.encryptedLocalFolder.file('keys.json').setText(json)
+      await this.encryptedLocalDisklet.setText('keys.json', json)
       console.log(`${this.walletId}: Saved keys cache`)
     } catch (e) {
       console.log(`${this.walletId}: ${e.toString()}`)
@@ -241,9 +241,9 @@ export class EngineState extends EventEmitter {
 
   async loadKeys () {
     try {
-      const keysCacheText = await this.encryptedLocalFolder
-        .file('keys.json')
-        .getText()
+      const keysCacheText = await this.encryptedLocalDisklet.getText(
+        'keys.json'
+      )
       const keysCacheJson = JSON.parse(keysCacheText)
       // TODO: Validate JSON
       return keysCacheJson.keys
@@ -391,8 +391,8 @@ export class EngineState extends EventEmitter {
   walletId: string
   txFile: string
   addressFile: string
-  localFolder: DiskletFolder
-  encryptedLocalFolder: DiskletFolder
+  localDisklet: Disklet
+  encryptedLocalDisklet: Disklet
   pluginState: PluginState
   onBalanceChanged: () => void
   onAddressUsed: () => void
@@ -427,8 +427,8 @@ export class EngineState extends EventEmitter {
     this.io = options.io
     this.txFile = options.files.txs
     this.addressFile = options.files.addresses
-    this.localFolder = options.localFolder
-    this.encryptedLocalFolder = options.encryptedLocalFolder
+    this.localDisklet = options.localDisklet
+    this.encryptedLocalDisklet = options.encryptedLocalDisklet
     this.pluginState = options.pluginState
     this.serverList = []
     const {
@@ -823,7 +823,7 @@ export class EngineState extends EventEmitter {
     // Load transaction data cache:
     try {
       if (!this.txFile || this.txFile === '') throw new Error('Missing txFile')
-      const txCacheText = await this.localFolder.file(this.txFile).getText()
+      const txCacheText = await this.localDisklet.getText(this.txFile)
       const txCacheJson = JSON.parse(txCacheText)
 
       // TODO: Validate JSON
@@ -846,7 +846,7 @@ export class EngineState extends EventEmitter {
       if (!this.addressFile || this.addressFile === '') {
         throw new Error('Missing addressFile')
       }
-      const cacheText = await this.localFolder.file(this.addressFile).getText()
+      const cacheText = await this.localDisklet.getText(this.addressFile)
       const cacheJson = JSON.parse(cacheText)
 
       // TODO: Validate JSON
@@ -912,7 +912,7 @@ export class EngineState extends EventEmitter {
         if (!this.addressFile || this.addressFile === '') {
           throw new Error('Missing addressFile')
         }
-        await this.localFolder.file(this.addressFile).setText(json)
+        await this.localDisklet.setText(this.addressFile, json)
         console.log(`${this.walletId} - Saved address cache`)
         this.addressCacheDirty = false
       } catch (e) {
@@ -928,7 +928,7 @@ export class EngineState extends EventEmitter {
           throw new Error('Missing txFile')
         }
         const json = JSON.stringify({ txs: this.txCache })
-        await this.localFolder.file(this.txFile).setText(json)
+        await this.localDisklet.setText(this.txFile, json)
         console.log(`${this.walletId}: Saved txCache`)
         this.txCacheDirty = false
       } catch (e) {

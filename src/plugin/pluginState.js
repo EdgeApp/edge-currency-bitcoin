@@ -1,6 +1,6 @@
 // @flow
 
-import { type DiskletFolder, downgradeDisklet, navigateDisklet } from 'disklet'
+import { type Disklet, navigateDisklet } from 'disklet'
 import { type EdgeIo } from 'edge-core-js/types'
 
 import type { EngineState } from '../engine/engineState.js'
@@ -71,7 +71,7 @@ export class PluginState extends ServerCache {
   infoServerUris: string
 
   engines: Array<EngineState>
-  folder: DiskletFolder
+  disklet: Disklet
 
   headerCacheDirty: boolean
   serverCacheJson: Object
@@ -93,9 +93,8 @@ export class PluginState extends ServerCache {
     const fixedCode = FixCurrencyCode(currencyCode)
     this.infoServerUris = `${InfoServer}/electrumServers/${fixedCode}`
     this.engines = []
-    this.folder = downgradeDisklet(
-      navigateDisklet(io.disklet, 'plugins/' + pluginName)
-    )
+    this.disklet = navigateDisklet(io.disklet, 'plugins/' + pluginName)
+
     this.pluginName = pluginName
     this.headerCacheDirty = false
     this.serverCacheJson = {}
@@ -103,7 +102,7 @@ export class PluginState extends ServerCache {
 
   async load () {
     try {
-      const headerCacheText = await this.folder.file('headers.json').getText()
+      const headerCacheText = await this.disklet.getText('headers.json')
       const headerCacheJson = JSON.parse(headerCacheText)
       // TODO: Validate JSON
 
@@ -114,9 +113,7 @@ export class PluginState extends ServerCache {
     }
 
     try {
-      const serverCacheText = await this.folder
-        .file('serverCache.json')
-        .getText()
+      const serverCacheText = await this.disklet.getText('serverCache.json')
       const serverCacheJson = JSON.parse(serverCacheText)
       // TODO: Validate JSON
 
@@ -143,9 +140,9 @@ export class PluginState extends ServerCache {
 
   saveHeaderCache (): Promise<void> {
     if (this.headerCacheDirty) {
-      return this.folder
-        .file('headers.json')
+      return this.disklet
         .setText(
+          'headers.json',
           JSON.stringify({
             height: this.height,
             headers: this.headerCache
@@ -164,9 +161,10 @@ export class PluginState extends ServerCache {
     // this.printServerCache()
     if (this.serverCacheDirty) {
       try {
-        await this.folder
-          .file('serverCache.json')
-          .setText(JSON.stringify(this.servers_))
+        await this.disklet.setText(
+          'serverCache.json',
+          JSON.stringify(this.servers_)
+        )
         this.serverCacheDirty = false
         this.cacheLastSave_ = Date.now()
         console.log(`${this.pluginName} - Saved server cache`)

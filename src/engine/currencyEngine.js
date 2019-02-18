@@ -1,7 +1,7 @@
 // @flow
 
 import { bns } from 'biggystring'
-import type { DiskletFolder } from 'disklet'
+import { type Disklet } from 'disklet'
 import {
   type EdgeCurrencyEngine,
   type EdgeCurrencyEngineCallbacks,
@@ -101,8 +101,8 @@ export class CurrencyEngine {
   engineState: EngineState
   pluginState: PluginState
   callbacks: EdgeCurrencyEngineCallbacks
-  walletLocalFolder: DiskletFolder
-  walletLocalEncryptedFolder: DiskletFolder
+  walletLocalDisklet: Disklet
+  walletLocalEncryptedDisklet: Disklet
   io: EdgeIo
   feeUpdateInterval: number
   feeTimer: any
@@ -126,8 +126,8 @@ export class CurrencyEngine {
     this.prunedWalletId = this.walletId.slice(0, 6)
     this.pluginState = pluginState
     this.callbacks = options.callbacks
-    this.walletLocalFolder = options.walletLocalFolder
-    this.walletLocalEncryptedFolder = options.walletLocalEncryptedFolder
+    this.walletLocalDisklet = options.walletLocalDisklet
+    this.walletLocalEncryptedDisklet = options.walletLocalEncryptedDisklet
     this.io = io
     this.engineInfo = engineInfo
     this.feeUpdateInterval = this.engineInfo.feeUpdateInterval
@@ -154,8 +154,8 @@ export class CurrencyEngine {
       files: { txs: 'txs.json', addresses: 'addresses.json' },
       callbacks: engineStateCallbacks,
       io: this.io,
-      localFolder: this.walletLocalFolder,
-      encryptedLocalFolder: this.walletLocalEncryptedFolder,
+      localDisklet: this.walletLocalDisklet,
+      encryptedLocalDisklet: this.walletLocalEncryptedDisklet,
       pluginState: this.pluginState,
       walletId: this.prunedWalletId
     })
@@ -490,8 +490,8 @@ export class CurrencyEngine {
       files: { txs: '', addresses: '' },
       callbacks: engineStateCallbacks,
       io: this.io,
-      localFolder: this.walletLocalFolder,
-      encryptedLocalFolder: this.walletLocalEncryptedFolder,
+      localDisklet: this.walletLocalDisklet,
+      encryptedLocalDisklet: this.walletLocalEncryptedDisklet,
       pluginState: this.pluginState,
       walletId: this.prunedWalletId
     })
