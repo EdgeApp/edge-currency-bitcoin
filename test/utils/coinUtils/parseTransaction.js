@@ -1,4 +1,5 @@
 // @flow
+
 import { parseTransaction } from '../../../src/utils/coinUtils.js'
 
 import { describe, it } from 'mocha'

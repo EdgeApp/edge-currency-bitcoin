@@ -1,4 +1,5 @@
 // @flow
+
 // $FlowFixMe
 import buffer from 'buffer-hack'
 import BN from './bn'

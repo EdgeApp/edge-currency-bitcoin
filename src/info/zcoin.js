@@ -1,4 +1,5 @@
 // @flow
+
 import type { EdgeCurrencyInfo } from 'edge-core-js'
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'

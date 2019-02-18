@@ -1,4 +1,5 @@
 // @flow
+
 // $FlowFixMe
 import { primitives } from 'bcoin'
 import parse from 'url-parse'

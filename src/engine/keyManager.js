@@ -1,4 +1,5 @@
 // @flow
+
 import type { AddressInfo, AddressInfos } from './engineState.js'
 import type {
   Utxo,

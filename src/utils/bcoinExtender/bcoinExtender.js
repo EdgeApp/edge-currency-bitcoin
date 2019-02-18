@@ -1,4 +1,5 @@
 // @flow
+
 import { patchSecp256k1, patchPbkdf2 } from './patchCrypto.js'
 import { patchTransaction } from './replayProtection.js'
 import bcoin from 'bcoin'
