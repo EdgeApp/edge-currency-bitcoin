@@ -1,7 +1,6 @@
 .idea/
 .vscode/settings.json
 .nyc_output
-/build
 /coverage
 /lib
 /libtest

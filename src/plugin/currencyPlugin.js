@@ -1,38 +1,37 @@
 // @flow
-import type {
-  EdgeCreatePrivateKeyOptions,
-  EdgeCorePluginOptions,
-  EdgeCurrencyEngine,
-  EdgeCurrencyEngineOptions,
-  EdgeCurrencyInfo,
-  EdgeCurrencyPlugin,
-  EdgeIo,
-  EdgeWalletInfo,
-  EdgeEncodeUri,
-  EdgeParsedUri
-} from 'edge-core-js'
 
-// $FlowFixMe
-import buffer from 'buffer-hack'
+import { Buffer } from 'buffer'
+
+import {
+  type EdgeCorePluginOptions,
+  type EdgeCreatePrivateKeyOptions,
+  type EdgeCurrencyEngine,
+  type EdgeCurrencyEngineOptions,
+  type EdgeCurrencyInfo,
+  type EdgeCurrencyPlugin,
+  type EdgeEncodeUri,
+  type EdgeIo,
+  type EdgeParsedUri,
+  type EdgeWalletInfo
+} from 'edge-core-js/types'
+
 import {
   CurrencyEngine,
   type EngineCurrencyInfo
 } from '../engine/currencyEngine.js'
-import { PluginState } from './pluginState.js'
-import { parseUri, encodeUri } from './uri.js'
-import { getXPubFromSeed } from '../utils/formatSelector.js'
 import {
-  keysFromEntropy,
-  getFromatsForNetwork,
-  getForksForNetwork
-} from '../utils/coinUtils.js'
-import {
+  type BcoinCurrencyInfo,
   addNetwork,
-  patchCrypto,
-  type BcoinCurrencyInfo
+  patchCrypto
 } from '../utils/bcoinExtender/bcoinExtender.js'
-
-const { Buffer } = buffer
+import {
+  getForksForNetwork,
+  getFromatsForNetwork,
+  keysFromEntropy
+} from '../utils/coinUtils.js'
+import { getXPubFromSeed } from '../utils/formatSelector.js'
+import { PluginState } from './pluginState.js'
+import { encodeUri, parseUri } from './uri.js'
 
 export type CurrencyPluginFactorySettings = {
   currencyInfo: EdgeCurrencyInfo,

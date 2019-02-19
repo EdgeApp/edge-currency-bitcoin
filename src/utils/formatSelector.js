@@ -1,15 +1,16 @@
 // @flow
-// $FlowFixMe
-import buffer from 'buffer-hack'
+
+import { Buffer } from 'buffer'
+
+import { consensus, hd, networks, primitives } from 'bcoin'
+
 import type { Script } from '../utils/coinUtils.js'
-import { hd, primitives, consensus, networks } from 'bcoin'
 import {
-  getPrivateFromSeed,
   addressFromKey,
+  getPrivateFromSeed,
   setKeyType
 } from '../utils/coinUtils.js'
 
-const { Buffer } = buffer
 const witScale = consensus.WITNESS_SCALE_FACTOR
 
 export type DerivedAddress = {

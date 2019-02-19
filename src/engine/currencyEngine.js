@@ -1,52 +1,52 @@
 // @flow
 
 import { bns } from 'biggystring'
-import type { DiskletFolder } from 'disklet'
-import type {
-  EdgeTransaction,
-  EdgeWalletInfo,
-  EdgeCurrencyEngine,
-  EdgeCurrencyEngineOptions,
-  EdgeCurrencyEngineCallbacks,
-  EdgeGetTransactionsOptions,
-  EdgePaymentProtocolInfo,
-  EdgeFreshAddress,
-  EdgeSpendInfo,
-  EdgeSpendTarget,
-  EdgeDataDump,
-  EdgeIo
-} from 'edge-core-js'
+import { type Disklet } from 'disklet'
+import {
+  type EdgeCurrencyEngine,
+  type EdgeCurrencyEngineCallbacks,
+  type EdgeCurrencyEngineOptions,
+  type EdgeDataDump,
+  type EdgeFreshAddress,
+  type EdgeGetTransactionsOptions,
+  type EdgeIo,
+  type EdgePaymentProtocolInfo,
+  type EdgeSpendInfo,
+  type EdgeSpendTarget,
+  type EdgeTransaction,
+  type EdgeWalletInfo
+} from 'edge-core-js/types'
 
-import { EngineState } from './engineState.js'
-import { PluginState } from '../plugin/pluginState.js'
-import { KeyManager } from './keyManager'
-import type { EngineStateCallbacks } from './engineState.js'
-import type { KeyManagerCallbacks } from './keyManager'
-import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
-import type { TxOptions } from '../utils/coinUtils.js'
-import { validateObject, promiseAny } from '../utils/utils.js'
-import {
-  getPaymentDetails,
-  createPayment,
-  sendPayment
-} from './paymentRequest.js'
-import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
-import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
-import { broadcastFactories } from './broadcastApi.js'
-import { getAllAddresses } from '../utils/formatSelector.js'
 import { InfoServer } from '../info/constants'
-import {
-  addressToScriptHash,
-  verifyTxAmount,
-  sumUtxos,
-  sumTransaction,
-  getReceiveAddresses,
-  parseJsonTransaction
-} from '../utils/coinUtils.js'
+import { PluginState } from '../plugin/pluginState.js'
 import {
   toLegacyFormat,
   validAddress
 } from '../utils/addressFormat/addressFormatIndex.js'
+import type { TxOptions } from '../utils/coinUtils.js'
+import {
+  addressToScriptHash,
+  getReceiveAddresses,
+  parseJsonTransaction,
+  sumTransaction,
+  sumUtxos,
+  verifyTxAmount
+} from '../utils/coinUtils.js'
+import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
+import { getAllAddresses } from '../utils/formatSelector.js'
+import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
+import { promiseAny, validateObject } from '../utils/utils.js'
+import { broadcastFactories } from './broadcastApi.js'
+import { EngineState } from './engineState.js'
+import type { EngineStateCallbacks } from './engineState.js'
+import { KeyManager } from './keyManager'
+import type { KeyManagerCallbacks } from './keyManager'
+import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
+import {
+  createPayment,
+  getPaymentDetails,
+  sendPayment
+} from './paymentRequest.js'
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000
@@ -101,8 +101,8 @@ export class CurrencyEngine {
   engineState: EngineState
   pluginState: PluginState
   callbacks: EdgeCurrencyEngineCallbacks
-  walletLocalFolder: DiskletFolder
-  walletLocalEncryptedFolder: DiskletFolder
+  walletLocalDisklet: Disklet
+  walletLocalEncryptedDisklet: Disklet
   io: EdgeIo
   feeUpdateInterval: number
   feeTimer: any
@@ -126,8 +126,8 @@ export class CurrencyEngine {
     this.prunedWalletId = this.walletId.slice(0, 6)
     this.pluginState = pluginState
     this.callbacks = options.callbacks
-    this.walletLocalFolder = options.walletLocalFolder
-    this.walletLocalEncryptedFolder = options.walletLocalEncryptedFolder
+    this.walletLocalDisklet = options.walletLocalDisklet
+    this.walletLocalEncryptedDisklet = options.walletLocalEncryptedDisklet
     this.io = io
     this.engineInfo = engineInfo
     this.feeUpdateInterval = this.engineInfo.feeUpdateInterval
@@ -154,8 +154,8 @@ export class CurrencyEngine {
       files: { txs: 'txs.json', addresses: 'addresses.json' },
       callbacks: engineStateCallbacks,
       io: this.io,
-      localFolder: this.walletLocalFolder,
-      encryptedLocalFolder: this.walletLocalEncryptedFolder,
+      localDisklet: this.walletLocalDisklet,
+      encryptedLocalDisklet: this.walletLocalEncryptedDisklet,
       pluginState: this.pluginState,
       walletId: this.prunedWalletId
     })
@@ -490,8 +490,8 @@ export class CurrencyEngine {
       files: { txs: '', addresses: '' },
       callbacks: engineStateCallbacks,
       io: this.io,
-      localFolder: this.walletLocalFolder,
-      encryptedLocalFolder: this.walletLocalEncryptedFolder,
+      localDisklet: this.walletLocalDisklet,
+      encryptedLocalDisklet: this.walletLocalEncryptedDisklet,
       pluginState: this.pluginState,
       walletId: this.prunedWalletId
     })

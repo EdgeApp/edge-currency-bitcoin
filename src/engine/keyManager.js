@@ -1,16 +1,17 @@
 // @flow
-import type { AddressInfo, AddressInfos } from './engineState.js'
-import type {
-  Utxo,
-  BlockHeight,
-  TxOptions,
-  Output,
-  StandardOutput,
-  Script
-} from '../utils/coinUtils.js'
-import { getAllKeyRings, FormatSelector } from '../utils/formatSelector.js'
-import { parsePath, createTX, getLock } from '../utils/coinUtils.js'
+
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
+import type {
+  BlockHeight,
+  Output,
+  Script,
+  StandardOutput,
+  TxOptions,
+  Utxo
+} from '../utils/coinUtils.js'
+import { createTX, getLock, parsePath } from '../utils/coinUtils.js'
+import { FormatSelector, getAllKeyRings } from '../utils/formatSelector.js'
+import type { AddressInfo, AddressInfos } from './engineState.js'
 
 const GAP_LIMIT = 10
 const nop = () => {}
@@ -108,19 +109,21 @@ export class KeyManager {
   scriptHashes: { [displayAddress: string]: string }
   txInfos: { [txid: string]: any }
 
-  constructor ({
-    account = 0,
-    bip = 'bip32',
-    coinType = -1,
-    rawKeys = {},
-    seed = '',
-    gapLimit = GAP_LIMIT,
-    network,
-    callbacks,
-    addressInfos = {},
-    scriptHashes = {},
-    txInfos = {}
-  }: KeyManagerOptions) {
+  constructor (opts: KeyManagerOptions) {
+    const {
+      account = 0,
+      bip = 'bip32',
+      coinType = -1,
+      rawKeys = {},
+      seed = '',
+      gapLimit = GAP_LIMIT,
+      network,
+      callbacks,
+      addressInfos = {},
+      scriptHashes = {},
+      txInfos = {}
+    } = opts
+
     // Check for any way to init the wallet with either a seed or master keys
     if (
       seed === '' &&

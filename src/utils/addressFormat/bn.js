@@ -1,8 +1,8 @@
 'use strict'
 
+import { Buffer } from 'buffer'
+
 import BN from 'bn.js'
-import buffer from 'buffer-hack'
-const { Buffer } = buffer
 
 const reversebuf = function (buf) {
   const buf2 = Buffer.from(buf.length)

@@ -3,8 +3,9 @@
  * @flow
  */
 
-import { validate } from 'jsonschema'
 import crypto from 'crypto'
+
+import { validate } from 'jsonschema'
 
 export function validateObject (object: any, schema: any) {
   let result = null

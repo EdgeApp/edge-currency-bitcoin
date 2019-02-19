@@ -6,8 +6,12 @@ import { join } from 'path'
 
 import bcoin from 'bcoin'
 import { assert } from 'chai'
+import { downgradeDisklet, navigateDisklet } from 'disklet'
 import {
+  type EdgeCorePluginOptions,
+  type EdgeCurrencyEngine,
   type EdgeCurrencyEngineOptions,
+  type EdgeCurrencyPlugin,
   type EdgeCurrencyPluginFactory,
   makeFakeIos
 } from 'edge-core-js'
@@ -19,8 +23,7 @@ import request from 'request'
 import * as Factories from '../../../src/index.js'
 
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
-const ROOT_FOLDER = join(__dirname, '../')
-const FIXTURES_FOLDER = join(ROOT_FOLDER, 'test/engine/currencyEngine/fixtures')
+const FIXTURES_FOLDER = join(__dirname, 'fixtures')
 
 const fixtureFile = 'tests.json'
 const dummyAddressDataFile = 'dummyAddressData.json'
@@ -51,10 +54,12 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   const WALLET_TYPE = fixture['WALLET_TYPE']
   const TX_AMOUNT = fixture['TX_AMOUNT']
 
-  let plugin, keys, engine
-  const emitter = new EventEmitter()
+  let engine: EdgeCurrencyEngine
+  let keys
+  let plugin: EdgeCurrencyPlugin
+
   const [fakeIo] = makeFakeIos(1)
-  const pluginOpts = {
+  const pluginOpts: EdgeCorePluginOptions = {
     io: {
       ...fakeIo,
       secp256k1: bcoin.crypto.secp256k1,
@@ -66,6 +71,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     }
   }
 
+  const emitter = new EventEmitter()
   const callbacks = {
     onAddressesChecked (progressRatio) {
       // console.log('onAddressesCheck', progressRatio)
@@ -85,11 +91,15 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     },
     onTxidsChanged () {}
   }
-  const walletLocalFolder = fakeIo.folder.folder(DATA_STORE_FOLDER)
+
+  const walletLocalDisklet = navigateDisklet(fakeIo.disklet, DATA_STORE_FOLDER)
+  const walletLocalFolder = downgradeDisklet(walletLocalDisklet)
   const engineOpts: EdgeCurrencyEngineOptions = {
     callbacks,
-    walletLocalFolder,
-    walletLocalEncryptedFolder: walletLocalFolder
+    walletLocalDisklet,
+    walletLocalEncryptedDisklet: walletLocalDisklet,
+    walletLocalEncryptedFolder: walletLocalFolder,
+    walletLocalFolder
   }
 
   describe(`Engine Creation Errors for Wallet type ${WALLET_TYPE}`, function () {

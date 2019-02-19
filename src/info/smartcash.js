@@ -1,14 +1,14 @@
 // @flow
-// $FlowFixMe
-import buffer from 'buffer-hack'
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { Buffer } from 'buffer'
+
+import { crypto, utils } from 'bcoin'
+import bs58sc from 'bs58smartcheck'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
-import bs58sc from 'bs58smartcheck'
-import { utils, crypto } from 'bcoin'
-
-const { Buffer } = buffer
 
 const base58 = {
   decode: (address: string) => {

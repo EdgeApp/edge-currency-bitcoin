@@ -1,10 +1,12 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { script } from 'bcoin'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 import { hexToVarByte } from '../utils/utils.js'
-import { script } from 'bcoin'
+import { imageServerUrl } from './constants.js'
 
 const scriptProto = script.prototype
 const getPubkey = scriptProto.getPubkey
