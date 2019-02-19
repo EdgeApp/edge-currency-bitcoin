@@ -1,184 +1,192 @@
 # edge-currency-bitcoin
 
+## 3.8.0 (2019-02-18)
+
+- Change BSV explorer to blockchair.com
+- Fix failing unit tests
+- Prevent connections from being permanently dropped
+- Update the build system to match edge-core-js
+- Update to edge-core-js v0.14.0 & make use of new Disklet API
+
 ## 3.7.11
 
-* Fix error when 2 makeSpends are done back to back and previous one is used for signTx
+- Fix error when 2 makeSpends are done back to back and previous one is used for signTx
 
 ## 3.7.10
 
-* Adjust BTC mining fees to target higher range
+- Adjust BTC mining fees to target higher range
 
 ## 3.7.9
 
-* Sanitize edgeTransaction returned from makeSpend to make it bridge compatible
+- Sanitize edgeTransaction returned from makeSpend to make it bridge compatible
 
 ## 3.7.8
 
-* Fix Groestlcoin spelling
+- Fix Groestlcoin spelling
 
 ## 3.7.7
 
-* Fixed the issue with sending Digibyte.
-* Fixed the issue with sending Segwit transaction from a currency with a custom txHash (Like groestlcoin)
-* Changed some comments to have better wording and less junk in them
-* Removed some dependencies that were unused for faster build times
+- Fixed the issue with sending Digibyte.
+- Fixed the issue with sending Segwit transaction from a currency with a custom txHash (Like groestlcoin)
+- Changed some comments to have better wording and less junk in them
+- Removed some dependencies that were unused for faster build times
 
 ## 3.7.6
 
-* Use new colored icons
+- Use new colored icons
 
 ## 3.7.5
 
-* Fix sigHash for segwit transactions
+- Fix sigHash for segwit transactions
 
 ## 3.7.4
 
-* Fix smartcash icons
+- Fix smartcash icons
 
 ## 3.7.3
 
-* Add Groestlcoin
-* Add SmartCash
-* Fix Flow compatibility with edge-core-js v0.13.0
+- Add Groestlcoin
+- Add SmartCash
+- Fix Flow compatibility with edge-core-js v0.13.0
 
 ## 3.7.2
 
-* Fix BSV Block Explorer URL
+- Fix BSV Block Explorer URL
 
 ## 3.7.1
 
-* Reworte the custom scripts part to allow for much much more flexebility when creating the scripts.
+- Rewrote the custom scripts part to allow for much much more flexebility when creating the scripts.
   Allows to almost use the full power or bitcoin scripting.
-* Some flow fixes.
-* Updated dependencies.
+- Some flow fixes.
+- Updated dependencies.
 
 ## 3.7.0
 
-* Add BitcoinSV.
-* Add a way to pass in custom scripts (currently used for replay protaction) into makespend.
-* Fix some meaningless error messages.
-* Add support for Stratum v1.2 & v1.3.
+- Add BitcoinSV.
+- Add a way to pass in custom scripts (currently used for replay protection) into makespend.
+- Fix some meaningless error messages.
+- Add support for Stratum v1.2 & v1.3.
 
 ## 3.6.1
 
-* Fixed issue where as saveTX wouldn't call onTransactionsChanged.
-* Round up the fee we get from bitpay incase since we work in sat/byte and not sat/kb
-* privateKey.toPublic had an issue where it would bassicly create a null valued public key. now it works as it should and gives the correct key.
+- Fixed issue where as saveTX wouldn't call onTransactionsChanged.
+- Round up the fee we get from bitpay incase since we work in sat/byte and not sat/kb
+- privateKey.toPublic had an issue where it would bassicly create a null valued public key. now it works as it should and gives the correct key.
 
 ## 3.6.0
 
-* Do not call onTransactionsChanged at startEngine or makeEngine. edge-core-js will query getTransactions when needed
-* Reduce concurrent server connections from 3 to 2
-* Change testing electrum server and give 10s timeout
-* Prevent calling unaccelerated publicToPrivate when logging in. Saves 200ms per wallet on slower devices (LG V20)
-* Give up JS tick between calls to getTransaction so GUI can render in between a long sync call to getTransactions
-* Properly save header/server cache when progress hits 100%
+- Do not call onTransactionsChanged at startEngine or makeEngine. edge-core-js will query getTransactions when needed
+- Reduce concurrent server connections from 3 to 2
+- Change testing electrum server and give 10s timeout
+- Prevent calling unaccelerated publicToPrivate when logging in. Saves 200ms per wallet on slower devices (LG V20)
+- Give up JS tick between calls to getTransaction so GUI can render in between a long sync call to getTransactions
+- Properly save header/server cache when progress hits 100%
 
 ## 3.5.1
 
-* When server override is enabled, do not broadcast to any other servers
-* Tweak fee estimates to target 2-8 blocks
+- When server override is enabled, do not broadcast to any other servers
+- Tweak fee estimates to target 2-8 blocks
 
 ## 3.5.0
 
-* Update the Path from which to get the Digibyte electrum servers.
+- Update the Path from which to get the Digibyte electrum servers.
   Previous versions won't be able to get the server list so they won't be able to sync.
 
 ## 3.4.1
 
-* Fix eboost logo file names
-* Remove BIP70 support and make all payment protocol request use Bitpay JSON protocol
-* Fix payment protocol requests for React Native Android to use custom native module fetch to fix issue
+- Fix eboost logo file names
+- Remove BIP70 support and make all payment protocol request use Bitpay JSON protocol
+- Fix payment protocol requests for React Native Android to use custom native module fetch to fix issue
   with RN's fetch not being compatible with Bitpay
 
 ## 3.4.0
 
-* Use pluginName as unique currency ID and leave currencyName as human readable
-* Change currencyName for BitcoinCash -> Bitcoin Cash
-* Remove support for parsing xpriv/seeds (untested)
-* Add eboost support
-* Implement changeSettings endpoint
+- Use pluginName as unique currency ID and leave currencyName as human readable
+- Change currencyName for BitcoinCash -> Bitcoin Cash
+- Remove support for parsing xpriv/seeds (untested)
+- Add eboost support
+- Implement changeSettings endpoint
 
 ## 3.3.2
 
-* Remove non-standard elvis operator
+- Remove non-standard elvis operator
 
 ## 3.3.1
 
-* Using Bitpay Proprietary API for bip70 payments
+- Using Bitpay Proprietary API for bip70 payments
 
 ## 3.3.0
 
-* bip70 is working for both Bitcoin and Bitcoin cash (in fact it should work for ALL coins now)
-* Change Digibyte symbol from `Ð` to `Ɗ`
-* All of the dependencies are now up to date
-* Improved Jenkinsfile
+- bip70 is working for both Bitcoin and Bitcoin cash (in fact it should work for ALL coins now)
+- Change Digibyte symbol from `Ð` to `Ɗ`
+- All of the dependencies are now up to date
+- Improved Jenkinsfile
 
 ## 3.2.9
 
-* Fixed an issue when trying to send money to a network that has both Segwit and a legacy address format (like Litecoin or UFO).
+- Fixed an issue when trying to send money to a network that has both Segwit and a legacy address format (like Litecoin or UFO).
 
 ## 3.2.8
 
-* Fixed issues when sweeping bitcoin gold
-* Fixed an issues with sweeping private keys from non compressed private keys
+- Fixed issues when sweeping bitcoin gold
+- Fixed an issues with sweeping private keys from non compressed private keys
 
 ## 3.2.7
 
-* Fix a param on digibyte
-* Fix issues with sweeping private keys on networks without segwit
+- Fix a param on digibyte
+- Fix issues with sweeping private keys on networks without segwit
 
 ## 3.2.6
 
-* fix a bug in the throttling of updateFee
+- fix a bug in the throttling of updateFee
 
 ## 3.2.5
 
-* fixed minor bitcoin gold issues
-* disable support for bip70 for bitcoincash for now
+- fixed minor bitcoin gold issues
+- disable support for bip70 for bitcoincash for now
 
 ## 3.2.4
 
-* Made all currency query the infoServer for electrum servers and fee info.
+- Made all currency query the infoServer for electrum servers and fee info.
 
 ## 3.2.3
 
-* Allow get headers electrum call to return nonce of number or string
+- Allow get headers electrum call to return nonce of number or string
 
 ## 3.2.2
 
-* changed dogecoin icon to an URI
-* updated edge-core-js
+- changed dogecoin icon to an URI
+- updated edge-core-js
 
 ## 3.2.1
 
-* reordered the walletTypes before we will completly remove them
+- reordered the walletTypes before we will completely remove them
 
 ## 3.2.0
 
-* Add Vertcoin
-* Add Dodgecoin
-* Add Digibyte
+- Add Vertcoin
+- Add Dodgecoin
+- Add Digibyte
 
 ## 3.1.1
 
-* Add missing default wallet type to QTUM
+- Add missing default wallet type to QTUM
 
 ## 3.1.0
 
-* Pass in optional params to createPrivateKeys
-* Add legacy address to UFO coin
-* Generelize the legacy and cashAddress mechanisms
+- Pass in optional params to createPrivateKeys
+- Add legacy address to UFO coin
+- Generelize the legacy and cashAddress mechanisms
 
 ## 3.0.1
 
-* allow `forks` to be optional inside bcoinInfo
+- allow `forks` to be optional inside bcoinInfo
 
 ## 3.0.0
 
 ### BREAKING CHANGES
 
-* Stop supporting receiving the wallet format as type of the wallet type.
+- Stop supporting receiving the wallet format as type of the wallet type.
   For example, `wallet:bitcoin-bip44` is not supported anymore.
   The CORRECT way to pass in the wallet format is inside the keys object which is in the walletInfo.
   Example:
@@ -186,13 +194,14 @@
   ```js
   walletInfo = {
     keys: {
-      seed: 'whatever whatever whatever whatever whatever whatever whatever',
-      format: 'bip49'
+      seed: "whatever whatever whatever whatever whatever whatever whatever",
+      format: "bip49"
     }
-  }
+  };
   ```
 
-* Split each currency Info into 3 different config objects depends on the where and how they are going to be used:
+- Split each currency Info into 3 different config objects depends on the where and how they are going to be used:
+
   1. bcoinInfo - The data needed to extend Bcoin into supporting the currency
   2. engineInfo - The hard coded data needed to configure the engine for the currency
   3. currencyInfo - The original EdgeCurrencyInfo needed to be passed on to core/gui according to the API specs - This got ALOT cleaner
@@ -202,119 +211,119 @@
 
 ### New Features
 
-* `getSplittableTypes` API to the plugin.
-* bip84 wallet type as default to the networks that supports it.
-* Settings and factories for `BitcoinGold` and `BitcoinGoldTestnet`.
+- `getSplittableTypes` API to the plugin.
+- bip84 wallet type as default to the networks that supports it.
+- Settings and factories for `BitcoinGold` and `BitcoinGoldTestnet`.
 
 ### Fix
 
-* Two Way Replay Protection scheme.
-* `sweepPrivateKey` only signed with a key corresponding to the wallet type. Now we try all possible combinations.
+- Two Way Replay Protection scheme.
+- `sweepPrivateKey` only signed with a key corresponding to the wallet type. Now we try all possible combinations.
 
 ## 2.22.0
 
-* Full support for the SIGHASH_FORKID two-way replay protection scheme (For forks like bcash and bgold)
-* Full support for bip84 wallets.
-* Removed all of the $FlowFixMe (except for the one for 'buffer-hack') from the code.
-* Refactored the code so that almost all (around 90%) of the references to bcoin and its' implementation details are hidden inside a utility function (in the utils folder) and not spread all over the code base.
+- Full support for the SIGHASH_FORKID two-way replay protection scheme (For forks like bcash and bgold)
+- Full support for bip84 wallets.
+- Removed all of the \$FlowFixMe (except for the one for 'buffer-hack') from the code.
+- Refactored the code so that almost all (around 90%) of the references to bcoin and its' implementation details are hidden inside a utility function (in the utils folder) and not spread all over the code base.
 
 ## 2.21.9
 
-* Use a different network specific header for fetching paymentRequests
+- Use a different network specific header for fetching paymentRequests
 
 ## 2.21.8
 
-* Changed currency name for ufo from 'UFO Coin' to 'UFO'
+- Changed currency name for ufo from 'UFO Coin' to 'UFO'
 
 ## 2.21.7
 
-* Fix headers for bip70 payment request
+- Fix headers for bip70 payment request
 
 ## 2.21.6
 
-* update the lock file to get the new bcoin with bip70
+- update the lock file to get the new bcoin with bip70
 
 ## 2.21.3
 
-* Re-enable support for Bip70
+- Re-enable support for Bip70
 
 ## 2.21.2
 
-* Fix sweepPrivKey for the following coins: Dash, Litecoin, Feathercoin, Zcoin
+- Fix sweepPrivKey for the following coins: Dash, Litecoin, Feathercoin, Zcoin
 
 ## 2.21.1
 
-* Update icons and explorers
+- Update icons and explorers
 
 ## 2.21.0
 
-* Add support for Bip70
+- Add support for Bip70
 
 ## 2.20.1
 
-* Re-order bitcoin wallet types to put segwit up top
+- Re-order bitcoin wallet types to put segwit up top
 
 ## 2.18.0
 
-* Add private key sweeping.
+- Add private key sweeping.
 
 ## 2.17.1
 
-* Add broadcast APIs for BTC, BCH, LTC, and DASH
-* Improve serverCache usage by depleting all servers returned for getServers before asking for new servers
+- Add broadcast APIs for BTC, BCH, LTC, and DASH
+- Improve serverCache usage by depleting all servers returned for getServers before asking for new servers
 
 ## 2.17.0
 
-* Add support for FTC and XZC
-* Fix crash when no info server is specified for a coin
+- Add support for FTC and XZC
+- Fix crash when no info server is specified for a coin
 
 ## 2.16.3
 
-* Set the response time if serverScoreDown() is called. This prevents this server from being considered "new" and being tried again in the future at the top of the list.
-* Fix port numbers for zcoin electrum servers
-* Fix zcoin block explorer urls
-* Completely ignore electrums: urls for now
+- Set the response time if serverScoreDown() is called. This prevents this server from being considered "new" and being tried again in the future at the top of the list.
+- Fix port numbers for zcoin electrum servers
+- Fix zcoin block explorer urls
+- Completely ignore electrums: urls for now
 
 ## 2.16.2
 
-* Catch errors from stratum servers
+- Catch errors from stratum servers
 
 ## 2.16.1
 
-* Fix unhandled exception due to LTC transactions with bech32 outputs
+- Fix unhandled exception due to LTC transactions with bech32 outputs
 
 ## 2.16.0
 
-* Allow for Parse Uri to recognize legacy address
+- Allow for Parse Uri to recognize legacy address
 
 ## 2.15.0
 
-* Add Zcoin support
-* Fix throw in getTransaction when tx has an OP_RETURN
+- Add Zcoin support
+- Fix throw in getTransaction when tx has an OP_RETURN
 
 ## 2.14.11
 
-* Filter uncofimred UTXO's the pendingTxids list for servers that return uncofimred UTXO's as part of the tx history.
-* Better caching mechanism
-* Use the "onAddressesChecked" callback to return a value between 0 and 1 for how "synced" the engine is.
-* Styling fixes
-* Flow fixes
-* Tests fixes
+- Filter uncofimred UTXO's the pendingTxids list for servers that return uncofimred UTXO's as part of the tx history.
+- Better caching mechanism
+- Use the "onAddressesChecked" callback to return a value between 0 and 1 for how "synced" the engine is.
+- Styling fixes
+- Flow fixes
+- Tests fixes
 
 ## 2.14.10
 
-* Return Transaction date in seconds and not miliseconds
+- Return Transaction date in seconds and not miliseconds
 
 ## 2.14.9
 
-* Fix .flowconfig to include all src files
-* Fix flow errors from possibly undeclared vars
-* Upgrade edge-core-js to 0.6.3 which includes Flow def for EdgeEncodeUri.legacyAddress
+- Fix .flowconfig to include all src files
+- Fix flow errors from possibly undeclared vars
+- Upgrade edge-core-js to 0.6.3 which includes Flow def for EdgeEncodeUri.legacyAddress
 
 ## 2.14.8
 
-* Fix Flow errors
+- Fix Flow errors
 
 ## 2.14.7
 
-* Use edge-core-js instead of edge-login
+- Use edge-core-js instead of edge-login
