@@ -50,23 +50,14 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BTC',
-  currencyName: 'Bitcoin',
+  displayName: 'Bitcoin',
   pluginName: 'bitcoin',
   denominations: [
     { name: 'BTC', multiplier: '100000000', symbol: '₿' },
     { name: 'mBTC', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:bitcoin',
-    'wallet:bitcoin-bip84',
-    'wallet:bitcoin-bip49',
-    'wallet:bitcoin-bip44'
-  ],
+  walletType: 'wallet:bitcoin',
 
   // Configuration options:
   defaultSettings: {

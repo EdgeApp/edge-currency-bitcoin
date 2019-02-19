@@ -55,18 +55,14 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
 
   currencyCode: 'BTG',
-  currencyName: 'Bitcoin Gold',
+  displayName: 'Bitcoin Gold',
   pluginName: 'bitcoingold',
   denominations: [
     { name: 'BTG', multiplier: '100000000', symbol: '₿' },
     { name: 'mBTG', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:bitcoingold'],
+  walletType: 'wallet:bitcoingold',
 
   // Configuration options:
   defaultSettings: {

@@ -2,47 +2,48 @@
 
 import { assert } from 'chai'
 import {
+  type EdgeCorePlugin,
   type EdgeCorePluginOptions,
   type EdgeCurrencyPlugin,
-  type EdgeCurrencyPluginFactory,
-  makeFakeIos
+  type EdgeCurrencyTools,
+  makeFakeIo
 } from 'edge-core-js'
 import { before, describe, it } from 'mocha'
 
-import * as Factories from '../../../src/index.js'
+import edgeCorePlugins from '../../../src/index.js'
 import fixtures from './fixtures.json'
 
 for (const fixture of fixtures) {
-  const currencyPluginFactory: EdgeCurrencyPluginFactory =
-    Factories[fixture['factory']]
   const WALLET_TYPE = fixture['WALLET_TYPE']
   const WALLET_FORMAT = fixture['WALLET_FORMAT']
   const keyName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Key'
   const xpubName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Xpub'
 
   let keys
-  let plugin: EdgeCurrencyPlugin
+  let tools: EdgeCurrencyTools
 
-  const [fakeIo] = makeFakeIos(1)
-  const opts: EdgeCorePluginOptions = {
+  const fakeIo = makeFakeIo()
+  const pluginOpts: EdgeCorePluginOptions = {
     io: {
       ...fakeIo,
-      random: size => fixture['key'],
-      Socket: require('net').Socket,
-      TLSSocket: require('tls').TLSSocket
-    }
+      random: size => fixture['key']
+    },
+    initOptions: {},
+    nativeIo: {},
+    pluginDisklet: fakeIo.disklet
   }
+  const factory = edgeCorePlugins[fixture['pluginName']]
+  if (typeof factory !== 'function') throw new TypeError('Bad plugin')
+  const corePlugin: EdgeCorePlugin = factory(pluginOpts)
+  const plugin: EdgeCurrencyPlugin = (corePlugin: any)
 
   describe(`Info for Wallet type ${WALLET_TYPE}`, function () {
-    before('Plugin', function (done) {
-      currencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
-        plugin = currencyPlugin
-        assert.equal(
-          currencyPlugin.currencyInfo.currencyCode,
-          fixture['Test Currency code']
-        )
-        done()
-      })
+    before('Plugin', async function () {
+      assert.equal(
+        plugin.currencyInfo.currencyCode,
+        fixture['Test Currency code']
+      )
+      tools = await plugin.makeCurrencyTools()
     })
 
     it('Test Currency code', function () {
@@ -54,13 +55,6 @@ for (const fixture of fixtures) {
   })
 
   describe(`createPrivateKey for Wallet type ${WALLET_TYPE}`, function () {
-    before('Plugin', function (done) {
-      currencyPluginFactory.makePlugin(opts).then(currencyPlugin => {
-        plugin = currencyPlugin
-        done()
-      })
-    })
-
     it('Test Currency code', function () {
       assert.equal(
         plugin.currencyInfo.currencyCode,
@@ -68,8 +62,8 @@ for (const fixture of fixtures) {
       )
     })
 
-    it('Create valid key', function () {
-      keys = plugin.createPrivateKey(WALLET_TYPE)
+    it('Create valid key', async function () {
+      keys = await tools.createPrivateKey(WALLET_TYPE)
       assert.equal(!keys, false)
       assert.equal(typeof keys[keyName], 'string')
       const length = keys[keyName].split(' ').length
@@ -79,7 +73,7 @@ for (const fixture of fixtures) {
 
   describe(`derivePublicKey for Wallet type ${WALLET_TYPE}`, function () {
     it('Valid private key', function (done) {
-      plugin
+      tools
         .derivePublicKey({
           type: WALLET_TYPE,
           keys: {
@@ -95,13 +89,13 @@ for (const fixture of fixtures) {
     })
 
     it('Invalid key name', function (done) {
-      plugin.derivePublicKey(fixture['Invalid key name']).catch(e => {
+      tools.derivePublicKey(fixture['Invalid key name']).catch(e => {
         done()
       })
     })
 
     it('Invalid wallet type', function (done) {
-      plugin.derivePublicKey(fixture['Invalid wallet type']).catch(e => {
+      tools.derivePublicKey(fixture['Invalid wallet type']).catch(e => {
         done()
       })
     })
@@ -110,14 +104,14 @@ for (const fixture of fixtures) {
   describe(`parseUri for Wallet type ${WALLET_TYPE}`, function () {
     Object.keys(fixture['parseUri']).forEach(test => {
       if (fixture['parseUri'][test].length === 2) {
-        it(test, function () {
-          const parsedUri = plugin.parseUri(fixture['parseUri'][test][0])
+        it(test, async function () {
+          const parsedUri = await tools.parseUri(fixture['parseUri'][test][0])
           const expectedParsedUri = fixture['parseUri'][test][1]
           assert.deepEqual(parsedUri, expectedParsedUri)
         })
       } else {
         it(test, function () {
-          assert.throws(() => plugin.parseUri(fixture['parseUri'][test][0]))
+          assert.throws(() => tools.parseUri(fixture['parseUri'][test][0]))
         })
       }
     })
@@ -126,14 +120,16 @@ for (const fixture of fixtures) {
   describe(`encodeUri for Wallet type ${WALLET_TYPE}`, function () {
     Object.keys(fixture['encodeUri']).forEach(test => {
       if (fixture['encodeUri'][test].length === 2) {
-        it(test, function () {
-          const encodedUri = plugin.encodeUri(fixture['encodeUri'][test][0])
+        it(test, async function () {
+          const encodedUri = await tools.encodeUri(
+            fixture['encodeUri'][test][0]
+          )
           const expectedEncodeUri = fixture['encodeUri'][test][1]
           assert.equal(encodedUri, expectedEncodeUri)
         })
       } else {
         it(test, function () {
-          assert.throws(() => plugin.encodeUri(fixture['encodeUri'][test][0]))
+          assert.throws(() => tools.encodeUri(fixture['encodeUri'][test][0]))
         })
       }
     })
@@ -143,10 +139,10 @@ for (const fixture of fixtures) {
     const getSplittableTypes = fixture['getSplittableTypes'] || []
     Object.keys(getSplittableTypes).forEach(format => {
       it(`Test for the wallet type ${format}`, function () {
-        if (plugin.getSplittableTypes == null) {
+        if (tools.getSplittableTypes == null) {
           throw new Error('No getSplittableTypes')
         }
-        const walletTypes = plugin.getSplittableTypes({
+        const walletTypes = tools.getSplittableTypes({
           type: WALLET_TYPE,
           keys: { format },
           id: '!'

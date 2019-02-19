@@ -1,11 +1,11 @@
 // @flow
 
 import { type Disklet } from 'disklet'
-import { type EdgeIo } from 'edge-core-js/types'
 import EventEmitter from 'eventemitter3'
 import stable from 'stable'
 import { parse } from 'uri-js'
 
+import { type PluginIo } from '../plugin/pluginIo.js'
 import { type PluginState } from '../plugin/pluginState.js'
 // import { scoreServer2 } from '../plugin/pluginState.js'
 import type {
@@ -84,7 +84,7 @@ export interface EngineStateCallbacks {
 export interface EngineStateOptions {
   files: { txs: string, addresses: string };
   callbacks: EngineStateCallbacks;
-  io: EdgeIo;
+  io: PluginIo;
   localDisklet: Disklet;
   encryptedLocalDisklet: Disklet;
   pluginState: PluginState;
@@ -387,7 +387,7 @@ export class EngineState extends EventEmitter {
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------
-  io: EdgeIo
+  io: PluginIo
   walletId: string
   txFile: string
   addressFile: string
@@ -513,7 +513,6 @@ export class EngineState extends EventEmitter {
     const ignorePatterns = []
     // if (!this.io.TLSSocket)
     ignorePatterns.push('electrums:')
-    if (!this.io.Socket) ignorePatterns.push('electrum:')
     if (this.serverList.length === 0) {
       this.serverList = this.pluginState.getServers(
         NEW_CONNECTIONS,

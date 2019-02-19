@@ -49,22 +49,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'LTC',
-  currencyName: 'Litecoin',
+  displayName: 'Litecoin',
   pluginName: 'litecoin',
   denominations: [
     { name: 'LTC', multiplier: '100000000', symbol: 'Ł' },
     { name: 'mLTC', multiplier: '100000', symbol: 'mŁ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:litecoin',
-    'wallet:litecoin-bip84',
-    'wallet:litecoin-bip49',
-    'wallet:litecoin-bip44'
-  ],
+  walletType: 'wallet:litecoin',
 
   // Configuration options:
   defaultSettings: {
