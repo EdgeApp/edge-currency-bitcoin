@@ -1,7 +1,12 @@
 // @flow
 
 import { assert } from 'chai'
-import { type EdgeCurrencyPluginFactory, makeFakeIos } from 'edge-core-js'
+import {
+  type EdgeCorePluginOptions,
+  type EdgeCurrencyPlugin,
+  type EdgeCurrencyPluginFactory,
+  makeFakeIos
+} from 'edge-core-js'
 import { before, describe, it } from 'mocha'
 
 import * as Factories from '../../../src/index.js'
@@ -14,10 +19,12 @@ for (const fixture of fixtures) {
   const WALLET_FORMAT = fixture['WALLET_FORMAT']
   const keyName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Key'
   const xpubName = WALLET_TYPE.split('wallet:')[1].split('-')[0] + 'Xpub'
-  let plugin, keys
+
+  let keys
+  let plugin: EdgeCurrencyPlugin
 
   const [fakeIo] = makeFakeIos(1)
-  const opts = {
+  const opts: EdgeCorePluginOptions = {
     io: {
       ...fakeIo,
       random: size => fixture['key'],

@@ -8,7 +8,10 @@ import bcoin from 'bcoin'
 import { assert } from 'chai'
 import { downgradeDisklet, navigateDisklet } from 'disklet'
 import {
+  type EdgeCorePluginOptions,
+  type EdgeCurrencyEngine,
   type EdgeCurrencyEngineOptions,
+  type EdgeCurrencyPlugin,
   type EdgeCurrencyPluginFactory,
   makeFakeIos
 } from 'edge-core-js'
@@ -51,10 +54,12 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   const WALLET_TYPE = fixture['WALLET_TYPE']
   const TX_AMOUNT = fixture['TX_AMOUNT']
 
-  let plugin, keys, engine
-  const emitter = new EventEmitter()
+  let engine: EdgeCurrencyEngine
+  let keys
+  let plugin: EdgeCurrencyPlugin
+
   const [fakeIo] = makeFakeIos(1)
-  const pluginOpts = {
+  const pluginOpts: EdgeCorePluginOptions = {
     io: {
       ...fakeIo,
       secp256k1: bcoin.crypto.secp256k1,
@@ -66,6 +71,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     }
   }
 
+  const emitter = new EventEmitter()
   const callbacks = {
     onAddressesChecked (progressRatio) {
       // console.log('onAddressesCheck', progressRatio)
