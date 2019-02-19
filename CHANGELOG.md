@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.0.0 (2019-02-19)
+
+- Upgrade to the edge-core-js v0.15.0 and adapt to breaking changes.
+
 ## 3.8.0 (2019-02-18)
 
 - Change BSV explorer to blockchair.com
