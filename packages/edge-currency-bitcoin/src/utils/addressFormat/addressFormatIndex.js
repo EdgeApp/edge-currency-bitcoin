@@ -24,6 +24,14 @@ export const changeFormat = (
   }
 }
 
+export const toBitcoinFormat = (address: string, network: string): string => {
+  const { addressPrefix } = networks[network]
+  if (!isLegacy(address, network) && addressPrefix.cashAddress) {
+    address = cashAddressToLegacy(address, network)
+  }
+  return changeFormat(address, network, networks['bitcoin'].addressPrefix)
+}
+
 export const toLegacyFormat = (address: string, network: string): string => {
   if (isLegacy(address, network)) return address
   const { addressPrefix, legacyAddressPrefix } = networks[network]

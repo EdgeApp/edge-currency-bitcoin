@@ -6,8 +6,7 @@ import bcoin from 'bcoin'
 import { Utils, Core } from 'nidavellir'
 import { fromBaseString, toScript } from './address.js'
 import {
-  getAddressPrefix,
-  toLegacyFormat,
+  toBitcoinFormat,
   toNewFormat
 } from '../addressFormat/addressFormatIndex.js'
 import { reverseHexString } from '../utils.js'
@@ -84,12 +83,8 @@ export const createTX = async ({
     coin.hash = serializers.txHash(tx.toNormal().toString('hex'))
     return coin
   })
-  const type = getAddressPrefix(changeAddress, network)
-  if (type === 'cashAddress') {
-    changeAddress = toNewFormat(changeAddress, network)
-  } else {
-    changeAddress = toLegacyFormat(changeAddress, network)
-  }
+
+  changeAddress = toBitcoinFormat(changeAddress, network)
 
   // Try to fund the transaction
   await mtx.fund(coins, {
