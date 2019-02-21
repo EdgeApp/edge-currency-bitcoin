@@ -8,7 +8,7 @@ import * as Address from '../utils/bcoinUtils/address.js'
 import * as Key from '../utils/bcoinUtils/key.js'
 import * as Misc from '../utils/bcoinUtils/misc.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
-import { isEmptyObject } from '../utils/utils.js'
+
 import type {
   Address as AddressObj,
   ScriptHashMap,
@@ -112,24 +112,6 @@ export class KeyManager extends EventEmitter {
     this.scriptHashes = scriptHashes
     // Helper map from path to script hash
     this.scriptHashesMap = scriptHashesMap
-    if (
-      isEmptyObject(this.scriptHashesMap) ||
-      isEmptyObject(this.scriptHashes)
-    ) {
-      for (const scriptHash in this.addressInfos) {
-        const address = this.addressInfos[scriptHash]
-        const { displayAddress, path } = address
-        this.scriptHashes[displayAddress] = scriptHash
-
-        const pathArray = path.split('/')
-        const index = parseInt(pathArray.pop())
-        const parentPath = pathArray.join('/')
-        if (!this.scriptHashesMap[parentPath]) {
-          this.scriptHashesMap[parentPath] = []
-        }
-        this.scriptHashesMap[parentPath][index] = scriptHash
-      }
-    }
 
     for (const hdPath of this.hdPaths) {
       const path = hdPath.path.join('/')

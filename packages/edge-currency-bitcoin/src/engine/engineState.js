@@ -656,7 +656,7 @@ export class EngineState extends EventEmitter {
     }
 
     // Fetch Headers:
-    for (const height of Object.keys(this.missingHeaders)) {
+    for (const height in this.missingHeaders) {
       if (
         !this.fetchingHeaders[height] &&
         this.serverCanGetHeader(uri, height)
@@ -688,7 +688,7 @@ export class EngineState extends EventEmitter {
     }
 
     // Fetch txids:
-    for (const txid of Object.keys(this.missingTxs)) {
+    for (const txid in this.missingTxs) {
       if (!this.fetchingTxs[txid] && this.serverCanGetTx(uri, txid)) {
         this.fetchingTxs[txid] = true
         const queryTime = Date.now()
@@ -714,20 +714,20 @@ export class EngineState extends EventEmitter {
     }
 
     // Fetch utxos:
-    for (const address of Object.keys(serverState.addresses)) {
-      const addressState = serverState.addresses[address]
+    for (const scriptHash in serverState.addresses) {
+      const addressState = serverState.addresses[scriptHash]
       if (
         addressState.hash &&
-        addressState.hash !== this.addressCache[address].utxoStratumHash &&
+        addressState.hash !== this.addressCache[scriptHash].utxoStratumHash &&
         !addressState.fetchingUtxos &&
-        this.findBestServer(address) === uri
+        this.findBestServer(scriptHash) === uri
       ) {
         addressState.fetchingUtxos = true
         const queryTime = Date.now()
         return fetchScriptHashUtxo(
-          address,
+          scriptHash,
           (utxos: Array<StratumUtxo>) => {
-            console.log(`${prefix} received utxos for: ${address}`)
+            console.log(`${prefix} received utxos for: ${scriptHash}`)
             addressState.fetchingUtxos = false
             if (!addressState.hash) {
               throw new Error(
@@ -735,27 +735,26 @@ export class EngineState extends EventEmitter {
               )
             }
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
-            this.handleUtxoFetch(address, addressState.hash || '', utxos)
+            this.handleUtxoFetch(scriptHash, addressState.hash || '', utxos)
           },
           (e: Error) => {
             addressState.fetchingUtxos = false
-            this.handleMessageError(uri, `fetching utxos for: ${address}`, e)
+            this.handleMessageError(uri, `fetching utxos for: ${scriptHash}`, e)
           }
         )
       }
     }
 
     // Subscribe to addresses:
-    const addresses = Object.keys(this.addressInfos)
-    for (const address of addresses) {
-      const addressState = serverState.addresses[address]
+    for (const scriptHash in this.addressInfos) {
+      const addressState = serverState.addresses[scriptHash]
       if (!addressState.subscribed && !addressState.subscribing) {
         addressState.subscribing = true
         return subscribeScriptHash(
-          address,
+          scriptHash,
           (hash: string | null) => {
             console.log(
-              `${prefix} subscribed to ${address} at ${
+              `${prefix} subscribed to ${scriptHash} at ${
                 hash ? hash.slice(0, 6) : 'null'
               }`
             )
@@ -763,7 +762,7 @@ export class EngineState extends EventEmitter {
             addressState.subscribed = true
             addressState.hash = hash
             addressState.lastUpdate = Date.now()
-            const { txidStratumHash } = this.addressCache[address]
+            const { txidStratumHash } = this.addressCache[scriptHash]
             if (!hash || hash === txidStratumHash) {
               addressState.synced = true
               this.updateProgressRatio()
@@ -771,27 +770,27 @@ export class EngineState extends EventEmitter {
           },
           (e: Error) => {
             addressState.subscribing = false
-            this.handleMessageError(uri, `subscribing to ${address}`, e)
+            this.handleMessageError(uri, `subscribing to ${scriptHash}`, e)
           }
         )
       }
     }
 
     // Fetch history:
-    for (const address of Object.keys(serverState.addresses)) {
-      const addressState = serverState.addresses[address]
+    for (const scriptHash in serverState.addresses) {
+      const addressState = serverState.addresses[scriptHash]
       if (
         addressState.hash &&
-        addressState.hash !== this.addressCache[address].txidStratumHash &&
+        addressState.hash !== this.addressCache[scriptHash].txidStratumHash &&
         !addressState.fetchingTxids &&
-        this.findBestServer(address) === uri
+        this.findBestServer(scriptHash) === uri
       ) {
         addressState.fetchingTxids = true
         const queryTime = Date.now()
         return fetchScriptHashHistory(
-          address,
+          scriptHash,
           (history: Array<StratumHistoryRow>) => {
-            console.log(`${prefix}received history for ${address}`)
+            console.log(`${prefix}received history for ${scriptHash}`)
             addressState.fetchingTxids = false
             if (!addressState.hash) {
               throw new Error(
@@ -799,13 +798,13 @@ export class EngineState extends EventEmitter {
               )
             }
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
-            this.handleHistoryFetch(address, addressState, history)
+            this.handleHistoryFetch(scriptHash, addressState, history)
           },
           (e: Error) => {
             addressState.fetchingTxids = false
             this.handleMessageError(
               uri,
-              `getting history for address ${address}`,
+              `getting history for address ${scriptHash}`,
               e
             )
           }
@@ -851,10 +850,6 @@ export class EngineState extends EventEmitter {
       if (!cacheJson.heights) throw new Error('Missing heights in cache')
 
       // Update the cache:
-      if (cacheJson.scriptHashes) this.scriptHashes = cacheJson.scriptHashes
-      if (cacheJson.scriptHashesMap) {
-        this.scriptHashesMap = cacheJson.scriptHashesMap
-      }
       this.addressCache = cacheJson.addresses
       this.txHeightCache = cacheJson.heights
 
@@ -869,6 +864,15 @@ export class EngineState extends EventEmitter {
       // Update the derived information:
       for (const scriptHash of Object.keys(this.addressCache)) {
         const address = this.addressCache[scriptHash]
+        const { displayAddress, path } = address
+        this.scriptHashes[displayAddress] = scriptHash
+        const indexPos = path.lastIndexOf('/')
+        const index = parseInt(path.slice(1 - indexPos))
+        const parentPath = path.slice(0, indexPos)
+        if (!this.scriptHashesMap[parentPath]) {
+          this.scriptHashesMap[parentPath] = []
+        }
+        this.scriptHashesMap[parentPath][index] = scriptHash
         for (const txid of address.txids) this.handleNewTxid(txid)
         for (const utxo of address.utxos) this.handleNewTxid(utxo.txid)
         this.refreshAddressInfo(scriptHash)
@@ -909,8 +913,6 @@ export class EngineState extends EventEmitter {
       this.addressCacheDirty,
       'address',
       {
-        scriptHashes: this.scriptHashes,
-        scriptHashesMap: this.scriptHashesMap,
         addresses: this.addressCache,
         heights: this.txHeightCache
       }

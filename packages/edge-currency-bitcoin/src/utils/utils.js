@@ -9,15 +9,6 @@ import type { DiskletFolder } from 'disklet'
 
 export const base64regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
 
-export const isEmptyObject = (value: Object) => {
-  for (const key in value) {
-    if (hasOwnProperty.call(value, key)) {
-      return false
-    }
-  }
-  return true
-}
-
 export type SaveCache = (
   fileName: string,
   cacheDirty: boolean,
