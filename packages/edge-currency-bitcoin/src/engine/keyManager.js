@@ -204,35 +204,15 @@ export class KeyManager extends EventEmitter {
 
   getReceiveAddress (): EdgeAddress {
     const addresses = {}
-    for (const path in this.scriptHashesMap) {
-      if (path[path.length - 1] !== '1') continue
-      const scriptHashes = this.scriptHashesMap[path]
+    for (const hdPath of this.hdPaths) {
+      const { path, chain, scriptType = 'P2PKH' } = hdPath
+      if (chain !== 'external') continue
+      const scriptHashes = this.scriptHashesMap[path.join('/')]
       const scriptHash = scriptHashes[scriptHashes.length - 1]
       const { displayAddress } = this.addressInfos[scriptHash]
-      const hdKey = HDKey.getHDKey(this.masterKey, path.split('/'))
-      if (hdKey && hdKey.scriptType) {
-        addresses[hdKey.scriptType] = displayAddress
-      } else {
-        const defaultScript = NetworkInfo.getDefaultScriptType(this.network)
-        addresses[defaultScript] = displayAddress
-      }
+      addresses[scriptType] = displayAddress
     }
     return addresses
-  }
-
-  getChangeAddress (): { changeAddress?: string, scriptType: string } {
-    const scriptType = NetworkInfo.getDefaultScriptType(this.network)
-    for (const hdPath of this.hdPaths) {
-      if (scriptType !== hdPath.scriptType) continue
-      const path = hdPath.path.join('/')
-      const scriptHashes = this.scriptHashesMap[path]
-      const scriptHash = scriptHashes[scriptHashes.length - 1]
-      const address = this.addressInfos[scriptHash]
-      if (!address) continue
-      const changeAddress = address.displayAddress
-      return { changeAddress, scriptType }
-    }
-    return { scriptType }
   }
 
   async createTX (options: createTxOptions): any {
@@ -243,14 +223,16 @@ export class KeyManager extends EventEmitter {
       if (address) standardOutputs.push({ address, value: output.value })
     }
 
-    const { changeAddress, scriptType } = this.getChangeAddress()
-    if (!changeAddress) {
-      throw new Error('Cannot createTX without change address')
-    }
+    const hdPath = this.hdPaths.length > 1 ? this.hdPaths[1] : this.hdPaths[0]
+    const { path, scriptType = 'P2PKH' } = hdPath
+    const scriptHashes = this.scriptHashesMap[path.join('/')]
+    const scriptHash = scriptHashes[scriptHashes.length - 1]
+    const changeAddress = this.addressInfos[scriptHash].displayAddress
+
     return Tx.createTX({
       ...rest,
       outputs: standardOutputs,
-      changeAddress: changeAddress,
+      changeAddress,
       estimate: prev => Tx.estimateSize(scriptType, prev),
       network: this.network
     })
