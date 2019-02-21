@@ -3,16 +3,16 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import { keyPairFromWIF } from '../../src/core/keyPair.js'
+import { fromWif } from '../../src/core/keyPair.js'
 import fixtures from './fixtures.json'
 
 const KeyPairFixtures = fixtures.keyPair
 const network = 'main'
 
 describe('Testing HD Key', function () {
-  KeyPairFixtures.keyPairFromWIF.forEach(test => {
+  KeyPairFixtures.fromWif.forEach(test => {
     it(`Creating Key Pair from WIF ${test[0]}`, async function () {
-      const keyPair = await keyPairFromWIF(test[0], network)
+      const keyPair = await fromWif(test[0], network)
       assert.equal(keyPair.publicKey, test[1])
     })
   })

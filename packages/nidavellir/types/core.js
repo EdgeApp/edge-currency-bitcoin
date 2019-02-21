@@ -1,6 +1,5 @@
 // @flow
 
-import type { HDSettings } from './bip44.js'
 import type { BaseDecoder, HashFunction } from './utils.js'
 
 export type PublicKeyType<T> = { publicKey: T }
@@ -46,8 +45,7 @@ export type NetworkInfo = {
   keyPrefix: KeyPrefix,
   addressPrefix: AddressPrefix,
   legacyAddressPrefix: AddressPrefix,
-  supportedBips: Array<number>,
-  hdSettings: HDSettings,
+  bips: Array<number>,
   forks: Array<string>,
   replayProtection: ReplayProtection,
   serializers: Serializers
@@ -58,8 +56,7 @@ export type PartialInfo = {
   keyPrefix?: KeyPrefix,
   addressPrefix?: AddressPrefix,
   legacyAddressPrefix?: AddressPrefix,
-  supportedBips?: Array<number>,
-  hdSettings?: HDSettings,
+  bips?: Array<number>,
   forks?: Array<string>,
   replayProtection?: ReplayProtection,
   serializers?: Serializers

@@ -29,3 +29,18 @@ export type ExtendedKey<T> = {
 
 export type ExtendedKeyPair = ExtendedKey<string>
 export type ExtendedMasterKeys = MasterKeyPair<string> & ExtendedKeyPair
+
+export type ScriptType = 'P2PKH' | 'P2SH' | 'P2WPKH-P2SH' | 'P2WPKH' | 'P2WSH'
+export type Chain = 'external' | 'internal'
+export type Index = string
+export type Path = Array<Index>
+export type HDPath = {
+  path: Path,
+  chain?: Chain,
+  scriptType?: ScriptType
+}
+
+export type HDKeyPair = {
+  hardened: boolean,
+  children: { [index: Index]: HDKeyPair }
+} & HDPath & ExtendedKey<string>

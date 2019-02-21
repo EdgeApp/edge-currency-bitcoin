@@ -1,6 +1,6 @@
 {
   "keyPair": {
-    "keyPairFromWIF": [
+    "fromWif": [
       [
         "L1a6bxpVHJcM9ZEUS58MM1S9NzjxsJ14iFDV4rAdfMnE5TLGDexM",
         "0251fdef9af8d59d0cce4a093fb5e48e9681bd6f45cf97220cce341a40a1c9576e"
