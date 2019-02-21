@@ -145,7 +145,8 @@ export const getAllAddresses = async (
   const keys = await getAllKeyRings(privateKeys, network)
 
   const addresses = keys.map(({ publicKey, scriptType }) =>
-    fromKeyPair({ publicKey }, scriptType, network))
+    fromKeyPair({ publicKey }, scriptType, network)
+  )
 
   return addresses
 }

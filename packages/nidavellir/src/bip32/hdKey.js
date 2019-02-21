@@ -1,6 +1,12 @@
 // @flow
 
-import type { Index, HDKeyPair, HDPath, Path, ExtendedKeyPair } from '../../types/bip32.js'
+import type {
+  ExtendedKeyPair,
+  HDKeyPair,
+  HDPath,
+  Index,
+  Path
+} from '../../types/bip32.js'
 import { HARDENED } from '../bip32/derive.js'
 import * as ExtendedKey from '../bip32/extendedKey.js'
 
@@ -60,7 +66,7 @@ export const fromIndex = async (
   const childKey = await ExtendedKey.fromIndex(parentKey, index, network)
   const childHDPath = {
     ...parentKey,
-    path: [ ...parentKey.path, index ]
+    path: [...parentKey.path, index]
   }
   // Create an HD key from the ExtendedKey
   return fromExtendedKey(childKey, childHDPath)
@@ -132,10 +138,7 @@ export const getParentKey = (
   return { key: parentKey, path: tempPath }
 }
 
-export const getKey = (
-  parentKey: HDKeyPair,
-  path: Path
-): HDKeyPair | null => {
+export const getKey = (parentKey: HDKeyPair, path: Path): HDKeyPair | null => {
   const tempPath = [...path]
   tempPath.shift()
   while (parentKey && tempPath.length) {
@@ -151,9 +154,9 @@ export const createPath = (
 ): HDPath => {
   const { chain = 'external', scriptType = 'P2PKH' } = parent
 
-  const accountStr = `${account}${hardened ? '\'' : ''}`
+  const accountStr = `${account}${hardened ? "'" : ''}`
   const index = chain === 'external' ? '0' : '1'
-  const path = [ ...parent.path, accountStr, index ]
+  const path = [...parent.path, accountStr, index]
 
   return { path, chain, scriptType }
 }

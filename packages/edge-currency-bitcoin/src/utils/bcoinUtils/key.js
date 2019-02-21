@@ -13,7 +13,10 @@ const { Mnemonic } = bcoin.hd
 export const parseSeed = (seed: string) =>
   base64regex.test(seed) ? Buffer.from(seed, 'base64').toString('hex') : seed
 
-export const seedToHex = async (seed: string, network: string): Promise<string> => {
+export const seedToHex = async (
+  seed: string,
+  network: string
+): Promise<string> => {
   if (base64regex.test(seed)) {
     const res = Buffer.from(seed, 'base64').toString('hex')
     return res
@@ -46,9 +49,10 @@ export const getAllKeyRings = async (
   for (const bip in hdPaths) {
     const scriptType = hdPaths[bip]
     for (const wif of wifs) {
-      const keyPromise = Core.KeyPair
-        .fromWif(wif, network)
-        .then(key => ({ ...key, scriptType }))
+      const keyPromise = Core.KeyPair.fromWif(wif, network).then(key => ({
+        ...key,
+        scriptType
+      }))
       promises.push(keyPromise)
     }
   }

@@ -28,7 +28,10 @@ const patchPbkdf2 = function (pbkdf2) {
       return pbkdf2.deriveAsync(
         Buffer.from(phrase, 'utf8'),
         Buffer.from(passwd, 'utf8'),
-        2048, 64, 'sha512')
+        2048,
+        64,
+        'sha512'
+      )
     }
 
     patched['pbkdf2'] = true

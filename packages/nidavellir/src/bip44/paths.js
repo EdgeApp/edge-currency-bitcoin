@@ -20,12 +20,12 @@ export const createPaths = (
     return paths
   }
 
-  if (purpose === 32) return [ createPath(account) ]
+  if (purpose === 32) return [createPath(account)]
 
   const scriptType = ScriptTypes[`${purpose}`]
   if (!scriptType) throw new Error(`Unknown derivation purpose ${purpose}`)
 
-  const path = [ 'm', `${purpose}'`, `${coinType || 0}'` ]
+  const path = ['m', `${purpose}'`, `${coinType || 0}'`]
   const hdPath = { path, scriptType }
   const hdPathInt = { ...hdPath, chain: 'internal' }
 
