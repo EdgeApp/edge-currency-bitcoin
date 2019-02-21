@@ -15,14 +15,14 @@ export const scriptTypesToEdgeTypes = (
 })
 
 export const formatToBips = (network: string, format?: string) => {
-  const { supportedBips } = Core.Networks[network]
-  if (!format) return supportedBips
+  const { bips } = Core.Networks[network]
+  if (!format) return bips
   const bip = parseInt(format.replace('bip', ''))
-  if (!supportedBips.includes(bip)) {
+  if (!bips.includes(bip)) {
     throw new Error('InvalidWalletType')
   }
   if (bip < 49) return [bip]
-  return supportedBips.filter(a => a >= bip)
+  return bips.filter(a => a >= bip)
 }
 
 export const verifyUriProtocol = (

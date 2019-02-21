@@ -1,6 +1,6 @@
 // @flow
 
-import { Utils, Core, Bip44, Bip32 } from 'nidavellir'
+import { Utils, HD } from 'nidavellir'
 import type { HDPath, HDKeyPair } from 'nidavellir'
 import EventEmitter from 'eventemitter3'
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
@@ -21,9 +21,7 @@ import type {
 } from '../utils/bcoinUtils/types.js'
 import type { AddressInfos } from './engineState.js'
 
-const { HDKey } = Bip44
-const { ExtendedKey } = Bip32
-const { NetworkInfo } = Core
+const { ExtendedKey, HDKey } = HD
 
 const GAP_LIMIT = 10
 
@@ -102,11 +100,7 @@ export class KeyManager extends EventEmitter {
     // Get Settings for this network
     // TODO - Get custom scriptTemplates
     // const { scriptTemplates } = NetworkInfo.networks[network]
-    this.hdPaths = NetworkInfo.getHDPaths(
-      { account, coinType },
-      this.network,
-      bips
-    )
+    this.hdPaths = HD.Paths.createPaths(bips, coinType, account, this.network)
     // this.scriptTemplates = scriptTemplates
     // Create a lock for when deriving addresses
     this.writeLock = Misc.getLock()
@@ -154,7 +148,7 @@ export class KeyManager extends EventEmitter {
       const hexSeed = await Key.seedToHex(this.seed, this.network)
       this.masterKey = await HDKey.fromSeed(hexSeed, this.network)
     }
-    this.masterKey = await HDKey.fromHDPaths(
+    this.masterKey = await HDKey.fromPaths(
       this.masterKey,
       this.hdPaths,
       this.network
@@ -182,18 +176,18 @@ export class KeyManager extends EventEmitter {
     const pathArray = path.split('/')
     const index = pathArray.pop()
 
-    let parentKey = HDKey.getHDKey(this.masterKey, pathArray)
+    let parentKey = HDKey.getKey(this.masterKey, pathArray)
     if (!parentKey) {
-      this.masterKey = await HDKey.fromParent(
+      this.masterKey = await HDKey.fromPath(
         this.masterKey,
         { path: pathArray },
         this.network
       )
-      parentKey = HDKey.getHDKey(this.masterKey, pathArray)
+      parentKey = HDKey.getKey(this.masterKey, pathArray)
     }
 
     if (!parentKey) throw new Error('Cannot get parent key')
-    const key = await ExtendedKey.fromParent(parentKey, index, this.network)
+    const key = await ExtendedKey.fromIndex(parentKey, index, this.network)
 
     const hdKey = HDKey.fromExtendedKey(key, parentKey)
     return hdKey

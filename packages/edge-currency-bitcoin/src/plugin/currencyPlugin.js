@@ -13,7 +13,7 @@ import type {
   EdgeParsedUri,
   EdgeWalletInfo
 } from 'edge-core-js'
-import { Core, Bip32 } from 'nidavellir'
+import { Core, HD } from 'nidavellir'
 import {
   CurrencyEngine,
   type EngineCurrencyInfo
@@ -88,7 +88,7 @@ export class CurrencyPlugin {
     const network = this.network
     const seed = walletInfo.keys[`${network}Key`] || ''
     if (!seed) throw new Error('InvalidKeyName')
-    const { fromSeed, toString } = Bip32.ExtendedKey
+    const { fromSeed, toString } = HD.ExtendedKey
     const hexSeed = await seedToHex(seed, network)
     const keyPair = await fromSeed(hexSeed, network)
     const xpub = toString(keyPair, network, true)
@@ -125,7 +125,7 @@ export class CurrencyPlugin {
     return forks
       .filter(network => {
         const networkInfo = Core.Networks[network]
-        return networkInfo && networkInfo.supportedBips.includes(bip)
+        return networkInfo && networkInfo.bips.includes(bip)
       })
       .map(network => `wallet:${network}`)
   }

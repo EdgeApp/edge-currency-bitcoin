@@ -34,12 +34,6 @@ export const defaultScriptTypes: {
     getData: dataFromPubKey,
     getHash: hash160
   },
-  'P2PKH-AIRBITZ': {
-    type: 'pubkeyhash',
-    version: -1,
-    getData: dataFromPubKey,
-    getHash: hash160
-  },
   P2SH: {
     type: 'scripthash',
     version: -1,
