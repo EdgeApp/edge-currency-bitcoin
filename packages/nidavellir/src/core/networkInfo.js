@@ -1,13 +1,11 @@
 // @flow
 
-import type { HDPath, HDStandardPathParams } from '../../types/bip44.js'
 import type {
   NetworkInfo,
   NetworkInfos,
   NewNetworks,
   PartialInfo
 } from '../../types/core.js'
-import { fromBips, fromSettings } from '../bip44/paths.js'
 import { main } from '../networks/baseInfo.js'
 import * as Networks from '../networks/networks.js'
 
@@ -29,7 +27,6 @@ export const createInfo = (info: PartialInfo): NetworkInfo => {
     } else newNetwork[set] = mainSet
   }
 
-  newNetwork.hdSettings = fromBips(newNetwork.supportedBips)
   return newNetwork
 }
 
@@ -72,15 +69,6 @@ export const getNetworkForVersion = (version: number): string => {
   throw new Error('Unknown network version')
 }
 
-export const getHDPaths = (
-  pathParams: HDStandardPathParams = {},
-  network: string = 'main',
-  bips?: Array<number> = networks[network].supportedBips
-): Array<HDPath> => {
-  const hdSettings = fromBips(bips)
-  return fromSettings(hdSettings, pathParams)
-}
-
 export const checkVersion = (version: number, network: string = 'main') => {
   const { keyPrefix = {} } = networks[network]
   if (version) {
@@ -113,13 +101,4 @@ export const getPrefixNum = (type: string, network: string = 'main') => {
   const { addressPrefix, legacyAddressPrefix } = networks[network]
   const cashAddress = addressPrefix.cashAddress
   return !cashAddress ? addressPrefix[type] : legacyAddressPrefix[type]
-}
-
-export const getDefaultScriptType = (network: string = 'main'): string => {
-  const { hdSettings, supportedBips } = networks[network]
-  for (const bip of supportedBips) {
-    const scriptType = hdSettings[`${bip}'`].scriptType
-    if (scriptType) return scriptType
-  }
-  return 'P2PKH'
 }

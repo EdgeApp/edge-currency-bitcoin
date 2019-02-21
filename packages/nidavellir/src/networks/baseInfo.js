@@ -1,14 +1,12 @@
 // @flow
 
 import type { NetworkInfo } from '../../types/core.js'
-import { fromBips } from '../bip44/paths.js'
 import { base } from '../utils/base.js'
 import { hash256 } from '../utils/hash.js'
 
 export const main: NetworkInfo = {
   magic: 0xd9b4bef9,
-  supportedBips: [44, 32],
-  hdSettings: fromBips([44, 32]),
+  bips: [44, 32],
   forks: [],
   keyPrefix: {
     privkey: 0x80,

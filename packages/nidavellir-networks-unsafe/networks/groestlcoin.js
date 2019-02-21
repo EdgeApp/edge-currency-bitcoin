@@ -30,7 +30,7 @@ const sha256 = (rawTx: string) => {
 
 export const main = {
   magic: 0xf9beb4d4,
-  supportedBips: [84, 49],
+  bips: [84, 49],
   keyPrefix: {
     privkey: 0x80,
     xpubkey: 0x0488b21e,

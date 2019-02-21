@@ -1,7 +1,7 @@
 // @flow
 
 export const main = {
-  supportedBips: [84, 49],
+  bips: [84, 49],
   forks: ['bitcoincash', 'bitcoingold', 'bitcoindiamond'],
   addressPrefix: {
     pubkeyhash: 0x00,

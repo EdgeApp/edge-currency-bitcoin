@@ -2,7 +2,7 @@
 
 export const main = {
   magic: 0xd9b4bef9,
-  supportedBips: [84, 49, 44, 32],
+  bips: [84, 49, 44, 32],
   forks: [],
   keyPrefix: {
     privkey: 0x80,
