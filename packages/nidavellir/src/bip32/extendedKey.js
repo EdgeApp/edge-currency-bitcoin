@@ -19,58 +19,20 @@ import { deriveKeyPair, deriveMasterKeyPair } from './derive.js'
 
 const MAX_DEPTH = 0xff
 
-export const fromHex = (keyHex: string, network?: string): ExtendedKeyPair => {
-  const version = parseInt(keyHex.slice(0, 8), 16)
-  if (network) checkVersion(version, network)
+export const fromSeed = async (
+  seed: string,
+  network?: string
+): Promise<ExtendedMasterKeys> => {
+  const masterKeyPair = await deriveMasterKeyPair(seed)
   return {
-    version,
-    depth: parseInt(keyHex.slice(9, 10), 16),
-    parentFingerPrint: parseInt(keyHex.slice(10, 18), 16),
-    childIndex: parseInt(keyHex.slice(18, 26), 16),
-    chainCode: keyHex.slice(26, 90),
-    ...KeyPair.fromHex(keyHex.slice(90, 156))
+    ...masterKeyPair,
+    parentFingerPrint: 0,
+    version: getExtendedKeyVersion(masterKeyPair, network),
+    depth: 0
   }
 }
 
-export const toHex = (
-  hdKey: ExtendedKeyPair,
-  network?: string,
-  forcePublic: boolean = false
-): string => {
-  if (network) checkVersion(hdKey.version, network)
-  const { privateKey, publicKey } = hdKey
-  const keyPair: HexPair = { publicKey }
-  if (!forcePublic) keyPair.privateKey = privateKey
-  return (
-    getExtendedKeyVersion(keyPair, network)
-      .toString(16)
-      .padStart(8, '0') +
-    hdKey.depth.toString(16).padStart(2, '0') +
-    hdKey.parentFingerPrint.toString(16).padStart(8, '0') +
-    hdKey.childIndex.toString(16).padStart(8, '0') +
-    hdKey.chainCode +
-    KeyPair.toHex(keyPair).slice(0, 66)
-  )
-}
-
-export const fromString = (
-  hdKey: string,
-  network: string = 'main'
-): ExtendedKeyPair => {
-  const keyHex = networks[network].serializers['xkey'].decode(hdKey)
-  return fromHex(keyHex, network)
-}
-
-export const toString = (
-  hdKey: ExtendedKeyPair,
-  network: string = 'main',
-  forcePublic: boolean = false
-): string => {
-  const keyHex = toHex(hdKey, network, forcePublic)
-  return networks[network].serializers['xkey'].encode(keyHex)
-}
-
-export const fromParent = async (
+export const fromIndex = async (
   parentKeys: ExtendedKeyPair,
   index: string,
   network?: string
@@ -95,15 +57,53 @@ export const fromParent = async (
   }
 }
 
-export const fromSeed = async (
-  seed: string,
-  network?: string
-): Promise<ExtendedMasterKeys> => {
-  const masterKeyPair = await deriveMasterKeyPair(seed)
+export const fromHex = (keyHex: string, network?: string): ExtendedKeyPair => {
+  const version = parseInt(keyHex.slice(0, 8), 16)
+  if (network) checkVersion(version, network)
   return {
-    ...masterKeyPair,
-    parentFingerPrint: 0,
-    version: getExtendedKeyVersion(masterKeyPair, network),
-    depth: 0
+    version,
+    depth: parseInt(keyHex.slice(9, 10), 16),
+    parentFingerPrint: parseInt(keyHex.slice(10, 18), 16),
+    childIndex: parseInt(keyHex.slice(18, 26), 16),
+    chainCode: keyHex.slice(26, 90),
+    ...KeyPair.fromHex(keyHex.slice(90, 156))
   }
+}
+
+export const fromString = (
+  hdKey: string,
+  network: string = 'main'
+): ExtendedKeyPair => {
+  const keyHex = networks[network].serializers['xkey'].decode(hdKey)
+  return fromHex(keyHex, network)
+}
+
+export const toHex = (
+  hdKey: ExtendedKeyPair,
+  network?: string,
+  forcePublic: boolean = false
+): string => {
+  if (network) checkVersion(hdKey.version, network)
+  const { privateKey, publicKey } = hdKey
+  const keyPair: HexPair = { publicKey }
+  if (!forcePublic) keyPair.privateKey = privateKey
+  return (
+    getExtendedKeyVersion(keyPair, network)
+      .toString(16)
+      .padStart(8, '0') +
+    hdKey.depth.toString(16).padStart(2, '0') +
+    hdKey.parentFingerPrint.toString(16).padStart(8, '0') +
+    hdKey.childIndex.toString(16).padStart(8, '0') +
+    hdKey.chainCode +
+    KeyPair.toHex(keyPair).slice(0, 66)
+  )
+}
+
+export const toString = (
+  hdKey: ExtendedKeyPair,
+  network: string = 'main',
+  forcePublic: boolean = false
+): string => {
+  const keyHex = toHex(hdKey, network, forcePublic)
+  return networks[network].serializers['xkey'].encode(keyHex)
 }

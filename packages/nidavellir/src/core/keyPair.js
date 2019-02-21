@@ -55,7 +55,7 @@ export const privateFromWIF = (
   return { privateKey, compress }
 }
 
-export const keyPairFromWIF = async (
+export const fromWif = async (
   wif: string,
   network: string = 'main'
 ): Promise<HexPair> => {
