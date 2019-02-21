@@ -5,7 +5,7 @@ import bcoin from 'bcoin'
 
 import { Buffer } from 'buffer'
 
-import { Core } from 'nidavellir'
+import { Core, HD } from 'nidavellir'
 import { base64regex } from '../utils.js'
 
 const { Mnemonic } = bcoin.hd
@@ -37,17 +37,22 @@ export const keysFromEntropy = (
 }
 
 export const getAllKeyRings = async (
-  privateKeys: Array<string>,
+  wifs: Array<string>,
   network: string
 ): Promise<KeyRings> => {
-  const keys = []
-  const { hdSettings } = Core.Networks[network]
-  for (const settings in hdSettings) {
-    const { scriptType } = hdSettings[settings]
-    for (const key of privateKeys) {
-      const keyPair = await Core.KeyPair.keyPairFromWIF(key, network)
-      keys.push({ ...keyPair, scriptType })
+  const hdPaths = HD.Paths.ScriptTypes
+
+  const promises = []
+  for (const bip in hdPaths) {
+    const scriptType = hdPaths[bip]
+    for (const wif of wifs) {
+      const keyPromise = Core.KeyPair
+        .fromWif(wif, network)
+        .then(key => ({ ...key, scriptType }))
+      promises.push(keyPromise)
     }
   }
-  return keys
+
+  const keyRings = await Promise.all(promises)
+  return keyRings
 }

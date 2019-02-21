@@ -12,6 +12,7 @@ import {
   cashAddressToHash,
   toCashAddress
 } from '../addressFormat/cashAddress.js'
+import { getAllKeyRings } from './key.js'
 
 const networks = Core.Networks
 const { bech32 } = bcoin.utils
@@ -79,16 +80,6 @@ export const fromKeyPair = (
   return { displayAddress, scriptHash }
 }
 
-export const fromWIF = async (
-  wif: string,
-  scriptType: ScriptType = 'P2PKH',
-  network: string = 'main',
-  scriptHex: string = ''
-): Promise<Address> => {
-  const keyPair = await Core.KeyPair.keyPairFromWIF(wif, network)
-  return fromKeyPair(keyPair, scriptType, network, scriptHex)
-}
-
 export const toHexString = (
   address: RawAddress,
   network: string = 'main',
@@ -147,17 +138,14 @@ export const toScriptHash = (address: RawAddress): string => {
   return reverseHexString(scriptHash)
 }
 
-export const getAllAddresses = (
+export const getAllAddresses = async (
   privateKeys: Array<string>,
   network: string
 ): Promise<Array<Address>> => {
-  const addressesPromises = []
-  const { hdSettings } = networks[network]
-  for (const bipNum in hdSettings) {
-    const { scriptType = 'P2PKH' } = hdSettings[bipNum]
-    for (const key of privateKeys) {
-      addressesPromises.push(fromWIF(key, scriptType, network))
-    }
-  }
-  return Promise.all(addressesPromises)
+  const keys = await getAllKeyRings(privateKeys, network)
+
+  const addresses = keys.map(({ publicKey, scriptType }) =>
+    fromKeyPair({ publicKey }, scriptType, network))
+
+  return addresses
 }
