@@ -1,29 +1,53 @@
 {
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
     {
       "type": "node",
       "request": "launch",
-      "name": "build",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "pretest"],
-      "port": 5858
+      "name": "nidavellir",
+      "outFiles": ["${workspaceFolder}/packages/nidavellir/build/tests.cjs.js"],
+      "program": "${workspaceFolder}/packages/nidavellir/node_modules/.bin/_mocha",
+      "args": [
+        "--require",
+        "source-map-support/register",
+        "${workspaceFolder}/packages/nidavellir/build/tests.cjs.js",
+        "--reporter",
+        "mocha-multi-reporters",
+        "--reporter-options",
+        "configFile=${workspaceFolder}/packages/nidavellir/mocha-config.json",
+        "-u",
+        "tdd",
+        "--timeout",
+        "999999",
+        "--colors",
+        "${workspaceFolder}/packages/nidavellir/build/tests.cjs.js"
+      ],
+      "internalConsoleOptions": "openOnSessionStart"
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "Mocha Tests",
-      "preLaunchTask": "pretest",
-      "program": "${workspaceRoot}/node_modules/mocha/bin/_mocha",
+      "name": "edge-currency-bitcoin",
+      "outFiles": ["${workspaceFolder}/packages/edge-currency-bitcoin/build/tests.cjs.js"],
+      "program": "${workspaceFolder}/packages/edge-currency-bitcoin/node_modules/.bin/_mocha",
       "args": [
-        "--colors",
         "--require",
         "source-map-support/register",
+        "${workspaceFolder}/packages/edge-currency-bitcoin/build/tests.js",
+        "--reporter",
+        "mocha-multi-reporters",
+        "--reporter-options",
+        "configFile=${workspaceFolder}/packages/edge-currency-bitcoin/mocha-config.json",
+        "-u",
+        "tdd",
         "--timeout",
         "999999",
-        "build/tests.cjs.js"
+        "--colors",
+        "${workspaceFolder}/edge-currency-bitcoin/build/tests.js"
       ],
-      "cwd": "${workspaceRoot}",
       "internalConsoleOptions": "openOnSessionStart"
     }
   ]
