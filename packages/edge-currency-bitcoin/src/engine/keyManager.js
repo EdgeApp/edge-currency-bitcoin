@@ -1,58 +1,34 @@
 // @flow
 
+import { Utils, HD } from 'nidavellir'
+import type { HDPath, HDKeyPair } from 'nidavellir'
+import EventEmitter from 'eventemitter3'
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
+import * as Address from '../utils/bcoinUtils/address.js'
+import * as Key from '../utils/bcoinUtils/key.js'
+import * as Misc from '../utils/bcoinUtils/misc.js'
+import * as Tx from '../utils/bcoinUtils/tx.js'
+
 import type {
-  BlockHeight,
+  Address as AddressObj,
+  ScriptHashMap,
+  EdgeAddress,
   Output,
   Script,
   StandardOutput,
   TxOptions,
   Utxo
-} from '../utils/coinUtils.js'
-import { createTX, getLock, parsePath } from '../utils/coinUtils.js'
-import { FormatSelector, getAllKeyRings } from '../utils/formatSelector.js'
-import type { AddressInfo, AddressInfos } from './engineState.js'
+} from '../utils/bcoinUtils/types.js'
+import type { AddressInfos } from './engineState.js'
+
+const { ExtendedKey, HDKey } = HD
 
 const GAP_LIMIT = 10
-const nop = () => {}
-
-export type Address = {
-  displayAddress: string,
-  scriptHash: string,
-  index: number,
-  branch: number,
-  redeemScript?: string
-}
-
-export type KeyRing = {
-  pubKey: any,
-  privKey: any,
-  children: Array<Address>
-}
-
-export type Keys = {
-  master: KeyRing,
-  receive: KeyRing,
-  change: KeyRing
-}
-
-export type RawKey = string
-
-export type RawKeyRing = {
-  xpriv?: RawKey,
-  xpub?: string
-}
-
-export type RawKeys = {
-  master?: RawKeyRing,
-  receive?: RawKeyRing,
-  change?: RawKeyRing
-}
 
 export type createTxOptions = {
   outputs?: Array<Output>,
   utxos: Array<Utxo>,
-  height: BlockHeight,
+  height: number,
   rate: number,
   maxFee: number,
   txOptions: TxOptions
@@ -63,276 +39,245 @@ export type SignMessage = {
   address: string
 }
 
-export interface KeyManagerCallbacks {
-  // When deriving new address send it to caching and subscribing
-  +onNewAddress?: (
-    scriptHash: string,
-    address: string,
-    path: string,
-    redeemScript?: string
-  ) => void;
-  // When deriving new key send it to caching
-  +onNewKey?: (keys: any) => void;
-}
-
 export type KeyManagerOptions = {
   account?: number,
-  bip?: string,
   coinType?: number,
-  rawKeys?: RawKeys,
+  masterKey?: HDKeyPair,
   seed?: string,
+  xpub?: string,
   gapLimit: number,
   network: string,
-  callbacks: KeyManagerCallbacks,
   addressInfos?: AddressInfos,
   scriptHashes?: { [displayAddress: string]: string },
-  txInfos?: { [txid: string]: any }
+  scriptHashesMap?: ScriptHashMap,
+  txInfos?: { [txid: string]: any },
+  bips?: Array<number>
 }
 
-export class KeyManager {
-  masterPath: string
+export class KeyManager extends EventEmitter {
   writeLock: any
-  bip: string
-  keys: Keys
+  masterKey: HDKeyPair
+  scriptTemplates: any
   seed: string
+  xpub: string
   gapLimit: number
   network: string
-  fSelector: any
-  onNewAddress: (
-    scriptHash: string,
-    address: string,
-    path: string,
-    redeemScript?: string
-  ) => void
-  onNewKey: (keys: any) => void
+  account: number
+  coinType: number
+
   addressInfos: AddressInfos
+  hdPaths: Array<HDPath>
   scriptHashes: { [displayAddress: string]: string }
+  scriptHashesMap: ScriptHashMap
   txInfos: { [txid: string]: any }
 
-  constructor (opts: KeyManagerOptions) {
-    const {
-      account = 0,
-      bip = 'bip32',
-      coinType = -1,
-      rawKeys = {},
-      seed = '',
-      gapLimit = GAP_LIMIT,
-      network,
-      callbacks,
-      addressInfos = {},
-      scriptHashes = {},
-      txInfos = {}
-    } = opts
-
+  constructor ({
+    account = 0,
+    coinType = 0,
+    masterKey,
+    seed = '',
+    xpub = '',
+    gapLimit = GAP_LIMIT,
+    network,
+    addressInfos = {},
+    scriptHashes = {},
+    scriptHashesMap = {},
+    txInfos = {},
+    bips = []
+  }: KeyManagerOptions) {
+    super()
     // Check for any way to init the wallet with either a seed or master keys
-    if (
-      seed === '' &&
-      (!rawKeys.master || (!rawKeys.master.xpriv && !rawKeys.master.xpub))
-    ) {
+    if (!seed && !xpub && !masterKey) {
       throw new Error('Missing Master Key')
     }
     this.seed = seed
+    this.xpub = xpub
     this.gapLimit = gapLimit
     this.network = network
-    this.bip = bip
-    this.fSelector = FormatSelector(bip, network)
+    this.account = account
+    this.coinType = coinType
+    this.txInfos = txInfos
+    // Get Settings for this network
+    // TODO - Get custom scriptTemplates
+    // const { scriptTemplates } = NetworkInfo.networks[network]
+    this.hdPaths = HD.Paths.createPaths(bips, coinType, account, this.network)
+    // this.scriptTemplates = scriptTemplates
     // Create a lock for when deriving addresses
-    this.writeLock = getLock()
-    // Create the master derivation path
-    this.masterPath = this.fSelector.createMasterPath(account, coinType)
-    // Set the callbacks with nops as default
-    const { onNewAddress = nop, onNewKey = nop } = callbacks
-    this.onNewAddress = onNewAddress
-    this.onNewKey = onNewKey
+    this.writeLock = Misc.getLock()
+    // Load the master derivation key from cache
+    if (masterKey) this.masterKey = masterKey
     // Set the addresses and txs state objects
     this.addressInfos = addressInfos
-    // Maps from display addresses to script hashes
+    // Helper map from display address to script hash
     this.scriptHashes = scriptHashes
-    this.txInfos = txInfos
-    // Create KeyRings while tring to load as many of the pubKey/privKey from the cache
-    this.keys = this.fSelector.keysFromRaw(rawKeys)
-    // Load addresses from Cache
-    const { branches } = this.fSelector
-    for (const scriptHash in addressInfos) {
-      const addressObj: AddressInfo = addressInfos[scriptHash]
-      const path = parsePath(addressObj.path, this.masterPath)
-      if (path.length) {
-        const [branch, index] = path
-        const displayAddress = toNewFormat(addressObj.displayAddress, network)
-        const { redeemScript } = addressObj
-        const address = {
-          displayAddress,
-          scriptHash,
-          index,
-          branch,
-          redeemScript
-        }
-        const branchName = branches[`${branch}`]
-        this.keys[branchName].children.push(address)
-      }
-    }
-    // Cache is not sorted so sort addresses according to derivation index
-    for (const branch in this.keys) {
-      this.keys[branch].children.sort((a, b) => a.index - b.index)
+    // Helper map from path to script hash
+    this.scriptHashesMap = scriptHashesMap
+
+    for (const hdPath of this.hdPaths) {
+      const path = hdPath.path.join('/')
+      if (!this.scriptHashesMap[path]) this.scriptHashesMap[path] = []
     }
   }
 
   // ////////////////////////////////////////////// //
   // /////////////// Public API /////////////////// //
   // ////////////////////////////////////////////// //
-  async load () {
-    // If we don't have a public master key we will now create it from seed
-    if (!this.keys.master.pubKey) await this.initMasterKeys()
-    await this.setLookAhead(true)
+  async initMasterKey (forceInit: boolean = false) {
+    if (!this.masterKey || !this.masterKey.privateKey || forceInit) {
+      if (this.seed === '') {
+        throw new Error("Can't init wallet without private key")
+      }
+      const hexSeed = await Key.seedToHex(this.seed, this.network)
+      this.masterKey = await HDKey.fromSeed(hexSeed, this.network)
+    }
+    this.masterKey = await HDKey.fromPaths(
+      this.masterKey,
+      this.hdPaths,
+      this.network
+    )
+    // Fill up addresses to reach minimum gapLimit
+    for (const path in this.scriptHashesMap) {
+      const scriptHashes = this.scriptHashesMap[path]
+      const amountToFill = this.gapLimit - scriptHashes.length
+      if (amountToFill > 0) {
+        let index = scriptHashes.length
+        const endIndex = scriptHashes.length + amountToFill
+        for (; index < endIndex; index++) {
+          const newAddr = await this.deriveAddress(`${path}/${index}`)
+          if (!newAddr) return
+        }
+      }
+    }
+    if (!this.xpub) {
+      this.xpub = await HDKey.toString(this.masterKey, this.network, true)
+    }
+    this.emit('newKey', this.masterKey)
+  }
+
+  async deriveKey (path: string): Promise<HDKeyPair> {
+    const pathArray = path.split('/')
+    const index = pathArray.pop()
+
+    let parentKey = HDKey.getKey(this.masterKey, pathArray)
+    if (!parentKey) {
+      this.masterKey = await HDKey.fromPath(
+        this.masterKey,
+        { path: pathArray },
+        this.network
+      )
+      parentKey = HDKey.getKey(this.masterKey, pathArray)
+    }
+
+    if (!parentKey) throw new Error('Cannot get parent key')
+    const key = await ExtendedKey.fromIndex(parentKey, index, this.network)
+
+    const hdKey = HDKey.fromExtendedKey(key, parentKey)
+    return hdKey
+  }
+
+  async load (forceLoad: boolean = false) {
+    await this.initMasterKey(forceLoad)
+    await this.setLookAhead()
   }
 
   async reload () {
-    for (const branch in this.keys) {
-      this.keys[branch].children = []
+    await this.load(true)
+  }
+
+  getReceiveAddress (): EdgeAddress {
+    const addresses = {}
+    for (const hdPath of this.hdPaths) {
+      const { path, chain, scriptType = 'P2PKH' } = hdPath
+      if (chain !== 'external') continue
+      const scriptHashes = this.scriptHashesMap[path.join('/')]
+      const scriptHash = scriptHashes[scriptHashes.length - 1]
+      const { displayAddress } = this.addressInfos[scriptHash]
+      addresses[scriptType] = displayAddress
     }
-    await this.load()
-  }
-
-  getReceiveAddress (): string {
-    return this.getNextAvailable(this.keys.receive.children)
-  }
-
-  getChangeAddress (): string {
-    if (this.bip === 'bip32') return this.getReceiveAddress()
-    return this.getNextAvailable(this.keys.change.children)
+    return addresses
   }
 
   async createTX (options: createTxOptions): any {
     const { outputs = [], ...rest } = options
     const standardOutputs: Array<StandardOutput> = []
-    const branches = this.fSelector.branches
     for (const output of outputs) {
-      let { address = '' } = output
-      if (output.script) {
-        const { type, params } = output.script
-        const keyRing = this.keys[type]
-        if (params && params.length) {
-          const index = keyRing.children.length
-          const branch = Object.keys(branches).find(
-            num => type === branches[num]
-          )
-          if (!branch) throw new Error(`Branch does not exist`)
-          const addressObj = await this.deriveAddress(
-            keyRing,
-            branch,
-            index,
-            output.script
-          )
-          if (!addressObj) {
-            throw new Error(`Error creating address from script type ${type}`)
-          }
-          address = addressObj.displayAddress
-        } else {
-          address = this.getNextAvailable(keyRing.children)
-        }
-      }
+      const address = output.address
       if (address) standardOutputs.push({ address, value: output.value })
     }
-    return createTX({
+
+    const hdPath = this.hdPaths.length > 1 ? this.hdPaths[1] : this.hdPaths[0]
+    const { path, scriptType = 'P2PKH' } = hdPath
+    const scriptHashes = this.scriptHashesMap[path.join('/')]
+    const scriptHash = scriptHashes[scriptHashes.length - 1]
+    const changeAddress = this.addressInfos[scriptHash].displayAddress
+
+    return Tx.createTX({
       ...rest,
       outputs: standardOutputs,
-      changeAddress: this.getChangeAddress(),
-      estimate: prev => this.fSelector.estimateSize(prev),
+      changeAddress,
+      estimate: prev => Tx.estimateSize(scriptType, prev),
       network: this.network
     })
   }
 
   async sign (tx: any, privateKeys: Array<string> = []) {
-    const keyRings = await getAllKeyRings(privateKeys, this.network)
+    const keyRings = await Key.getAllKeyRings(privateKeys, this.network)
     if (!keyRings.length) {
-      if (!this.keys.master.privKey && this.seed === '') {
-        throw new Error("Can't sign without private key")
-      }
-      await this.initMasterKeys()
-      const { branches } = this.fSelector
+      await this.initMasterKey()
       for (const input: any of tx.inputs) {
         const { prevout } = input
         if (prevout) {
-          const { branch, index, redeemScript } = this.utxoToAddress(prevout)
-          const branchName = branches[`${branch}`]
-          const keyRing = this.keys[branchName]
-          if (!keyRing.privKey) {
-            keyRing.privKey = await this.fSelector.deriveHdKey(
-              this.keys.master.privKey,
-              branch
-            )
-            this.saveKeysToCache()
-          }
-          const key = await this.fSelector.deriveKeyRing(
-            keyRing.privKey,
-            index,
-            redeemScript
-          )
-          keyRings.push(key)
+          const { path, redeemScript } = this.utxoToAddress(prevout)
+          const key = await this.deriveKey(path)
+          if (key.privateKey) keyRings.push({ ...key, redeemScript })
         }
       }
     }
-    return this.fSelector.sign(tx, keyRings)
+    return Tx.sign(tx, keyRings, this.network)
   }
 
   async signMessage ({ message, address }: SignMessage) {
-    if (!this.keys.master.privKey && this.seed === '') {
-      throw new Error("Can't sign without private key")
-    }
-    await this.initMasterKeys()
-    if (!address) throw new Error('Missing address to sign with')
-    const scriptHash = this.scriptHashes[address]
-    if (!scriptHash) throw new Error('Address is not part of this wallet')
-    const addressInfo = this.addressInfos[scriptHash]
-    if (!addressInfo) throw new Error('Address is not part of this wallet')
-    const { path } = addressInfo
-    const pathSuffix = path.split(this.masterPath + '/')[1]
-    const [branch: string, index: string] = pathSuffix.split('/')
-    const branchName = this.fSelector.branches[`${branch}`]
-    const keyRing = this.keys[branchName]
-    if (!keyRing.privKey) {
-      keyRing.privKey = await this.fSelector.deriveHdKey(
-        this.keys.master.privKey,
-        parseInt(branch)
-      )
-      this.saveKeysToCache()
-    }
-    const key = await this.fSelector.deriveKeyRing(
-      keyRing.privKey,
-      parseInt(index)
-    )
-    const signature = await key.sign(Buffer.from(message, 'hex'))
-    return {
-      signature: signature.toString('hex'),
-      publicKey: key.publicKey.toString('hex')
+    try {
+      await this.initMasterKey()
+      if (!address) throw new Error('Missing address to sign with')
+      const scriptHash = this.scriptHashes[address]
+      if (!scriptHash) throw new Error('Address is not part of this wallet')
+      const addressInfo = this.addressInfos[scriptHash]
+      if (!addressInfo) throw new Error('Address is not part of this wallet')
+      const { path } = addressInfo
+      const { privateKey, publicKey } = await this.deriveKey(path)
+      if (!privateKey) {
+        throw new Error('Key is not part of this wallet')
+      }
+      // sign.
+      const signature = await Utils.Secp256k1.sign(message, privateKey)
+      return { signature, publicKey }
+    } catch (e) {
+      console.log(e)
+      throw e
     }
   }
 
   getSeed (): string | null {
     if (this.seed && this.seed !== '') {
       try {
-        return this.fSelector.parseSeed(this.seed)
+        return Key.parseSeed(this.seed)
       } catch (e) {
         console.log(e)
-        return null
       }
     }
     return null
   }
 
   getPublicSeed (): string | null {
-    return this.keys.master.pubKey
-      ? this.keys.master.pubKey.toBase58(this.network)
-      : null
+    return this.xpub
   }
 
   // ////////////////////////////////////////////// //
   // ////////////// Private API /////////////////// //
   // ////////////////////////////////////////////// //
 
-  utxoToAddress (
-    prevout: any
-  ): { branch: number, index: number, redeemScript?: string } {
+  utxoToAddress (prevout: any): { path: string, redeemScript?: string } {
     const parsedTx = this.txInfos[prevout.rhash()]
     if (!parsedTx) throw new Error('UTXO not synced yet')
     const output = parsedTx.outputs[prevout.index]
@@ -340,67 +285,14 @@ export class KeyManager {
     const scriptHash = output.scriptHash
     const address = this.addressInfos[scriptHash]
     if (!address) throw new Error('Address is not part of this wallet')
-    const { path, redeemScript } = address
-    const pathSuffix = path.split(this.masterPath + '/')[1]
-    const [branch, index] = pathSuffix.split('/')
-    return { branch: parseInt(branch), index: parseInt(index), redeemScript }
+    return address
   }
 
-  getNextAvailable (addresses: Array<Address>): string {
-    let key = null
-    for (let i = 0; i < addresses.length; i++) {
-      const scriptHash = addresses[i].scriptHash
-      if (
-        this.addressInfos[scriptHash] &&
-        !this.addressInfos[scriptHash].used
-      ) {
-        key = addresses[i]
-        break
-      }
-    }
-    return key
-      ? key.displayAddress
-      : addresses[addresses.length - 1].displayAddress
-  }
-
-  async initMasterKeys () {
-    const keys = await this.fSelector.getMasterKeys(
-      this.seed,
-      this.masterPath,
-      this.keys.master.privKey
-    )
-    this.keys.master = { ...this.keys.master, ...keys }
-    this.saveKeysToCache()
-  }
-
-  saveKeysToCache () {
-    try {
-      const keys = {}
-      for (const type in this.keys) {
-        keys[type] = {}
-        if (this.keys[type].privKey) {
-          keys[type].xpriv = this.keys[type].privKey.toBase58(this.network)
-        }
-        if (this.keys[type].pubKey) {
-          keys[type].xpub = this.keys[type].pubKey.toBase58(this.network)
-        }
-      }
-      this.onNewKey(keys)
-    } catch (e) {
-      console.log(e)
-    }
-  }
-
-  async setLookAhead (closeGaps: boolean = false) {
+  async setLookAhead () {
     const unlock = await this.writeLock.lock()
     try {
-      for (const branchNum in this.fSelector.branches) {
-        const branchName = this.fSelector.branches[branchNum]
-        await this.deriveNewKeys(
-          this.keys[branchName],
-          parseInt(branchNum),
-          closeGaps
-        )
+      for (const path in this.scriptHashesMap) {
+        await this.deriveNewKeys(path)
       }
     } catch (e) {
       console.log(e)
@@ -409,46 +301,22 @@ export class KeyManager {
     }
   }
 
-  async deriveNewKeys (keyRing: KeyRing, branch: number, closeGaps: boolean) {
-    const { children } = keyRing
-    // If we never derived a public key for this branch before
-    if (!keyRing.pubKey) {
-      keyRing.pubKey = await this.fSelector.deriveHdKey(
-        this.keys.master.pubKey,
-        branch
-      )
-      this.saveKeysToCache()
-    }
-
-    // If the chain might have gaps, fill those in:
-    if (closeGaps) {
-      let index = 0
-      const length = children.length
-      for (let i = 0; i < length; ++i, ++index) {
-        while (index < children[i].index) {
-          const newAddr = await this.deriveAddress(keyRing, branch, index++)
-          if (!newAddr) break
-        }
-      }
-      if (children.length > length) {
-        // New addresses get appended, so sort them back into position:
-        children.sort((a, b) => a.index - b.index)
-      }
-    }
+  async deriveNewKeys (path: string) {
+    const hashes = this.scriptHashesMap[path]
 
     // Find the last used address:
     let lastUsed =
-      children.length < this.gapLimit ? 0 : children.length - this.gapLimit
-    for (let i = lastUsed; i < children.length; ++i) {
-      const scriptHash = children[i].scriptHash
+      hashes.length < this.gapLimit ? 0 : hashes.length - this.gapLimit
+    for (let i = lastUsed; i < hashes.length; ++i) {
+      const scriptHash = hashes[i]
       if (this.addressInfos[scriptHash] && this.addressInfos[scriptHash].used) {
         lastUsed = i
       }
     }
 
     // If the last used address is too close to the end, generate some more:
-    while (lastUsed + this.gapLimit > children.length) {
-      const newAddr = await this.deriveAddress(keyRing, branch, children.length)
+    while (lastUsed + this.gapLimit > hashes.length) {
+      const newAddr = await this.deriveAddress(`${path}/${hashes.length}`)
       if (!newAddr) break
     }
   }
@@ -459,37 +327,36 @@ export class KeyManager {
    * @param keyRing The KeyRing corresponding to the selected branch.
    */
   async deriveAddress (
-    keyRing: KeyRing,
-    branch: number,
-    index: number,
+    path: string,
     scriptObj?: Script
-  ): Promise<Address | null> {
-    let newAddress = {}
+  ): Promise<AddressObj | null> {
+    // Derive a new Key for desired Address path
+    const key = await this.deriveKey(path)
+    const redeemScript = ''
+    if (!key) return null
 
-    if (!this.fSelector.hasScript(branch, scriptObj)) {
-      newAddress = await this.fSelector.deriveAddress(keyRing.pubKey, index)
-    } else {
-      newAddress = await this.fSelector.deriveScriptAddress(
-        keyRing.pubKey,
-        index,
-        branch,
-        scriptObj
-      )
-    }
+    const address = Address.fromKeyPair(
+      key,
+      key.scriptType,
+      this.network,
+      redeemScript
+    )
+    const displayAddress = toNewFormat(address.displayAddress, this.network)
 
-    if (!newAddress) return null
-    const { address, scriptHash, redeemScript } = newAddress
-    const displayAddress = toNewFormat(address, this.network)
-    const keyPath = `${this.masterPath}/${branch}/${index}`
-    const addressObj = {
+    const { scriptHash } = address
+
+    const pathArray = path.split('/')
+    const index = parseInt(pathArray.pop())
+
+    this.scriptHashes[displayAddress] = scriptHash
+    this.scriptHashesMap[pathArray.join('/')][index] = scriptHash
+
+    // Report the new Address
+    this.emit('newAddress', scriptHash, displayAddress, path, redeemScript)
+    return {
       displayAddress,
       scriptHash,
-      index,
-      branch,
       redeemScript
     }
-    keyRing.children.push(addressObj)
-    this.onNewAddress(scriptHash, displayAddress, keyPath, redeemScript)
-    return addressObj
   }
 }
