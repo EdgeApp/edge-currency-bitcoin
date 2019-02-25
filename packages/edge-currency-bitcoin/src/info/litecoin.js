@@ -1,32 +1,8 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'litecoin',
-  magic: 0xd9b4bef9,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
-  keyPrefix: {
-    privkey: 0xb0,
-    xpubkey: 0x0488b21e,
-    xprivkey: 0x0488ade4,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 2
-  },
-  addressPrefix: {
-    pubkeyhash: 0x30,
-    scripthash: 0x32,
-    scripthashLegacy: 0x05,
-    witnesspubkeyhash: 0x06,
-    witnessscripthash: 0x0a,
-    bech32: 'lc'
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'litecoin',
@@ -49,13 +25,12 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'LTC',
-  displayName: 'Litecoin',
+  currencyName: 'Litecoin',
   pluginName: 'litecoin',
   denominations: [
     { name: 'LTC', multiplier: '100000000', symbol: 'Ł' },
     { name: 'mLTC', multiplier: '100000', symbol: 'mŁ' }
   ],
-  walletType: 'wallet:litecoin',
 
   // Configuration options:
   defaultSettings: {
@@ -106,4 +81,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/litecoin-logo-solo-64.png`
 }
 
-export const litecoin = { bcoinInfo, engineInfo, currencyInfo }
+export const litecoin = { engineInfo, currencyInfo }

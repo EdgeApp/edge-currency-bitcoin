@@ -1,28 +1,8 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'zcoin',
-  magic: 0xd9b4bef9,
-  formats: ['bip44', 'bip32'],
-  keyPrefix: {
-    privkey: 0xd2,
-    xpubkey: 0x0488b21e,
-    xprivkey: 0x0488ade4,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 136
-  },
-  addressPrefix: {
-    pubkeyhash: 0x52,
-    scripthash: 0x7
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'zcoin',
@@ -45,13 +25,12 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'XZC',
-  displayName: 'Zcoin',
+  currencyName: 'Zcoin',
   pluginName: 'zcoin',
   denominations: [
     { name: 'XZC', multiplier: '100000000', symbol: 'Ƶ' },
     { name: 'mXZC', multiplier: '100000', symbol: 'mƵ' }
   ],
-  walletType: 'wallet:zcoin',
 
   // Configuration options:
   defaultSettings: {
@@ -78,4 +57,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/zcoin-logo-solo-64.png`
 }
 
-export const zcoin = { bcoinInfo, engineInfo, currencyInfo }
+export const zcoin = { engineInfo, currencyInfo }

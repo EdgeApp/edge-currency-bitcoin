@@ -1,34 +1,8 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'bitcoincashtestnet',
-  magic: 0x0709110b,
-  formats: ['bip44', 'bip32'],
-  keyPrefix: {
-    privkey: 0xef,
-    xpubkey: 0x043587cf,
-    xprivkey: 0x04358394,
-    xpubkey58: 'tpub',
-    xprivkey58: 'tprv',
-    coinType: 1
-  },
-  addressPrefix: {
-    pubkeyhash: 0x6f,
-    scripthash: 0xc4,
-    cashAddress: 'bchtest'
-  },
-  replayProtection: {
-    SIGHASH_FORKID: 0x40,
-    forcedMinVersion: 1,
-    forkId: 0
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'bitcoincashtestnet',
@@ -52,14 +26,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'TBCH',
-  displayName: 'Bitcoin Cash Testnet',
+  currencyName: 'Bitcoin Cash Testnet',
   pluginName: 'bitcoincashtestnet',
   denominations: [
     { name: 'TBCH', multiplier: '100000000', symbol: '₿' },
     { name: 'mTBCH', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-  walletType: 'wallet:bitcoincash-testnet',
 
   // Configuration options:
   defaultSettings: {
@@ -79,4 +52,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/bitcoincash-logo-solo-64.png`
 }
 
-export const bitcoincashTestnet = { bcoinInfo, engineInfo, currencyInfo }
+export const bitcoincashTestnet = { engineInfo, currencyInfo }

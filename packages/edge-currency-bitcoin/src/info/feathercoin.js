@@ -1,31 +1,8 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'feathercoin',
-  magic: 0xd9b4bef9,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
-  keyPrefix: {
-    privkey: 0x8e,
-    xpubkey: 0x0488bc26,
-    xprivkey: 0x0488daee,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 8
-  },
-  addressPrefix: {
-    pubkeyhash: 0x0e,
-    scripthash: 0x05,
-    witnesspubkeyhash: 0x06,
-    witnessscripthash: 0x0a,
-    bech32: 'fc'
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'feathercoin',
@@ -48,13 +25,12 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'FTC',
-  displayName: 'Feathercoin',
+  currencyName: 'Feathercoin',
   pluginName: 'feathercoin',
   denominations: [
     { name: 'FTC', multiplier: '100000000', symbol: 'F' },
     { name: 'mFTC', multiplier: '100000', symbol: 'mF' }
   ],
-  walletType: 'wallet:feathercoin',
 
   // Configuration options:
   defaultSettings: {
@@ -79,4 +55,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/feathercoin-logo-solo-64.png`
 }
 
-export const feathercoin = { bcoinInfo, engineInfo, currencyInfo }
+export const feathercoin = { engineInfo, currencyInfo }

@@ -1,28 +1,8 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'dash',
-  magic: 0xd9b4bef9,
-  formats: ['bip44', 'bip32'],
-  keyPrefix: {
-    privkey: 0xcc,
-    xpubkey: 0x02fe52cc,
-    xprivkey: 0x02fe52f8,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 5
-  },
-  addressPrefix: {
-    pubkeyhash: 0x4c,
-    scripthash: 0x10
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'dash',
@@ -45,13 +25,12 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'DASH',
-  displayName: 'Dash',
+  currencyName: 'Dash',
   pluginName: 'dash',
   denominations: [
     { name: 'DASH', multiplier: '100000000', symbol: 'Ð' },
     { name: 'mDASH', multiplier: '100000', symbol: 'mÐ' }
   ],
-  walletType: 'wallet:dash',
 
   // Configuration options:
   defaultSettings: {
@@ -81,4 +60,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/dash-logo-solo-64.png`
 }
 
-export const dash = { bcoinInfo, engineInfo, currencyInfo }
+export const dash = { engineInfo, currencyInfo }

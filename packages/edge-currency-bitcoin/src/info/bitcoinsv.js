@@ -1,34 +1,8 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'bitcoinsv',
-  magic: 0xd9b4bef9,
-  formats: ['bip44', 'bip32'],
-  keyPrefix: {
-    privkey: 0x80,
-    xpubkey: 0x0488b21e,
-    xprivkey: 0x0488ade4,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 145
-  },
-  addressPrefix: {
-    pubkeyhash: 0x00,
-    scripthash: 0x05,
-    cashAddress: 'bitcoincash'
-  },
-  replayProtection: {
-    SIGHASH_FORKID: 0x40,
-    forcedMinVersion: 1,
-    forkId: 0
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'bitcoinsv',
@@ -51,14 +25,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BSV',
-  displayName: 'Bitcoin SV',
+  currencyName: 'Bitcoin SV',
   pluginName: 'bitcoinsv',
   denominations: [
     { name: 'BSV', multiplier: '100000000', symbol: '₿' },
     { name: 'mBSV', multiplier: '100000', symbol: 'm₿' },
     { name: 'cash', multiplier: '100', symbol: 'ƀ' }
   ],
-  walletType: 'wallet:bitcoinsv',
 
   // Configuration options:
   defaultSettings: {
@@ -79,13 +52,13 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  blockExplorer: 'https://blockchair.com/bitcoin-sv/block/%s',
-  addressExplorer: 'https://blockchair.com/bitcoin-sv/address/%s',
-  transactionExplorer: 'https://blockchair.com/bitcoin-sv/transaction/%s',
+  blockExplorer: 'https://bsvexplorer.info/#/block/%s',
+  addressExplorer: 'https://bsvexplorer.info/#/address/%s',
+  transactionExplorer: 'https://bsvexplorer.info/#/tx/%s',
 
   // Images:
   symbolImage: `${imageServerUrl}/bitcoinsv-logo-solo-64.png`,
   symbolImageDarkMono: `${imageServerUrl}/bitcoinsv-logo-solo-64.png`
 }
 
-export const bitcoinsv = { bcoinInfo, engineInfo, currencyInfo }
+export const bitcoinsv = { engineInfo, currencyInfo }

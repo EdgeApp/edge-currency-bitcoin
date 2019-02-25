@@ -1,36 +1,8 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'bitcoingoldtestnet',
-  magic: 0x0709110b,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
-  keyPrefix: {
-    privkey: 0xef,
-    xpubkey: 0x043587cf,
-    xprivkey: 0x04358394,
-    xpubkey58: 'tpub',
-    xprivkey58: 'tprv',
-    coinType: 156
-  },
-  addressPrefix: {
-    pubkeyhash: 0x6f,
-    scripthash: 0xc4,
-    witnesspubkeyhash: 0x03,
-    witnessscripthash: 0x28,
-    bech32: 'tb'
-  },
-  replayProtection: {
-    SIGHASH_FORKID: 64,
-    forcedMinVersion: 1,
-    forkId: 79
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'bitcoingold',
@@ -54,14 +26,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'TBTG',
-  displayName: 'Bitcoin Gold Testnet',
+  currencyName: 'Bitcoin Gold Testnet',
   pluginName: 'bitcoingoldtestnet',
   denominations: [
     { name: 'TBTG', multiplier: '100000000', symbol: '₿' },
     { name: 'mTBTG', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-  walletType: 'wallet:bitcoingold-testnet',
 
   // Configuration options:
   defaultSettings: {
@@ -94,4 +65,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/bitcoingold-logo-solo-64.png`
 }
 
-export const bitcoingoldTestnet = { bcoinInfo, engineInfo, currencyInfo }
+export const bitcoingoldTestnet = { engineInfo, currencyInfo }

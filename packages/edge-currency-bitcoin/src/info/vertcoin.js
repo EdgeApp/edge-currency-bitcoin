@@ -1,32 +1,8 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'vertcoin',
-  magic: 0xd9b4bef9,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
-  forks: [],
-  keyPrefix: {
-    privkey: 0x80,
-    xpubkey: 0x0488b21e,
-    xprivkey: 0x0488ade4,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 28
-  },
-  addressPrefix: {
-    pubkeyhash: 0x47,
-    scripthash: 0x05,
-    witnesspubkeyhash: 0x06,
-    witnessscripthash: 0x0a,
-    bech32: 'vtc'
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'vertcoin',
@@ -49,13 +25,12 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'VTC',
-  displayName: 'Vertcoin',
+  currencyName: 'Vertcoin',
   pluginName: 'vertcoin',
   denominations: [
     { name: 'VTC', multiplier: '100000000', symbol: 'V' },
     { name: 'mVTC', multiplier: '100000', symbol: 'mV' }
   ],
-  walletType: 'wallet:vertcoin',
 
   // Configuration options:
   defaultSettings: {
@@ -79,4 +54,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/vertcoin-logo-solo-64.png`
 }
 
-export const vertcoin = { bcoinInfo, engineInfo, currencyInfo }
+export const vertcoin = { engineInfo, currencyInfo }

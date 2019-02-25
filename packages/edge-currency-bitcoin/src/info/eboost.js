@@ -1,32 +1,8 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'eboost',
-  magic: 0xd9b4bef9,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
-  keyPrefix: {
-    privkey: 0xb0,
-    xpubkey: 0x0488b21e,
-    xprivkey: 0x0488ade4,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 2
-  },
-  addressPrefix: {
-    pubkeyhash: 0x5c,
-    scripthash: 0x0a,
-    scripthashLegacy: 0x05,
-    witnesspubkeyhash: 0x06,
-    witnessscripthash: 0x0a,
-    bech32: 'ebst'
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'eboost',
@@ -50,13 +26,12 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'EBST',
-  displayName: 'eBoost',
+  currencyName: 'eBoost',
   pluginName: 'eboost',
   denominations: [
     { name: 'EBST', multiplier: '100000000', symbol: 'EBST' },
     { name: 'mEBST', multiplier: '100000', symbol: 'mEBST' }
   ],
-  walletType: 'wallet:eboost',
 
   // Configuration options:
   defaultSettings: {
@@ -83,4 +58,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/eboost-logo-solo-64.png`
 }
 
-export const eboost = { bcoinInfo, engineInfo, currencyInfo }
+export const eboost = { engineInfo, currencyInfo }
