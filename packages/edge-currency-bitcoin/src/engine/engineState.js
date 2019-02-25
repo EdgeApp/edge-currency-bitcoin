@@ -2,12 +2,11 @@
 
 import { type Disklet } from 'disklet'
 import EventEmitter from 'eventemitter3'
-import stable from 'stable'
+import type { HDKeyPair } from 'nidavellir'
 import { parse } from 'uri-js'
 
 import { type PluginIo } from '../plugin/pluginIo.js'
 import { type PluginState } from '../plugin/pluginState.js'
-// import { scoreServer2 } from '../plugin/pluginState.js'
 import type {
   StratumCallbacks,
   StratumTask
@@ -27,7 +26,8 @@ import type {
   StratumHistoryRow,
   StratumUtxo
 } from '../stratum/stratumMessages.js'
-import { parseTransaction } from '../utils/coinUtils.js'
+import { parseTransaction } from '../utils/bcoinUtils/tx.js'
+import { type SaveCache, saveCache } from '../utils/utils.js'
 
 export type UtxoInfo = {
   txid: string, // tx_hash from Stratum
@@ -82,11 +82,11 @@ export interface EngineStateCallbacks {
 }
 
 export interface EngineStateOptions {
-  files: { txs: string, addresses: string };
+  files: { txs: string, addresses: string, keys: string };
   callbacks: EngineStateCallbacks;
-  io: PluginIo;
-  localDisklet: Disklet;
-  encryptedLocalDisklet: Disklet;
+  io: any;
+  localFolder: any;
+  encryptedLocalFolder: any;
   pluginState: PluginState;
   walletId?: string;
 }
@@ -205,7 +205,7 @@ export class EngineState extends EventEmitter {
       path,
       redeemScript
     }
-    this.scriptHashes[displayAddress] = scriptHash
+
     this.refreshAddressInfo(scriptHash)
 
     this.dirtyAddressCache()
@@ -229,10 +229,10 @@ export class EngineState extends EventEmitter {
     }
   }
 
-  async saveKeys (keys: any) {
+  async saveKeys (keys: HDKeyPair) {
     try {
-      const json = JSON.stringify({ keys: keys })
-      await this.encryptedLocalDisklet.setText('keys.json', json)
+      const keysText = JSON.stringify(keys)
+      await this.encryptedLocalFolder.file(this.keysFile).setText(keysText)
       console.log(`${this.walletId}: Saved keys cache`)
     } catch (e) {
       console.log(`${this.walletId}: ${e.toString()}`)
@@ -241,15 +241,15 @@ export class EngineState extends EventEmitter {
 
   async loadKeys () {
     try {
-      const keysCacheText = await this.encryptedLocalDisklet.getText(
-        'keys.json'
-      )
-      const keysCacheJson = JSON.parse(keysCacheText)
+      const keysCacheText = await this.encryptedLocalFolder
+        .file(this.keysFile)
+        .getText()
+      const keysCacheJson: HDKeyPair = JSON.parse(keysCacheText)
       // TODO: Validate JSON
-      return keysCacheJson.keys
+      return keysCacheJson
     } catch (e) {
       console.log(`${this.walletId}: ${e.toString()}`)
-      return {}
+      return null
     }
   }
 
@@ -373,6 +373,7 @@ export class EngineState extends EventEmitter {
       'engineState.addressCache': this.addressCache,
       'engineState.addressInfos': this.addressInfos,
       'engineState.scriptHashes': this.scriptHashes,
+      'engineState.scriptHashesMap': this.scriptHashesMap,
       'engineState.usedAddresses': this.usedAddresses,
       'engineState.txCache': this.txCache,
       'engineState.txHeightCache': this.txHeightCache,
@@ -391,14 +392,16 @@ export class EngineState extends EventEmitter {
   walletId: string
   txFile: string
   addressFile: string
-  localDisklet: Disklet
-  encryptedLocalDisklet: Disklet
+  keysFile: string
+  localFolder: Disklet
+  encryptedLocalFolder: Disklet
   pluginState: PluginState
   onBalanceChanged: () => void
   onAddressUsed: () => void
   onHeightUpdated: (height: number) => void
   onTxFetched: (txid: string) => void
   onAddressesChecked: (progressRatio: number) => void
+  saveCache: SaveCache
 
   addressCacheDirty: boolean
   txCacheDirty: boolean
@@ -413,6 +416,7 @@ export class EngineState extends EventEmitter {
     this.addressCache = {}
     this.addressInfos = {}
     this.scriptHashes = {}
+    this.scriptHashesMap = {}
     this.usedAddresses = {}
     this.txCache = {}
     this.parsedTxs = {}
@@ -427,8 +431,9 @@ export class EngineState extends EventEmitter {
     this.io = options.io
     this.txFile = options.files.txs
     this.addressFile = options.files.addresses
-    this.localDisklet = options.localDisklet
-    this.encryptedLocalDisklet = options.encryptedLocalDisklet
+    this.keysFile = options.files.keys
+    this.localFolder = options.localFolder
+    this.encryptedLocalFolder = options.encryptedLocalFolder
     this.pluginState = options.pluginState
     this.serverList = []
     const {
@@ -443,7 +448,7 @@ export class EngineState extends EventEmitter {
     this.onHeightUpdated = onHeightUpdated
     this.onTxFetched = onTxFetched
     this.onAddressesChecked = onAddressesChecked
-
+    this.saveCache = saveCache(this.localFolder, this.walletId)
     this.addressCacheDirty = false
     this.txCacheDirty = false
     this.reconnectCounter = 0
@@ -513,6 +518,7 @@ export class EngineState extends EventEmitter {
     const ignorePatterns = []
     // if (!this.io.TLSSocket)
     ignorePatterns.push('electrums:')
+    if (!this.io.Socket) ignorePatterns.push('electrum:')
     if (this.serverList.length === 0) {
       this.serverList = this.pluginState.getServers(
         NEW_CONNECTIONS,
@@ -650,7 +656,7 @@ export class EngineState extends EventEmitter {
     }
 
     // Fetch Headers:
-    for (const height of Object.keys(this.missingHeaders)) {
+    for (const height in this.missingHeaders) {
       if (
         !this.fetchingHeaders[height] &&
         this.serverCanGetHeader(uri, height)
@@ -682,7 +688,7 @@ export class EngineState extends EventEmitter {
     }
 
     // Fetch txids:
-    for (const txid of Object.keys(this.missingTxs)) {
+    for (const txid in this.missingTxs) {
       if (!this.fetchingTxs[txid] && this.serverCanGetTx(uri, txid)) {
         this.fetchingTxs[txid] = true
         const queryTime = Date.now()
@@ -708,20 +714,20 @@ export class EngineState extends EventEmitter {
     }
 
     // Fetch utxos:
-    for (const address of Object.keys(serverState.addresses)) {
-      const addressState = serverState.addresses[address]
+    for (const scriptHash in serverState.addresses) {
+      const addressState = serverState.addresses[scriptHash]
       if (
         addressState.hash &&
-        addressState.hash !== this.addressCache[address].utxoStratumHash &&
+        addressState.hash !== this.addressCache[scriptHash].utxoStratumHash &&
         !addressState.fetchingUtxos &&
-        this.findBestServer(address) === uri
+        this.findBestServer(scriptHash) === uri
       ) {
         addressState.fetchingUtxos = true
         const queryTime = Date.now()
         return fetchScriptHashUtxo(
-          address,
+          scriptHash,
           (utxos: Array<StratumUtxo>) => {
-            console.log(`${prefix} received utxos for: ${address}`)
+            console.log(`${prefix} received utxos for: ${scriptHash}`)
             addressState.fetchingUtxos = false
             if (!addressState.hash) {
               throw new Error(
@@ -729,35 +735,26 @@ export class EngineState extends EventEmitter {
               )
             }
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
-            this.handleUtxoFetch(address, addressState.hash || '', utxos)
+            this.handleUtxoFetch(scriptHash, addressState.hash || '', utxos)
           },
           (e: Error) => {
             addressState.fetchingUtxos = false
-            this.handleMessageError(uri, `fetching utxos for: ${address}`, e)
+            this.handleMessageError(uri, `fetching utxos for: ${scriptHash}`, e)
           }
         )
       }
     }
 
-    const priorityAddressList = stable(
-      Object.keys(this.addressInfos),
-      (address1: string, address2: string) => {
-        return (
-          (this.addressInfos[address1].used ? 1 : 0) >
-          (this.addressInfos[address2].used ? 1 : 0)
-        )
-      }
-    )
     // Subscribe to addresses:
-    for (const address of priorityAddressList) {
-      const addressState = serverState.addresses[address]
+    for (const scriptHash in this.addressInfos) {
+      const addressState = serverState.addresses[scriptHash]
       if (!addressState.subscribed && !addressState.subscribing) {
         addressState.subscribing = true
         return subscribeScriptHash(
-          address,
+          scriptHash,
           (hash: string | null) => {
             console.log(
-              `${prefix} subscribed to ${address} at ${
+              `${prefix} subscribed to ${scriptHash} at ${
                 hash ? hash.slice(0, 6) : 'null'
               }`
             )
@@ -765,7 +762,7 @@ export class EngineState extends EventEmitter {
             addressState.subscribed = true
             addressState.hash = hash
             addressState.lastUpdate = Date.now()
-            const { txidStratumHash } = this.addressCache[address]
+            const { txidStratumHash } = this.addressCache[scriptHash]
             if (!hash || hash === txidStratumHash) {
               addressState.synced = true
               this.updateProgressRatio()
@@ -773,27 +770,27 @@ export class EngineState extends EventEmitter {
           },
           (e: Error) => {
             addressState.subscribing = false
-            this.handleMessageError(uri, `subscribing to ${address}`, e)
+            this.handleMessageError(uri, `subscribing to ${scriptHash}`, e)
           }
         )
       }
     }
 
     // Fetch history:
-    for (const address of Object.keys(serverState.addresses)) {
-      const addressState = serverState.addresses[address]
+    for (const scriptHash in serverState.addresses) {
+      const addressState = serverState.addresses[scriptHash]
       if (
         addressState.hash &&
-        addressState.hash !== this.addressCache[address].txidStratumHash &&
+        addressState.hash !== this.addressCache[scriptHash].txidStratumHash &&
         !addressState.fetchingTxids &&
-        this.findBestServer(address) === uri
+        this.findBestServer(scriptHash) === uri
       ) {
         addressState.fetchingTxids = true
         const queryTime = Date.now()
         return fetchScriptHashHistory(
-          address,
+          scriptHash,
           (history: Array<StratumHistoryRow>) => {
-            console.log(`${prefix}received history for ${address}`)
+            console.log(`${prefix}received history for ${scriptHash}`)
             addressState.fetchingTxids = false
             if (!addressState.hash) {
               throw new Error(
@@ -801,13 +798,13 @@ export class EngineState extends EventEmitter {
               )
             }
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
-            this.handleHistoryFetch(address, addressState, history)
+            this.handleHistoryFetch(scriptHash, addressState, history)
           },
           (e: Error) => {
             addressState.fetchingTxids = false
             this.handleMessageError(
               uri,
-              `getting history for address ${address}`,
+              `getting history for address ${scriptHash}`,
               e
             )
           }
@@ -822,7 +819,7 @@ export class EngineState extends EventEmitter {
     // Load transaction data cache:
     try {
       if (!this.txFile || this.txFile === '') throw new Error('Missing txFile')
-      const txCacheText = await this.localDisklet.getText(this.txFile)
+      const txCacheText = await this.localFolder.file(this.txFile).getText()
       const txCacheJson = JSON.parse(txCacheText)
 
       // TODO: Validate JSON
@@ -845,7 +842,7 @@ export class EngineState extends EventEmitter {
       if (!this.addressFile || this.addressFile === '') {
         throw new Error('Missing addressFile')
       }
-      const cacheText = await this.localDisklet.getText(this.addressFile)
+      const cacheText = await this.localFolder.file(this.addressFile).getText()
       const cacheJson = JSON.parse(cacheText)
 
       // TODO: Validate JSON
@@ -867,9 +864,17 @@ export class EngineState extends EventEmitter {
       // Update the derived information:
       for (const scriptHash of Object.keys(this.addressCache)) {
         const address = this.addressCache[scriptHash]
+        const { displayAddress, path } = address
+        this.scriptHashes[displayAddress] = scriptHash
+        const indexPos = path.lastIndexOf('/')
+        const index = parseInt(path.slice(1 - indexPos))
+        const parentPath = path.slice(0, indexPos)
+        if (!this.scriptHashesMap[parentPath]) {
+          this.scriptHashesMap[parentPath] = []
+        }
+        this.scriptHashesMap[parentPath][index] = scriptHash
         for (const txid of address.txids) this.handleNewTxid(txid)
         for (const utxo of address.utxos) this.handleNewTxid(utxo.txid)
-        this.scriptHashes[address.displayAddress] = scriptHash
         this.refreshAddressInfo(scriptHash)
       }
     } catch (e) {
@@ -885,6 +890,7 @@ export class EngineState extends EventEmitter {
     this.addressCache = {}
     this.addressInfos = {}
     this.scriptHashes = {}
+    this.scriptHashesMap = {}
     this.usedAddresses = {}
     this.txCache = {}
     this.parsedTxs = {}
@@ -902,38 +908,24 @@ export class EngineState extends EventEmitter {
   }
 
   async saveAddressCache () {
-    if (this.addressCacheDirty) {
-      try {
-        const json = JSON.stringify({
-          addresses: this.addressCache,
-          heights: this.txHeightCache
-        })
-        if (!this.addressFile || this.addressFile === '') {
-          throw new Error('Missing addressFile')
-        }
-        await this.localDisklet.setText(this.addressFile, json)
-        console.log(`${this.walletId} - Saved address cache`)
-        this.addressCacheDirty = false
-      } catch (e) {
-        console.log(`${this.walletId} - saveAddressCache - ${e.toString()}`)
+    this.addressCacheDirty = await this.saveCache(
+      this.addressFile,
+      this.addressCacheDirty,
+      'address',
+      {
+        addresses: this.addressCache,
+        heights: this.txHeightCache
       }
-    }
+    )
   }
 
   async saveTxCache () {
-    if (this.txCacheDirty) {
-      try {
-        if (!this.txFile || this.txFile === '') {
-          throw new Error('Missing txFile')
-        }
-        const json = JSON.stringify({ txs: this.txCache })
-        await this.localDisklet.setText(this.txFile, json)
-        console.log(`${this.walletId}: Saved txCache`)
-        this.txCacheDirty = false
-      } catch (e) {
-        console.log(`${this.walletId}: Error saving txCache: ${e.toString()}`)
-      }
-    }
+    this.txCacheDirty = await this.saveCache(
+      this.txFile,
+      this.txCacheDirty,
+      'txCache',
+      { txs: this.txCache }
+    )
   }
 
   dirtyAddressCache () {
