@@ -3,7 +3,7 @@
 import { Core } from 'nidavellir'
 import bcoin from 'bcoin'
 import type { EdgeFreshAddress } from 'edge-core-js'
-import type { EdgeAddress } from './types.js'
+import type { EdgeAddress } from '../../../types/bcoinUtils.js'
 
 const { Lock } = bcoin.utils
 

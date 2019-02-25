@@ -1,18 +1,17 @@
 // @flow
 
+import type {
+  EdgeSocket,
+  EdgeSocketOptions,
+  PluginIo
+} from '../types/plugin.js'
+import type { EdgeIo } from 'edge-core-js/types'
+
 import { Socket } from 'net'
 import { TLSSocket } from 'tls'
-
 import { crypto } from 'bcoin'
-import { type EdgeIo } from 'edge-core-js/types'
-
 import { makeEdgeCorePlugins } from './plugin/currencyPlugin.js'
-import {
-  type EdgeSocket,
-  type EdgeSocketOptions,
-  type PluginIo,
-  makeEdgeSocket
-} from './plugin/pluginIo.js'
+import { makeEdgeSocket } from './plugin/pluginIo.js'
 
 export function makeNodeIo (io: EdgeIo): PluginIo {
   const { secp256k1, pbkdf2 } = crypto

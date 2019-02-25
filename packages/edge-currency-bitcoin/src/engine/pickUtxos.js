@@ -10,7 +10,7 @@ import type {
   AddressInfo,
   AddressInfos,
   UtxoInfo
-} from '../engine/engineState.js'
+} from '../../types/engine.js'
 
 interface BjsUtxo {
   txId: string;

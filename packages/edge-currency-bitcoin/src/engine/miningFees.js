@@ -5,7 +5,7 @@
 
 import { bns } from 'biggystring'
 
-import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
+import type { BitcoinFees, EarnComFees } from '../../types/fees.js'
 import { EarnComFeesSchema } from '../utils/jsonSchemas.js'
 import { validateObject } from '../utils/utils.js'
 
