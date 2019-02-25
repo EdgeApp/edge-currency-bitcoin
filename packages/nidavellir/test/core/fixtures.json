@@ -1,0 +1,30 @@
+{
+  "keyPair": {
+    "fromWif": [
+      [
+        "L1a6bxpVHJcM9ZEUS58MM1S9NzjxsJ14iFDV4rAdfMnE5TLGDexM",
+        "0251fdef9af8d59d0cce4a093fb5e48e9681bd6f45cf97220cce341a40a1c9576e"
+      ],
+      [
+        "Kwo7LquQnM5Zq7UxDEKoMWTmbAkXLn5YqtWLwaTTbkTeU2pKZ1Yd",
+        "0253d03455f0a1ea1dbb859b374ba9b1fc37462c1de6e40fba568246f559ed36d9"
+      ],
+      [
+        "L22QEFSQNbnHfRc2s4geN2pDbYYoKLkevrf6okBDUB6rDcXLxeHS",
+        "02703a7e625dd03d1812dd5a2a5d5d47f3e5f0c4f29823929f639c11cefbc83bf4"
+      ],
+      [
+        "Kwngkbfm8AKmp1VHEnAdHGJPcmDPVALX4ydrBrEdTzYuNm6M4EpJ",
+        "02c26c5f314a91ddc90848c034933f9ef452ece480da09fef5cca299205274ad5f"
+      ],
+      [
+        "KzC6waAr74TaGJjuYGFQAikbm3H5aCNebV5xStiEKgADzDD4Xi3C",
+        "03133d9b15981038a03c2cdbfbaf0c3cb4d3fd5fb5513665179e1acb42f4507ec1"
+      ],
+      [
+        "KzkH8BMjjgmvHbCGTcPfkuBKGPrTE1M2Xs6wKJ92j4DFwbvHyC4D",
+        "02f1e541058d6a3da9d7654ff6abdf399859efc8733241e1a1bc16f8d1a612a418"
+      ]
+    ]
+  }
+}
