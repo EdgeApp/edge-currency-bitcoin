@@ -25,12 +25,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'UFO',
-  currencyName: 'UFO',
+  displayName: 'UFO',
   pluginName: 'ufo',
   denominations: [
     { name: 'UFO', multiplier: '100000000', symbol: 'Ʉ' },
     { name: 'kUFO', multiplier: '100000000000', symbol: 'kɄ' }
   ],
+  walletType: 'wallet:ufo',
 
   // Configuration options:
   defaultSettings: {

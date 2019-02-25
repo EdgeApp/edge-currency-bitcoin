@@ -26,13 +26,14 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'TBTG',
-  currencyName: 'Bitcoin Gold Testnet',
+  displayName: 'Bitcoin Gold Testnet',
   pluginName: 'bitcoingoldtestnet',
   denominations: [
     { name: 'TBTG', multiplier: '100000000', symbol: '₿' },
     { name: 'mTBTG', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
+  walletType: 'wallet:bitcoingold-testnet',
 
   // Configuration options:
   defaultSettings: {

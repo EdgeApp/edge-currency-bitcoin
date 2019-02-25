@@ -5,16 +5,9 @@
 
 import { getLock } from './bcoinUtils/misc.js'
 import { validate } from 'jsonschema'
-import type { DiskletFolder } from 'disklet'
+import { type Disklet } from 'disklet'
 
 export const base64regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
-
-export type SaveCache = (
-  fileName: string,
-  cacheDirty: boolean,
-  cacheName: string,
-  data: Object
-) => Promise<boolean>
 
 export function validateObject (object: any, schema: any) {
   let result = null
@@ -51,28 +44,22 @@ export function promiseAny (promises: Array<Promise<any>>): Promise<any> {
   })
 }
 
-export function saveCache (folder: DiskletFolder, id: string) {
+export function saveCache (folder: Disklet, id: string) {
   const saveCacheLock = getLock()
-  return async (
-    fileName: string,
-    cacheDirty: boolean,
-    cacheName: string,
-    data: Object
-  ) => {
+  return async (fileName: string, data: Object, cacheDirty: boolean = true) => {
     const unlock = await saveCacheLock.lock()
     try {
       if (cacheDirty) {
         if (!fileName || fileName === '') {
-          throw new Error(`Missing ${cacheName}File`)
+          throw new Error(`Missing File ${fileName}`)
         }
         const jsonString = JSON.stringify(data)
-        await folder.file(fileName).setText(jsonString)
-        console.log(`${id} - Saved ${cacheName} cache`)
+        await folder.setText(fileName, jsonString)
+        console.log(`${id} - Saved ${fileName}`)
         cacheDirty = false
       }
     } catch (e) {
-      const name = cacheName.charAt(0).toUpperCase() + cacheName.slice(1)
-      console.log(`${id} - save${name}Cache - ${e.toString()}`)
+      console.log(`${id} - Error when saving ${fileName} - ${e.toString()}`)
     } finally {
       unlock()
     }

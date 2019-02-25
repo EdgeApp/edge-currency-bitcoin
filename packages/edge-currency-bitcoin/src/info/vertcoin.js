@@ -25,12 +25,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'VTC',
-  currencyName: 'Vertcoin',
+  displayName: 'Vertcoin',
   pluginName: 'vertcoin',
   denominations: [
     { name: 'VTC', multiplier: '100000000', symbol: 'V' },
     { name: 'mVTC', multiplier: '100000', symbol: 'mV' }
   ],
+  walletType: 'wallet:vertcoin',
 
   // Configuration options:
   defaultSettings: {
