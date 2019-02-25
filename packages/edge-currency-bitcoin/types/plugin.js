@@ -1,7 +1,8 @@
 // @flow
 
 import type { Subscriber } from 'yaob'
-import type { EdgeIo } from 'edge-core-js/types'
+import type { EdgeIo, EdgeCurrencyInfo } from 'edge-core-js/types'
+import type { EngineCurrencyInfo } from './engine.js'
 
 export type EdgeSecp256k1 = {
   publicKeyCreate: (
@@ -100,4 +101,9 @@ export type ServerInfo = {
   serverScore: number,
   responseTime: number,
   numResponseTimes: number
+}
+
+export type CurrencyPluginSettings = {
+  currencyInfo: EdgeCurrencyInfo,
+  engineInfo: EngineCurrencyInfo
 }
