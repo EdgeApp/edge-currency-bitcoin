@@ -1,13 +1,13 @@
 // @flow
 
 import { primitives } from 'bcoin'
-import { type EdgePaymentProtocolInfo } from 'edge-core-js/types'
+import type { EdgePaymentProtocolInfo } from 'edge-core-js'
 import parse from 'url-parse'
 
 import {
   toLegacyFormat,
   toNewFormat
-} from '../utils/addressFormat/addressFormatIndex.js'
+} from '../addressFormat/addressFormatIndex.js'
 
 const getSpendTargets = (
   outputs: Array<any>,
