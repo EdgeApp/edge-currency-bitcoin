@@ -16,36 +16,18 @@ import {
   type EdgeWalletInfo
 } from 'edge-core-js/types'
 
+import { allInfo } from '../info/all.js'
+
+import { Core, HD } from 'nidavellir'
 import {
   CurrencyEngine,
   type EngineCurrencyInfo
 } from '../engine/currencyEngine.js'
-import { allInfo } from '../info/all.js'
-import {
-  type BcoinCurrencyInfo,
-  addNetwork,
-  patchCrypto
-} from '../utils/bcoinExtender/bcoinExtender.js'
-import {
-  getForksForNetwork,
-  getFromatsForNetwork,
-  keysFromEntropy
-} from '../utils/coinUtils.js'
-import { getXPubFromSeed } from '../utils/formatSelector.js'
-import { type PluginIo } from './pluginIo.js'
+import { addNetwork } from '../utils/bcoinExtender/bcoinExtender.js'
+import { patchCrypto } from '../utils/bcoinExtender/patchCrypto.js'
+import { seedToHex, keysFromEntropy } from '../utils/bcoinUtils/key.js'
 import { PluginState } from './pluginState.js'
 import { encodeUri, parseUri } from './uri.js'
-
-export type CurrencyPluginFactorySettings = {
-  currencyInfo: EdgeCurrencyInfo,
-  engineInfo: EngineCurrencyInfo,
-  bcoinInfo: BcoinCurrencyInfo
-}
-
-export type CurrencyPluginSettings = {
-  currencyInfo: EdgeCurrencyInfo,
-  engineInfo: EngineCurrencyInfo
-}
 
 /**
  * The core currency plugin.
@@ -89,10 +71,7 @@ export class CurrencyTools {
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
-  async createPrivateKey (
-    walletType: string,
-    opts?: EdgeCreatePrivateKeyOptions
-  ) {
+  createPrivateKey (walletType: string, opts?: EdgeCreatePrivateKeyOptions) {
     const randomBuffer = Buffer.from(this.io.random(32))
     return keysFromEntropy(randomBuffer, this.network, opts)
   }
@@ -104,13 +83,12 @@ export class CurrencyTools {
   async internalDerivePublicKey (walletInfo: EdgeWalletInfo) {
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
     const network = this.network
-    const { format, coinType = -1 } = walletInfo.keys
-    if (!format || !getFromatsForNetwork(network).includes(format)) {
-      throw new Error('InvalidWalletType')
-    }
     const seed = walletInfo.keys[`${network}Key`] || ''
     if (!seed) throw new Error('InvalidKeyName')
-    const xpub = await getXPubFromSeed({ seed, network, format, coinType })
+    const { fromSeed, toString } = HD.ExtendedKey
+    const hexSeed = await seedToHex(seed, network)
+    const keyPair = await fromSeed(hexSeed, network)
+    const xpub = toString(keyPair, network, true)
     return { ...walletInfo.keys, [`${network}Xpub`]: xpub }
   }
 

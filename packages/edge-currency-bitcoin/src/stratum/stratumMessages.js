@@ -1,5 +1,7 @@
 // @flow
 
+import type { StratumBlockHeader, StratumHistoryRow, StratumUtxo, OnFailHandler, StratumTask } from '../../types/stratum.js'
+
 import {
   electrumFetchHeaderSchema,
   electrumFetchHistorySchema,
@@ -9,7 +11,6 @@ import {
   electrumSubscribeScriptHashSchema
 } from '../utils/jsonSchemas.js'
 import { validateObject } from '../utils/utils.js'
-import type { OnFailHandler, StratumTask } from './stratumConnection.js'
 
 /**
  * Creates a server ping message.
@@ -81,16 +82,6 @@ export function subscribeHeight (
     },
     onFail
   }
-}
-
-export type StratumBlockHeader = {
-  block_height: number,
-  version: number,
-  prev_block_hash: string,
-  merkle_root: string,
-  timestamp: number,
-  bits: number,
-  nonce: number
 }
 
 /**
@@ -175,12 +166,6 @@ export function subscribeScriptHash (
   }
 }
 
-export type StratumHistoryRow = {
-  tx_hash: string,
-  height: number,
-  fee?: number
-}
-
 /**
  * Get tx history of a script hash (address in script hash format).
  * @param {string} scriptHash Script hash to fetch tx history for
@@ -208,13 +193,6 @@ export function fetchScriptHashHistory (
     },
     onFail
   }
-}
-
-export type StratumUtxo = {
-  tx_hash: string,
-  tx_pos: number,
-  value: number,
-  height: number
 }
 
 /**

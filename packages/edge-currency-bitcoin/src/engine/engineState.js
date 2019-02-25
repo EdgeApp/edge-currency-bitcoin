@@ -1,17 +1,15 @@
 // @flow
 
-import { type Disklet } from 'disklet'
-import EventEmitter from 'eventemitter3'
+import type { Disklet } from 'disklet'
 import type { HDKeyPair } from 'nidavellir'
-import { parse } from 'uri-js'
+import type { UtxoInfo, AddressInfos, AddressState, EngineStateOptions } from '../../types/engine.js'
+import type { SaveCache } from '../../types/utils.js'
+import type { PluginIo } from '../../types/plugin.js'
+import type { PluginState } from '../plugin/pluginState.js'
+import type { StratumCallbacks, StratumTask, StratumBlockHeader, StratumHistoryRow, StratumUtxo } from '../../types/stratum.js'
 
-import { type SaveCache } from '../utils/flowTypes.js'
-import { type PluginIo } from '../plugin/pluginIo.js'
-import { type PluginState } from '../plugin/pluginState.js'
-import type {
-  StratumCallbacks,
-  StratumTask
-} from '../stratum/stratumConnection.js'
+import EventEmitter from 'eventemitter3'
+import { parse } from 'uri-js'
 import { StratumConnection } from '../stratum/stratumConnection.js'
 import {
   broadcastTx,
@@ -22,75 +20,9 @@ import {
   subscribeHeight,
   subscribeScriptHash
 } from '../stratum/stratumMessages.js'
-import type {
-  StratumBlockHeader,
-  StratumHistoryRow,
-  StratumUtxo
-} from '../stratum/stratumMessages.js'
+
 import { parseTransaction } from '../utils/bcoinUtils/tx.js'
 import { saveCache } from '../utils/utils.js'
-
-export type UtxoInfo = {
-  txid: string, // tx_hash from Stratum
-  index: number, // tx_pos from Stratum
-  value: number // Satoshis fit in a number
-}
-
-export type AddressInfo = {
-  txids: Array<string>,
-  utxos: Array<UtxoInfo>,
-  used: boolean, // Set manually by `addGapLimitAddress`
-  displayAddress: string, // base58 or other wallet-ready format
-  path: string, // TODO: Define the contents of this member.
-  balance: number,
-  redeemScript?: string
-}
-
-export type AddressInfos = {
-  [scriptHash: string]: AddressInfo
-}
-
-export type AddressState = {
-  subscribed: boolean,
-  synced: boolean,
-
-  hash: string | null,
-  // Timestamp of the last hash change.
-  // The server with the latest timestamp "owns" an address for the sake
-  // of fetching utxos and txids:
-  lastUpdate: number,
-
-  fetchingUtxos: boolean,
-  fetchingTxids: boolean,
-  subscribing: boolean
-}
-
-export interface EngineStateCallbacks {
-  // Changes to an address UTXO set:
-  +onBalanceChanged?: () => void;
-
-  // Changes to an address 'use' state:
-  +onAddressUsed?: () => void;
-
-  // Changes to the chain height:
-  +onHeightUpdated?: (height: number) => void;
-
-  // Fetched a transaction from the network:
-  +onTxFetched?: (txid: string) => void;
-
-  // Called when the engine gets more synced with electrum:
-  +onAddressesChecked?: (progressRatio: number) => void;
-}
-
-export interface EngineStateOptions {
-  files: { txs: string, addresses: string, keys: string };
-  callbacks: EngineStateCallbacks;
-  io: PluginIo;
-  localDisklet: Disklet;
-  encryptedLocalDisklet: Disklet;
-  pluginState: PluginState;
-  walletId?: string;
-}
 
 function nop () {}
 

@@ -1,7 +1,21 @@
 // @flow
 
-import { Utils, HD } from 'nidavellir'
 import type { HDPath, HDKeyPair } from 'nidavellir'
+import type {
+  Address as AddressObj,
+  ScriptHashMap,
+  EdgeAddress,
+  Script,
+  StandardOutput
+} from '../../types/bcoinUtils.js'
+import type {
+  AddressInfos,
+  KeyManagerOptions,
+  createTxOptions,
+  SignMessage
+} from '../../types/engine.js'
+
+import { Utils, HD } from 'nidavellir'
 import EventEmitter from 'eventemitter3'
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 import * as Address from '../utils/bcoinUtils/address.js'
@@ -9,50 +23,9 @@ import * as Key from '../utils/bcoinUtils/key.js'
 import * as Misc from '../utils/bcoinUtils/misc.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
 
-import type {
-  Address as AddressObj,
-  ScriptHashMap,
-  EdgeAddress,
-  Output,
-  Script,
-  StandardOutput,
-  TxOptions,
-  Utxo
-} from '../utils/bcoinUtils/types.js'
-import type { AddressInfos } from './engineState.js'
-
 const { ExtendedKey, HDKey } = HD
 
 const GAP_LIMIT = 10
-
-export type createTxOptions = {
-  outputs?: Array<Output>,
-  utxos: Array<Utxo>,
-  height: number,
-  rate: number,
-  maxFee: number,
-  txOptions: TxOptions
-}
-
-export type SignMessage = {
-  message: string,
-  address: string
-}
-
-export type KeyManagerOptions = {
-  account?: number,
-  coinType?: number,
-  masterKey?: HDKeyPair,
-  seed?: string,
-  xpub?: string,
-  gapLimit: number,
-  network: string,
-  addressInfos?: AddressInfos,
-  scriptHashes?: { [displayAddress: string]: string },
-  scriptHashesMap?: ScriptHashMap,
-  txInfos?: { [txid: string]: any },
-  bips?: Array<number>
-}
 
 export class KeyManager extends EventEmitter {
   writeLock: any
