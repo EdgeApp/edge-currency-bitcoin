@@ -25,12 +25,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'LTC',
-  currencyName: 'Litecoin',
+  displayName: 'Litecoin',
   pluginName: 'litecoin',
   denominations: [
     { name: 'LTC', multiplier: '100000000', symbol: 'Ł' },
     { name: 'mLTC', multiplier: '100000', symbol: 'mŁ' }
   ],
+  walletType: 'wallet:litecoin',
 
   // Configuration options:
   defaultSettings: {

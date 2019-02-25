@@ -25,12 +25,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'DASH',
-  currencyName: 'Dash',
+  displayName: 'Dash',
   pluginName: 'dash',
   denominations: [
     { name: 'DASH', multiplier: '100000000', symbol: 'Ð' },
     { name: 'mDASH', multiplier: '100000', symbol: 'mÐ' }
   ],
+  walletType: 'wallet:dash',
 
   // Configuration options:
   defaultSettings: {

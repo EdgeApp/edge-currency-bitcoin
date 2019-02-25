@@ -33,3 +33,9 @@ export type EarnComFee = {
 export type EarnComFees = {
   fees: Array<EarnComFee>
 }
+
+export type SaveCache = (
+  fileName: string,
+  data: Object,
+  cacheDirty?: boolean
+) => Promise<boolean>

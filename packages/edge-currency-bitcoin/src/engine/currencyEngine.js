@@ -3,7 +3,7 @@
 import { bns } from 'biggystring'
 import { type Disklet } from 'disklet'
 import {
-  type EdgeCurrencyEngine,
+  // type EdgeCurrencyEngine,
   type EdgeCurrencyEngineCallbacks,
   type EdgeCurrencyEngineOptions,
   type EdgeDataDump,
@@ -93,8 +93,8 @@ export class CurrencyEngine {
   engineState: EngineState
   pluginState: PluginState
   callbacks: EdgeCurrencyEngineCallbacks
-  walletLocalFolder: Disklet
-  walletLocalEncryptedFolder: Disklet
+  walletLocalDisklet: Disklet
+  walletLocalEncryptedDisklet: Disklet
   io: PluginIo
   feeUpdateInterval: number
   feeTimer: any
@@ -112,14 +112,14 @@ export class CurrencyEngine {
   }: CurrencyEngineSettings) {
     // Validate that we are a valid EdgeCurrencyEngine:
     // eslint-disable-next-line no-unused-vars
-    const test: EdgeCurrencyEngine = this
+    // const test: EdgeCurrencyEngine = this
     this.walletInfo = walletInfo
     this.walletId = walletInfo.id || ''
     this.prunedWalletId = this.walletId.slice(0, 6)
     this.pluginState = pluginState
     this.callbacks = options.callbacks
-    this.walletLocalFolder = options.walletLocalFolder
-    this.walletLocalEncryptedFolder = options.walletLocalEncryptedFolder
+    this.walletLocalDisklet = options.walletLocalDisklet
+    this.walletLocalEncryptedDisklet = options.walletLocalEncryptedDisklet
     this.io = io
     this.engineInfo = engineInfo
     this.feeUpdateInterval = this.engineInfo.feeUpdateInterval
@@ -150,8 +150,8 @@ export class CurrencyEngine {
       },
       callbacks: engineStateCallbacks,
       io: this.io,
-      localFolder: this.walletLocalFolder,
-      encryptedLocalFolder: this.walletLocalEncryptedFolder,
+      localDisklet: this.walletLocalDisklet,
+      encryptedLocalDisklet: this.walletLocalEncryptedDisklet,
       pluginState: this.pluginState,
       walletId: this.prunedWalletId
     })
@@ -483,8 +483,8 @@ export class CurrencyEngine {
       files: { txs: '', addresses: '', keys: '' },
       callbacks: engineStateCallbacks,
       io: this.io,
-      localFolder: this.walletLocalFolder,
-      encryptedLocalFolder: this.walletLocalEncryptedFolder,
+      localDisklet: this.walletLocalDisklet,
+      encryptedLocalDisklet: this.walletLocalEncryptedDisklet,
       pluginState: this.pluginState,
       walletId: this.prunedWalletId
     })

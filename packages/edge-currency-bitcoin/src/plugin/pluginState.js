@@ -3,9 +3,10 @@
 import { type Disklet, navigateDisklet } from 'disklet'
 import { type EdgeIo } from 'edge-core-js/types'
 
+import { type SaveCache } from '../utils/flowTypes.js'
 import type { EngineState } from '../engine/engineState.js'
 import { FixCurrencyCode, InfoServer } from '../info/constants'
-import { type SaveCache, saveCache } from '../utils/utils.js'
+import { saveCache } from '../utils/utils.js'
 import { ServerCache } from './serverCache.js'
 
 export type CurrencySettings = {
@@ -73,7 +74,7 @@ export class PluginState extends ServerCache {
   infoServerUris: string
 
   engines: Array<EngineState>
-  folder: Disklet
+  disklet: Disklet
 
   headerCacheDirty: boolean
   serverCacheJson: Object
@@ -101,17 +102,17 @@ export class PluginState extends ServerCache {
     const fixedCode = FixCurrencyCode(currencyCode)
     this.infoServerUris = `${InfoServer}/electrumServers/${fixedCode}`
     this.engines = []
-    this.folder = navigateDisklet(io.disklet, 'plugins/' + pluginName)
+    this.disklet = navigateDisklet(io.disklet, 'plugins/' + pluginName)
 
     this.pluginName = pluginName
-    this.saveCache = saveCache(this.folder, pluginName)
+    this.saveCache = saveCache(this.disklet, pluginName)
     this.headerCacheDirty = false
     this.serverCacheJson = {}
   }
 
   async load () {
     try {
-      const headerCacheText = await this.folder.file(this.headersFile).getText()
+      const headerCacheText = await this.disklet.getText(this.headersFile)
       const headerCacheJson = JSON.parse(headerCacheText)
       // TODO: Validate JSON
 
@@ -122,9 +123,7 @@ export class PluginState extends ServerCache {
     }
 
     try {
-      const serverCacheText = await this.folder
-        .file(this.serverCacheFile)
-        .getText()
+      const serverCacheText = await this.disklet.getText(this.serverCacheFile)
       const serverCacheJson = JSON.parse(serverCacheText)
       // TODO: Validate JSON
 
@@ -152,21 +151,16 @@ export class PluginState extends ServerCache {
   async saveHeaderCache () {
     this.headerCacheDirty = await this.saveCache(
       this.headersFile,
-      this.headerCacheDirty,
-      'header',
-      {
-        height: this.height,
-        headers: this.headerCache
-      }
+      { height: this.height, headers: this.headerCache },
+      this.headerCacheDirty
     )
   }
 
   async saveServerCache () {
     this.serverCacheDirty = await this.saveCache(
       this.serverCacheFile,
-      this.serverCacheDirty,
-      'server',
-      this.servers_
+      this.servers_,
+      this.serverCacheDirty
     )
     this.cacheLastSave_ = Date.now()
   }

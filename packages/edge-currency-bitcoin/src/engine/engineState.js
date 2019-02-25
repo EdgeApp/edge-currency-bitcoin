@@ -5,6 +5,7 @@ import EventEmitter from 'eventemitter3'
 import type { HDKeyPair } from 'nidavellir'
 import { parse } from 'uri-js'
 
+import { type SaveCache } from '../utils/flowTypes.js'
 import { type PluginIo } from '../plugin/pluginIo.js'
 import { type PluginState } from '../plugin/pluginState.js'
 import type {
@@ -27,7 +28,7 @@ import type {
   StratumUtxo
 } from '../stratum/stratumMessages.js'
 import { parseTransaction } from '../utils/bcoinUtils/tx.js'
-import { type SaveCache, saveCache } from '../utils/utils.js'
+import { saveCache } from '../utils/utils.js'
 
 export type UtxoInfo = {
   txid: string, // tx_hash from Stratum
@@ -84,9 +85,9 @@ export interface EngineStateCallbacks {
 export interface EngineStateOptions {
   files: { txs: string, addresses: string, keys: string };
   callbacks: EngineStateCallbacks;
-  io: any;
-  localFolder: any;
-  encryptedLocalFolder: any;
+  io: PluginIo;
+  localDisklet: Disklet;
+  encryptedLocalDisklet: Disklet;
   pluginState: PluginState;
   walletId?: string;
 }
@@ -226,30 +227,6 @@ export class EngineState extends EventEmitter {
     for (const scriptHash of scriptHashes) {
       this.usedAddresses[scriptHash] = true
       this.refreshAddressInfo(scriptHash)
-    }
-  }
-
-  async saveKeys (keys: HDKeyPair) {
-    try {
-      const keysText = JSON.stringify(keys)
-      await this.encryptedLocalFolder.file(this.keysFile).setText(keysText)
-      console.log(`${this.walletId}: Saved keys cache`)
-    } catch (e) {
-      console.log(`${this.walletId}: ${e.toString()}`)
-    }
-  }
-
-  async loadKeys () {
-    try {
-      const keysCacheText = await this.encryptedLocalFolder
-        .file(this.keysFile)
-        .getText()
-      const keysCacheJson: HDKeyPair = JSON.parse(keysCacheText)
-      // TODO: Validate JSON
-      return keysCacheJson
-    } catch (e) {
-      console.log(`${this.walletId}: ${e.toString()}`)
-      return null
     }
   }
 
@@ -402,6 +379,7 @@ export class EngineState extends EventEmitter {
   onTxFetched: (txid: string) => void
   onAddressesChecked: (progressRatio: number) => void
   saveCache: SaveCache
+  saveEncryptedCache: SaveCache
 
   addressCacheDirty: boolean
   txCacheDirty: boolean
@@ -432,8 +410,8 @@ export class EngineState extends EventEmitter {
     this.txFile = options.files.txs
     this.addressFile = options.files.addresses
     this.keysFile = options.files.keys
-    this.localFolder = options.localFolder
-    this.encryptedLocalFolder = options.encryptedLocalFolder
+    this.localDisklet = options.localDisklet
+    this.encryptedLocalDisklet = options.encryptedLocalDisklet
     this.pluginState = options.pluginState
     this.serverList = []
     const {
@@ -448,7 +426,8 @@ export class EngineState extends EventEmitter {
     this.onHeightUpdated = onHeightUpdated
     this.onTxFetched = onTxFetched
     this.onAddressesChecked = onAddressesChecked
-    this.saveCache = saveCache(this.localFolder, this.walletId)
+    this.saveCache = saveCache(this.localDisklet, this.walletId)
+    this.saveEncryptedCache = saveCache(this.encryptedLocalDisklet, this.walletId)
     this.addressCacheDirty = false
     this.txCacheDirty = false
     this.reconnectCounter = 0
@@ -518,7 +497,7 @@ export class EngineState extends EventEmitter {
     const ignorePatterns = []
     // if (!this.io.TLSSocket)
     ignorePatterns.push('electrums:')
-    if (!this.io.Socket) ignorePatterns.push('electrum:')
+    // if (!this.io.Socket) ignorePatterns.push('electrum:')
     if (this.serverList.length === 0) {
       this.serverList = this.pluginState.getServers(
         NEW_CONNECTIONS,
@@ -819,7 +798,7 @@ export class EngineState extends EventEmitter {
     // Load transaction data cache:
     try {
       if (!this.txFile || this.txFile === '') throw new Error('Missing txFile')
-      const txCacheText = await this.localFolder.file(this.txFile).getText()
+      const txCacheText = await this.localDisklet.getText(this.txFile)
       const txCacheJson = JSON.parse(txCacheText)
 
       // TODO: Validate JSON
@@ -842,7 +821,7 @@ export class EngineState extends EventEmitter {
       if (!this.addressFile || this.addressFile === '') {
         throw new Error('Missing addressFile')
       }
-      const cacheText = await this.localFolder.file(this.addressFile).getText()
+      const cacheText = await this.localDisklet.getText(this.addressFile)
       const cacheJson = JSON.parse(cacheText)
 
       // TODO: Validate JSON
@@ -910,22 +889,38 @@ export class EngineState extends EventEmitter {
   async saveAddressCache () {
     this.addressCacheDirty = await this.saveCache(
       this.addressFile,
-      this.addressCacheDirty,
-      'address',
-      {
-        addresses: this.addressCache,
-        heights: this.txHeightCache
-      }
+      { addresses: this.addressCache, heights: this.txHeightCache },
+      this.addressCacheDirty
     )
   }
 
   async saveTxCache () {
     this.txCacheDirty = await this.saveCache(
       this.txFile,
-      this.txCacheDirty,
-      'txCache',
+      { txs: this.txCache },
+      this.txCacheDirty
+    )
+  }
+
+  async saveKeys (keys: HDKeyPair) {
+    await this.saveEncryptedCache(
+      this.keysFile,
       { txs: this.txCache }
     )
+  }
+
+  async loadKeys () {
+    try {
+      const keysCacheText = await this.encryptedLocalDisklet.getText(
+        this.keysFile
+      )
+      const keysCacheJson: HDKeyPair = JSON.parse(keysCacheText)
+      // TODO: Validate JSON
+      return keysCacheJson
+    } catch (e) {
+      console.log(`${this.walletId}: ${e.toString()}`)
+      return null
+    }
   }
 
   dirtyAddressCache () {

@@ -25,12 +25,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'GRS',
-  currencyName: 'Groestlcoin',
+  displayName: 'Groestlcoin',
   pluginName: 'groestlcoin',
   denominations: [
     { name: 'GRS', multiplier: '100000000', symbol: 'G' },
     { name: 'mGRS', multiplier: '100000', symbol: 'mG' }
   ],
+  walletType: 'wallet:groestlcoin',
 
   // Configuration options:
   defaultSettings: {
