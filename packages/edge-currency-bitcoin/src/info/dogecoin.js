@@ -1,28 +1,8 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'dogecoin',
-  magic: 0x00000000,
-  formats: ['bip44', 'bip32'],
-  keyPrefix: {
-    privkey: 0x9e,
-    xpubkey: 0x02facafd,
-    xprivkey: 0x02fac398,
-    xprivkey58: 'xprv',
-    xpubkey58: 'xpub',
-    coinType: 3
-  },
-  addressPrefix: {
-    pubkeyhash: 0x1e,
-    scripthash: 0x16
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'dogecoin',
@@ -45,10 +25,9 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'DOGE',
-  displayName: 'Dogecoin',
+  currencyName: 'Dogecoin',
   pluginName: 'dogecoin',
   denominations: [{ name: 'DOGE', multiplier: '100000000', symbol: 'Ð' }],
-  walletType: 'wallet:dogecoin',
 
   // Configuration options:
   defaultSettings: {
@@ -72,4 +51,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/dogecoin-logo-solo-64.png`
 }
 
-export const dogecoin = { bcoinInfo, engineInfo, currencyInfo }
+export const dogecoin = { engineInfo, currencyInfo }

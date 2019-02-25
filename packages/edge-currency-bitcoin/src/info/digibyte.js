@@ -1,33 +1,8 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'digibyte',
-  magic: 0xd9b4bef9,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
-  forks: [],
-  keyPrefix: {
-    privkey: 0x9e,
-    xpubkey: 0x0488b21e,
-    xprivkey: 0x0488ade4,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 20
-  },
-  addressPrefix: {
-    pubkeyhash: 0x1e,
-    scripthash: 0x3f,
-    scripthashLegacy: 0x05,
-    witnesspubkeyhash: 0x06,
-    witnessscripthash: 0x0a,
-    bech32: 'dgb'
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'digibyte',
@@ -50,13 +25,12 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'DGB',
-  displayName: 'DigiByte',
+  currencyName: 'DigiByte',
   pluginName: 'digibyte',
   denominations: [
     { name: 'DGB', multiplier: '100000000', symbol: 'Ɗ' },
     { name: 'mDGB', multiplier: '100000', symbol: 'mƊ' }
   ],
-  walletType: 'wallet:digibyte',
 
   // Configuration options:
   defaultSettings: {
@@ -80,4 +54,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/digibyte-logo-solo-64.png`
 }
 
-export const digibyte = { bcoinInfo, engineInfo, currencyInfo }
+export const digibyte = { engineInfo, currencyInfo }

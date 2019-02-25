@@ -1,32 +1,8 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'uniformfiscalobject',
-  magic: 0xfcd9b7dd,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
-  keyPrefix: {
-    privkey: 0x9b,
-    xpubkey: 0x0488b21e,
-    xprivkey: 0x0488ade4,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 202
-  },
-  addressPrefix: {
-    pubkeyhash: 0x1b,
-    scripthash: 0x44,
-    scripthashLegacy: 0x05,
-    witnesspubkeyhash: 0x06,
-    witnessscripthash: 0x0a,
-    bech32: 'uf'
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'uniformfiscalobject',
@@ -49,13 +25,12 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'UFO',
-  displayName: 'UFO',
+  currencyName: 'UFO',
   pluginName: 'ufo',
   denominations: [
     { name: 'UFO', multiplier: '100000000', symbol: 'Ʉ' },
     { name: 'kUFO', multiplier: '100000000000', symbol: 'kɄ' }
   ],
-  walletType: 'wallet:ufo',
 
   // Configuration options:
   defaultSettings: {
@@ -81,4 +56,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/ufo-logo-solo-64.png`
 }
 
-export const ufo = { bcoinInfo, engineInfo, currencyInfo }
+export const ufo = { engineInfo, currencyInfo }

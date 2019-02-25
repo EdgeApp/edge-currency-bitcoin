@@ -1,32 +1,8 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
-import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 import { imageServerUrl } from './constants.js'
-
-const bcoinInfo: BcoinCurrencyInfo = {
-  type: 'bitcoin',
-  magic: 0xd9b4bef9,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
-  forks: ['bitcoincash', 'bitcoingold', 'bitcoindiamond'],
-  keyPrefix: {
-    privkey: 0x80,
-    xpubkey: 0x0488b21e,
-    xprivkey: 0x0488ade4,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
-    coinType: 0
-  },
-  addressPrefix: {
-    pubkeyhash: 0x00,
-    scripthash: 0x05,
-    witnesspubkeyhash: 0x06,
-    witnessscripthash: 0x0a,
-    bech32: 'bc'
-  }
-}
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'bitcoin',
@@ -50,14 +26,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BTC',
-  displayName: 'Bitcoin',
+  currencyName: 'Bitcoin',
   pluginName: 'bitcoin',
   denominations: [
     { name: 'BTC', multiplier: '100000000', symbol: '₿' },
     { name: 'mBTC', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-  walletType: 'wallet:bitcoin',
 
   // Configuration options:
   defaultSettings: {
@@ -95,4 +70,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/bitcoin-logo-solo-64.png`
 }
 
-export const bitcoin = { bcoinInfo, engineInfo, currencyInfo }
+export const bitcoin = { engineInfo, currencyInfo }
