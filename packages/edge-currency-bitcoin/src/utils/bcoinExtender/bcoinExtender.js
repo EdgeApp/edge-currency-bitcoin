@@ -1,61 +1,49 @@
 // @flow
 
 import bcoin from 'bcoin'
-
-import { patchPbkdf2, patchSecp256k1 } from './patchCrypto.js'
+import type { NetworkInfo } from 'nidavellir'
 import { patchTransaction } from './replayProtection.js'
+// $FlowFixMe
+import * as UnsafeNetworks from '@nidavellir/networks-unsafe'
+import { Core } from 'nidavellir'
 
-export type BcoinCurrencyInfo = {
-  type: string,
-  magic: number,
-  formats: Array<string>,
-  forks?: Array<string>,
-  keyPrefix: {
-    privkey: number,
-    xpubkey: number,
-    xprivkey: number,
-    xpubkey58: string,
-    xprivkey58: string,
-    coinType: number
-  },
-  addressPrefix: {
-    pubkeyhash: number,
-    scripthash: number,
-    cashAddress?: string,
-    pubkeyhashLegacy?: number,
-    scripthashLegacy?: number,
-    witnesspubkeyhash?: number,
-    witnessscripthash?: number,
-    bech32?: string
-  },
-  replayProtection?: {
-    SIGHASH_FORKID: number,
-    forcedMinVersion: number,
-    forkId: number
-  }
-}
-
-let cryptoReplaced = false
+let loadedUnsafe = false
 patchTransaction(bcoin)
 
-export const addNetwork = (bcoinInfo: BcoinCurrencyInfo) => {
-  const type = bcoinInfo.type
+export const addNetwork = (network: string, networkInfo: NetworkInfo) => {
+  if (!loadedUnsafe) {
+    const scriptProto = bcoin.script.prototype
+    const getPubkey = scriptProto.getPubkey
+    scriptProto.getPubkey = function (minimal) {
+      if (this.code.length === 6) {
+        const size = this.getLength(4)
 
-  if (bcoin.networks.types.indexOf(type) === -1) {
-    bcoin.networks.types.push(type)
-    bcoin.networks[type] = { ...bcoin.networks.main, ...bcoinInfo }
-  }
-}
-
-export const patchCrypto = (secp256k1?: any = null, pbkdf2?: any = null) => {
-  if (!cryptoReplaced) {
-    if (secp256k1) {
-      patchSecp256k1(bcoin, secp256k1)
-      cryptoReplaced = true
+        if (
+          (size === 33 || size === 65) &&
+          this.getOp(5) === parseInt('ac', 16)
+        ) {
+          return this.getData(4)
+        }
+      }
+      return getPubkey.call(this, minimal)
     }
-    if (pbkdf2) {
-      patchPbkdf2(bcoin, pbkdf2)
-      cryptoReplaced = true
+    Core.NetworkInfo.addNetworks(UnsafeNetworks)
+    loadedUnsafe = true
+  }
+  if (bcoin.networks.types.indexOf(network) === -1) {
+    bcoin.networks.types.push(network)
+    const scriptTemplates = {
+      addresses: [],
+      purpose: 0,
+      path: () => '',
+      nested: false,
+      witness: false,
+      scriptType: ''
+    }
+    bcoin.networks[network] = {
+      ...bcoin.networks.main,
+      ...networkInfo,
+      scriptTemplates
     }
   }
 }

@@ -3,9 +3,18 @@
  * @flow
  */
 
-import crypto from 'crypto'
-
+import { getLock } from './bcoinUtils/misc.js'
 import { validate } from 'jsonschema'
+import type { DiskletFolder } from 'disklet'
+
+export const base64regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
+
+export type SaveCache = (
+  fileName: string,
+  cacheDirty: boolean,
+  cacheName: string,
+  data: Object
+) => Promise<boolean>
 
 export function validateObject (object: any, schema: any) {
   let result = null
@@ -26,33 +35,8 @@ export const hexToVarByte = (hex: string) => {
   return hexLen + hex
 }
 
-export async function hash256 (hex: any) {
-  return Promise.resolve(hash256Sync(hex))
-}
-
-export function hash256Sync (hex: any) {
-  return crypto
-    .createHash('sha256')
-    .update(hex)
-    .digest()
-}
-
-export async function hash160 (hex: any) {
-  return Promise.resolve(
-    crypto
-      .createHash('ripemd160')
-      .update(await hash256(hex))
-      .digest()
-  )
-}
-
-export function reverseBufferToHex (rawBuffer: any) {
-  return rawBuffer
-    .toString('hex')
-    .match(/../g)
-    .reverse()
-    .join('')
-}
+export const reverseHexString = (hexString: string) =>
+  (hexString.match(/../g) || []).reverse().join('')
 
 /**
  * Waits for the first successful promise.
@@ -65,4 +49,33 @@ export function promiseAny (promises: Array<Promise<any>>): Promise<any> {
       promise.then(value => resolve(value), error => --pending || reject(error))
     }
   })
+}
+
+export function saveCache (folder: DiskletFolder, id: string) {
+  const saveCacheLock = getLock()
+  return async (
+    fileName: string,
+    cacheDirty: boolean,
+    cacheName: string,
+    data: Object
+  ) => {
+    const unlock = await saveCacheLock.lock()
+    try {
+      if (cacheDirty) {
+        if (!fileName || fileName === '') {
+          throw new Error(`Missing ${cacheName}File`)
+        }
+        const jsonString = JSON.stringify(data)
+        await folder.file(fileName).setText(jsonString)
+        console.log(`${id} - Saved ${cacheName} cache`)
+        cacheDirty = false
+      }
+    } catch (e) {
+      const name = cacheName.charAt(0).toUpperCase() + cacheName.slice(1)
+      console.log(`${id} - save${name}Cache - ${e.toString()}`)
+    } finally {
+      unlock()
+    }
+    return cacheDirty
+  }
 }
