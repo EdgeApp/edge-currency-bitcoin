@@ -1,28 +1,26 @@
 // @flow
 
-import { Buffer } from 'buffer'
-
-import {
-  type EdgeCorePluginOptions,
-  type EdgeCorePlugins,
-  type EdgeCreatePrivateKeyOptions,
-  type EdgeCurrencyEngine,
-  type EdgeCurrencyEngineOptions,
-  type EdgeCurrencyInfo,
-  type EdgeCurrencyPlugin,
-  type EdgeCurrencyTools,
-  type EdgeEncodeUri,
-  type EdgeParsedUri,
-  type EdgeWalletInfo
+import type { CurrencyPluginSettings, PluginIo } from '../../types/plugin.js'
+import type {
+  EdgeCorePluginOptions,
+  EdgeCorePlugins,
+  EdgeCreatePrivateKeyOptions,
+  EdgeCurrencyEngine,
+  EdgeCurrencyEngineOptions,
+  EdgeCurrencyInfo,
+  EdgeCurrencyPlugin,
+  EdgeCurrencyTools,
+  EdgeEncodeUri,
+  EdgeParsedUri,
+  EdgeWalletInfo
 } from 'edge-core-js/types'
+
+import { Buffer } from 'buffer'
 
 import { allInfo } from '../info/all.js'
 
 import { Core, HD } from 'nidavellir'
-import {
-  CurrencyEngine,
-  type EngineCurrencyInfo
-} from '../engine/currencyEngine.js'
+import { CurrencyEngine } from '../engine/currencyEngine.js'
 import { addNetwork } from '../utils/bcoinExtender/bcoinExtender.js'
 import { patchCrypto } from '../utils/bcoinExtender/patchCrypto.js'
 import { seedToHex, keysFromEntropy } from '../utils/bcoinUtils/key.js'
@@ -62,6 +60,7 @@ export class CurrencyTools {
     const { defaultSettings, pluginName, currencyCode } = this.currencyInfo
     this.state = new PluginState({
       io,
+      files: { headers: 'headers.json', serverCache: 'serverCache.json' },
       defaultSettings,
       currencyCode,
       pluginName
@@ -71,7 +70,7 @@ export class CurrencyTools {
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
-  createPrivateKey (walletType: string, opts?: EdgeCreatePrivateKeyOptions) {
+  async createPrivateKey (walletType: string, opts?: EdgeCreatePrivateKeyOptions) {
     const randomBuffer = Buffer.from(this.io.random(32))
     return keysFromEntropy(randomBuffer, this.network, opts)
   }
@@ -102,18 +101,24 @@ export class CurrencyTools {
 
   getSplittableTypes (walletInfo: EdgeWalletInfo): Array<string> {
     const { keys: { format = 'bip32' } = {} } = walletInfo
-    const forks = getForksForNetwork(this.network)
+    const { forks } = Core.Networks[this.network]
+    const bip = parseInt(format.replace('bip', ''))
     return forks
-      .filter(network => getFromatsForNetwork(network).includes(format))
+      .filter(network => {
+        const networkInfo = Core.Networks[network]
+        return networkInfo && networkInfo.bips.includes(bip)
+      })
       .map(network => `wallet:${network}`)
   }
 }
 
 const makeCurrencyPluginFactory = (
-  { currencyInfo, engineInfo, bcoinInfo }: CurrencyPluginFactorySettings,
+  { currencyInfo, engineInfo }: CurrencyPluginSettings,
   makeIo: (opts: EdgeCorePluginOptions) => PluginIo
 ) => {
-  addNetwork(bcoinInfo)
+  const network = engineInfo.network
+  const networkInfo = Core.Networks[network]
+  addNetwork(network, networkInfo)
 
   return function makePlugin (
     options: EdgeCorePluginOptions

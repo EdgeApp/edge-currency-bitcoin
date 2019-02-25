@@ -8,7 +8,7 @@ import type {
 } from '../../types/engine.js'
 import type { PluginIo } from '../../types/plugin.js'
 import type {
-  // type EdgeCurrencyEngine,
+  EdgeCurrencyEngine,
   EdgeCurrencyEngineCallbacks,
   EdgeDataDump,
   EdgeFreshAddress,
@@ -85,7 +85,7 @@ export class CurrencyEngine {
   }: CurrencyEngineSettings) {
     // Validate that we are a valid EdgeCurrencyEngine:
     // eslint-disable-next-line no-unused-vars
-    // const test: EdgeCurrencyEngine = this
+    const test: EdgeCurrencyEngine = this
     this.walletInfo = walletInfo
     this.walletId = walletInfo.id || ''
     this.prunedWalletId = this.walletId.slice(0, 6)
@@ -313,6 +313,10 @@ export class CurrencyEngine {
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
+  async changeUserSettings (userSettings: Object): Promise<mixed> {
+    await this.pluginState.updateServers(userSettings)
+  }
+
   async startEngine (): Promise<void> {
     this.callbacks.onBalanceChanged(this.currencyCode, this.getBalance())
     this.updateFeeTable()
