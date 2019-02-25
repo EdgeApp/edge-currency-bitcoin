@@ -1,6 +1,6 @@
 // @flow
 
-import type { KeyRings, CreateTxOptions, Utxo } from './types.js'
+import type { KeyRings, CreateTxOptions, Utxo } from '../../../types/bcoinUtils.js'
 
 import bcoin from 'bcoin'
 import { Utils, Core } from 'nidavellir'

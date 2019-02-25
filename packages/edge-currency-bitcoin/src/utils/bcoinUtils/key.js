@@ -1,6 +1,6 @@
 // @flow
 
-import type { KeyRings } from './types.js'
+import type { KeyRings } from '../../../types/bcoinUtils.js'
 import bcoin from 'bcoin'
 
 import { Buffer } from 'buffer'
