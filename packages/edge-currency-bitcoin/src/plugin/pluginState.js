@@ -5,6 +5,7 @@ import { type EdgeIo } from 'edge-core-js/types'
 
 import type { EngineState } from '../engine/engineState.js'
 import { FixCurrencyCode, InfoServer } from '../info/constants'
+import { type SaveCache, saveCache } from '../utils/utils.js'
 import { ServerCache } from './serverCache.js'
 
 export type CurrencySettings = {
@@ -19,6 +20,7 @@ export type CurrencySettings = {
  */
 export type PluginStateSettings = {
   io: EdgeIo,
+  files: { headers: string, serverCache: string },
   defaultSettings: CurrencySettings,
   currencyCode: string,
   pluginName: string
@@ -71,14 +73,18 @@ export class PluginState extends ServerCache {
   infoServerUris: string
 
   engines: Array<EngineState>
-  disklet: Disklet
+  folder: Disklet
 
   headerCacheDirty: boolean
   serverCacheJson: Object
   pluginName: string
+  headersFile: string
+  serverCacheFile: string
+  saveCache: SaveCache
 
   constructor ({
     io,
+    files,
     defaultSettings,
     currencyCode,
     pluginName
@@ -87,22 +93,25 @@ export class PluginState extends ServerCache {
     this.height = 0
     this.headerCache = {}
     this.io = io
+    this.headersFile = files.headers
+    this.serverCacheFile = files.serverCache
     this.defaultServers = defaultSettings.electrumServers
     this.disableFetchingServers = !!defaultSettings.disableFetchingServers
     // Rename the bitcoin currencyCode to get the new version of the server list
     const fixedCode = FixCurrencyCode(currencyCode)
     this.infoServerUris = `${InfoServer}/electrumServers/${fixedCode}`
     this.engines = []
-    this.disklet = navigateDisklet(io.disklet, 'plugins/' + pluginName)
+    this.folder = navigateDisklet(io.disklet, 'plugins/' + pluginName)
 
     this.pluginName = pluginName
+    this.saveCache = saveCache(this.folder, pluginName)
     this.headerCacheDirty = false
     this.serverCacheJson = {}
   }
 
   async load () {
     try {
-      const headerCacheText = await this.disklet.getText('headers.json')
+      const headerCacheText = await this.folder.file(this.headersFile).getText()
       const headerCacheJson = JSON.parse(headerCacheText)
       // TODO: Validate JSON
 
@@ -113,7 +122,9 @@ export class PluginState extends ServerCache {
     }
 
     try {
-      const serverCacheText = await this.disklet.getText('serverCache.json')
+      const serverCacheText = await this.folder
+        .file(this.serverCacheFile)
+        .getText()
       const serverCacheJson = JSON.parse(serverCacheText)
       // TODO: Validate JSON
 
@@ -138,40 +149,26 @@ export class PluginState extends ServerCache {
     await this.fetchStratumServers()
   }
 
-  saveHeaderCache (): Promise<void> {
-    if (this.headerCacheDirty) {
-      return this.disklet
-        .setText(
-          'headers.json',
-          JSON.stringify({
-            height: this.height,
-            headers: this.headerCache
-          })
-        )
-        .then(() => {
-          console.log(`${this.pluginName} - Saved header cache`)
-          this.headerCacheDirty = false
-        })
-        .catch(e => console.log(`${this.pluginName} - ${e.toString()}`))
-    }
-    return Promise.resolve()
+  async saveHeaderCache () {
+    this.headerCacheDirty = await this.saveCache(
+      this.headersFile,
+      this.headerCacheDirty,
+      'header',
+      {
+        height: this.height,
+        headers: this.headerCache
+      }
+    )
   }
 
   async saveServerCache () {
-    // this.printServerCache()
-    if (this.serverCacheDirty) {
-      try {
-        await this.disklet.setText(
-          'serverCache.json',
-          JSON.stringify(this.servers_)
-        )
-        this.serverCacheDirty = false
-        this.cacheLastSave_ = Date.now()
-        console.log(`${this.pluginName} - Saved server cache`)
-      } catch (e) {
-        console.log(`${this.pluginName} - ${e.toString()}`)
-      }
-    }
+    this.serverCacheDirty = await this.saveCache(
+      this.serverCacheFile,
+      this.serverCacheDirty,
+      'server',
+      this.servers_
+    )
+    this.cacheLastSave_ = Date.now()
   }
 
   dirtyServerCache (serverUrl: string) {
