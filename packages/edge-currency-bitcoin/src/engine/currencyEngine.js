@@ -1,41 +1,44 @@
 // @flow
 
-import { bns } from 'biggystring'
-import { type Disklet } from 'disklet'
-import {
+import type { Disklet } from 'disklet'
+import type {
+  EngineCurrencyInfo,
+  CurrencyEngineSettings,
+  EngineStateCallbacks
+} from '../../types/engine.js'
+import type { PluginIo } from '../../types/plugin.js'
+import type {
   // type EdgeCurrencyEngine,
-  type EdgeCurrencyEngineCallbacks,
-  type EdgeCurrencyEngineOptions,
-  type EdgeDataDump,
-  type EdgeFreshAddress,
-  type EdgeGetTransactionsOptions,
-  type EdgePaymentProtocolInfo,
-  type EdgeSpendInfo,
-  type EdgeSpendTarget,
-  type EdgeTransaction,
-  type EdgeWalletInfo
+  EdgeCurrencyEngineCallbacks,
+  EdgeDataDump,
+  EdgeFreshAddress,
+  EdgeGetTransactionsOptions,
+  EdgePaymentProtocolInfo,
+  EdgeSpendInfo,
+  EdgeSpendTarget,
+  EdgeTransaction,
+  EdgeWalletInfo
 } from 'edge-core-js/types'
+import type { TxOptions } from '../../types/bcoinUtils.js'
+import type { BitcoinFees, EarnComFees } from '../../types/fees.js'
 
+import { bns } from 'biggystring'
 import { InfoServer } from '../info/constants'
-import { type PluginIo } from '../plugin/pluginIo.js'
 import { PluginState } from '../plugin/pluginState.js'
 import {
   toLegacyFormat,
   getAddressPrefix
 } from '../utils/addressFormat/addressFormatIndex.js'
-import type { TxOptions } from '../utils/bcoinUtils/types.js'
 import * as Address from '../utils/bcoinUtils/address.js'
 import {
   scriptTypesToEdgeTypes,
   formatToBips
 } from '../utils/bcoinUtils/misc.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
-import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { promiseAny, validateObject } from '../utils/utils.js'
 import { broadcastFactories } from './broadcastApi.js'
 import { EngineState } from './engineState.js'
-import type { EngineStateCallbacks } from './engineState.js'
 import { KeyManager } from './keyManager'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 import * as PaymentRequest from '../utils/bcoinUtils/paymentRequest.js'
@@ -47,36 +50,6 @@ export function snooze (ms: number): Promise<void> {
   return new Promise((resolve: any) => setTimeout(resolve, ms))
 }
 
-export type EngineCurrencyInfo = {
-  // Required Settings
-  network: string, // The offical network in lower case - Needs to match the Bitcoin Lib Network Type
-  currencyCode: string, // The offical currency code in upper case - Needs to match the EdgeCurrencyInfo currencyCode
-  gapLimit: number,
-  maxFee: number,
-  defaultFee: number,
-  feeUpdateInterval: number,
-  customFeeSettings: Array<string>,
-  simpleFeeSettings: {
-    highFee: string,
-    lowFee: string,
-    standardFeeLow: string,
-    standardFeeHigh: string,
-    standardFeeLowAmount: string,
-    standardFeeHighAmount: string
-  },
-
-  // Optional Settings
-  forks?: Array<string>,
-  feeInfoServer?: string
-}
-
-export type CurrencyEngineSettings = {
-  walletInfo: EdgeWalletInfo,
-  engineInfo: EngineCurrencyInfo,
-  pluginState: PluginState,
-  options: EdgeCurrencyEngineOptions,
-  io: PluginIo
-}
 /**
  * The core currency plugin.
  * Provides information about the currency,

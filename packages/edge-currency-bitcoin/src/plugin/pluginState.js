@@ -1,31 +1,16 @@
 // @flow
 
-import { type Disklet, navigateDisklet } from 'disklet'
-import { type EdgeIo } from 'edge-core-js/types'
-
-import { type SaveCache } from '../utils/flowTypes.js'
+import type { Disklet } from 'disklet'
+import type { EdgeIo } from 'edge-core-js/types'
+import type { PluginStateSettings } from '../../types/plugin.js'
+import type { SaveCache } from '../../types/utils.js'
 import type { EngineState } from '../engine/engineState.js'
+
+import { navigateDisklet } from 'disklet'
 import { FixCurrencyCode, InfoServer } from '../info/constants'
 import { saveCache } from '../utils/utils.js'
 import { ServerCache } from './serverCache.js'
 
-export type CurrencySettings = {
-  customFeeSettings: Array<string>,
-  electrumServers: Array<string>,
-  disableFetchingServers?: boolean
-}
-
-/**
- * This object holds the plugin-wide per-currency caches.
- * Engine plugins are responsible for keeping it up to date.
- */
-export type PluginStateSettings = {
-  io: EdgeIo,
-  files: { headers: string, serverCache: string },
-  defaultSettings: CurrencySettings,
-  currencyCode: string,
-  pluginName: string
-}
 export class PluginState extends ServerCache {
   // On-disk header information:
   height: number

@@ -1,50 +1,19 @@
 // @flow
 
+import type { EdgeSocket, PluginIo } from '../../types/plugin.js'
+import type {
+  StratumOptions,
+  StratumTask,
+  StratumCallbacks,
+  PendingMessage
+} from '../../types/stratum.js'
+
 import { parse } from 'uri-js'
-
-import { type EdgeSocket, type PluginIo } from '../plugin/pluginIo.js'
 import { fetchPing, fetchVersion } from './stratumMessages.js'
-import type { StratumBlockHeader } from './stratumMessages.js'
-
-export type OnFailHandler = (error: Error) => void
 
 // Timing can vary a little in either direction for fewer wake ups:
 const TIMER_SLACK = 500
 const KEEP_ALIVE_MS = 60000
-
-/**
- * This is a private type used by the Stratum connection.
- * Use the static task-creator methods to build these.
- */
-export interface StratumTask {
-  method: string;
-  params: Array<any>;
-  +onDone: (reply: any, requestMs: number) => void;
-  +onFail: OnFailHandler;
-}
-
-export interface StratumCallbacks {
-  +onOpen: () => void;
-  +onClose: (error?: Error) => void;
-  +onQueueSpace: () => StratumTask | void;
-  +onNotifyHeader: (headerInfo: StratumBlockHeader) => void;
-  +onNotifyScriptHash: (scriptHash: string, hash: string) => void;
-  +onTimer: (queryTime: number) => void;
-  +onVersion: (version: string, requestMs: number) => void;
-}
-
-export interface StratumOptions {
-  callbacks: StratumCallbacks;
-  io: PluginIo;
-  queueSize?: number; // defaults to 10
-  timeout?: number; // seconds, defaults to 30
-  walletId?: string; // for logging purposes
-}
-
-type PendingMessage = {
-  startTime: number,
-  task: StratumTask
-}
 
 /**
  * A connection to a Stratum server.
