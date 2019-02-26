@@ -98,6 +98,10 @@ export class CurrencyTools {
   }
 
   async derivePublicKey (walletInfo: EdgeWalletInfo) {
+    return {}
+  }
+
+  async internalDerivePublicKey (walletInfo: EdgeWalletInfo) {
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
     const network = this.network
     const { format, coinType = -1 } = walletInfo.keys

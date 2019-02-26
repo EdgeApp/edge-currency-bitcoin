@@ -71,7 +71,7 @@ for (const fixture of fixtures) {
     })
   })
 
-  describe(`derivePublicKey for Wallet type ${WALLET_TYPE}`, function () {
+  describe.skip(`derivePublicKey for Wallet type ${WALLET_TYPE}`, function () {
     it('Valid private key', function (done) {
       tools
         .derivePublicKey({
