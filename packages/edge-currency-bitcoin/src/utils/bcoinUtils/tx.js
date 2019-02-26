@@ -1,15 +1,19 @@
 // @flow
 
-import type { KeyRings, CreateTxOptions, Utxo } from '../../../types/bcoinUtils.js'
-
 import bcoin from 'bcoin'
-import { Utils, Core } from 'nidavellir'
-import { fromBaseString, toScript } from './address.js'
+import { Core, Utils } from 'nidavellir'
+
+import type {
+  CreateTxOptions,
+  KeyRings,
+  Utxo
+} from '../../../types/bcoinUtils.js'
 import {
   toBitcoinFormat,
   toNewFormat
 } from '../addressFormat/addressFormatIndex.js'
 import { reverseHexString } from '../utils.js'
+import { fromBaseString, toScript } from './address.js'
 
 const { KeyRing } = bcoin.primitives
 const Script = bcoin.script

@@ -6,9 +6,9 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import type { AddressInfo, AddressInfos } from '../../types/engine.js'
 // import type { HeaderCache } from '../src/pluginState'
 import { pickUtxos } from '../../src/engine/pickUtxos.js'
+import type { AddressInfo, AddressInfos } from '../../types/engine.js'
 
 // const headerCache: HeaderCache = {
 //   height: 300000,

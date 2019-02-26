@@ -1,9 +1,11 @@
 // @flow
 
 import { Buffer } from 'buffer'
+
 import bcoin from 'bcoin'
 import { Utils } from 'nidavellir'
-import type { ScriptType, HexPair } from 'nidavellir'
+import type { HexPair, ScriptType } from 'nidavellir'
+
 import type { ScriptTypeSettings } from '../../../types/bcoinUtils.js'
 
 const { hash160, sha256 } = Utils.Hash

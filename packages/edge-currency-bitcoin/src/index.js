@@ -1,14 +1,15 @@
 // @flow
 
+import { Socket } from 'net'
+import { TLSSocket } from 'tls'
+
+import type { EdgeIo } from 'edge-core-js/types'
+
 import type {
   EdgeSocket,
   EdgeSocketOptions,
   PluginIo
 } from '../types/plugin.js'
-import type { EdgeIo } from 'edge-core-js/types'
-
-import { Socket } from 'net'
-import { TLSSocket } from 'tls'
 import { makeEdgeCorePlugins } from './plugin/currencyPlugin.js'
 import { makeEdgeSocket } from './plugin/pluginIo.js'
 

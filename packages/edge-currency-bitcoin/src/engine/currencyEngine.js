@@ -1,12 +1,7 @@
 // @flow
 
+import { bns } from 'biggystring'
 import type { Disklet } from 'disklet'
-import type {
-  EngineCurrencyInfo,
-  CurrencyEngineSettings,
-  EngineStateCallbacks
-} from '../../types/engine.js'
-import type { PluginIo } from '../../types/plugin.js'
 import type {
   EdgeCurrencyEngine,
   EdgeCurrencyEngineCallbacks,
@@ -19,21 +14,27 @@ import type {
   EdgeTransaction,
   EdgeWalletInfo
 } from 'edge-core-js/types'
-import type { TxOptions } from '../../types/bcoinUtils.js'
-import type { BitcoinFees, EarnComFees } from '../../types/fees.js'
 
-import { bns } from 'biggystring'
+import type { TxOptions } from '../../types/bcoinUtils.js'
+import type {
+  CurrencyEngineSettings,
+  EngineCurrencyInfo,
+  EngineStateCallbacks
+} from '../../types/engine.js'
+import type { BitcoinFees, EarnComFees } from '../../types/fees.js'
+import type { PluginIo } from '../../types/plugin.js'
 import { InfoServer } from '../info/constants'
 import { PluginState } from '../plugin/pluginState.js'
 import {
-  toLegacyFormat,
-  getAddressPrefix
+  getAddressPrefix,
+  toLegacyFormat
 } from '../utils/addressFormat/addressFormatIndex.js'
 import * as Address from '../utils/bcoinUtils/address.js'
 import {
-  scriptTypesToEdgeTypes,
-  formatToBips
+  formatToBips,
+  scriptTypesToEdgeTypes
 } from '../utils/bcoinUtils/misc.js'
+import * as PaymentRequest from '../utils/bcoinUtils/paymentRequest.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { promiseAny, validateObject } from '../utils/utils.js'
@@ -41,7 +42,6 @@ import { broadcastFactories } from './broadcastApi.js'
 import { EngineState } from './engineState.js'
 import { KeyManager } from './keyManager'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
-import * as PaymentRequest from '../utils/bcoinUtils/paymentRequest.js'
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000

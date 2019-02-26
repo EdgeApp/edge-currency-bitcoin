@@ -1,21 +1,21 @@
 // @flow
 
-import { Core } from 'nidavellir'
 import { bns } from 'biggystring'
 import {
   type EdgeCurrencyInfo,
   type EdgeEncodeUri,
   type EdgeParsedUri
 } from 'edge-core-js/types'
+import { Core } from 'nidavellir'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
 
 import {
   dirtyAddress,
-  sanitizeAddress,
-  toNewFormat,
   getAddressPrefix,
-  isLegacy
+  isLegacy,
+  sanitizeAddress,
+  toNewFormat
 } from '../utils/addressFormat/addressFormatIndex.js'
 import { verifyUriProtocol } from '../utils/bcoinUtils/misc.js'
 
