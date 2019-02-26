@@ -97,9 +97,7 @@ export class KeyManager extends EventEmitter {
   // ////////////////////////////////////////////// //
   async initMasterKey (forceInit: boolean = false) {
     if (!this.masterKey || !this.masterKey.privateKey || forceInit) {
-      if (this.seed === '') {
-        throw new Error("Can't init wallet without private key")
-      }
+      if (this.seed === '') throw new Error('Missing Master Key')
       const hexSeed = await Key.seedToHex(this.seed, this.network)
       this.masterKey = await HDKey.fromSeed(hexSeed, this.network)
     }
