@@ -21,17 +21,16 @@
 <PROJECT_ROOT>/lib/.*.js.flow
 
 [include]
-server.max_workers = 4
-sharedmemory.dep_table_pow = 21
-sharedmemory.hash_table_pow = 21
-sharedmemory.heap_size = 27
 
 [libs]
+packages/edge-currency-bitcoin/flow-typed
 node_modules/react-native/Libraries/react-native/react-native-interface.js
 node_modules/react-native/flow
-flow/
 
 [options]
+server.max_workers=4
+sharedmemory.dep_table_pow=21
+sharedmemory.hash_table_pow=21
 emoji=true
 
 module.system=haste
