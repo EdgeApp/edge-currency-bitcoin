@@ -10,7 +10,7 @@ import {
   calcFeesFromEarnCom,
   calcMinerFeePerByte
 } from '../../../src/engine/miningFees.js'
-import type { BitcoinFees } from '../../../src/utils/flowTypes.js'
+import type { BitcoinFees } from '../../../types/fees.js'
 import earnComTestFees from './earnComTestFees.json'
 
 describe(`Mining Fees`, function () {

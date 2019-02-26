@@ -1,18 +1,14 @@
 // @flow
 
+import type { StratumBlockHeader, StratumHistoryRow, StratumUtxo, StratumCallbacks } from '../../types/stratum.js'
+
 import { assert, expect } from 'chai'
 import { makeFakeIo } from 'edge-core-js'
 import { describe, it } from 'mocha'
 
 import { makeNodeIo } from '../../src/index.js'
+import { StratumConnection } from '../../src/stratum/stratumConnection.js'
 import {
-  type StratumCallbacks,
-  StratumConnection
-} from '../../src/stratum/stratumConnection.js'
-import {
-  type StratumBlockHeader,
-  type StratumHistoryRow,
-  type StratumUtxo,
   fetchBlockHeader,
   fetchScriptHashHistory,
   fetchScriptHashUtxo,

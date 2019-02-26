@@ -396,36 +396,24 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     it('Should provide a non used BTC address when no options are provided', function (done) {
       this.timeout(10000)
       const { uri } = fixture.FreshAddress
-      setTimeout(() => {
-        const address = engine.getFreshAddress({}) // TODO
-        request.get(
-          `${uri}${address.publicAddress}?api_key=MY_APIKEY`,
-          (err, res, body) => {
-            let code = null
-            try {
-              code = parseInt(JSON.parse(body).code)
-            } catch (e) {}
-            if (!err && code && code !== 429) {
-              const thirdPartyBalance = parseInt(JSON.parse(body).received)
-              assert(!err, 'getting address incoming txs from a second source')
-              assert(
-                thirdPartyBalance === 0,
-                'Should have never received coins'
-              )
-            } else {
-              // $FlowFixMe
-              const engineState: any = engine.engineState
-              const scriptHash = engineState.scriptHashes[address.publicAddress]
-              const transactions = engineState.addressInfos[scriptHash].txids
-              assert(
-                transactions.length === 0,
-                'Should have never received coins'
-              )
-            }
-            done()
-          }
-        )
-      }, 2000)
+      const address = engine.getFreshAddress({}) // TODO
+      request.get(`${uri}${address.publicAddress}`, (err, res, body) => {
+        if (!err) {
+          const thirdPartyBalance = parseInt(JSON.parse(body).total_received)
+          assert(!err, 'getting address incoming txs from a second source')
+          assert(thirdPartyBalance === 0, 'Should have never received coins')
+        } else {
+          // $FlowFixMe
+          const engineState: any = engine.engineState
+          const scriptHash = engineState.scriptHashes[address.publicAddress]
+          const transactions = engineState.addressInfos[scriptHash].txids
+          assert(
+            transactions.length === 0,
+            'Should have never received coins'
+          )
+        }
+        done()
+      })
     })
   })
 
