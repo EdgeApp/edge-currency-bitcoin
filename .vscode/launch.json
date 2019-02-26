@@ -31,22 +31,11 @@
       "type": "node",
       "request": "launch",
       "name": "edge-currency-bitcoin",
-      "outFiles": ["${workspaceFolder}/packages/edge-currency-bitcoin/build/tests.cjs.js"],
       "program": "${workspaceFolder}/packages/edge-currency-bitcoin/node_modules/.bin/_mocha",
       "args": [
-        "--require",
-        "source-map-support/register",
-        "${workspaceFolder}/packages/edge-currency-bitcoin/build/tests.js",
-        "--reporter",
-        "mocha-multi-reporters",
-        "--reporter-options",
-        "configFile=${workspaceFolder}/packages/edge-currency-bitcoin/mocha-config.json",
-        "-u",
-        "tdd",
-        "--timeout",
-        "999999",
-        "--colors",
-        "${workspaceFolder}/edge-currency-bitcoin/build/tests.js"
+        "-r",
+        "sucrase/register",
+        "${workspaceFolder}/packages/edge-currency-bitcoin/test/**/*.js"
       ],
       "internalConsoleOptions": "openOnSessionStart"
     }
