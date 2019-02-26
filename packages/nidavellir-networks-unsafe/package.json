@@ -1,6 +1,6 @@
 {
   "name": "@nidavellir/networks-unsafe",
-  "version": "3.8.0-alpha.2",
+  "version": "4.1.0-alpha.0",
   "description": "",
   "license": "SEE LICENSE IN LICENSE",
   "author": "thehobbit85",
@@ -27,7 +27,7 @@
     "js-sha3": "^0.6.1"
   },
   "peerDependencies": {
-    "nidavellir": "3.8.0-alpha.2"
+    "nidavellir": "4.1.0-alpha.0"
   },
   "devDependencies": {
     "@babel/core": "^7.1.2",
