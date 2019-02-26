@@ -1,19 +1,29 @@
 // @flow
+// The native code will use this file to set up the IO object
+// before sending it across the bridge to the core side.
 
-import 'regenerator-runtime/runtime'
+import type { EdgeSocket, EdgeSocketOptions, ExtraIo } from '../types/plugin.js'
 
-import { type EdgeCorePluginOptions } from 'edge-core-js/types'
+import { pbkdf2, secp256k1 } from 'react-native-fast-crypto'
+import { Socket } from 'react-native-tcp'
+import { bridgifyObject } from 'yaob'
+import { makeEdgeSocket } from './plugin/pluginIo.js'
 
-import { makeEdgeCorePlugins } from './plugin/currencyPlugin.js'
+export default function makeCustomIo (): ExtraIo {
+  bridgifyObject(pbkdf2)
+  bridgifyObject(secp256k1)
 
-window.addEdgeCorePlugins(
-  makeEdgeCorePlugins((opts: EdgeCorePluginOptions) => {
-    const nativeIo = opts.nativeIo['edge-currency-bitcoin']
-    if (nativeIo == null) {
-      throw new Error('React Native Bitcoin IO object not loaded')
+  return {
+    pbkdf2,
+    secp256k1,
+
+    makeSocket (opts: EdgeSocketOptions): Promise<EdgeSocket> {
+      let socket: net$Socket
+      if (opts.type === 'tcp') socket = new Socket()
+      else if (opts.type === 'tls') throw new Error('No TLS support')
+      else throw new Error('Unsupported socket type')
+
+      return Promise.resolve(makeEdgeSocket(socket, opts))
     }
-
-    const { pbkdf2, secp256k1, makeSocket } = nativeIo
-    return { ...opts.io, pbkdf2, secp256k1, makeSocket }
-  })
-)
+  }
+}

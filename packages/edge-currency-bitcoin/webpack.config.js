@@ -9,7 +9,7 @@ const babelOptions = {
 
 module.exports = {
   devtool: 'source-map',
-  entry: './src/react-native.js',
+  entry: './src/browser.js',
   mode: 'development',
   module: {
     rules: [
