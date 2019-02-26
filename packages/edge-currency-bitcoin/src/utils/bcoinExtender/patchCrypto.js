@@ -18,20 +18,20 @@ const patchPbkdf2 = function (pbkdf2) {
   if (!patched['pbkdf2'] && pbkdf2) {
     const mnemonic = bcoin.hd.Mnemonic.prototype
 
-    mnemonic.toSeed = function (passphrase) {
+    mnemonic.toSeed = async function (passphrase) {
       if (!passphrase) passphrase = this.passphrase
       this.passphrase = passphrase
 
       const phrase = nfkd(this.getPhrase())
       const passwd = nfkd('mnemonic' + passphrase)
-
-      return pbkdf2.deriveAsync(
+      const res = await pbkdf2.deriveAsync(
         Buffer.from(phrase, 'utf8'),
         Buffer.from(passwd, 'utf8'),
         2048,
         64,
         'sha512'
       )
+      return Buffer.from(res).toString('hex')
     }
 
     patched['pbkdf2'] = true
