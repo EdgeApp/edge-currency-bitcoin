@@ -43,7 +43,6 @@
     "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
     "flow-copy-source": "^2.0.2",
-    "hash.js": "^1.1.7",
     "husky": "^1.1.4",
     "import-sort-cli": "^5.2.0",
     "import-sort-parser-babylon": "^5.2.0",
@@ -65,7 +64,6 @@
     "rollup-plugin-json": "^3.1.0",
     "rollup-plugin-multi-entry": "^2.0.2",
     "rollup-plugin-node-resolve": "^3.4.0",
-    "secp256k1": "^3.6.1",
     "source-map-support": "^0.5.9",
     "updot": "^1.1.7"
   }
