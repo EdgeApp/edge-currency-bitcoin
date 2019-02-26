@@ -1,13 +1,14 @@
 // @flow
 
-import { assert } from 'chai'
-import {
-  type EdgeCorePlugin,
-  type EdgeCorePluginOptions,
-  type EdgeCurrencyPlugin,
-  type EdgeCurrencyTools,
-  makeFakeIo
+import type {
+  EdgeCorePlugin,
+  EdgeCorePluginOptions,
+  EdgeCurrencyPlugin,
+  EdgeCurrencyTools
 } from 'edge-core-js'
+
+import { assert } from 'chai'
+import { makeFakeIo } from 'edge-core-js'
 import { before, describe, it } from 'mocha'
 
 import edgeCorePlugins from '../../../src/index.js'

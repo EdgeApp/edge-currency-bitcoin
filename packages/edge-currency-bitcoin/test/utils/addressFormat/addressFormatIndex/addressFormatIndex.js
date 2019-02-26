@@ -1,14 +1,13 @@
-// @flow
-
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
+// @flow
 // eslint-disable-next-line no-unused-vars
-import edgeCorePlugins from '../../../../src/index.js'
+import * as Factories from '../../../../src/index.js'
 import {
   toLegacyFormat,
   toNewFormat,
-  validAddress
+  getAddressPrefix
 } from '../../../../src/utils/addressFormat/addressFormatIndex.js'
 import fixtures from './fixtures.json'
 
@@ -18,13 +17,13 @@ for (const fixture of fixtures) {
   describe(`Address format for ${network}`, function () {
     fixture['valid'].forEach(address => {
       it(`test valid for ${address}`, function () {
-        assert.equal(validAddress(address, network), true)
+        assert.notEqual(getAddressPrefix(address, network), null)
       })
     })
 
     fixture['inValid'].forEach(address => {
       it(`test invalid for ${address}`, function () {
-        assert.equal(validAddress(address, network), false)
+        assert.equal(getAddressPrefix(address, network), null)
       })
     })
 
