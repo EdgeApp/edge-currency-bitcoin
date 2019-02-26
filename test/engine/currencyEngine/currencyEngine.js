@@ -114,7 +114,12 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
         coinType: 0,
         format: WALLET_FORMAT
       })
-      keys = await tools.derivePublicKey({ type: WALLET_TYPE, keys, id: '!' })
+      // $FlowFixMe
+      keys = await tools.internalDerivePublicKey({
+        type: WALLET_TYPE,
+        keys,
+        id: '!'
+      })
     })
 
     it('Error when Making Engine without local folder', function () {
