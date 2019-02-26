@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.0.1 (2019-02-26)
+
+- Disable `derivePublicKeys`, which never quite worked right to begin with.
+
 # 4.0.0 (2019-02-19)
 
 - Upgrade to the edge-core-js v0.15.0 and adapt to breaking changes.
