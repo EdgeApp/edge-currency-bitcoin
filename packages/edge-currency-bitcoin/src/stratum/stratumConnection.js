@@ -1,14 +1,14 @@
 // @flow
 
+import { parse } from 'uri-js'
+
 import type { EdgeSocket, PluginIo } from '../../types/plugin.js'
 import type {
-  StratumOptions,
-  StratumTask,
+  PendingMessage,
   StratumCallbacks,
-  PendingMessage
+  StratumOptions,
+  StratumTask
 } from '../../types/stratum.js'
-
-import { parse } from 'uri-js'
 import { fetchPing, fetchVersion } from './stratumMessages.js'
 
 // Timing can vary a little in either direction for fewer wake ups:

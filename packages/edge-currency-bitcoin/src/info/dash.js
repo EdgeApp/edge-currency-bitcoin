@@ -1,7 +1,8 @@
 // @flow
 
-import type { EngineCurrencyInfo } from '../../types/engine.js'
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
+import type { EngineCurrencyInfo } from '../../types/engine.js'
 import { imageServerUrl } from './constants.js'
 
 const engineInfo: EngineCurrencyInfo = {

@@ -1,22 +1,22 @@
 // @flow
 
-import type { HDPath, HDKeyPair } from 'nidavellir'
+import EventEmitter from 'eventemitter3'
+import type { HDKeyPair, HDPath } from 'nidavellir'
+import { HD, Utils } from 'nidavellir'
+
 import type {
   Address as AddressObj,
-  ScriptHashMap,
   EdgeAddress,
   Script,
+  ScriptHashMap,
   StandardOutput
 } from '../../types/bcoinUtils.js'
 import type {
   AddressInfos,
   KeyManagerOptions,
-  createTxOptions,
-  SignMessage
+  SignMessage,
+  createTxOptions
 } from '../../types/engine.js'
-
-import { Utils, HD } from 'nidavellir'
-import EventEmitter from 'eventemitter3'
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 import * as Address from '../utils/bcoinUtils/address.js'
 import * as Key from '../utils/bcoinUtils/key.js'

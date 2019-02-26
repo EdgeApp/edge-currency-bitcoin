@@ -1,7 +1,12 @@
 // @flow
 
-import type { StratumBlockHeader, StratumHistoryRow, StratumUtxo, OnFailHandler, StratumTask } from '../../types/stratum.js'
-
+import type {
+  OnFailHandler,
+  StratumBlockHeader,
+  StratumHistoryRow,
+  StratumTask,
+  StratumUtxo
+} from '../../types/stratum.js'
 import {
   electrumFetchHeaderSchema,
   electrumFetchHistorySchema,

@@ -1,9 +1,10 @@
 // @flow
 
-import type { AddressPrefix } from 'nidavellir'
 import bcoin from 'bcoin'
+import type { AddressPrefix } from 'nidavellir'
 import { Core } from 'nidavellir'
-import { toBaseString, fromBaseString } from '../bcoinUtils/address.js'
+
+import { fromBaseString, toBaseString } from '../bcoinUtils/address.js'
 import { cashAddressToHash, toCashAddress } from './cashAddress'
 
 const networks = Core.Networks

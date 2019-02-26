@@ -1,12 +1,12 @@
 // @flow
 
 import type { Disklet } from 'disklet'
+import { navigateDisklet } from 'disklet'
 import type { EdgeIo } from 'edge-core-js/types'
+
 import type { PluginStateSettings } from '../../types/plugin.js'
 import type { SaveCache } from '../../types/utils.js'
 import type { EngineState } from '../engine/engineState.js'
-
-import { navigateDisklet } from 'disklet'
 import { FixCurrencyCode, InfoServer } from '../info/constants'
 import { saveCache } from '../utils/utils.js'
 import { ServerCache } from './serverCache.js'

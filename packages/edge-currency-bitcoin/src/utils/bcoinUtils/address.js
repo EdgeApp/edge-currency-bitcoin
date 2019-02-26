@@ -1,18 +1,20 @@
 // @flow
 
 import { Buffer } from 'buffer'
+
 import bcoin from 'bcoin'
-import { Utils, Core } from 'nidavellir'
-import type { ScriptType, HexPair } from 'nidavellir'
-import type { RawAddress, Address } from '../../../types/bcoinUtils.js'
-import { reverseHexString } from '../utils.js'
-import { defaultScriptTypes } from './scriptTypes.js'
+import { Core, Utils } from 'nidavellir'
+import type { HexPair, ScriptType } from 'nidavellir'
+
+import type { Address, RawAddress } from '../../../types/bcoinUtils.js'
 import { dirtyAddress } from '../addressFormat/addressFormatIndex.js'
 import {
   cashAddressToHash,
   toCashAddress
 } from '../addressFormat/cashAddress.js'
+import { reverseHexString } from '../utils.js'
 import { getAllKeyRings } from './key.js'
+import { defaultScriptTypes } from './scriptTypes.js'
 
 const networks = Core.Networks
 const { bech32 } = bcoin.utils

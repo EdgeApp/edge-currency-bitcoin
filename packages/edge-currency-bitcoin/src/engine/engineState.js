@@ -1,15 +1,26 @@
 // @flow
 
 import type { Disklet } from 'disklet'
-import type { HDKeyPair } from 'nidavellir'
-import type { UtxoInfo, AddressInfos, AddressState, EngineStateOptions } from '../../types/engine.js'
-import type { SaveCache } from '../../types/utils.js'
-import type { PluginIo } from '../../types/plugin.js'
-import type { PluginState } from '../plugin/pluginState.js'
-import type { StratumCallbacks, StratumTask, StratumBlockHeader, StratumHistoryRow, StratumUtxo } from '../../types/stratum.js'
-
 import EventEmitter from 'eventemitter3'
+import type { HDKeyPair } from 'nidavellir'
 import { parse } from 'uri-js'
+
+import type {
+  AddressInfos,
+  AddressState,
+  EngineStateOptions,
+  UtxoInfo
+} from '../../types/engine.js'
+import type { PluginIo } from '../../types/plugin.js'
+import type {
+  StratumBlockHeader,
+  StratumCallbacks,
+  StratumHistoryRow,
+  StratumTask,
+  StratumUtxo
+} from '../../types/stratum.js'
+import type { SaveCache } from '../../types/utils.js'
+import type { PluginState } from '../plugin/pluginState.js'
 import { StratumConnection } from '../stratum/stratumConnection.js'
 import {
   broadcastTx,
@@ -20,7 +31,6 @@ import {
   subscribeHeight,
   subscribeScriptHash
 } from '../stratum/stratumMessages.js'
-
 import { parseTransaction } from '../utils/bcoinUtils/tx.js'
 import { saveCache } from '../utils/utils.js'
 
@@ -359,7 +369,10 @@ export class EngineState extends EventEmitter {
     this.onTxFetched = onTxFetched
     this.onAddressesChecked = onAddressesChecked
     this.saveCache = saveCache(this.localDisklet, this.walletId)
-    this.saveEncryptedCache = saveCache(this.encryptedLocalDisklet, this.walletId)
+    this.saveEncryptedCache = saveCache(
+      this.encryptedLocalDisklet,
+      this.walletId
+    )
     this.addressCacheDirty = false
     this.txCacheDirty = false
     this.reconnectCounter = 0
@@ -835,10 +848,7 @@ export class EngineState extends EventEmitter {
   }
 
   async saveKeys (keys: HDKeyPair) {
-    await this.saveEncryptedCache(
-      this.keysFile,
-      { txs: this.txCache }
-    )
+    await this.saveEncryptedCache(this.keysFile, { txs: this.txCache })
   }
 
   async loadKeys () {

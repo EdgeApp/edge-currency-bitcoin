@@ -1,7 +1,5 @@
 // @flow
 
-import type { StratumBlockHeader, StratumHistoryRow, StratumUtxo, StratumCallbacks } from '../../types/stratum.js'
-
 import { assert, expect } from 'chai'
 import { makeFakeIo } from 'edge-core-js'
 import { describe, it } from 'mocha'
@@ -16,6 +14,12 @@ import {
   subscribeHeight,
   subscribeScriptHash
 } from '../../src/stratum/stratumMessages.js'
+import type {
+  StratumBlockHeader,
+  StratumCallbacks,
+  StratumHistoryRow,
+  StratumUtxo
+} from '../../types/stratum.js'
 
 // const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
 const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'

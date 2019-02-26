@@ -407,10 +407,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
           const engineState: any = engine.engineState
           const scriptHash = engineState.scriptHashes[address.publicAddress]
           const transactions = engineState.addressInfos[scriptHash].txids
-          assert(
-            transactions.length === 0,
-            'Should have never received coins'
-          )
+          assert(transactions.length === 0, 'Should have never received coins')
         }
         done()
       })

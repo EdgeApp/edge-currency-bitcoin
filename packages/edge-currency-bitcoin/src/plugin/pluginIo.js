@@ -1,11 +1,8 @@
 // @flow
 
-import type {
-  EdgeSocketOptions,
-  EdgeSocket
-} from '../../types/plugin.js'
-
 import { bridgifyObject, emit, onMethod } from 'yaob'
+
+import type { EdgeSocket, EdgeSocketOptions } from '../../types/plugin.js'
 
 /**
  * Wraps a Node-style socket into an EdgeSocket.

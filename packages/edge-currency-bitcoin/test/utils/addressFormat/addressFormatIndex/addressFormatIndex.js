@@ -5,9 +5,9 @@ import { describe, it } from 'mocha'
 // eslint-disable-next-line no-unused-vars
 import * as Factories from '../../../../src/index.js'
 import {
+  getAddressPrefix,
   toLegacyFormat,
-  toNewFormat,
-  getAddressPrefix
+  toNewFormat
 } from '../../../../src/utils/addressFormat/addressFormatIndex.js'
 import fixtures from './fixtures.json'
 

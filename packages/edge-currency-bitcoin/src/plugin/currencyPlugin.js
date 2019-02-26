@@ -1,6 +1,7 @@
 // @flow
 
-import type { CurrencyPluginSettings, PluginIo } from '../../types/plugin.js'
+import { Buffer } from 'buffer'
+
 import type {
   EdgeCorePluginOptions,
   EdgeCorePlugins,
@@ -14,16 +15,14 @@ import type {
   EdgeParsedUri,
   EdgeWalletInfo
 } from 'edge-core-js/types'
-
-import { Buffer } from 'buffer'
-
-import { allInfo } from '../info/all.js'
-
 import { Core, HD } from 'nidavellir'
+
+import type { CurrencyPluginSettings, PluginIo } from '../../types/plugin.js'
 import { CurrencyEngine } from '../engine/currencyEngine.js'
+import { allInfo } from '../info/all.js'
 import { addNetwork } from '../utils/bcoinExtender/bcoinExtender.js'
 import { patchCrypto } from '../utils/bcoinExtender/patchCrypto.js'
-import { seedToHex, keysFromEntropy } from '../utils/bcoinUtils/key.js'
+import { keysFromEntropy, seedToHex } from '../utils/bcoinUtils/key.js'
 import { PluginState } from './pluginState.js'
 import { encodeUri, parseUri } from './uri.js'
 
@@ -70,7 +69,10 @@ export class CurrencyTools {
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
-  async createPrivateKey (walletType: string, opts?: EdgeCreatePrivateKeyOptions) {
+  async createPrivateKey (
+    walletType: string,
+    opts?: EdgeCreatePrivateKeyOptions
+  ) {
     const randomBuffer = Buffer.from(this.io.random(32))
     return keysFromEntropy(randomBuffer, this.network, opts)
   }
