@@ -848,7 +848,7 @@ export class EngineState extends EventEmitter {
   }
 
   async saveKeys (keys: HDKeyPair) {
-    await this.saveEncryptedCache(this.keysFile, { txs: this.txCache })
+    await this.saveEncryptedCache(this.keysFile, keys)
   }
 
   async loadKeys () {

@@ -22,6 +22,9 @@
 
 [include]
 
+[untyped]
+.*/node_modules/yaob/src/data.js
+
 [libs]
 packages/edge-currency-bitcoin/flow-typed
 node_modules/react-native/Libraries/react-native/react-native-interface.js
