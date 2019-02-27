@@ -15,7 +15,10 @@ export const scriptTypesToEdgeTypes = (
   segwitAddress: addresses['P2WPKH']
 })
 
-export const formatToBips = (network: string, format?: string) => {
+export const formatToBips = (
+  network: string,
+  format?: string
+): Array<number> => {
   const { bips } = Core.Networks[network]
   if (!format) return bips
   const bip = parseInt(format.replace('bip', ''))
