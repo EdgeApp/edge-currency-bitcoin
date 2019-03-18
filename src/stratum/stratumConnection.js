@@ -3,6 +3,7 @@
 import { parse } from 'uri-js'
 
 import { type EdgeSocket, type PluginIo } from '../plugin/pluginIo.js'
+import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 import { fetchPing, fetchVersion } from './stratumMessages.js'
 import type { StratumBlockHeader } from './stratumMessages.js'
 
@@ -60,7 +61,7 @@ export class StratumConnection {
     const {
       callbacks,
       io,
-      queueSize = 10,
+      queueSize = 5,
       timeout = 30,
       walletId = ''
     } = options
@@ -125,10 +126,22 @@ export class StratumConnection {
       })
   }
 
+  wakeUp () {
+    pushUpdate({
+      id: this.walletId + '==' + this.uri,
+      action: 'wakeup',
+      updateFunc: () => {
+        if (this.connected) {
+          this.doWakeUp()
+        }
+      }
+    })
+  }
+
   /**
    * Re-triggers the `onQueueSpace` callback if there is space in the queue.
    */
-  wakeUp () {
+  doWakeUp () {
     while (Object.keys(this.pendingMessages).length < this.queueSize) {
       const task = this.callbacks.onQueueSpace()
       if (!task) break
@@ -168,6 +181,7 @@ export class StratumConnection {
     this.sigkill = true
     this.connected = false
     if (this.socket) this.socket.close()
+    removeIdFromQueue(this.uri)
   }
 
   // ------------------------------------------------------------------------
