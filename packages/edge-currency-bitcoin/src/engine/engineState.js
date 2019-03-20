@@ -19,7 +19,6 @@ import type {
   StratumTask,
   StratumUtxo
 } from '../../types/stratum.js'
-import type { SaveCache } from '../../types/utils.js'
 import type { PluginState } from '../plugin/pluginState.js'
 import { StratumConnection } from '../stratum/stratumConnection.js'
 import {
@@ -32,13 +31,12 @@ import {
   subscribeScriptHash
 } from '../stratum/stratumMessages.js'
 import { parseTransaction } from '../utils/bcoinUtils/tx.js'
-import { saveCache } from '../utils/utils.js'
+import { cache } from '../utils/utils.js'
 
 function nop () {}
 
 const MAX_CONNECTIONS = 2
 const NEW_CONNECTIONS = 8
-const CACHE_THROTTLE = 0.1
 
 /**
  * This object holds the current state of the wallet engine.
@@ -81,6 +79,8 @@ export class EngineState extends EventEmitter {
       firstSeen: number // Timestamp for unconfirmed stuff
     }
   }
+
+  masterKey: HDKeyPair
 
   // Cache of parsed transaction data:
   parsedTxs: { [txid: string]: any }
@@ -151,7 +151,6 @@ export class EngineState extends EventEmitter {
 
     this.refreshAddressInfo(scriptHash)
 
-    this.dirtyAddressCache()
     for (const uri of Object.keys(this.serverStates)) {
       this.serverStates[uri].addresses[scriptHash] = {
         fetchingTxids: false,
@@ -225,7 +224,6 @@ export class EngineState extends EventEmitter {
       this.addressCache[scriptHash].txids.push(txid)
       this.refreshAddressInfo(scriptHash)
     }
-    this.dirtyAddressCache()
   }
 
   connect () {
@@ -310,6 +308,7 @@ export class EngineState extends EventEmitter {
   io: PluginIo
   walletId: string
   txFile: string
+  txHeightsFile: string
   addressFile: string
   keysFile: string
   localFolder: Disklet
@@ -320,11 +319,7 @@ export class EngineState extends EventEmitter {
   onHeightUpdated: (height: number) => void
   onTxFetched: (txid: string) => void
   onAddressesChecked: (progressRatio: number) => void
-  saveCache: SaveCache
-  saveEncryptedCache: SaveCache
 
-  addressCacheDirty: boolean
-  txCacheDirty: boolean
   reconnectTimer: TimeoutID
   reconnectCounter: number
   progressRatio: number
@@ -333,23 +328,22 @@ export class EngineState extends EventEmitter {
 
   constructor (options: EngineStateOptions) {
     super()
-    this.addressCache = {}
     this.addressInfos = {}
     this.scriptHashes = {}
     this.scriptHashesMap = {}
     this.usedAddresses = {}
-    this.txCache = {}
-    this.parsedTxs = {}
-    this.txHeightCache = {}
+
     this.connections = {}
     this.serverStates = {}
     this.fetchingTxs = {}
     this.missingTxs = {}
     this.fetchingHeaders = {}
     this.missingHeaders = {}
+    this.parsedTxs = {}
     this.walletId = options.walletId || ''
     this.io = options.io
     this.txFile = options.files.txs
+    this.txHeightsFile = options.files.txHeights
     this.addressFile = options.files.addresses
     this.keysFile = options.files.keys
     this.localDisklet = options.localDisklet
@@ -368,16 +362,73 @@ export class EngineState extends EventEmitter {
     this.onHeightUpdated = onHeightUpdated
     this.onTxFetched = onTxFetched
     this.onAddressesChecked = onAddressesChecked
-    this.saveCache = saveCache(this.localDisklet, this.walletId)
-    this.saveEncryptedCache = saveCache(
-      this.encryptedLocalDisklet,
-      this.walletId
-    )
-    this.addressCacheDirty = false
-    this.txCacheDirty = false
+
     this.reconnectCounter = 0
     this.progressRatio = 0
     this.txCacheInitSize = 0
+  }
+
+  async load (clean: boolean = true) {
+    console.log(`${this.walletId} - Loading wallet engine caches`)
+    // Load Master Key from disk:
+    this.masterKey = await cache(this.encryptedLocalDisklet, this.keysFile, this.walletId)
+    // Load transaction data cache:
+    this.txCache = await cache(this.localDisklet, this.txFile, this.walletId)
+    // Update the derived information:
+    for (const txid of Object.keys(this.txCache)) {
+      this.parsedTxs[txid] = parseTransaction(this.txCache[txid])
+    }
+    // Load the address and height caches.
+    // Must come after transactions are loaded for proper txid filtering:
+    this.addressCache = await cache(this.localDisklet, this.addressFile, this.walletId)
+    this.txHeightCache = await cache(this.localDisklet, this.txHeightsFile, this.walletId)
+    // Fill up the missing headers to fetch
+    for (const txid in this.txHeightCache) {
+      const height = this.txHeightCache[txid].height
+      if (height > 0 && !this.pluginState.headerCache[`${height}`]) {
+        this.missingHeaders[`${height}`] = true
+      }
+    }
+    // Update the derived information:
+    for (const scriptHash in this.addressCache) {
+      const address = this.addressCache[scriptHash]
+      const { displayAddress, path } = address
+      this.scriptHashes[displayAddress] = scriptHash
+      const indexPos = path.lastIndexOf('/')
+      const index = parseInt(path.slice(1 - indexPos))
+      const parentPath = path.slice(0, indexPos)
+      if (!this.scriptHashesMap[parentPath]) {
+        this.scriptHashesMap[parentPath] = []
+      }
+      this.scriptHashesMap[parentPath][index] = scriptHash
+      for (const txid of address.txids) this.handleNewTxid(txid)
+      for (const utxo of address.utxos) this.handleNewTxid(utxo.txid)
+      this.refreshAddressInfo(scriptHash)
+    }
+    return this
+  }
+
+  async clearCache () {
+    // $FlowFixMe
+    this.masterKey({})
+    // $FlowFixMe
+    this.txCache({})
+    // $FlowFixMe
+    this.addressCache({})
+    // $FlowFixMe
+    this.txHeightCache({})
+
+    this.addressInfos = {}
+    this.scriptHashes = {}
+    this.scriptHashesMap = {}
+    this.usedAddresses = {}
+    this.parsedTxs = {}
+    this.connections = {}
+    this.serverStates = {}
+    this.fetchingTxs = {}
+    this.missingTxs = {}
+    this.fetchingHeaders = {}
+    this.missingHeaders = {}
   }
 
   reconnect () {
@@ -414,25 +465,9 @@ export class EngineState extends EventEmitter {
       const missingTasks = missingTxsLen + missingAddressesLen
       const percent = (allTasks - missingTasks) / allTasks
 
-      const end = () => {
+      if (percent !== this.progressRatio) {
         this.progressRatio = percent
         this.onAddressesChecked(this.progressRatio)
-      }
-
-      if (percent !== this.progressRatio) {
-        if (
-          Math.abs(percent - this.progressRatio) > CACHE_THROTTLE ||
-          percent === 1
-        ) {
-          const saves = [this.saveAddressCache(), this.saveTxCache()]
-          if (this.pluginState) {
-            saves.push(this.pluginState.saveHeaderCache())
-            saves.push(this.pluginState.saveServerCache())
-          }
-          Promise.all(saves).then(end)
-        } else {
-          end()
-        }
       }
     }
   }
@@ -492,8 +527,6 @@ export class EngineState extends EventEmitter {
           this.emit('connectionClose', uri)
           error && this.pluginState.serverScoreDown(uri)
           this.reconnect()
-          this.saveAddressCache()
-          this.saveTxCache()
         },
 
         onQueueSpace: () => {
@@ -737,144 +770,6 @@ export class EngineState extends EventEmitter {
     }
   }
 
-  async load () {
-    console.log(`${this.walletId} - Loading wallet engine caches`)
-
-    // Load transaction data cache:
-    try {
-      if (!this.txFile || this.txFile === '') throw new Error('Missing txFile')
-      const txCacheText = await this.localDisklet.getText(this.txFile)
-      const txCacheJson = JSON.parse(txCacheText)
-
-      // TODO: Validate JSON
-      if (!txCacheJson.txs) throw new Error('Missing txs in cache')
-
-      // Update the cache:
-      this.txCache = txCacheJson.txs
-
-      // Update the derived information:
-      for (const txid of Object.keys(this.txCache)) {
-        this.parsedTxs[txid] = parseTransaction(this.txCache[txid])
-      }
-    } catch (e) {
-      this.txCache = {}
-    }
-
-    // Load the address and height caches.
-    // Must come after transactions are loaded for proper txid filtering:
-    try {
-      if (!this.addressFile || this.addressFile === '') {
-        throw new Error('Missing addressFile')
-      }
-      const cacheText = await this.localDisklet.getText(this.addressFile)
-      const cacheJson = JSON.parse(cacheText)
-
-      // TODO: Validate JSON
-      if (!cacheJson.addresses) throw new Error('Missing addresses in cache')
-      if (!cacheJson.heights) throw new Error('Missing heights in cache')
-
-      // Update the cache:
-      this.addressCache = cacheJson.addresses
-      this.txHeightCache = cacheJson.heights
-
-      // Fill up the missing headers to fetch
-      for (const txid in this.txHeightCache) {
-        const height = this.txHeightCache[txid].height
-        if (height > 0 && !this.pluginState.headerCache[`${height}`]) {
-          this.missingHeaders[`${height}`] = true
-        }
-      }
-
-      // Update the derived information:
-      for (const scriptHash of Object.keys(this.addressCache)) {
-        const address = this.addressCache[scriptHash]
-        const { displayAddress, path } = address
-        this.scriptHashes[displayAddress] = scriptHash
-        const indexPos = path.lastIndexOf('/')
-        const index = parseInt(path.slice(1 - indexPos))
-        const parentPath = path.slice(0, indexPos)
-        if (!this.scriptHashesMap[parentPath]) {
-          this.scriptHashesMap[parentPath] = []
-        }
-        this.scriptHashesMap[parentPath][index] = scriptHash
-        for (const txid of address.txids) this.handleNewTxid(txid)
-        for (const utxo of address.utxos) this.handleNewTxid(utxo.txid)
-        this.refreshAddressInfo(scriptHash)
-      }
-    } catch (e) {
-      this.addressCache = {}
-      this.addressInfos = {}
-      this.txHeightCache = {}
-    }
-
-    return this
-  }
-
-  async clearCache () {
-    this.addressCache = {}
-    this.addressInfos = {}
-    this.scriptHashes = {}
-    this.scriptHashesMap = {}
-    this.usedAddresses = {}
-    this.txCache = {}
-    this.parsedTxs = {}
-    this.txHeightCache = {}
-    this.connections = {}
-    this.serverStates = {}
-    this.fetchingTxs = {}
-    this.missingTxs = {}
-    this.fetchingHeaders = {}
-    this.missingHeaders = {}
-    this.txCacheDirty = true
-    this.addressCacheDirty = true
-    await this.saveAddressCache()
-    await this.saveTxCache()
-  }
-
-  async saveAddressCache () {
-    this.addressCacheDirty = await this.saveCache(
-      this.addressFile,
-      { addresses: this.addressCache, heights: this.txHeightCache },
-      this.addressCacheDirty
-    )
-  }
-
-  async saveTxCache () {
-    this.txCacheDirty = await this.saveCache(
-      this.txFile,
-      { txs: this.txCache },
-      this.txCacheDirty
-    )
-  }
-
-  async saveKeys (keys: HDKeyPair) {
-    await this.saveEncryptedCache(this.keysFile, keys)
-  }
-
-  async loadKeys () {
-    try {
-      const keysCacheText = await this.encryptedLocalDisklet.getText(
-        this.keysFile
-      )
-      const keysCacheJson: HDKeyPair = JSON.parse(keysCacheText)
-      // TODO: Validate JSON
-      return keysCacheJson
-    } catch (e) {
-      console.log(`${this.walletId}: ${e.toString()}`)
-      return null
-    }
-  }
-
-  dirtyAddressCache () {
-    this.addressCacheDirty = true
-    if (this.progressRatio === 1) this.saveAddressCache()
-  }
-
-  dirtyTxCache () {
-    this.txCacheDirty = true
-    if (this.progressRatio === 1) this.saveTxCache()
-  }
-
   findBestServer (address: string) {
     let bestTime = 0
     let bestUri = ''
@@ -922,7 +817,6 @@ export class EngineState extends EventEmitter {
       for (const txid of affectedTXIDS) {
         if (this.parsedTxs[txid]) this.onTxFetched(txid)
       }
-      this.pluginState.dirtyHeaderCache()
     }
     delete this.missingHeaders[height]
   }
@@ -946,7 +840,6 @@ export class EngineState extends EventEmitter {
     this.addressCache[scriptHash].txidStratumHash = addressState.hash || ''
     this.updateProgressRatio()
     this.refreshAddressInfo(scriptHash)
-    this.dirtyAddressCache()
   }
 
   // A server has sent a transaction, so update the caches:
@@ -957,7 +850,6 @@ export class EngineState extends EventEmitter {
     for (const scriptHash of this.findAffectedAddressesForInputs(txid)) {
       this.refreshAddressInfo(scriptHash)
     }
-    this.dirtyTxCache()
     this.onTxFetched(txid)
     for (const scriptHash of this.findAffectedAddressesForOutput(txid)) {
       this.refreshAddressInfo(scriptHash)
@@ -1037,7 +929,6 @@ export class EngineState extends EventEmitter {
     this.addressCache[scriptHash].utxos = utxoList
     this.addressCache[scriptHash].utxoStratumHash = stateHash
     this.refreshAddressInfo(scriptHash)
-    this.dirtyAddressCache()
   }
 
   /**

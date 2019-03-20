@@ -103,10 +103,7 @@ export class CurrencyEngine {
     console.log(
       `${this.prunedWalletId}: create engine type: ${this.walletInfo.type}`
     )
-  }
-
-  async load (): Promise<any> {
-    const engineStateCallbacks: EngineStateCallbacks = {
+    const callbacks: EngineStateCallbacks = {
       onHeightUpdated: this.callbacks.onBlockHeightChanged,
       onTxFetched: (txid: string) => {
         const edgeTransaction = this.getTransactionSync(txid)
@@ -115,56 +112,58 @@ export class CurrencyEngine {
       onAddressesChecked: this.callbacks.onAddressesChecked
     }
 
+    const files = {
+      txs: 'txs.json',
+      txHeights: 'txHeights.json',
+      addresses: 'addresses.json',
+      keys: 'hdKey.json'
+    }
+
     this.engineState = new EngineState({
-      files: {
-        txs: 'txs.json',
-        addresses: 'addresses.json',
-        keys: 'hdKey.json'
-      },
-      callbacks: engineStateCallbacks,
-      io: this.io,
+      files,
+      callbacks,
+      io,
+      pluginState,
       localDisklet: this.walletLocalDisklet,
       encryptedLocalDisklet: this.walletLocalEncryptedDisklet,
-      pluginState: this.pluginState,
       walletId: this.prunedWalletId
     })
-
-    await this.engineState.load()
 
     const keys = this.walletInfo.keys || {}
     const { format, coinType = 0 } = keys
     const bips = formatToBips(this.network, format)
-
     const seed = keys[`${this.network}Key`]
     const xpub = keys[`${this.network}Xpub`]
-    const masterKey = await this.engineState.loadKeys()
-
-    console.log(
-      `${this.walletId} - Created Wallet for Currency Plugin ${
-        this.pluginState.pluginName
-      }`
-    )
 
     this.keyManager = new KeyManager({
       seed,
       xpub,
-      masterKey,
       coinType,
       bips,
       gapLimit: this.engineInfo.gapLimit,
       network: this.network,
+      masterKey: this.engineState.masterKey,
       addressInfos: this.engineState.addressInfos,
       scriptHashes: this.engineState.scriptHashes,
       scriptHashesMap: this.engineState.scriptHashesMap,
       txInfos: this.engineState.parsedTxs
     })
 
+    console.log(
+      `${this.walletId} - Created Wallet for Currency Plugin ${
+        this.pluginState.pluginName
+      }`
+    )
+  }
+
+  async load (): Promise<any> {
+    await this.engineState.load()
+
     this.keyManager.on(
       'newAddress',
       this.engineState.addAddress,
       this.engineState
     )
-    this.keyManager.on('newKey', this.engineState.saveKeys, this.engineState)
 
     this.engineState.onAddressUsed = () => {
       this.keyManager.setLookAhead()
@@ -330,14 +329,15 @@ export class CurrencyEngine {
 
   async resyncBlockchain (): Promise<void> {
     await this.killEngine()
-    await this.engineState.clearCache()
-    await this.pluginState.clearCache()
+    // TODO: Fix ClearCache
+    // await this.engineState.clearCache()
+    // await this.pluginState.clearCache()
     await this.keyManager.reload()
     await this.startEngine()
   }
 
   getBlockHeight (): number {
-    return this.pluginState.height
+    return this.pluginState.height.latest
   }
 
   async enableTokens (tokens: Array<string>): Promise<void> {}
@@ -457,7 +457,7 @@ export class CurrencyEngine {
     }
 
     const engineState = new EngineState({
-      files: { txs: '', addresses: '', keys: '' },
+      files: { txs: '', txHeights: '', addresses: '', keys: '' },
       callbacks: engineStateCallbacks,
       io: this.io,
       localDisklet: this.walletLocalDisklet,
@@ -469,7 +469,7 @@ export class CurrencyEngine {
     await engineState.load()
     const addresses = await Address.getAllAddresses(privateKeys, this.network)
     addresses.forEach(({ displayAddress, scriptHash }) =>
-      engineState.addAddress(scriptHash, displayAddress)
+      engineState.addAddress(scriptHash, displayAddress, 'm')
     )
     engineState.connect()
 

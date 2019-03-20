@@ -99,7 +99,7 @@ export class KeyManager extends EventEmitter {
     if (!this.masterKey || !this.masterKey.privateKey || forceInit) {
       if (this.seed === '') throw new Error('Missing Master Key')
       const hexSeed = await Key.seedToHex(this.seed, this.network)
-      this.masterKey = await HDKey.fromSeed(hexSeed, this.network)
+      this.masterKey = (await HDKey.fromSeed(hexSeed, this.network): HDKeyPair)
     }
     this.masterKey = await HDKey.fromPaths(
       this.masterKey,
@@ -122,7 +122,6 @@ export class KeyManager extends EventEmitter {
     if (!this.xpub) {
       this.xpub = await HDKey.toString(this.masterKey, this.network, true)
     }
-    this.emit('newKey', this.masterKey)
   }
 
   async deriveKey (path: string): Promise<HDKeyPair> {
@@ -208,6 +207,9 @@ export class KeyManager extends EventEmitter {
   }
 
   async signMessage ({ message, address }: SignMessage) {
+    // console.log('signMessage - this.scriptHashes', this.scriptHashes)
+    // console.log('signMessage - this.scriptHashesMap', this.scriptHashesMap)
+    // console.log('signMessage - this.addressInfos', this.addressInfos)
     try {
       await this.initMasterKey()
       if (!address) throw new Error('Missing address to sign with')

@@ -11,16 +11,10 @@ const MIN_SCORE = -100
 
 export class ServerCache {
   servers_: { [serverUrl: string]: ServerInfo }
-  serverCacheDirty: boolean
-  cacheLastSave_: number
   lastScoreUpTime_: number
 
   constructor () {
-    this.clearServerCache()
-  }
-
-  dirtyServerCache (url: string) {
-    this.serverCacheDirty = true
+    this.servers_ = {}
   }
 
   /**
@@ -28,7 +22,7 @@ export class ServerCache {
    * @param oldServers: Map of ServerInfo objects by serverUrl. This should come from disk
    * @param newServers: Array<string> of new servers downloaded from the info server
    */
-  serverCacheLoad (
+  addServers (
     oldServers: { [serverUrl: string]: ServerInfo },
     newServers: Array<string> = []
   ) {
@@ -68,20 +62,13 @@ export class ServerCache {
         }
       }
 
-      if (this.cacheLastSave_ === 0) {
-        serverScore = Math.min(serverScore, MAX_SCORE - 100)
-      }
-
       oldServer.serverScore = serverScore
       this.servers_[serverUrl] = oldServer
-      this.dirtyServerCache(serverUrl)
     }
   }
 
   clearServerCache () {
     this.servers_ = {}
-    this.serverCacheDirty = false
-    this.cacheLastSave_ = Date.now()
     this.lastScoreUpTime_ = Date.now()
   }
 
@@ -128,7 +115,6 @@ export class ServerCache {
         serverInfo.serverScore
       } ${responseTimeMilliseconds}ms`
     )
-    this.dirtyServerCache(serverUrl)
   }
 
   serverScoreDown (serverUrl: string, changeScore: number = 10) {
@@ -149,7 +135,6 @@ export class ServerCache {
     }
 
     console.log(`${serverUrl}: score DOWN to ${serverInfo.serverScore}`)
-    this.dirtyServerCache(serverUrl)
   }
 
   setResponseTime (serverUrl: string, responseTimeMilliseconds: number) {
@@ -169,7 +154,6 @@ export class ServerCache {
       }
     }
     serverInfo.responseTime = newTime
-    this.dirtyServerCache(serverUrl)
   }
 
   getServers (

@@ -64,3 +64,11 @@ export type Secp256k1<T> = {
 
   formatEncoder?: Encoder<T>
 }
+
+export type SaveFunc = (obj: Object) => void | Promise<void>
+export type LoadFunc = () => Object | Promise<Object>
+export type PersistStatus = {
+  loaded?: boolean,
+  changed?: boolean,
+  saving?: Object
+}

@@ -5,15 +5,14 @@ import { navigateDisklet } from 'disklet'
 import type { EdgeIo } from 'edge-core-js/types'
 
 import type { PluginStateSettings } from '../../types/plugin.js'
-import type { SaveCache } from '../../types/utils.js'
 import type { EngineState } from '../engine/engineState.js'
 import { FixCurrencyCode, InfoServer } from '../info/constants'
-import { saveCache } from '../utils/utils.js'
+import { cache } from '../utils/utils.js'
 import { ServerCache } from './serverCache.js'
 
 export class PluginState extends ServerCache {
   // On-disk header information:
-  height: number
+  height: { latest: number }
   headerCache: {
     [height: string]: {
       timestamp: number
@@ -45,8 +44,7 @@ export class PluginState extends ServerCache {
   dumpData (): any {
     return {
       'pluginState.headerCache': this.headerCache,
-      'pluginState.serverCache': this.serverCache,
-      'pluginState.servers_': this.servers_
+      'pluginState.serverCache': this.serverCache
     }
   }
 
@@ -66,7 +64,7 @@ export class PluginState extends ServerCache {
   pluginName: string
   headersFile: string
   serverCacheFile: string
-  saveCache: SaveCache
+  heightFile: string
 
   constructor ({
     io,
@@ -76,11 +74,11 @@ export class PluginState extends ServerCache {
     pluginName
   }: PluginStateSettings) {
     super()
-    this.height = 0
-    this.headerCache = {}
     this.io = io
     this.headersFile = files.headers
     this.serverCacheFile = files.serverCache
+    this.heightFile = files.height
+
     this.defaultServers = defaultSettings.electrumServers
     this.disableFetchingServers = !!defaultSettings.disableFetchingServers
     // Rename the bitcoin currencyCode to get the new version of the server list
@@ -88,34 +86,14 @@ export class PluginState extends ServerCache {
     this.infoServerUris = `${InfoServer}/electrumServers/${fixedCode}`
     this.engines = []
     this.disklet = navigateDisklet(io.disklet, 'plugins/' + pluginName)
-
     this.pluginName = pluginName
-    this.saveCache = saveCache(this.disklet, pluginName)
-    this.headerCacheDirty = false
-    this.serverCacheJson = {}
   }
 
   async load () {
-    try {
-      const headerCacheText = await this.disklet.getText(this.headersFile)
-      const headerCacheJson = JSON.parse(headerCacheText)
-      // TODO: Validate JSON
-
-      this.height = headerCacheJson.height
-      this.headerCache = headerCacheJson.headers
-    } catch (e) {
-      this.headerCache = {}
-    }
-
-    try {
-      const serverCacheText = await this.disklet.getText(this.serverCacheFile)
-      const serverCacheJson = JSON.parse(serverCacheText)
-      // TODO: Validate JSON
-
-      this.serverCacheJson = serverCacheJson
-    } catch (e) {
-      console.log(e)
-    }
+    this.headerCache = await cache(this.disklet, this.headersFile, this.pluginName)
+    this.height = await cache(this.disklet, this.heightFile, this.pluginName)
+    if (!this.height.latest) this.height.latest = 0
+    this.serverCacheJson = await cache(this.disklet, this.serverCacheFile, this.pluginName)
 
     // Fetch stratum servers in the background:
     this.fetchStratumServers()
@@ -124,54 +102,14 @@ export class PluginState extends ServerCache {
   }
 
   async clearCache () {
+    // $FlowFixMe
+    this.headerCache({})
+    // $FlowFixMe
+    this.height({})
+    this.serverCacheJson({})
+
     this.clearServerCache()
-    this.headerCache = {}
-    this.headerCacheDirty = true
-    this.serverCacheDirty = true
-    await this.saveHeaderCache()
-    await this.saveServerCache()
     await this.fetchStratumServers()
-  }
-
-  async saveHeaderCache () {
-    this.headerCacheDirty = await this.saveCache(
-      this.headersFile,
-      { height: this.height, headers: this.headerCache },
-      this.headerCacheDirty
-    )
-  }
-
-  async saveServerCache () {
-    this.serverCacheDirty = await this.saveCache(
-      this.serverCacheFile,
-      this.servers_,
-      this.serverCacheDirty
-    )
-    this.cacheLastSave_ = Date.now()
-  }
-
-  dirtyServerCache (serverUrl: string) {
-    this.serverCacheDirty = true
-    for (const engine of this.engines) {
-      if (engine.progressRatio === 1) {
-        for (const uri in engine.serverStates) {
-          if (uri === serverUrl) {
-            this.saveServerCache()
-            return
-          }
-        }
-      }
-    }
-  }
-
-  dirtyHeaderCache () {
-    this.headerCacheDirty = true
-    for (const engine of this.engines) {
-      if (engine.progressRatio === 1) {
-        this.saveHeaderCache()
-        return
-      }
-    }
   }
 
   async fetchStratumServers (): Promise<void> {
@@ -197,8 +135,7 @@ export class PluginState extends ServerCache {
     if (!Array.isArray(serverList)) {
       serverList = this.defaultServers
     }
-    this.serverCacheLoad(this.serverCacheJson, serverList)
-    await this.saveServerCache()
+    this.addServers(this.serverCacheJson, serverList)
 
     // Tell the engines about the new servers:
     for (const engine of this.engines) {
@@ -207,9 +144,8 @@ export class PluginState extends ServerCache {
   }
 
   updateHeight (height: number) {
-    if (this.height < height) {
-      this.height = height
-      this.dirtyHeaderCache()
+    if (this.height.latest < height) {
+      this.height.latest = height
 
       // Tell the engines about our new height:
       for (const engine of this.engines) {
@@ -234,10 +170,8 @@ export class PluginState extends ServerCache {
       disconnects.push(engine.disconnect())
     }
     await Promise.all(disconnects)
-    this.clearServerCache()
-    this.serverCacheJson = {}
-    this.serverCacheDirty = true
-    await this.saveServerCache()
+    // this.clearServerCache()
+    // this.serverCacheJson = {}
     await this.fetchStratumServers()
     for (const engine of engines) {
       engine.connect()
