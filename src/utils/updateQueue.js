@@ -1,7 +1,7 @@
 // @flow
 
-const QUEUE_JOBS_PER_RUN = 4
-const QUEUE_RUN_DELAY = 250
+const QUEUE_JOBS_PER_RUN = 8
+const QUEUE_RUN_DELAY = 25
 
 type UpdateQueue = {
   id: string,

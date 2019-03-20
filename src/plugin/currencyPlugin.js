@@ -52,6 +52,18 @@ export type CurrencyPluginSettings = {
  * Provides information about the currency,
  * as well as generic (non-wallet) functionality.
  */
+
+// const clog = console.log
+// console.log = (...args) => {
+//   const d = new Date()
+//   const h = d.getHours()
+//   const m = d.getMinutes()
+//   const s = d.getSeconds()
+//   const ms = d.getMilliseconds()
+//   args[0] = `${h}:${m}:${s}:${ms} ${args[0]}`
+//   clog(...args)
+// }
+
 export class CurrencyTools {
   currencyInfo: EdgeCurrencyInfo
   network: string
