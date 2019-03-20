@@ -57,9 +57,15 @@ export class CurrencyTools {
     this.io = io
     this.network = engineInfo.network
     const { defaultSettings, pluginName, currencyCode } = this.currencyInfo
+    const files = {
+      headers: 'headers.json',
+      serverCache: 'serverCache.json',
+      height: 'height.json'
+    }
+
     this.state = new PluginState({
       io,
-      files: { headers: 'headers.json', serverCache: 'serverCache.json' },
+      files,
       defaultSettings,
       currencyCode,
       pluginName

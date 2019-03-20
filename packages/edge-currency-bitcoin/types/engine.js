@@ -91,7 +91,7 @@ export interface EngineStateCallbacks {
 }
 
 export interface EngineStateOptions {
-  files: { txs: string, addresses: string, keys: string };
+  files: { txs: string, txHeights: string, addresses: string, keys: string };
   callbacks: EngineStateCallbacks;
   io: PluginIo;
   localDisklet: Disklet;

@@ -5,8 +5,7 @@
 
 import { type Disklet } from 'disklet'
 import { validate } from 'jsonschema'
-
-import { getLock } from './bcoinUtils/misc.js'
+import { Utils } from 'nidavellir'
 
 export const base64regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
 
@@ -45,25 +44,29 @@ export function promiseAny (promises: Array<Promise<any>>): Promise<any> {
   })
 }
 
-export function saveCache (folder: Disklet, id: string) {
-  const saveCacheLock = getLock()
-  return async (fileName: string, data: Object, cacheDirty: boolean = true) => {
-    const unlock = await saveCacheLock.lock()
+export const cache = async (folder: Disklet, fileName: string, id: string): Object => {
+  const save = async (data: Object) => {
+    if (!fileName) return
     try {
-      if (cacheDirty) {
-        if (!fileName || fileName === '') {
-          throw new Error(`Missing File ${fileName}`)
-        }
-        const jsonString = JSON.stringify(data)
-        await folder.setText(fileName, jsonString)
-        console.log(`${id} - Saved ${fileName}`)
-        cacheDirty = false
-      }
+      await folder.setText(fileName, JSON.stringify(data))
+      console.log(`${id} - Saved ${fileName}`)
     } catch (e) {
       console.log(`${id} - Error when saving ${fileName} - ${e.toString()}`)
-    } finally {
-      unlock()
     }
-    return cacheDirty
   }
+  const load = async (): Promise<Object> => {
+    if (!fileName) return {}
+    try {
+      const data: string = await folder.getText(fileName)
+      const json = JSON.parse(data)
+      return json
+    } catch (e) {
+      console.log(`${id} - Error when loading ${fileName} - ${e.toString()}`)
+      return {}
+    }
+  }
+
+  const proxy = Utils.Persister.persist(save, load, 1000)
+  await proxy()
+  return proxy
 }

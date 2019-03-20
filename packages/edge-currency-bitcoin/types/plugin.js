@@ -90,7 +90,7 @@ export type CurrencySettings = {
  */
 export type PluginStateSettings = {
   io: EdgeIo,
-  files: { headers: string, serverCache: string },
+  files: { headers: string, serverCache: string, height: string },
   defaultSettings: CurrencySettings,
   currencyCode: string,
   pluginName: string
