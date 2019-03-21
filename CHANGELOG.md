@@ -3,6 +3,7 @@
 # 4.0.2 (2019-03-21)
 
 - Report unconfirmed transaction block height as 0
+- Throttle network calls (external servers)
 
 # 4.0.1 (2019-02-26)
 
