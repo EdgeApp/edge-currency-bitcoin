@@ -251,7 +251,7 @@ export class CurrencyEngine {
       otherParams: {},
       txid: txid,
       date: date,
-      blockHeight: height,
+      blockHeight: height === -1 ? 0 : height,
       nativeAmount: `${nativeAmount}`,
       networkFee: `${fee}`,
       signedTx: this.engineState.txCache[txid]
