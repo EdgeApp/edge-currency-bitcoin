@@ -28,6 +28,7 @@ import type {
   StratumUtxo
 } from '../stratum/stratumMessages.js'
 import { parseTransaction } from '../utils/coinUtils.js'
+import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 
 export type UtxoInfo = {
   txid: string, // tx_hash from Stratum
@@ -95,7 +96,7 @@ function nop () {}
 
 const MAX_CONNECTIONS = 2
 const NEW_CONNECTIONS = 8
-const CACHE_THROTTLE = 0.1
+const CACHE_THROTTLE = 0.25
 
 /**
  * This object holds the current state of the wallet engine.
@@ -312,13 +313,13 @@ export class EngineState extends EventEmitter {
   connect () {
     this.progressRatio = 0
     this.txCacheInitSize = Object.keys(this.txCache).length
-    this.onAddressesChecked(this.progressRatio)
     this.engineStarted = true
     this.pluginState.addEngine(this)
     this.refillServers()
   }
 
   async disconnect () {
+    removeIdFromQueue(this.walletId)
     this.pluginState.removeEngine(this)
     this.engineStarted = false
     this.progressRatio = 0
@@ -501,14 +502,21 @@ export class EngineState extends EventEmitter {
             saves.push(this.pluginState.saveServerCache())
           }
           Promise.all(saves).then(end)
-        } else {
-          end()
         }
       }
     }
   }
 
   refillServers () {
+    pushUpdate({
+      id: this.walletId,
+      updateFunc: () => {
+        this.doRefillServers()
+      }
+    })
+  }
+
+  doRefillServers () {
     const { io } = this
     const ignorePatterns = []
     // if (!this.io.TLSSocket)
@@ -568,10 +576,12 @@ export class EngineState extends EventEmitter {
 
         onQueueSpace: () => {
           const task = this.pickNextTask(uri)
-          const taskMessage = task
-            ? `${task.method} params: ${task.params.toString()}`
-            : 'no task'
-          console.log(`${prefix} nextTask: ${taskMessage}`)
+          if (task) {
+            const taskMessage = task
+              ? `${task.method} params: ${task.params.toString()}`
+              : 'no task'
+            console.log(`${prefix} nextTask: ${taskMessage}`)
+          }
           return task
         },
         onTimer: (queryTime: number) => {
