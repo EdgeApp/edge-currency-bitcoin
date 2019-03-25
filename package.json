@@ -1,6 +1,6 @@
 {
   "name": "edge-currency-bitcoin",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Edge Bitcoin currency plugin",
   "homepage": "https://edge.app",
   "repository": {
@@ -13,7 +13,8 @@
     "Eliran Zach <eliran@edge.app>",
     "William Swanson <william@edge.app>",
     "Paul Puey <paul@edge.app>",
-    "Stan Synko <stan@airbitz.co>"
+    "Stan Synko <stan@airbitz.co>",
+    "Kylan Hurt <kylan@edge.app>"
   ],
   "files": [
     "CHANGELOG.md",

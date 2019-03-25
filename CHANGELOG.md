@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.0.3 (2019-03-22)
+
+- Fix fee estimation for P2WPKH nested inside of P2SH
+
 # 4.0.2 (2019-03-21)
 
 - Report unconfirmed transaction block height as 0
