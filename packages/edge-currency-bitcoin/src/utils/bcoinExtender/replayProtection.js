@@ -13,12 +13,12 @@ export const patchTransaction = function (bcoin) {
   txProto.signature = function (index, prev, value, key, type, version) {
     if (typeof type === 'object') {
       const {
-        SIGHASH_FORKID = 0x00,
+        forkSighash = 0x00,
         forcedMinVersion = 0,
         forkId = 0x00,
         type: forkedType = bcoin.script.hashType.ALL
       } = type
-      type = forkedType | SIGHASH_FORKID | (forkId * 256)
+      type = forkedType | forkSighash | (forkId * 256)
       if (forcedMinVersion) version = forcedMinVersion
     }
 

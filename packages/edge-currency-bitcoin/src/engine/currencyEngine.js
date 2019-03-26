@@ -329,9 +329,8 @@ export class CurrencyEngine {
 
   async resyncBlockchain (): Promise<void> {
     await this.killEngine()
-    // TODO: Fix ClearCache
-    // await this.engineState.clearCache()
-    // await this.pluginState.clearCache()
+    await this.engineState.clearCache()
+    await this.pluginState.clearCache()
     await this.keyManager.reload()
     await this.startEngine()
   }
