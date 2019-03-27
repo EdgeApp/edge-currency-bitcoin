@@ -70,9 +70,9 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  blockExplorer: 'https://bitinfocharts.com/vertcoin/block/%s',
-  addressExplorer: 'https://bitinfocharts.com/vertcoin/address/%s',
-  transactionExplorer: 'https://bitinfocharts.com/vertcoin/tx/%s',
+  blockExplorer: 'https://insight.vertcoin.org/block/%s',
+  addressExplorer: 'https://insight.vertcoin.org/address/%s',
+  transactionExplorer: 'https://insight.vertcoin.org/tx/%s',
 
   // Images:
   symbolImage: `${imageServerUrl}/vertcoin-logo-solo-64.png`,
