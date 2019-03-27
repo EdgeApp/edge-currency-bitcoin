@@ -281,6 +281,12 @@ export const estimateSize = (scriptType: string, prev: any) => {
     size += 1
     // Calculate vsize
     size = ((size + witScale - 1) / witScale) | 0
+    // witness portion
+    // OP_PUSHDATA0 [signature]
+    let witness = 1 + 73
+    // OP_PUSHDATA0 [key]
+    witness += 1 + 33
+    size += witness / witScale
   }
 
   // P2PKH

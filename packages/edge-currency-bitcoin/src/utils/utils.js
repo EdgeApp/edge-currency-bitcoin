@@ -7,6 +7,8 @@ import { type Disklet } from 'disklet'
 import { validate } from 'jsonschema'
 import { Utils } from 'nidavellir'
 
+const SAVE_DATASTORE_MILLISECONDS = 10000
+
 export const base64regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
 
 export function validateObject (object: any, schema: any) {
@@ -44,7 +46,11 @@ export function promiseAny (promises: Array<Promise<any>>): Promise<any> {
   })
 }
 
-export const cache = async (folder: Disklet, fileName: string, id: string): Object => {
+export const cache = async (
+  folder: Disklet,
+  fileName: string,
+  id: string
+): Object => {
   const save = async (data: Object) => {
     if (!fileName) return
     try {
@@ -66,7 +72,7 @@ export const cache = async (folder: Disklet, fileName: string, id: string): Obje
     }
   }
 
-  const proxy = Utils.Persister.persist(save, load, 1000)
+  const proxy = Utils.Persister.persist(save, load, SAVE_DATASTORE_MILLISECONDS)
   await proxy()
   return proxy
 }

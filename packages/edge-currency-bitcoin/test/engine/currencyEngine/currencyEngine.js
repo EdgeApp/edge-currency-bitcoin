@@ -9,7 +9,6 @@ import { navigateDisklet } from 'disklet'
 import {
   type EdgeCorePlugin,
   type EdgeCorePluginOptions,
-  // type EdgeCurrencyEngine,
   type EdgeCurrencyPlugin,
   type EdgeCurrencyTools,
   makeFakeIo
@@ -25,7 +24,12 @@ const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const FIXTURES_FOLDER = join(__dirname, 'fixtures')
 
 const fixtureFile = 'tests.json'
-const DATA_FILES = ['addresses.json', 'txs.json', 'txHeights.json', 'headers.json']
+const DATA_FILES = [
+  'addresses.json',
+  'txs.json',
+  'txHeights.json',
+  'headers.json'
+]
 
 const createCallbacks = (emitter: EventEmitter) => ({
   onAddressesChecked (progressRatio) {
@@ -69,7 +73,7 @@ const createPlugin = (io, { key, pluginName, currencyCode }) => {
   return plugin
 }
 
-const createTestSettings = (dir) => {
+const createTestSettings = dir => {
   const fixtureDataPath = join(FIXTURES_FOLDER, dir)
   const fixture = readFileSync(join(fixtureDataPath, fixtureFile))
   const fakeIo = makeFakeIo()
@@ -101,16 +105,26 @@ const createKeys = async (plugin, { format, type }) => {
   Object.assign(keys, { coinType: 0, format })
   // $FlowFixMe
   keys = await tools.internalDerivePublicKey({
-    type, keys, id: '!'
+    type,
+    keys,
+    id: '!'
   })
   return keys
 }
 
 // return only the directories inside fixtures dir
-const dirs = readdirSync(FIXTURES_FOLDER).filter(file => statSync(join(FIXTURES_FOLDER, file)).isDirectory())
+const dirs = readdirSync(FIXTURES_FOLDER).filter(file =>
+  statSync(join(FIXTURES_FOLDER, file)).isDirectory()
+)
 
 for (const dir of dirs) {
-  const { fixtureDataPath, fixture, engineOpts, emitter, plugin } = createTestSettings(dir)
+  const {
+    fixtureDataPath,
+    fixture,
+    engineOpts,
+    emitter,
+    plugin
+  } = createTestSettings(dir)
   const WALLET_TYPE = fixture.type
   let engine
 
@@ -129,7 +143,10 @@ for (const dir of dirs) {
       it('Error when Making Engine without keys', async function () {
         try {
           // $FlowFixMe
-          await plugin.makeCurrencyEngine({ type: WALLET_TYPE, id: '!' }, engineOpts)
+          await plugin.makeCurrencyEngine(
+            { type: WALLET_TYPE, id: '!' },
+            engineOpts
+          )
           throw new Error()
         } catch (e) {
           assert.equal(e.message, 'Missing Master Key')
@@ -162,11 +179,7 @@ for (const dir of dirs) {
         assert.equal(typeof engine.startEngine, 'function', 'startEngine')
         assert.equal(typeof engine.killEngine, 'function', 'killEngine')
         // assert.equal(typeof engine.enableTokens, 'function', 'enableTokens')
-        assert.equal(
-          typeof engine.getBlockHeight,
-          'function',
-          'getBlockHeight'
-        )
+        assert.equal(typeof engine.getBlockHeight, 'function', 'getBlockHeight')
         assert.equal(typeof engine.getBalance, 'function', 'getBalance')
         assert.equal(
           typeof engine.getNumTransactions,
@@ -196,7 +209,7 @@ for (const dir of dirs) {
       })
     })
 
-    describe('Sign message using wallet\'s addresses', function () {
+    describe("Sign message using wallet's addresses", function () {
       const signMessage = fixture['Sign message']
       Object.keys(signMessage).forEach(test => {
         const { message, address, signature, publicKey } = signMessage[test]
@@ -277,7 +290,10 @@ for (const dir of dirs) {
       })
 
       it('Should get transactions from cache with options', async function () {
-        const txs = await engine.getTransactions({ startIndex: 1, startEntries: 2 })
+        const txs = await engine.getTransactions({
+          startIndex: 1,
+          startEntries: 2
+        })
         assert.equal(txs.length, 2, 'should have 2 tx from cache')
       })
     })
@@ -357,7 +373,7 @@ for (const dir of dirs) {
     // })
 
     describe(`Get Fresh Address`, function () {
-      it('Should provide a non used BTC address when no options are provided', function () {
+      it('Should provide a non used BTC address when no options are provided', function (done) {
         this.timeout(10000)
         const { uri } = fixture.FreshAddress
         const address = engine.getFreshAddress({}) // TODO
@@ -371,8 +387,12 @@ for (const dir of dirs) {
             const engineState: any = engine.engineState
             const scriptHash = engineState.scriptHashes[address.publicAddress]
             const transactions = engineState.addressInfos[scriptHash].txids
-            assert(transactions.length === 0, 'Should have never received coins')
+            assert(
+              transactions.length === 0,
+              'Should have never received coins'
+            )
           }
+          done()
         })
       })
     })

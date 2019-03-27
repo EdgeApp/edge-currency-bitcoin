@@ -74,9 +74,9 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  addressExplorer: 'https://live.blockcypher.com/ltc/address/%s',
-  blockExplorer: 'https://live.blockcypher.com/ltc/block/%s',
-  transactionExplorer: 'https://live.blockcypher.com/ltc/tx/%s',
+  blockExplorer: 'https://blockchair.com/litecoin/block/%s',
+  addressExplorer: 'https://blockchair.com/litecoin/address/%s',
+  transactionExplorer: 'https://blockchair.com/litecoin/transaction/%s',
 
   // Images:
   symbolImage: `${imageServerUrl}/litecoin-logo-solo-64.png`,

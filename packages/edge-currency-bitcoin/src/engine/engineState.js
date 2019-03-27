@@ -31,6 +31,7 @@ import {
   subscribeScriptHash
 } from '../stratum/stratumMessages.js'
 import { parseTransaction } from '../utils/bcoinUtils/tx.js'
+import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 import { cache } from '../utils/utils.js'
 
 function nop () {}
@@ -229,13 +230,13 @@ export class EngineState extends EventEmitter {
   connect () {
     this.progressRatio = 0
     this.txCacheInitSize = Object.keys(this.txCache).length
-    this.onAddressesChecked(this.progressRatio)
     this.engineStarted = true
     this.pluginState.addEngine(this)
     this.refillServers()
   }
 
   async disconnect () {
+    removeIdFromQueue(this.walletId)
     this.pluginState.removeEngine(this)
     this.engineStarted = false
     this.progressRatio = 0
@@ -371,7 +372,11 @@ export class EngineState extends EventEmitter {
   async load (clean: boolean = true) {
     console.log(`${this.walletId} - Loading wallet engine caches`)
     // Load Master Key from disk:
-    this.masterKey = await cache(this.encryptedLocalDisklet, this.keysFile, this.walletId)
+    this.masterKey = await cache(
+      this.encryptedLocalDisklet,
+      this.keysFile,
+      this.walletId
+    )
     // Load transaction data cache:
     this.txCache = await cache(this.localDisklet, this.txFile, this.walletId)
     // Update the derived information:
@@ -380,8 +385,16 @@ export class EngineState extends EventEmitter {
     }
     // Load the address and height caches.
     // Must come after transactions are loaded for proper txid filtering:
-    this.addressCache = await cache(this.localDisklet, this.addressFile, this.walletId)
-    this.txHeightCache = await cache(this.localDisklet, this.txHeightsFile, this.walletId)
+    this.addressCache = await cache(
+      this.localDisklet,
+      this.addressFile,
+      this.walletId
+    )
+    this.txHeightCache = await cache(
+      this.localDisklet,
+      this.txHeightsFile,
+      this.walletId
+    )
     // Fill up the missing headers to fetch
     for (const txid in this.txHeightCache) {
       const height = this.txHeightCache[txid].height
@@ -473,6 +486,15 @@ export class EngineState extends EventEmitter {
   }
 
   refillServers () {
+    pushUpdate({
+      id: this.walletId,
+      updateFunc: () => {
+        this.doRefillServers()
+      }
+    })
+  }
+
+  doRefillServers () {
     const { io } = this
     const ignorePatterns = []
     // if (!this.io.TLSSocket)
@@ -531,10 +553,12 @@ export class EngineState extends EventEmitter {
 
         onQueueSpace: () => {
           const task = this.pickNextTask(uri)
-          const taskMessage = task
-            ? `${task.method} params: ${task.params.toString()}`
-            : 'no task'
-          console.log(`${prefix} nextTask: ${taskMessage}`)
+          if (task) {
+            const taskMessage = task
+              ? `${task.method} params: ${task.params.toString()}`
+              : 'no task'
+            console.log(`${prefix} nextTask: ${taskMessage}`)
+          }
           return task
         },
         onTimer: (queryTime: number) => {

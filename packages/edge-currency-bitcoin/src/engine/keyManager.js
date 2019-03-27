@@ -207,9 +207,6 @@ export class KeyManager extends EventEmitter {
   }
 
   async signMessage ({ message, address }: SignMessage) {
-    // console.log('signMessage - this.scriptHashes', this.scriptHashes)
-    // console.log('signMessage - this.scriptHashesMap', this.scriptHashesMap)
-    // console.log('signMessage - this.addressInfos', this.addressInfos)
     try {
       await this.initMasterKey()
       if (!address) throw new Error('Missing address to sign with')

@@ -1,6 +1,6 @@
 // @flow
 
-import type { SaveFunc, LoadFunc, PersistStatus } from '../../types/utils.js'
+import type { LoadFunc, PersistStatus, SaveFunc } from '../../types/utils.js'
 
 export const persist = (
   save: SaveFunc,
@@ -10,7 +10,7 @@ export const persist = (
   data: Object = cache,
   status: PersistStatus = {}
 ) => {
-  return new Proxy(Object.assign((newCache) => save(newCache || cache), data), {
+  return new Proxy(Object.assign(newCache => save(newCache || cache), data), {
     apply: async (target, thisArgs, args) => {
       // Try to load the cache from disk in case it never happend before
       if (!status.loaded) {

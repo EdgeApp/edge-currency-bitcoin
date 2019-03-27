@@ -1,5 +1,11 @@
 # edge-currency-bitcoin
 
+# 4.0.2 (2019-03-21)
+
+- Fix fee estimation for P2WPKH nested inside of P2SH
+- Report unconfirmed transaction block height as 0
+- Throttle network calls (external servers)
+
 # 4.0.1 (2019-02-26)
 
 - Disable `derivePublicKeys`, which never quite worked right to begin with.

@@ -1,15 +1,16 @@
 // @flow
 
-import { persist } from '../../src/utils/persister.js'
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
+
+import { persist } from '../../src/utils/persister.js'
 import fixtures from './fixtures.json'
 
 const createSave = (expected: any, delay: number, cbs: any) => {
   let saveAttempts = -1
   let firstSaveTime = 0
 
-  return async (cacheData) => {
+  return async cacheData => {
     cbs.e = new Error()
 
     assert.notEqual(cacheData, expected)
@@ -39,10 +40,11 @@ for (const test in fixtures.persister) {
   const load = testNum !== '1' ? (): Object => expected : cache
   const persistedCache = persist(save, load, delay)
 
-  describe(`Testing persister for ${test} with delay of ${delay || 100}ms`, function () {
+  describe(`Testing persister for ${test} with delay of ${delay ||
+    100}ms`, function () {
     this.timeout(0)
 
-    sets.map(([ param, value, saveTime ], i) => {
+    sets.map(([param, value, saveTime], i) => {
       it(`Set '${param}' to ${value}, after ${saveTime} milliseconds`, function (done) {
         let child = persistedCache
         let expectedChild = expected

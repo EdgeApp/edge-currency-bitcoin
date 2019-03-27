@@ -90,10 +90,18 @@ export class PluginState extends ServerCache {
   }
 
   async load () {
-    this.headerCache = await cache(this.disklet, this.headersFile, this.pluginName)
+    this.headerCache = await cache(
+      this.disklet,
+      this.headersFile,
+      this.pluginName
+    )
     this.height = await cache(this.disklet, this.heightFile, this.pluginName)
     if (!this.height.latest) this.height.latest = 0
-    this.serverCacheJson = await cache(this.disklet, this.serverCacheFile, this.pluginName)
+    this.serverCacheJson = await cache(
+      this.disklet,
+      this.serverCacheFile,
+      this.pluginName
+    )
 
     // Fetch stratum servers in the background:
     this.fetchStratumServers()

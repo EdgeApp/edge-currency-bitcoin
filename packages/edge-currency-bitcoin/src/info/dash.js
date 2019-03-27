@@ -53,9 +53,9 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  addressExplorer: 'https://live.blockcypher.com/dash/address/%s',
-  blockExplorer: 'https://live.blockcypher.com/dash/block/%s',
-  transactionExplorer: 'https://live.blockcypher.com/dash/tx/%s',
+  blockExplorer: 'https://blockchair.com/dash/block/%s',
+  addressExplorer: 'https://blockchair.com/dash/address/%s',
+  transactionExplorer: 'https://blockchair.com/dash/transaction/%s',
 
   // Images:
   symbolImage: `${imageServerUrl}/dash-logo-solo-64.png`,

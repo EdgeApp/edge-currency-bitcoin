@@ -39,18 +39,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Configuration options:
   defaultSettings: {
     customFeeSettings: ['satPerByte'],
-    electrumServers: [
-      'electrum://testnet.hsmiths.com:53011',
-      'electrum://testnet1.bauerj.eu:50001',
-      'electrum://electrum.akinbo.org:51001',
-      'electrum://electrum.akinbo.org:51001',
-      'electrum://testnet1.bauerj.eu:50001',
-      'electrum://testnet.qtornado.com:51001',
-      'electrum://testnet.hsmiths.com:53011',
-      'electrums://testnet.hsmiths.com:53012',
-      'electrums://testnet.qtornado.com:51002',
-      'electrums://electrum.akinbo.org:51002'
-    ],
+    electrumServers: ['electrum://testnet.qtornado.com:51001'],
     disableFetchingServers: true
   },
   metaTokens: [],
