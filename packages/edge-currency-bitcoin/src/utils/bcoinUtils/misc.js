@@ -20,13 +20,16 @@ export const formatToBips = (
   format?: string
 ): Array<number> => {
   const { bips } = Core.Networks[network]
-  if (!format) return bips
+  if (!format) {
+    if (bips.includes(49)) return [49]
+    return [44]
+  }
   const bip = parseInt(format.replace('bip', ''))
+
   if (!bips.includes(bip)) {
     throw new Error('InvalidWalletType')
   }
-  if (bip < 49) return [bip]
-  return bips.filter(a => a >= bip)
+  return [bip]
 }
 
 export const verifyUriProtocol = (
