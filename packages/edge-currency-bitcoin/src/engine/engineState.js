@@ -36,6 +36,7 @@ import { cache } from '../utils/utils.js'
 
 function nop () {}
 
+const CACHE_THROTTLE = 0.25
 const MAX_CONNECTIONS = 2
 const NEW_CONNECTIONS = 8
 
@@ -478,7 +479,8 @@ export class EngineState extends EventEmitter {
       const missingTasks = missingTxsLen + missingAddressesLen
       const percent = (allTasks - missingTasks) / allTasks
 
-      if (percent !== this.progressRatio) {
+      const percentDiff = percent - this.progressRatio
+      if (percentDiff > CACHE_THROTTLE || percent === 1) {
         this.progressRatio = percent
         this.onAddressesChecked(this.progressRatio)
       }
