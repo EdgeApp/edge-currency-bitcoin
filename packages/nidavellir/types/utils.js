@@ -70,5 +70,5 @@ export type LoadFunc = () => Object | Promise<Object>
 export type PersistStatus = {
   loaded?: boolean,
   changed?: boolean,
-  saving?: Object
+  saving?: TimeoutID | null
 }

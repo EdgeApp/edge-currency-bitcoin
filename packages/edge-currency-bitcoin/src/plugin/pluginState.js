@@ -42,8 +42,11 @@ export class PluginState extends ServerCache {
 
   disconnect () {
     return Promise.all([
+      // $FlowFixMe
       this.headerCache('stop'),
+      // $FlowFixMe
       this.heightCache('stop'),
+      // $FlowFixMe
       this.serverCache('stop')
     ])
   }
@@ -125,6 +128,7 @@ export class PluginState extends ServerCache {
     // $FlowFixMe
     await this.heightCache({})
     this.clearServerCache()
+    // $FlowFixMe
     await this.serverCache({})
     await this.fetchStratumServers()
   }
@@ -188,6 +192,7 @@ export class PluginState extends ServerCache {
     }
     await Promise.all(disconnects)
     this.clearServerCache()
+    // $FlowFixMe
     await this.serverCache({})
     await this.fetchStratumServers()
     for (const engine of engines) {

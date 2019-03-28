@@ -243,9 +243,13 @@ export class EngineState extends EventEmitter {
     this.progressRatio = 0
     clearTimeout(this.reconnectTimer)
     const closed = [
+      // $FlowFixMe
       this.masterKey('stop'),
+      // $FlowFixMe
       this.txCache('stop'),
+      // $FlowFixMe
       this.addressCache('stop'),
+      // $FlowFixMe
       this.txHeightCache('stop')
     ]
     for (const uri of Object.keys(this.connections)) {

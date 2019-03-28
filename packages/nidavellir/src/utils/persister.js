@@ -1,6 +1,10 @@
 // @flow
 
-import { type LoadFunc, type PersistStatus, type SaveFunc } from '../../types/utils.js'
+import {
+  type LoadFunc,
+  type PersistStatus,
+  type SaveFunc
+} from '../../types/utils.js'
 
 export const persist = (
   save: SaveFunc,
@@ -10,9 +14,9 @@ export const persist = (
   data: Object = cache,
   status: PersistStatus = {}
 ) => {
-  return new Proxy(Object.assign(() => save(cache), data), {
+  return new Proxy((Object.assign(() => save(cache), data): any), {
     apply: async (target, thisArgs, args) => {
-      const updateCache = (newCache) => {
+      const updateCache = newCache => {
         cache = newCache
         data = newCache
         for (const key in target) {
@@ -34,7 +38,10 @@ export const persist = (
       if (args && args.length) {
         if (typeof args[0] === 'object') updateCache({ ...args[0] })
         else if (args[0] === 'stop') {
-          status.saving = null
+          if (status.saving) {
+            clearTimeout(status.saving)
+            status.saving = null
+          }
           status.changed = false
           await Reflect.apply(target, target, [])
           return
@@ -49,13 +56,16 @@ export const persist = (
 
       // Set save loop after the desired delay
       status.saving = setTimeout(() => {
-        status.saving = false
+        if (status.saving) {
+          clearTimeout(status.saving)
+          status.saving = null
+        }
         Reflect.apply(thisArgs, thisArgs, [])
       }, delay)
 
       await Reflect.apply(target, target, [])
     },
-    set: (target: Object, prop: string, value: any, receiver: Function) => {
+    set: (target: any, prop: string, value: any, receiver: any) => {
       // Only update/save if the param actually changed
       if (data[prop] !== value) {
         Reflect.set(data, prop, value)
@@ -65,7 +75,7 @@ export const persist = (
       }
       return true
     },
-    get: (target: Object, prop: string) => {
+    get: (target: any, prop: string) => {
       if (prop === 'status') return status
       // Get the value
       const value = Reflect.get(data, prop)

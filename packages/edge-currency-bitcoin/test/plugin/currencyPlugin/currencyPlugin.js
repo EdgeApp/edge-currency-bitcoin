@@ -154,6 +154,7 @@ for (const fixture of fixtures) {
     })
 
     after('Stop the Plugin', async function () {
+      // $FlowFixMe
       await tools.state.disconnect()
     })
   })

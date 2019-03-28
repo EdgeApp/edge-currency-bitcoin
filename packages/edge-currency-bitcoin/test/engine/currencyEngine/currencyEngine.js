@@ -79,7 +79,7 @@ const createTestSettings = dir => {
   const fakeIo = makeFakeIo()
   const emitter = new EventEmitter()
   const plugin = createPlugin(fakeIo, fixture)
-  const toolsPromise: EdgeCurrencyTools = plugin.makeCurrencyTools()
+  const toolsPromise: Promise<EdgeCurrencyTools> = plugin.makeCurrencyTools()
   const callbacks = createCallbacks(emitter)
   const walletLocalDisklet = navigateDisklet(fakeIo.disklet, DATA_STORE_FOLDER)
   const walletLocalEncryptedDisklet = walletLocalDisklet
@@ -145,8 +145,8 @@ for (const dir of dirs) {
       this.timeout(0)
       it('Error when Making Engine without keys', async function () {
         try {
-          // $FlowFixMe
           await plugin.makeCurrencyEngine(
+            // $FlowFixMe
             { type: WALLET_TYPE, id: '!' },
             engineOpts
           )
@@ -484,6 +484,7 @@ for (const dir of dirs) {
       })
 
       it('Stop the plugin state', async function () {
+        // $FlowFixMe
         await tools.state.disconnect()
       })
     })
