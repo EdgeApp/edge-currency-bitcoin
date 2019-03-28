@@ -79,6 +79,7 @@ const createTestSettings = dir => {
   const fakeIo = makeFakeIo()
   const emitter = new EventEmitter()
   const plugin = createPlugin(fakeIo, fixture)
+  const toolsPromise: EdgeCurrencyTools = plugin.makeCurrencyTools()
   const callbacks = createCallbacks(emitter)
   const walletLocalDisklet = navigateDisklet(fakeIo.disklet, DATA_STORE_FOLDER)
   const walletLocalEncryptedDisklet = walletLocalDisklet
@@ -93,13 +94,13 @@ const createTestSettings = dir => {
       userSettings: fixture.ChangeSettings
     },
     emitter,
-    plugin
+    plugin,
+    toolsPromise
   }
 }
 
-const createKeys = async (plugin, { format, type }) => {
+const createKeys = async (tools, { format, type }) => {
   let keys
-  const tools: EdgeCurrencyTools = await plugin.makeCurrencyTools()
   // Hack for now until we change all the dummy data to represent the new derivation path
   keys = await tools.createPrivateKey(type)
   Object.assign(keys, { coinType: 0, format })
@@ -123,13 +124,15 @@ for (const dir of dirs) {
     fixture,
     engineOpts,
     emitter,
-    plugin
+    plugin,
+    toolsPromise
   } = createTestSettings(dir)
   const WALLET_TYPE = fixture.type
-  let engine
+  let engine, tools
 
   describe(`Testing Currency Engine for Wallet type ${WALLET_TYPE}`, function () {
     before(async function () {
+      tools = await toolsPromise
       for (const file of DATA_FILES) {
         const filePath = join(fixtureDataPath, file)
         const fileData = readFileSync(filePath)
@@ -154,7 +157,7 @@ for (const dir of dirs) {
       })
 
       it('Error when Making Engine without key', async function () {
-        const keys = await createKeys(plugin, fixture)
+        const keys = await createKeys(tools, fixture)
         try {
           await plugin.makeCurrencyEngine(
             { type: WALLET_TYPE, keys: { ninjaXpub: keys.pub }, id: '!' },
@@ -169,7 +172,7 @@ for (const dir of dirs) {
 
     describe('Start Engine', function () {
       it('Make Engine', async function () {
-        const keys = await createKeys(plugin, fixture)
+        const keys = await createKeys(tools, fixture)
         const { id, userSettings } = fixture['Make Engine']
         engine = await plugin.makeCurrencyEngine(
           { type: WALLET_TYPE, keys, id },
@@ -478,6 +481,10 @@ for (const dir of dirs) {
       it('Stop the engine', async function () {
         console.log('kill engine')
         await engine.killEngine()
+      })
+
+      it('Stop the plugin state', async function () {
+        await tools.state.disconnect()
       })
     })
   })

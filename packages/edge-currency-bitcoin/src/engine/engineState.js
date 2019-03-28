@@ -242,7 +242,12 @@ export class EngineState extends EventEmitter {
     this.engineStarted = false
     this.progressRatio = 0
     clearTimeout(this.reconnectTimer)
-    const closed = []
+    const closed = [
+      this.masterKey('stop'),
+      this.txCache('stop'),
+      this.addressCache('stop'),
+      this.txHeightCache('stop')
+    ]
     for (const uri of Object.keys(this.connections)) {
       closed.push(
         new Promise((resolve, reject) => {
@@ -424,13 +429,13 @@ export class EngineState extends EventEmitter {
 
   async clearCache () {
     // $FlowFixMe
-    this.masterKey({})
+    await this.masterKey({})
     // $FlowFixMe
-    this.txCache({})
+    await this.txCache({})
     // $FlowFixMe
-    this.addressCache({})
+    await this.addressCache({})
     // $FlowFixMe
-    this.txHeightCache({})
+    await this.txHeightCache({})
 
     this.addressInfos = {}
     this.scriptHashes = {}
