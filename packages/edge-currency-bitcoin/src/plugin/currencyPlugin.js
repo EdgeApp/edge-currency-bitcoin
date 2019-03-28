@@ -17,7 +17,10 @@ import {
 } from 'edge-core-js/types'
 import { Core, HD } from 'nidavellir'
 
-import { type CurrencyPluginSettings, type PluginIo } from '../../types/plugin.js'
+import {
+  type CurrencyPluginSettings,
+  type PluginIo
+} from '../../types/plugin.js'
 import { CurrencyEngine } from '../engine/currencyEngine.js'
 import { allInfo } from '../info/all.js'
 import { addNetwork } from '../utils/bcoinExtender/bcoinExtender.js'

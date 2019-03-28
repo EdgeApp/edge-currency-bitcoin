@@ -5,7 +5,11 @@
 
 import coinselect from 'coinselect'
 
-import { type AddressInfo, type AddressInfos, type UtxoInfo } from '../../types/engine.js'
+import {
+  type AddressInfo,
+  type AddressInfos,
+  type UtxoInfo
+} from '../../types/engine.js'
 
 interface BjsUtxo {
   txId: string;

@@ -1,7 +1,9 @@
 // @flow
 
 import { type Disklet } from 'disklet'
+import EventEmitter from 'eventemitter3'
 import { type HDKeyPair } from 'nidavellir'
+import { parse } from 'uri-js'
 
 import {
   type AddressInfos,
@@ -28,9 +30,6 @@ import {
   subscribeHeight,
   subscribeScriptHash
 } from '../stratum/stratumMessages.js'
-
-import EventEmitter from 'eventemitter3'
-import { parse } from 'uri-js'
 import { parseTransaction } from '../utils/bcoinUtils/tx.js'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 import { cache } from '../utils/utils.js'

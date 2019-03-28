@@ -1,9 +1,10 @@
 // @flow
 
+import { type Disklet, navigateDisklet } from 'disklet'
 import { type EdgeIo } from 'edge-core-js/types'
+
 import { type PluginStateSettings } from '../../types/plugin.js'
 import { type EngineState } from '../engine/engineState.js'
-import { type Disklet, navigateDisklet } from 'disklet'
 import { FixCurrencyCode, InfoServer } from '../info/constants'
 import { cache } from '../utils/utils.js'
 import { ServerCache } from './serverCache.js'
@@ -100,7 +101,11 @@ export class PluginState extends ServerCache {
       this.headersFile,
       this.pluginName
     )
-    this.heightCache = await cache(this.disklet, this.heightFile, this.pluginName)
+    this.heightCache = await cache(
+      this.disklet,
+      this.heightFile,
+      this.pluginName
+    )
     if (!this.heightCache.latest) this.heightCache.latest = 0
     this.serverCache = await cache(
       this.disklet,
