@@ -14,11 +14,11 @@ import {
   subscribeHeight,
   subscribeScriptHash
 } from '../../src/stratum/stratumMessages.js'
-import type {
-  StratumBlockHeader,
-  StratumCallbacks,
-  StratumHistoryRow,
-  StratumUtxo
+import {
+  type StratumBlockHeader,
+  type StratumCallbacks,
+  type StratumHistoryRow,
+  type StratumUtxo
 } from '../../types/stratum.js'
 
 // const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'

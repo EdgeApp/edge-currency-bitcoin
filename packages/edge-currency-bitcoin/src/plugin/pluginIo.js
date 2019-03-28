@@ -2,7 +2,7 @@
 
 import { bridgifyObject, emit, onMethod } from 'yaob'
 
-import type { EdgeSocket, EdgeSocketOptions } from '../../types/plugin.js'
+import { type EdgeSocket, type EdgeSocketOptions } from '../../types/plugin.js'
 
 /**
  * Wraps a Node-style socket into an EdgeSocket.

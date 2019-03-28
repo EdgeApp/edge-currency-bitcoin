@@ -1,6 +1,6 @@
 // @flow
 
-import type { EdgeIo } from 'edge-core-js/types'
+import { type EdgeIo } from 'edge-core-js/types'
 
 const makeBroadcastBlockchainInfo = (io: EdgeIo, currencyCode: string) => {
   const supportedCodes = ['BTC']

@@ -4,12 +4,12 @@ import { Buffer } from 'buffer'
 
 import basex from 'base-x'
 
-import type {
-  Alphabet,
-  BaseCheck,
-  BaseDecoder,
-  Bases,
-  HashFunction
+import {
+  type Alphabet,
+  type BaseCheck,
+  type BaseDecoder,
+  type Bases,
+  type HashFunction
 } from '../../types/utils.js'
 import { hash256 } from './hash.js'
 

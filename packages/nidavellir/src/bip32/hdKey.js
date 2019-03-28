@@ -1,11 +1,11 @@
 // @flow
 
-import type {
-  ExtendedKeyPair,
-  HDKeyPair,
-  HDPath,
-  Index,
-  Path
+import {
+  type ExtendedKeyPair,
+  type HDKeyPair,
+  type HDPath,
+  type Index,
+  type Path
 } from '../../types/bip32.js'
 import { HARDENED } from '../bip32/derive.js'
 import * as ExtendedKey from '../bip32/extendedKey.js'

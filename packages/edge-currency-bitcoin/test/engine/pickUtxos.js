@@ -6,15 +6,8 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-// import type { HeaderCache } from '../src/pluginState'
 import { pickUtxos } from '../../src/engine/pickUtxos.js'
-import type { AddressInfo, AddressInfos } from '../../types/engine.js'
-
-// const headerCache: HeaderCache = {
-//   height: 300000,
-//   headers: { 200000: 1510735460 }
-// }
-//
+import { type AddressInfo, type AddressInfos } from '../../types/engine.js'
 
 const addressObj: AddressInfo = {
   txids: ['txid1'],

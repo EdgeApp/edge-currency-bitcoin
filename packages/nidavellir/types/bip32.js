@@ -1,6 +1,6 @@
 // @flow
 
-import type { KeyPairType, MasterKeyPair } from './core.js'
+import { type KeyPairType, type MasterKeyPair } from './core.js'
 
 export type KeyHmac = {
   left: string,

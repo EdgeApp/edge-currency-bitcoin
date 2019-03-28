@@ -1,6 +1,6 @@
 // @flow
 
-import type { HDPath, ScriptType } from '../../types/bip32.js'
+import { type HDPath, type ScriptType } from '../../types/bip32.js'
 import { createPath } from '../bip32/hdKey.js'
 import { networks } from '../core/networkInfo.js'
 

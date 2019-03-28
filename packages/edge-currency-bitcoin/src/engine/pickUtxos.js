@@ -3,10 +3,9 @@
  * @flow
  */
 
-// import type { HeaderCache } from './pluginState.js'
 import coinselect from 'coinselect'
 
-import type { AddressInfo, AddressInfos, UtxoInfo } from '../../types/engine.js'
+import { type AddressInfo, type AddressInfos, type UtxoInfo } from '../../types/engine.js'
 
 interface BjsUtxo {
   txId: string;

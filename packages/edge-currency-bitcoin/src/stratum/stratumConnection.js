@@ -2,12 +2,12 @@
 
 import { parse } from 'uri-js'
 
-import type { EdgeSocket, PluginIo } from '../../types/plugin.js'
-import type {
-  PendingMessage,
-  StratumCallbacks,
-  StratumOptions,
-  StratumTask
+import { type EdgeSocket, type PluginIo } from '../../types/plugin.js'
+import {
+  type PendingMessage,
+  type StratumCallbacks,
+  type StratumOptions,
+  type StratumTask
 } from '../../types/stratum.js'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 import { fetchPing, fetchVersion } from './stratumMessages.js'

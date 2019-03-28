@@ -1,6 +1,6 @@
 // @flow
 
-import type { PluginIo } from './plugin.js'
+import { type PluginIo } from './plugin.js'
 
 export type StratumBlockHeader = {
   block_height: number,

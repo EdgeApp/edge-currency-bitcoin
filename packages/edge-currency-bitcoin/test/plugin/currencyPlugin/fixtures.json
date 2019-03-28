@@ -137,8 +137,7 @@
         }
       }]
     },
-    "getSplittableTypes": { 
-      "bip32": ["wallet:bitcoincash", "wallet:bitcoingold"], 
+    "getSplittableTypes": {
       "bip44": ["wallet:bitcoincash", "wallet:bitcoingold"],
       "bip49": ["wallet:bitcoingold"],
       "bip84": ["wallet:bitcoingold"]
@@ -790,7 +789,7 @@
         "metadata": {},
         "nativeAmount": "1234567890000",
         "currencyCode": "SMART"
-      }],      
+      }],
       "wif 1 - Non Compressed": ["VLqHRdvdNPgspEjPM6ee5CcLKc4CFBvafN183pevjxXKX1uZGe1m", {
         "metadata": {},
         "privateKeys": [ "VLqHRdvdNPgspEjPM6ee5CcLKc4CFBvafN183pevjxXKX1uZGe1m"]
@@ -904,7 +903,7 @@
         "metadata": {},
         "nativeAmount": "1234567890000",
         "currencyCode": "GRS"
-      }],      
+      }],
       "wif 1 - Compressed": ["5KZF3uBKFVgFpGGVuj1nihZGSFaovM4i32BXGTHENHF5ytp5e2g", {
         "metadata": {},
         "privateKeys": [ "5KZF3uBKFVgFpGGVuj1nihZGSFaovM4i32BXGTHENHF5ytp5e2g"]
@@ -912,7 +911,7 @@
       "wif 2 - Compressed": ["L3JqVWfMMvd62HYpeUEX7xWk5K24j4KuP8NeCYr3mL9UY9qQ8Zw4", {
         "metadata": {},
         "privateKeys": [ "L3JqVWfMMvd62HYpeUEX7xWk5K24j4KuP8NeCYr3mL9UY9qQ8Zw4"]
-      }],    
+      }],
       "wif 1 - Non Compressed": ["L1qoZLKEyzShjLNxSbXw1xXgvj8CHMoNKVjek5uEB6DY39udr3Nc", {
         "metadata": {},
         "privateKeys": [ "L1qoZLKEyzShjLNxSbXw1xXgvj8CHMoNKVjek5uEB6DY39udr3Nc"]

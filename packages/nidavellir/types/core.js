@@ -1,6 +1,6 @@
 // @flow
 
-import type { BaseDecoder, HashFunction } from './utils.js'
+import { type BaseDecoder, type HashFunction } from './utils.js'
 
 export type PublicKeyType<T> = { publicKey: T }
 export type PrivateKeyType<T> = { privateKey: T, publicKey?: T }

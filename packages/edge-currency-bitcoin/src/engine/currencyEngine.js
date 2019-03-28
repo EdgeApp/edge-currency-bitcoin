@@ -1,28 +1,28 @@
 // @flow
 
 import { bns } from 'biggystring'
-import type { Disklet } from 'disklet'
-import type {
-  EdgeCurrencyEngine,
-  EdgeCurrencyEngineCallbacks,
-  EdgeDataDump,
-  EdgeFreshAddress,
-  EdgeGetTransactionsOptions,
-  EdgePaymentProtocolInfo,
-  EdgeSpendInfo,
-  EdgeSpendTarget,
-  EdgeTransaction,
-  EdgeWalletInfo
+import { type Disklet } from 'disklet'
+import {
+  type EdgeCurrencyEngine,
+  type EdgeCurrencyEngineCallbacks,
+  type EdgeDataDump,
+  type EdgeFreshAddress,
+  type EdgeGetTransactionsOptions,
+  type EdgePaymentProtocolInfo,
+  type EdgeSpendInfo,
+  type EdgeSpendTarget,
+  type EdgeTransaction,
+  type EdgeWalletInfo
 } from 'edge-core-js/types'
 
-import type { TxOptions } from '../../types/bcoinUtils.js'
-import type {
-  CurrencyEngineSettings,
-  EngineCurrencyInfo,
-  EngineStateCallbacks
+import { type TxOptions } from '../../types/bcoinUtils.js'
+import {
+  type CurrencyEngineSettings,
+  type EngineCurrencyInfo,
+  type EngineStateCallbacks
 } from '../../types/engine.js'
-import type { BitcoinFees, EarnComFees } from '../../types/fees.js'
-import type { PluginIo } from '../../types/plugin.js'
+import { type BitcoinFees, type EarnComFees } from '../../types/fees.js'
+import { type PluginIo } from '../../types/plugin.js'
 import { InfoServer } from '../info/constants'
 import { PluginState } from '../plugin/pluginState.js'
 import {
@@ -336,7 +336,7 @@ export class CurrencyEngine {
   }
 
   getBlockHeight (): number {
-    return this.pluginState.height.latest
+    return this.pluginState.heightCache.latest
   }
 
   async enableTokens (tokens: Array<string>): Promise<void> {}

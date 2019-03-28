@@ -1,6 +1,6 @@
 // @flow
 
-import type { NetworkInfo } from '../../types/core.js'
+import { type NetworkInfo } from '../../types/core.js'
 import { base } from '../utils/base.js'
 import { hash256 } from '../utils/hash.js'
 

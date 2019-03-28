@@ -1,18 +1,16 @@
 // @flow
 
-import type { Disklet } from 'disklet'
-import { navigateDisklet } from 'disklet'
-import type { EdgeIo } from 'edge-core-js/types'
-
-import type { PluginStateSettings } from '../../types/plugin.js'
-import type { EngineState } from '../engine/engineState.js'
+import { type EdgeIo } from 'edge-core-js/types'
+import { type PluginStateSettings } from '../../types/plugin.js'
+import { type EngineState } from '../engine/engineState.js'
+import { type Disklet, navigateDisklet } from 'disklet'
 import { FixCurrencyCode, InfoServer } from '../info/constants'
 import { cache } from '../utils/utils.js'
 import { ServerCache } from './serverCache.js'
 
 export class PluginState extends ServerCache {
   // On-disk header information:
-  height: { latest: number }
+  heightCache: { latest: number }
   headerCache: {
     [height: string]: {
       timestamp: number
@@ -68,7 +66,6 @@ export class PluginState extends ServerCache {
   disklet: Disklet
 
   headerCacheDirty: boolean
-  serverCacheJson: Object
   pluginName: string
   headersFile: string
   serverCacheFile: string
@@ -103,9 +100,9 @@ export class PluginState extends ServerCache {
       this.headersFile,
       this.pluginName
     )
-    this.height = await cache(this.disklet, this.heightFile, this.pluginName)
-    if (!this.height.latest) this.height.latest = 0
-    this.serverCacheJson = await cache(
+    this.heightCache = await cache(this.disklet, this.heightFile, this.pluginName)
+    if (!this.heightCache.latest) this.heightCache.latest = 0
+    this.serverCache = await cache(
       this.disklet,
       this.serverCacheFile,
       this.pluginName
@@ -150,7 +147,7 @@ export class PluginState extends ServerCache {
     if (!Array.isArray(serverList)) {
       serverList = this.defaultServers
     }
-    this.addServers(this.serverCacheJson, serverList)
+    this.addServers(this.serverCache, serverList)
 
     // Tell the engines about the new servers:
     for (const engine of this.engines) {
@@ -159,8 +156,8 @@ export class PluginState extends ServerCache {
   }
 
   updateHeight (height: number) {
-    if (this.height.latest < height) {
-      this.height.latest = height
+    if (this.heightCache.latest < height) {
+      this.heightCache.latest = height
 
       // Tell the engines about our new height:
       for (const engine of this.engines) {

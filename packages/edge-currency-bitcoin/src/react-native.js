@@ -6,7 +6,7 @@ import { pbkdf2, secp256k1 } from 'react-native-fast-crypto'
 import { Socket } from 'react-native-tcp'
 import { bridgifyObject } from 'yaob'
 
-import type { EdgeSocket, EdgeSocketOptions, ExtraIo } from '../types/plugin.js'
+import { type EdgeSocket, type EdgeSocketOptions, type ExtraIo } from '../types/plugin.js'
 import { makeEdgeSocket } from './plugin/pluginIo.js'
 
 export default function makeCustomIo (): ExtraIo {

@@ -2,22 +2,22 @@
 
 import { Buffer } from 'buffer'
 
-import type {
-  EdgeCorePluginOptions,
-  EdgeCorePlugins,
-  EdgeCreatePrivateKeyOptions,
-  EdgeCurrencyEngine,
-  EdgeCurrencyEngineOptions,
-  EdgeCurrencyInfo,
-  EdgeCurrencyPlugin,
-  EdgeCurrencyTools,
-  EdgeEncodeUri,
-  EdgeParsedUri,
-  EdgeWalletInfo
+import {
+  type EdgeCorePluginOptions,
+  type EdgeCorePlugins,
+  type EdgeCreatePrivateKeyOptions,
+  type EdgeCurrencyEngine,
+  type EdgeCurrencyEngineOptions,
+  type EdgeCurrencyInfo,
+  type EdgeCurrencyPlugin,
+  type EdgeCurrencyTools,
+  type EdgeEncodeUri,
+  type EdgeParsedUri,
+  type EdgeWalletInfo
 } from 'edge-core-js/types'
 import { Core, HD } from 'nidavellir'
 
-import type { CurrencyPluginSettings, PluginIo } from '../../types/plugin.js'
+import { type CurrencyPluginSettings, type PluginIo } from '../../types/plugin.js'
 import { CurrencyEngine } from '../engine/currencyEngine.js'
 import { allInfo } from '../info/all.js'
 import { addNetwork } from '../utils/bcoinExtender/bcoinExtender.js'

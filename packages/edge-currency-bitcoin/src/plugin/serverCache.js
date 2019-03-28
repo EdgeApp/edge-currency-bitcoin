@@ -3,7 +3,7 @@
  * @flow
  */
 
-import type { ServerInfo } from '../../types/plugin.js'
+import { type ServerInfo } from '../../types/plugin.js'
 
 const RESPONSE_TIME_UNINITIALIZED = 999999999
 const MAX_SCORE = 500

@@ -5,7 +5,7 @@ import { Buffer } from 'buffer'
 import bcoin from 'bcoin'
 import { Core, HD } from 'nidavellir'
 
-import type { KeyRings } from '../../../types/bcoinUtils.js'
+import { type KeyRings } from '../../../types/bcoinUtils.js'
 import { base64regex } from '../utils.js'
 
 const { Mnemonic } = bcoin.hd

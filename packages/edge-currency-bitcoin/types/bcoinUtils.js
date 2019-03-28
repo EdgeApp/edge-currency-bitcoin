@@ -1,6 +1,6 @@
 // @flow
 
-import type { HexPair, ScriptType } from 'nidavellir'
+import { type HexPair, type ScriptType } from 'nidavellir'
 
 export type EdgeAddress = { [scriptType: ScriptType]: string }
 export type RawAddress = {

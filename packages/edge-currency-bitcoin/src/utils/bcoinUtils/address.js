@@ -4,9 +4,9 @@ import { Buffer } from 'buffer'
 
 import bcoin from 'bcoin'
 import { Core, Utils } from 'nidavellir'
-import type { HexPair, ScriptType } from 'nidavellir'
+import { type HexPair, type ScriptType } from 'nidavellir'
 
-import type { Address, RawAddress } from '../../../types/bcoinUtils.js'
+import { type Address, type RawAddress } from '../../../types/bcoinUtils.js'
 import { dirtyAddress } from '../addressFormat/addressFormatIndex.js'
 import {
   cashAddressToHash,

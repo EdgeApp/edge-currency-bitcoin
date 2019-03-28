@@ -1,6 +1,6 @@
 // @flow
 
-import type { Hashes } from '../../types/utils.js'
+import { type Hashes } from '../../types/utils.js'
 import { lazify } from './require.js'
 import { fromUint8Array, toUint8Array } from './uintArray.js'
 

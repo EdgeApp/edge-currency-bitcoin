@@ -3,10 +3,10 @@
 import bcoin from 'bcoin'
 import { Core, Utils } from 'nidavellir'
 
-import type {
-  CreateTxOptions,
-  KeyRings,
-  Utxo
+import {
+  type CreateTxOptions,
+  type KeyRings,
+  type Utxo
 } from '../../../types/bcoinUtils.js'
 import {
   toBitcoinFormat,

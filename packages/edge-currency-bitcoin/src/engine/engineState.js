@@ -1,25 +1,23 @@
 // @flow
 
-import type { Disklet } from 'disklet'
-import EventEmitter from 'eventemitter3'
-import type { HDKeyPair } from 'nidavellir'
-import { parse } from 'uri-js'
+import { type Disklet } from 'disklet'
+import { type HDKeyPair } from 'nidavellir'
 
-import type {
-  AddressInfos,
-  AddressState,
-  EngineStateOptions,
-  UtxoInfo
+import {
+  type AddressInfos,
+  type AddressState,
+  type EngineStateOptions,
+  type UtxoInfo
 } from '../../types/engine.js'
-import type { PluginIo } from '../../types/plugin.js'
-import type {
-  StratumBlockHeader,
-  StratumCallbacks,
-  StratumHistoryRow,
-  StratumTask,
-  StratumUtxo
+import { type PluginIo } from '../../types/plugin.js'
+import {
+  type StratumBlockHeader,
+  type StratumCallbacks,
+  type StratumHistoryRow,
+  type StratumTask,
+  type StratumUtxo
 } from '../../types/stratum.js'
-import type { PluginState } from '../plugin/pluginState.js'
+import { type PluginState } from '../plugin/pluginState.js'
 import { StratumConnection } from '../stratum/stratumConnection.js'
 import {
   broadcastTx,
@@ -30,6 +28,9 @@ import {
   subscribeHeight,
   subscribeScriptHash
 } from '../stratum/stratumMessages.js'
+
+import EventEmitter from 'eventemitter3'
+import { parse } from 'uri-js'
 import { parseTransaction } from '../utils/bcoinUtils/tx.js'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 import { cache } from '../utils/utils.js'
