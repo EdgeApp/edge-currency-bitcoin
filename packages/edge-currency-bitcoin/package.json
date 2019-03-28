@@ -1,6 +1,6 @@
 {
   "name": "edge-currency-bitcoin",
-  "version": "4.1.0-alpha.3",
+  "version": "4.1.0-alpha.4",
   "description": "Edge Bitcoin currency plugin",
   "homepage": "https://edge.app",
   "repository": {
@@ -59,7 +59,7 @@
     "esm": "^3.2.4",
     "eventemitter3": "^3.1.0",
     "jsonschema": "^1.2.4",
-    "nidavellir": "^4.1.0-alpha.3",
+    "nidavellir": "^4.1.0-alpha.4",
     "unorm": "^1.4.1",
     "uri-js": "^4.2.2",
     "url-parse": "^1.4.3"
