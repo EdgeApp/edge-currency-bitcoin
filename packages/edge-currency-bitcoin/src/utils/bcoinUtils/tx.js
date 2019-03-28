@@ -163,8 +163,6 @@ export const sumTransaction = (
   let totalOutputAmount = 0
   let totalInputAmount = 0
   let nativeAmount = 0
-  let address = ''
-  let value = 0
   let output = null
   let type = null
   // Process tx outputs
@@ -175,22 +173,12 @@ export const sumTransaction = (
     if (type === 'nonstandard' || type === 'nulldata') {
       continue
     }
-    output = output.getJSON(network)
-    value = output.value
-    try {
-      address = toNewFormat(output.address, network)
-    } catch (e) {
-      console.log(e)
-      if (value <= 0) {
-        continue
-      } else {
-        address = ''
-      }
-    }
+    const { value } = output.getJSON(network)
     totalOutputAmount += value
-    if (engineState.scriptHashes[address]) {
+    const addressInfo = engineState.addressInfos[output.scriptHash]
+    if (addressInfo) {
       nativeAmount += value
-      ourReceiveAddresses.push(address)
+      ourReceiveAddresses.push(addressInfo.displayAddress)
     }
   }
 
@@ -207,11 +195,11 @@ export const sumTransaction = (
       index = input.prevout.index
       prevoutBcoinTX = engineState.parsedTxs[hash]
       if (prevoutBcoinTX) {
-        output = prevoutBcoinTX.outputs[index].getJSON(network)
-        value = output.value
-        address = toNewFormat(output.address, network)
+        const output = prevoutBcoinTX.outputs[index]
+        const { value } = output.getJSON(network)
         totalInputAmount += value
-        if (engineState.scriptHashes[address]) {
+        const addressInfo = engineState.addressInfos[output.scriptHash]
+        if (addressInfo) {
           nativeAmount -= value
         }
       }
