@@ -17,9 +17,9 @@ import { readFileSync } from 'jsonfile'
 import { before, describe, it } from 'mocha'
 import fetch from 'node-fetch'
 import request from 'request'
-import { envSettings, createCachePath } from '../../../src/utils/utils.js'
 
 import edgeCorePlugins from '../../../src/index.js'
+import { createCachePath, envSettings } from '../../../src/utils/utils.js'
 
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const FIXTURES_FOLDER = join(__dirname, 'fixtures')

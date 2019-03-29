@@ -1,6 +1,7 @@
 // @flow
 
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import { type EngineCurrencyInfo } from '../../types/engine.js'
 
 const engineInfo: $Shape<EngineCurrencyInfo> = {

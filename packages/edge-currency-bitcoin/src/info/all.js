@@ -2,7 +2,6 @@
 
 import { type CurrencyPluginSettings } from '../../types/plugin.js'
 import { setDefaultInfo } from './baseInfo.js'
-
 import { bitcoin } from './bitcoin.js'
 import { bitcoincash } from './bitcoincash.js'
 import { bitcoincashTestnet } from './bitcoincashtestnet.js'

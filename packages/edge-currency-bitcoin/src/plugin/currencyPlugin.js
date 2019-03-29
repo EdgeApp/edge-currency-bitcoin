@@ -120,44 +120,43 @@ export class CurrencyTools {
 const makeCurrencyPluginFactory = (
   { currencyInfo, engineInfo }: CurrencyPluginSettings,
   makeIo: (opts: EdgeCorePluginOptions) => PluginIo
-) => function makePlugin (
-  options: EdgeCorePluginOptions
-): EdgeCurrencyPlugin {
-  const io = makeIo(options)
+) =>
+  function makePlugin (options: EdgeCorePluginOptions): EdgeCurrencyPlugin {
+    const io = makeIo(options)
 
-  // Extend bcoin to support this plugin currency info
-  // and faster crypto if possible
-  const { secp256k1, pbkdf2 } = io
-  patchCrypto(secp256k1, pbkdf2)
+    // Extend bcoin to support this plugin currency info
+    // and faster crypto if possible
+    const { secp256k1, pbkdf2 } = io
+    patchCrypto(secp256k1, pbkdf2)
 
-  let toolsPromise: Promise<EdgeCurrencyTools> | void
-  return {
-    currencyInfo,
+    let toolsPromise: Promise<EdgeCurrencyTools> | void
+    return {
+      currencyInfo,
 
-    async makeCurrencyEngine (
-      walletInfo: EdgeWalletInfo,
-      options: EdgeCurrencyEngineOptions
-    ): Promise<EdgeCurrencyEngine> {
-      const tools = await this.makeCurrencyTools()
-      const engine = new CurrencyEngine({
-        walletInfo,
-        engineInfo,
-        pluginState: tools.state,
-        options,
-        io
-      })
-      await engine.load()
-      return engine
-    },
+      async makeCurrencyEngine (
+        walletInfo: EdgeWalletInfo,
+        options: EdgeCurrencyEngineOptions
+      ): Promise<EdgeCurrencyEngine> {
+        const tools = await this.makeCurrencyTools()
+        const engine = new CurrencyEngine({
+          walletInfo,
+          engineInfo,
+          pluginState: tools.state,
+          options,
+          io
+        })
+        await engine.load()
+        return engine
+      },
 
-    makeCurrencyTools (): Promise<EdgeCurrencyTools> {
-      if (toolsPromise != null) return toolsPromise
-      const tools = new CurrencyTools(io, { currencyInfo, engineInfo })
-      toolsPromise = tools.state.load().then(() => tools)
-      return toolsPromise
+      makeCurrencyTools (): Promise<EdgeCurrencyTools> {
+        if (toolsPromise != null) return toolsPromise
+        const tools = new CurrencyTools(io, { currencyInfo, engineInfo })
+        toolsPromise = tools.state.load().then(() => tools)
+        return toolsPromise
+      }
     }
   }
-}
 
 export function makeEdgeCorePlugins (
   makeIo: (opts: EdgeCorePluginOptions) => PluginIo

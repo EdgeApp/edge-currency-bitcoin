@@ -24,7 +24,7 @@ export const mergeParams = (info: Object, defaults: Object) => {
     const defaultSetting = defaults[key]
     const currencySetting = info[key]
     if (Array.isArray(defaultSetting)) {
-      info[key] = [ ...currencySetting || [], ...defaultSetting ]
+      info[key] = [...(currencySetting || []), ...defaultSetting]
     } else if (typeof defaultSetting === 'object') {
       info[key] = Object.assign({}, defaultSetting, currencySetting || {})
     } else {
@@ -44,7 +44,10 @@ export const FixCurrencyCode = (currencyCode: string): string => {
   }
 }
 
-export const setDefaultInfo = ({ engineInfo, currencyInfo }: CurrencyPluginSettings) => {
+export const setDefaultInfo = ({
+  engineInfo,
+  currencyInfo
+}: CurrencyPluginSettings) => {
   // ////// Setup the Currency Info Object ////// //
   const {
     currencyCode,

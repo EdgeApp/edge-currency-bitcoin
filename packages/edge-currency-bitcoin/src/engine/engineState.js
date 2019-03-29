@@ -397,16 +397,8 @@ export class EngineState extends EventEmitter {
     }
     // Load the address and height caches.
     // Must come after transactions are loaded for proper txid filtering:
-    this.addresses = await cache(
-      this.localDisklet,
-      'addresses',
-      this.walletId
-    )
-    this.txHeights = await cache(
-      this.localDisklet,
-      'txHeights',
-      this.walletId
-    )
+    this.addresses = await cache(this.localDisklet, 'addresses', this.walletId)
+    this.txHeights = await cache(this.localDisklet, 'txHeights', this.walletId)
     // Fill up the missing headers to fetch
     for (const txid in this.txHeights) {
       const height = this.txHeights[txid].height

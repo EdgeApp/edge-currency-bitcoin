@@ -1,7 +1,8 @@
 // @flow
 
 import EventEmitter from 'eventemitter3'
-import { type HDKeyPair, type HDPath, HD, Utils } from 'nidavellir'
+import { HD, type HDKeyPair, type HDPath, Utils } from 'nidavellir'
+
 import {
   type Address as AddressObj,
   type EdgeAddress,

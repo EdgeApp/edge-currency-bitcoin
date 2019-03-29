@@ -36,7 +36,7 @@ import {
 import * as PaymentRequest from '../utils/bcoinUtils/paymentRequest.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
-import { promiseAny, validateObject, envSettings } from '../utils/utils.js'
+import { envSettings, promiseAny, validateObject } from '../utils/utils.js'
 import { broadcastFactories } from './broadcastApi.js'
 import { EngineState } from './engineState.js'
 import { KeyManager } from './keyManager'

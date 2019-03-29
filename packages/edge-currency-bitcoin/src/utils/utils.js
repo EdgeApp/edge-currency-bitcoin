@@ -6,6 +6,7 @@
 import { type Disklet } from 'disklet'
 import { validate } from 'jsonschema'
 import { Utils } from 'nidavellir'
+
 import envSettings from '../../env.json'
 
 const SAVE_DATASTORE_MILLISECONDS = 10000
@@ -47,7 +48,10 @@ export function promiseAny (promises: Array<Promise<any>>): Promise<any> {
   })
 }
 
-export const createCachePath = (fileName: string, version: number = envSettings.fileVersion): string => {
+export const createCachePath = (
+  fileName: string,
+  version: number = envSettings.fileVersion
+): string => {
   const folderName = `v${version}`
   const filePath = `${folderName}/${fileName}`
   return filePath

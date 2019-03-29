@@ -97,7 +97,7 @@ export class PluginState extends ServerCache {
   async load () {
     const { headers, height, servers } = await cache(
       this.disklet,
-      [ 'headers', 'servers', 'height' ],
+      ['headers', 'servers', 'height'],
       this.pluginName
     )
 
@@ -133,9 +133,9 @@ export class PluginState extends ServerCache {
         const result = await io.fetch(this.electrumServersUrl)
         if (!result.ok) {
           console.log(
-            `${this.pluginName} - Fetching ${this.electrumServersUrl} failed with ${
-              result.status
-            }`
+            `${this.pluginName} - Fetching ${
+              this.electrumServersUrl
+            } failed with ${result.status}`
           )
         } else {
           serverList = await result.json()
