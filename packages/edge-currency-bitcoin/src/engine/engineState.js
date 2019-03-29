@@ -411,9 +411,10 @@ export class EngineState extends EventEmitter {
       const address = this.addresses[scriptHash]
       const { displayAddress, path } = address
       this.scriptHashes[displayAddress] = scriptHash
-      const indexPos = path.lastIndexOf('/')
-      const index = parseInt(path.slice(1 - indexPos))
-      const parentPath = path.slice(0, indexPos)
+      const pathArr = path.split('/')
+      const indexStr = pathArr.pop()
+      const index = parseInt(indexStr)
+      const parentPath = pathArr.join('/')
       if (!this.scriptHashesMap[parentPath]) {
         this.scriptHashesMap[parentPath] = []
       }
