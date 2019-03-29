@@ -5,9 +5,9 @@ import { addNetwork } from '../utils/bcoinExtender/bcoinExtender.js'
 import { envSettings } from '../utils/utils.js'
 
 const DEFAULT_CURRENCY_INFO = {
+  metaTokens: [],
   defaultSettings: {
     customFeeSettings: ['satPerByte'],
-    metaTokens: [],
     disableFetchingServers: false
   }
 }
@@ -26,7 +26,8 @@ export const mergeParams = (info: Object, defaults: Object) => {
     if (Array.isArray(defaultSetting)) {
       info[key] = [...(currencySetting || []), ...defaultSetting]
     } else if (typeof defaultSetting === 'object') {
-      info[key] = Object.assign({}, defaultSetting, currencySetting || {})
+      if (!info[key]) info[key] = {}
+      mergeParams(info[key], defaultSetting)
     } else {
       info[key] = currencySetting || defaultSetting
     }
@@ -54,8 +55,7 @@ export const setDefaultInfo = ({
     pluginName,
     symbolImage,
     symbolImageDarkMono,
-    walletType,
-    defaultSettings
+    walletType
   } = currencyInfo
 
   const { imageServer, infoServer } = envSettings
@@ -70,7 +70,7 @@ export const setDefaultInfo = ({
   currencyInfo.walletType = walletType || `wallet:${fixedPluginName}`
 
   // Set the Default Settings
-  mergeParams(defaultSettings, DEFAULT_CURRENCY_INFO.defaultSettings)
+  mergeParams(currencyInfo, DEFAULT_CURRENCY_INFO)
 
   // ////// Setup the Engine Info Object ////// //
   if (!engineInfo.currencyCode) engineInfo.currencyCode = currencyCode
