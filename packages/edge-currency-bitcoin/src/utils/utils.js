@@ -6,6 +6,7 @@
 import { type Disklet } from 'disklet'
 import { validate } from 'jsonschema'
 import { Utils } from 'nidavellir'
+import envSettings from '../../env.json'
 
 const SAVE_DATASTORE_MILLISECONDS = 10000
 
@@ -46,28 +47,50 @@ export function promiseAny (promises: Array<Promise<any>>): Promise<any> {
   })
 }
 
+export const createCachePath = (fileName: string, version: number = envSettings.fileVersion): string => {
+  const folderName = `v${version}`
+  const filePath = `${folderName}/${fileName}`
+  return filePath
+}
+
 export const cache = async (
   folder: Disklet,
-  fileName: string,
+  file: string | Array<string>,
   id: string
 ): Object => {
+  if (Array.isArray(file)) {
+    const caches = {}
+    for (const fileType of file) {
+      const fileCache = await cache(folder, fileType, id)
+      caches[fileType] = fileCache
+    }
+    return caches
+  }
+  const fileName = envSettings.fileNames[file]
+  const filePath = createCachePath(fileName)
+
   const save = async (data: Object) => {
     if (!fileName) return
     try {
-      await folder.setText(fileName, JSON.stringify(data))
-      console.log(`${id} - Saved ${fileName}`)
+      await folder.setText(filePath, JSON.stringify(data))
+      console.log(`${id} - Saved ${filePath}`)
     } catch (e) {
-      console.log(`${id} - Error when saving ${fileName} - ${e.toString()}`)
+      console.log(`${id} - Error when saving ${filePath} - ${e.toString()}`)
     }
   }
   const load = async (): Promise<Object> => {
     if (!fileName) return {}
     try {
-      const data: string = await folder.getText(fileName)
+      const data: string = await folder.getText(filePath)
       const json = JSON.parse(data)
       return json
     } catch (e) {
-      console.log(`${id} - Error when loading ${fileName} - ${e.toString()}`)
+      for (let i = envSettings.fileVersion - 1; i > 0; i--) {
+        const legacyPath = createCachePath(fileName, i)
+        await folder.delete(legacyPath)
+      }
+      await folder.delete(fileName)
+      console.log(`${id} - Error when loading ${filePath} - ${e.toString()}`)
       return {}
     }
   }
@@ -76,3 +99,5 @@ export const cache = async (
   await proxy()
   return proxy
 }
+
+export { envSettings }

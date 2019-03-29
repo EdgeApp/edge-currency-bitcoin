@@ -11,8 +11,9 @@ export type EngineCurrencyInfo = {
   // Required Settings
   network: string, // The offical network in lower case - Needs to match the Bitcoin Lib Network Type
   currencyCode: string, // The offical currency code in upper case - Needs to match the EdgeCurrencyInfo currencyCode
-  gapLimit: number,
   maxFee: number,
+  electrumServersUrl: string,
+  networkFeesUrl: string,
   defaultFee: number,
   feeUpdateInterval: number,
   customFeeSettings: Array<string>,
@@ -91,7 +92,6 @@ export interface EngineStateCallbacks {
 }
 
 export interface EngineStateOptions {
-  files: { txs: string, txHeights: string, addresses: string, keys: string };
   callbacks: EngineStateCallbacks;
   io: PluginIo;
   localDisklet: Disklet;

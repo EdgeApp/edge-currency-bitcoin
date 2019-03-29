@@ -1,19 +1,12 @@
 // @flow
 
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import { type EngineCurrencyInfo } from '../../types/engine.js'
-import { imageServerUrl } from './constants.js'
 
-const engineInfo: EngineCurrencyInfo = {
-  network: 'bitcoin',
-  currencyCode: 'BTC',
-  gapLimit: 10,
+const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 1000,
-  feeUpdateInterval: 60000,
   feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
-  customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '150',
     lowFee: '20',
@@ -23,8 +16,9 @@ const engineInfo: EngineCurrencyInfo = {
     standardFeeHighAmount: '8670000'
   }
 }
-
-const currencyInfo: EdgeCurrencyInfo = {
+// {"id":"1","method":"blockchain.block.header","params":[400000]}
+// {"id":"1","method":"server.version","params":["1.4","1.4"]}
+const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
   currencyCode: 'BTC',
   displayName: 'Bitcoin',
@@ -34,11 +28,8 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'mBTC', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-  walletType: 'wallet:bitcoin',
-
   // Configuration options:
   defaultSettings: {
-    customFeeSettings: ['satPerByte'],
     electrumServers: [
       'electrums://electrum-bc-az-eusa.airbitz.co:50002',
       'electrum://electrum-bc-az-eusa.airbitz.co:50001',
@@ -57,19 +48,12 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrum://electrum.hsmiths.com:50001',
       'electrums://electrumx.westeurope.cloudapp.azure.com:50002',
       'electrum://electrumx.westeurope.cloudapp.azure.com:50001'
-    ],
-    disableFetchingServers: false
+    ]
   },
-  metaTokens: [],
-
   // Explorers:
   blockExplorer: 'https://blockchair.com/bitcoin/block/%s',
   addressExplorer: 'https://blockchair.com/bitcoin/address/%s',
-  transactionExplorer: 'https://blockchair.com/bitcoin/transaction/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/bitcoin-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bitcoin-logo-solo-64.png`
+  transactionExplorer: 'https://blockchair.com/bitcoin/transaction/%s'
 }
 
 export const bitcoin = { engineInfo, currencyInfo }

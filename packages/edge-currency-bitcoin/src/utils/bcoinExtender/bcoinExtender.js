@@ -3,7 +3,6 @@
 // $FlowFixMe
 import * as UnsafeNetworks from '@nidavellir/networks-unsafe'
 import bcoin from 'bcoin'
-import { type NetworkInfo } from 'nidavellir'
 import { Core } from 'nidavellir'
 
 import { patchTransaction } from './replayProtection.js'
@@ -11,7 +10,7 @@ import { patchTransaction } from './replayProtection.js'
 let loadedUnsafe = false
 patchTransaction(bcoin)
 
-export const addNetwork = (network: string, networkInfo: NetworkInfo) => {
+export const addNetwork = (network: string) => {
   if (!loadedUnsafe) {
     const scriptProto = bcoin.script.prototype
     const getPubkey = scriptProto.getPubkey
@@ -31,6 +30,7 @@ export const addNetwork = (network: string, networkInfo: NetworkInfo) => {
     Core.NetworkInfo.addNetworks(UnsafeNetworks)
     loadedUnsafe = true
   }
+
   if (bcoin.networks.types.indexOf(network) === -1) {
     bcoin.networks.types.push(network)
     const scriptTemplates = {
@@ -43,7 +43,7 @@ export const addNetwork = (network: string, networkInfo: NetworkInfo) => {
     }
     bcoin.networks[network] = {
       ...bcoin.networks.main,
-      ...networkInfo,
+      ...Core.Networks[network],
       scriptTemplates
     }
   }

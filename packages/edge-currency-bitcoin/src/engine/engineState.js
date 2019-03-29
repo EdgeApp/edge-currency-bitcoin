@@ -47,7 +47,7 @@ const NEW_CONNECTIONS = 8
  */
 export class EngineState extends EventEmitter {
   // On-disk address information:
-  addressCache: {
+  addresses: {
     [scriptHash: string]: {
       txids: Array<string>,
       txidStratumHash: string,
@@ -72,10 +72,10 @@ export class EngineState extends EventEmitter {
   usedAddresses: { [scriptHash: string]: true }
 
   // On-disk hex transaction data:
-  txCache: { [txid: string]: string }
+  txs: { [txid: string]: string }
 
   // Transaction height / Timestamp:
-  txHeightCache: {
+  txHeights: {
     [txid: string]: {
       height: number,
       firstSeen: number // Timestamp for unconfirmed stuff
@@ -139,9 +139,9 @@ export class EngineState extends EventEmitter {
     path: string,
     redeemScript?: string
   ) {
-    if (this.addressCache[scriptHash]) return
+    if (this.addresses[scriptHash]) return
 
-    this.addressCache[scriptHash] = {
+    this.addresses[scriptHash] = {
       txids: [],
       txidStratumHash: '',
       utxos: [],
@@ -223,14 +223,14 @@ export class EngineState extends EventEmitter {
 
     // Update the affected addresses:
     for (const scriptHash of this.findAffectedAddresses(txid)) {
-      this.addressCache[scriptHash].txids.push(txid)
+      this.addresses[scriptHash].txids.push(txid)
       this.refreshAddressInfo(scriptHash)
     }
   }
 
   connect () {
     this.progressRatio = 0
-    this.txCacheInitSize = Object.keys(this.txCache).length
+    this.txCacheInitSize = Object.keys(this.txs).length
     this.engineStarted = true
     this.pluginState.addEngine(this)
     this.refillServers()
@@ -246,11 +246,11 @@ export class EngineState extends EventEmitter {
       // $FlowFixMe
       this.masterKey('stop'),
       // $FlowFixMe
-      this.txCache('stop'),
+      this.txs('stop'),
       // $FlowFixMe
-      this.addressCache('stop'),
+      this.addresses('stop'),
       // $FlowFixMe
-      this.txHeightCache('stop')
+      this.txHeights('stop')
     ]
     for (const uri of Object.keys(this.connections)) {
       closed.push(
@@ -282,8 +282,8 @@ export class EngineState extends EventEmitter {
         const utxo = this.addressInfos[scriptHash].utxos[i]
         const { txid, index } = utxo
         let height = -1
-        if (this.txHeightCache[txid]) {
-          height = this.txHeightCache[txid].height
+        if (this.txHeights[txid]) {
+          height = this.txHeights[txid].height
         }
         const tx = this.parsedTxs[txid] || {}
         utxos.push({ index, tx, height })
@@ -293,18 +293,18 @@ export class EngineState extends EventEmitter {
   }
 
   getNumTransactions (options: any): number {
-    return Object.keys(this.txCache).length
+    return Object.keys(this.txs).length
   }
 
   dumpData (): any {
     return {
-      'engineState.addressCache': this.addressCache,
+      'engineState.addresses': this.addresses,
       'engineState.addressInfos': this.addressInfos,
       'engineState.scriptHashes': this.scriptHashes,
       'engineState.scriptHashesMap': this.scriptHashesMap,
       'engineState.usedAddresses': this.usedAddresses,
-      'engineState.txCache': this.txCache,
-      'engineState.txHeightCache': this.txHeightCache,
+      'engineState.txs': this.txs,
+      'engineState.txHeights': this.txHeights,
       'engineState.missingHeaders': this.missingHeaders,
       'engineState.serverStates': this.serverStates,
       'engineState.fetchingTxs': this.fetchingTxs,
@@ -318,10 +318,6 @@ export class EngineState extends EventEmitter {
   // ------------------------------------------------------------------------
   io: PluginIo
   walletId: string
-  txFile: string
-  txHeightsFile: string
-  addressFile: string
-  keysFile: string
   localFolder: Disklet
   encryptedLocalFolder: Disklet
   pluginState: PluginState
@@ -351,12 +347,18 @@ export class EngineState extends EventEmitter {
     this.fetchingHeaders = {}
     this.missingHeaders = {}
     this.parsedTxs = {}
+
+    // $FlowFixMe
+    this.masterKey = () => {}
+    // $FlowFixMe
+    this.txs = () => {}
+    // $FlowFixMe
+    this.addresses = () => {}
+    // $FlowFixMe
+    this.txHeights = () => {}
+
     this.walletId = options.walletId || ''
     this.io = options.io
-    this.txFile = options.files.txs
-    this.txHeightsFile = options.files.txHeights
-    this.addressFile = options.files.addresses
-    this.keysFile = options.files.keys
     this.localDisklet = options.localDisklet
     this.encryptedLocalDisklet = options.encryptedLocalDisklet
     this.pluginState = options.pluginState
@@ -379,42 +381,42 @@ export class EngineState extends EventEmitter {
     this.txCacheInitSize = 0
   }
 
-  async load (clean: boolean = true) {
+  async load () {
     console.log(`${this.walletId} - Loading wallet engine caches`)
     // Load Master Key from disk:
     this.masterKey = await cache(
       this.encryptedLocalDisklet,
-      this.keysFile,
+      'keys',
       this.walletId
     )
     // Load transaction data cache:
-    this.txCache = await cache(this.localDisklet, this.txFile, this.walletId)
+    this.txs = await cache(this.localDisklet, 'txs', this.walletId)
     // Update the derived information:
-    for (const txid of Object.keys(this.txCache)) {
-      this.parsedTxs[txid] = parseTransaction(this.txCache[txid])
+    for (const txid of Object.keys(this.txs)) {
+      this.parsedTxs[txid] = parseTransaction(this.txs[txid])
     }
     // Load the address and height caches.
     // Must come after transactions are loaded for proper txid filtering:
-    this.addressCache = await cache(
+    this.addresses = await cache(
       this.localDisklet,
-      this.addressFile,
+      'addresses',
       this.walletId
     )
-    this.txHeightCache = await cache(
+    this.txHeights = await cache(
       this.localDisklet,
-      this.txHeightsFile,
+      'txHeights',
       this.walletId
     )
     // Fill up the missing headers to fetch
-    for (const txid in this.txHeightCache) {
-      const height = this.txHeightCache[txid].height
-      if (height > 0 && !this.pluginState.headerCache[`${height}`]) {
+    for (const txid in this.txHeights) {
+      const height = this.txHeights[txid].height
+      if (height > 0 && !this.pluginState.headers[`${height}`]) {
         this.missingHeaders[`${height}`] = true
       }
     }
     // Update the derived information:
-    for (const scriptHash in this.addressCache) {
-      const address = this.addressCache[scriptHash]
+    for (const scriptHash in this.addresses) {
+      const address = this.addresses[scriptHash]
       const { displayAddress, path } = address
       this.scriptHashes[displayAddress] = scriptHash
       const indexPos = path.lastIndexOf('/')
@@ -435,11 +437,11 @@ export class EngineState extends EventEmitter {
     // $FlowFixMe
     await this.masterKey({})
     // $FlowFixMe
-    await this.txCache({})
+    await this.txs({})
     // $FlowFixMe
-    await this.addressCache({})
+    await this.addresses({})
     // $FlowFixMe
-    await this.txHeightCache({})
+    await this.txHeights({})
 
     this.addressInfos = {}
     this.scriptHashes = {}
@@ -470,11 +472,11 @@ export class EngineState extends EventEmitter {
 
   updateProgressRatio () {
     if (this.progressRatio !== 1) {
-      const fetchedTxsLen = Object.keys(this.txCache).length
+      const fetchedTxsLen = Object.keys(this.txs).length
       const missingTxsLen = Object.keys(this.missingTxs).length
       const totalTxs = fetchedTxsLen + missingTxsLen - this.txCacheInitSize
 
-      const scriptHashes = Object.keys(this.addressCache)
+      const scriptHashes = Object.keys(this.addresses)
       const totalAddresses = scriptHashes.length
       const syncedAddressesLen = scriptHashes.filter(scriptHash => {
         for (const uri in this.serverStates) {
@@ -710,7 +712,7 @@ export class EngineState extends EventEmitter {
       const addressState = serverState.addresses[scriptHash]
       if (
         addressState.hash &&
-        addressState.hash !== this.addressCache[scriptHash].utxoStratumHash &&
+        addressState.hash !== this.addresses[scriptHash].utxoStratumHash &&
         !addressState.fetchingUtxos &&
         this.findBestServer(scriptHash) === uri
       ) {
@@ -754,7 +756,7 @@ export class EngineState extends EventEmitter {
             addressState.subscribed = true
             addressState.hash = hash
             addressState.lastUpdate = Date.now()
-            const { txidStratumHash } = this.addressCache[scriptHash]
+            const { txidStratumHash } = this.addresses[scriptHash]
             if (!hash || hash === txidStratumHash) {
               addressState.synced = true
               this.updateProgressRatio()
@@ -773,7 +775,7 @@ export class EngineState extends EventEmitter {
       const addressState = serverState.addresses[scriptHash]
       if (
         addressState.hash &&
-        addressState.hash !== this.addressCache[scriptHash].txidStratumHash &&
+        addressState.hash !== this.addresses[scriptHash].txidStratumHash &&
         !addressState.fetchingTxids &&
         this.findBestServer(scriptHash) === uri
       ) {
@@ -846,8 +848,8 @@ export class EngineState extends EventEmitter {
 
   // A server has sent a header, so update the cache and txs:
   handleHeaderFetch (height: string, header: any) {
-    if (!this.pluginState.headerCache[height]) {
-      this.pluginState.headerCache[height] = header
+    if (!this.pluginState.headers[height]) {
+      this.pluginState.headers[height] = header
       const affectedTXIDS = this.findAffectedTransactions(height)
       for (const txid of affectedTXIDS) {
         if (this.parsedTxs[txid]) this.onTxFetched(txid)
@@ -871,15 +873,15 @@ export class EngineState extends EventEmitter {
 
     // Save to the address cache:
     addressState.synced = true
-    this.addressCache[scriptHash].txids = txidList
-    this.addressCache[scriptHash].txidStratumHash = addressState.hash || ''
+    this.addresses[scriptHash].txids = txidList
+    this.addresses[scriptHash].txidStratumHash = addressState.hash || ''
     this.updateProgressRatio()
     this.refreshAddressInfo(scriptHash)
   }
 
   // A server has sent a transaction, so update the caches:
   handleTxFetch (txid: string, txData: string) {
-    this.txCache[txid] = txData
+    this.txs[txid] = txData
     delete this.missingTxs[txid]
     this.parsedTxs[txid] = parseTransaction(txData)
     for (const scriptHash of this.findAffectedAddressesForInputs(txid)) {
@@ -906,9 +908,9 @@ export class EngineState extends EventEmitter {
   handleTxidFetch (txid: string, height: number) {
     height = height || -1
     // Save to the height cache:
-    if (this.txHeightCache[txid]) {
-      const prevHeight = this.txHeightCache[txid].height
-      this.txHeightCache[txid].height = height
+    if (this.txHeights[txid]) {
+      const prevHeight = this.txHeights[txid].height
+      this.txHeights[txid].height = height
       if (
         this.parsedTxs[txid] &&
         (prevHeight === -1 || !prevHeight) &&
@@ -917,13 +919,13 @@ export class EngineState extends EventEmitter {
         this.onTxFetched(txid)
       }
     } else {
-      this.txHeightCache[txid] = {
+      this.txHeights[txid] = {
         firstSeen: Date.now(),
         height
       }
     }
     // Add to the missing headers list:
-    if (height > 0 && !this.pluginState.headerCache[`${height}`]) {
+    if (height > 0 && !this.pluginState.headers[`${height}`]) {
       this.missingHeaders[`${height}`] = true
     }
 
@@ -938,7 +940,7 @@ export class EngineState extends EventEmitter {
     }
 
     // Add to the missing tx list:
-    if (!this.txCache[txid]) {
+    if (!this.txs[txid]) {
       this.missingTxs[txid] = true
     }
   }
@@ -961,8 +963,8 @@ export class EngineState extends EventEmitter {
     }
 
     // Save to the address cache:
-    this.addressCache[scriptHash].utxos = utxoList
-    this.addressCache[scriptHash].utxoStratumHash = stateHash
+    this.addresses[scriptHash].utxos = utxoList
+    this.addresses[scriptHash].utxoStratumHash = stateHash
     this.refreshAddressInfo(scriptHash)
   }
 
@@ -971,7 +973,7 @@ export class EngineState extends EventEmitter {
    * update the derived info:
    */
   refreshAddressInfo (scriptHash: string) {
-    const address = this.addressCache[scriptHash]
+    const address = this.addresses[scriptHash]
     if (!address) return
     const { displayAddress, path, redeemScript } = address
 
@@ -981,13 +983,13 @@ export class EngineState extends EventEmitter {
       address.txids.length + address.utxos.length !== 0
 
     // We only include existing stuff:
-    const txids = address.txids.filter(txid => this.txCache[txid])
-    const utxos = address.utxos.filter(utxo => this.txCache[utxo.txid])
+    const txids = address.txids.filter(txid => this.txs[txid])
+    const utxos = address.utxos.filter(utxo => this.txs[utxo.txid])
 
     // Make a list of unconfirmed transactions for the utxo search:
     const pendingTxids = txids.filter(
       txid =>
-        this.txHeightCache[txid].height <= 0 &&
+        this.txHeights[txid].height <= 0 &&
         !utxos.find(utxo => utxo.txid === txid)
     )
 
@@ -1054,7 +1056,7 @@ export class EngineState extends EventEmitter {
   findAffectedAddressesForOutput (txid: string): Array<string> {
     const scriptHashSet = []
     for (const output of this.parsedTxs[txid].outputs) {
-      if (this.addressCache[output.scriptHash]) {
+      if (this.addresses[output.scriptHash]) {
         scriptHashSet.push(output.scriptHash)
       }
     }
@@ -1070,8 +1072,8 @@ export class EngineState extends EventEmitter {
   // Finds the txids that a are in a block.
   findAffectedTransactions (height: string): Array<string> {
     const txids = []
-    for (const txid in this.txHeightCache) {
-      const tx = this.txHeightCache[txid]
+    for (const txid in this.txHeights) {
+      const tx = this.txHeights[txid]
       if (`${tx.height}` === height) txids.push(txid)
     }
     return txids

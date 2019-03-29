@@ -1,19 +1,12 @@
 // @flow
 
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import { type EngineCurrencyInfo } from '../../types/engine.js'
-import { imageServerUrl } from './constants.js'
 
-const engineInfo: EngineCurrencyInfo = {
+const engineInfo: $Shape<EngineCurrencyInfo> = {
   network: 'bitcoingold',
-  currencyCode: 'TBTG',
-  gapLimit: 10,
   maxFee: 1000000,
   defaultFee: 1000,
-  feeUpdateInterval: 60000,
-  feeInfoServer: '',
-  customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '200',
     lowFee: '10',
@@ -24,7 +17,7 @@ const engineInfo: EngineCurrencyInfo = {
   }
 }
 
-const currencyInfo: EdgeCurrencyInfo = {
+const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
   currencyCode: 'TBTG',
   displayName: 'Bitcoin Gold Testnet',
@@ -34,11 +27,8 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'mTBTG', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-  walletType: 'wallet:bitcoingold-testnet',
-
   // Configuration options:
   defaultSettings: {
-    customFeeSettings: ['satPerByte'],
     electrumServers: [
       'electrum://test-node1.bitcoingold.org:50001',
       'electrums://test-node1.bitcoingold.org:50002',
@@ -55,16 +45,10 @@ const currencyInfo: EdgeCurrencyInfo = {
     ],
     disableFetchingServers: true
   },
-  metaTokens: [],
-
   // Explorers:
   blockExplorer: 'https://test-explorer.bitcoingold.org/insight/block/%s',
   addressExplorer: 'https://test-explorer.bitcoingold.org/insight/address/%s',
-  transactionExplorer: 'https://test-explorer.bitcoingold.org/insight/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/bitcoingold-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bitcoingold-logo-solo-64.png`
+  transactionExplorer: 'https://test-explorer.bitcoingold.org/insight/tx/%s'
 }
 
 export const bitcoingoldTestnet = { engineInfo, currencyInfo }

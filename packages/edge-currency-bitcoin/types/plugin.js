@@ -90,7 +90,7 @@ export type CurrencySettings = {
  */
 export type PluginStateSettings = {
   io: EdgeIo,
-  files: { headers: string, serverCache: string, height: string },
+  electrumServersUrl: string,
   defaultSettings: CurrencySettings,
   currencyCode: string,
   pluginName: string

@@ -1,18 +1,12 @@
 // @flow
 
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import { type EngineCurrencyInfo } from '../../types/engine.js'
-import { imageServerUrl } from './constants.js'
 
-const engineInfo: EngineCurrencyInfo = {
-  network: 'smartcash',
-  currencyCode: 'SMART',
-  gapLimit: 10,
+const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 100000,
-  feeUpdateInterval: 60000,
-  customFeeSettings: ['satPerByte'],
+
   simpleFeeSettings: {
     highFee: '1500',
     lowFee: '200',
@@ -23,7 +17,7 @@ const engineInfo: EngineCurrencyInfo = {
   }
 }
 
-const currencyInfo: EdgeCurrencyInfo = {
+const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
   currencyCode: 'SMART',
   displayName: 'SmartCash',
@@ -32,11 +26,8 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'SMART', multiplier: '100000000', symbol: 'S' },
     { name: 'mSMART', multiplier: '100000', symbol: 'mS' }
   ],
-  walletType: 'wallet:smartcash',
-
   // Configuration options:
   defaultSettings: {
-    customFeeSettings: ['satPerByte'],
     electrumServers: [
       'electrum://electrum1.smartcash.cc:50001',
       'electrum://electrum2.smartcash.cc:50001',
@@ -49,16 +40,10 @@ const currencyInfo: EdgeCurrencyInfo = {
     ],
     disableFetchingServers: true
   },
-  metaTokens: [],
-
   // Explorers:
   addressExplorer: 'https://insight.smartcash.cc/address/%s',
   blockExplorer: 'https://insight.smartcash.cc/block/%s',
-  transactionExplorer: 'https://insight.smartcash.cc/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/smartcash-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/smartcash-logo-solo-64.png`
+  transactionExplorer: 'https://insight.smartcash.cc/tx/%s'
 }
 
 export const smartcash = { engineInfo, currencyInfo }

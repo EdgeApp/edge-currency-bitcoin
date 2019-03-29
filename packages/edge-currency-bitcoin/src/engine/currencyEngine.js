@@ -23,7 +23,6 @@ import {
 } from '../../types/engine.js'
 import { type BitcoinFees, type EarnComFees } from '../../types/fees.js'
 import { type PluginIo } from '../../types/plugin.js'
-import { InfoServer } from '../info/constants'
 import { PluginState } from '../plugin/pluginState.js'
 import {
   getAddressPrefix,
@@ -37,7 +36,7 @@ import {
 import * as PaymentRequest from '../utils/bcoinUtils/paymentRequest.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
-import { promiseAny, validateObject } from '../utils/utils.js'
+import { promiseAny, validateObject, envSettings } from '../utils/utils.js'
 import { broadcastFactories } from './broadcastApi.js'
 import { EngineState } from './engineState.js'
 import { KeyManager } from './keyManager'
@@ -112,15 +111,7 @@ export class CurrencyEngine {
       onAddressesChecked: this.callbacks.onAddressesChecked
     }
 
-    const files = {
-      txs: 'txs.json',
-      txHeights: 'txHeights.json',
-      addresses: 'addresses.json',
-      keys: 'hdKey.json'
-    }
-
     this.engineState = new EngineState({
-      files,
       callbacks,
       io,
       pluginState,
@@ -140,7 +131,7 @@ export class CurrencyEngine {
       xpub,
       coinType,
       bips,
-      gapLimit: this.engineInfo.gapLimit,
+      gapLimit: envSettings.gapLimit,
       network: this.network,
       masterKey: this.engineState.masterKey,
       addressInfos: this.engineState.addressInfos,
@@ -183,11 +174,11 @@ export class CurrencyEngine {
 
   getTransactionSync (txid: string): EdgeTransaction {
     const { height = -1, firstSeen = Date.now() / 1000 } =
-      this.engineState.txHeightCache[txid] || {}
+      this.engineState.txHeights[txid] || {}
     let date = firstSeen
     // If confirmed, we will try and take the timestamp as the date
     if (height && height !== -1) {
-      const blockHeight = this.pluginState.headerCache[`${height}`]
+      const blockHeight = this.pluginState.headers[`${height}`]
       if (blockHeight) {
         date = blockHeight.timestamp
       }
@@ -213,7 +204,7 @@ export class CurrencyEngine {
       blockHeight: height === -1 ? 0 : height,
       nativeAmount: `${nativeAmount}`,
       networkFee: `${fee}`,
-      signedTx: this.engineState.txCache[txid]
+      signedTx: this.engineState.txs[txid]
     }
     return edgeTransaction
   }
@@ -222,7 +213,7 @@ export class CurrencyEngine {
     try {
       await this.fetchFee()
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        const url = `${InfoServer}/networkFees/${this.currencyCode}`
+        const url = this.engineInfo.networkFeesUrl
         const feesResponse = await this.io.fetch(url)
         const feesJson = await feesResponse.json()
         this.fees.timestamp = Date.now()
@@ -336,7 +327,7 @@ export class CurrencyEngine {
   }
 
   getBlockHeight (): number {
-    return this.pluginState.heightCache.latest
+    return this.pluginState.height.latest
   }
 
   async enableTokens (tokens: Array<string>): Promise<void> {}
@@ -368,7 +359,7 @@ export class CurrencyEngine {
   async getTransactions (
     options: EdgeGetTransactionsOptions
   ): Promise<Array<EdgeTransaction>> {
-    const rawTxs = this.engineState.txCache
+    const rawTxs = this.engineState.txs
     const edgeTransactions = []
     for (const txid in rawTxs) {
       const edgeTransaction = await this.getTransaction(txid)
@@ -456,7 +447,6 @@ export class CurrencyEngine {
     }
 
     const engineState = new EngineState({
-      files: { txs: '', txHeights: '', addresses: '', keys: '' },
       callbacks: engineStateCallbacks,
       io: this.io,
       localDisklet: this.walletLocalDisklet,
@@ -465,7 +455,6 @@ export class CurrencyEngine {
       walletId: this.prunedWalletId
     })
 
-    await engineState.load()
     const addresses = await Address.getAllAddresses(privateKeys, this.network)
     addresses.forEach(({ displayAddress, scriptHash }) =>
       engineState.addAddress(scriptHash, displayAddress, 'm')

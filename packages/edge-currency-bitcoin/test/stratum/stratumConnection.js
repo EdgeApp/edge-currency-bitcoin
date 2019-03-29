@@ -21,8 +21,8 @@ import {
   type StratumUtxo
 } from '../../types/stratum.js'
 
-// const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
-const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'
+const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
+// const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'
 const io = makeNodeIo(makeFakeIo())
 
 describe('StratumConnection', function () {

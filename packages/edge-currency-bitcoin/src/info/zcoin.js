@@ -1,18 +1,11 @@
 // @flow
 
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import { type EngineCurrencyInfo } from '../../types/engine.js'
-import { imageServerUrl } from './constants.js'
 
-const engineInfo: EngineCurrencyInfo = {
-  network: 'zcoin',
-  currencyCode: 'XZC',
-  gapLimit: 10,
+const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 1000,
-  feeUpdateInterval: 60000,
-  customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '150',
     lowFee: '20',
@@ -23,7 +16,7 @@ const engineInfo: EngineCurrencyInfo = {
   }
 }
 
-const currencyInfo: EdgeCurrencyInfo = {
+const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
   currencyCode: 'XZC',
   displayName: 'Zcoin',
@@ -32,11 +25,8 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'XZC', multiplier: '100000000', symbol: 'Ƶ' },
     { name: 'mXZC', multiplier: '100000', symbol: 'mƵ' }
   ],
-  walletType: 'wallet:zcoin',
-
   // Configuration options:
   defaultSettings: {
-    customFeeSettings: ['satPerByte'],
     electrumServers: [
       'electrum://51.15.82.184:50001',
       'electrum://45.63.92.224:50001',
@@ -44,19 +34,12 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrums://51.15.82.184:50002',
       'electrums://45.63.92.224:50002',
       'electrums://47.75.76.176:50002'
-    ],
-    disableFetchingServers: false
+    ]
   },
-  metaTokens: [],
-
   // Explorers:
   addressExplorer: 'https://insight.zcoin.io/address/%s',
   blockExplorer: 'https://insight.zcoin.io/block/%s',
-  transactionExplorer: 'https://insight.zcoin.io/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/zcoin-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/zcoin-logo-solo-64.png`
+  transactionExplorer: 'https://insight.zcoin.io/tx/%s'
 }
 
 export const zcoin = { engineInfo, currencyInfo }

@@ -1,19 +1,11 @@
 // @flow
 
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import { type EngineCurrencyInfo } from '../../types/engine.js'
-import { imageServerUrl } from './constants.js'
 
-const engineInfo: EngineCurrencyInfo = {
-  network: 'bitcoingold',
-  currencyCode: 'BTG',
-  gapLimit: 10,
+const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 1000,
-  feeUpdateInterval: 60000,
-  feeInfoServer: '',
-  customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '200',
     lowFee: '10',
@@ -24,9 +16,8 @@ const engineInfo: EngineCurrencyInfo = {
   }
 }
 
-const currencyInfo: EdgeCurrencyInfo = {
+const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
-
   currencyCode: 'BTG',
   displayName: 'Bitcoin Gold',
   pluginName: 'bitcoingold',
@@ -35,11 +26,8 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'mBTG', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-  walletType: 'wallet:bitcoingold',
-
   // Configuration options:
   defaultSettings: {
-    customFeeSettings: ['satPerByte'],
     electrumServers: [
       'electrum://electrumx-eu.bitcoingold.org:50001',
       'electrums://electrumx-eu.bitcoingold.org:50002',
@@ -49,19 +37,12 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrums://electrumx-eu.btcgpu.org:50002',
       'electrum://electrumx-us.btcgpu.org:50001',
       'electrums://electrumx-us.btcgpu.org:50002'
-    ],
-    disableFetchingServers: false
+    ]
   },
-  metaTokens: [],
-
   // Explorers:
   blockExplorer: 'https://explorer.bitcoingold.org/insight/block/%s',
   addressExplorer: 'https://explorer.bitcoingold.org/insight/address/%s',
-  transactionExplorer: 'https://explorer.bitcoingold.org/insight/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/bitcoingold-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bitcoingold-logo-solo-64.png`
+  transactionExplorer: 'https://explorer.bitcoingold.org/insight/tx/%s'
 }
 
 export const bitcoingold = { engineInfo, currencyInfo }

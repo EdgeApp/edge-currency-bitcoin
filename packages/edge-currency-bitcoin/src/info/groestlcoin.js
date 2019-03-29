@@ -1,18 +1,12 @@
 // @flow
 
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import { type EngineCurrencyInfo } from '../../types/engine.js'
-import { imageServerUrl } from './constants.js'
 
-const engineInfo: EngineCurrencyInfo = {
-  network: 'groestlcoin',
-  currencyCode: 'GRS',
-  gapLimit: 10,
+const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 100000,
-  feeUpdateInterval: 60000,
-  customFeeSettings: ['satPerByte'],
+
   simpleFeeSettings: {
     highFee: '150',
     lowFee: '20',
@@ -23,7 +17,7 @@ const engineInfo: EngineCurrencyInfo = {
   }
 }
 
-const currencyInfo: EdgeCurrencyInfo = {
+const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
   currencyCode: 'GRS',
   displayName: 'Groestlcoin',
@@ -32,11 +26,8 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'GRS', multiplier: '100000000', symbol: 'G' },
     { name: 'mGRS', multiplier: '100000', symbol: 'mG' }
   ],
-  walletType: 'wallet:groestlcoin',
-
   // Configuration options:
   defaultSettings: {
-    customFeeSettings: ['satPerByte'],
     electrumServers: [
       'electrum://electrum32.groestlcoin.org:50001',
       'electrum://electrum16.groestlcoin.org:50001',
@@ -56,16 +47,10 @@ const currencyInfo: EdgeCurrencyInfo = {
     ],
     disableFetchingServers: true
   },
-  metaTokens: [],
-
   // Explorers:
   addressExplorer: 'http://groestlsight.groestlcoin.org/address/%s',
   blockExplorer: 'http://groestlsight.groestlcoin.org',
-  transactionExplorer: 'http://groestlsight.groestlcoin.org/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/groestlcoin-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/groestlcoin-logo-solo-64.png`
+  transactionExplorer: 'http://groestlsight.groestlcoin.org/tx/%s'
 }
 
 export const groestlcoin = { engineInfo, currencyInfo }

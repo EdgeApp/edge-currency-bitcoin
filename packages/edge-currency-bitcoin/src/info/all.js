@@ -1,5 +1,8 @@
 // @flow
 
+import { type CurrencyPluginSettings } from '../../types/plugin.js'
+import { setDefaultInfo } from './baseInfo.js'
+
 import { bitcoin } from './bitcoin.js'
 import { bitcoincash } from './bitcoincash.js'
 import { bitcoincashTestnet } from './bitcoincashtestnet.js'
@@ -20,7 +23,7 @@ import { ufo } from './ufo.js'
 import { vertcoin } from './vertcoin.js'
 import { zcoin } from './zcoin.js'
 
-export const allInfo = [
+export const allInfo: Array<CurrencyPluginSettings> = [
   bitcoin,
   bitcoincash,
   bitcoincashTestnet,
@@ -40,4 +43,4 @@ export const allInfo = [
   ufo,
   vertcoin,
   zcoin
-]
+].map(setDefaultInfo)

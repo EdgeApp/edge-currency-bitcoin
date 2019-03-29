@@ -17,6 +17,7 @@ import { readFileSync } from 'jsonfile'
 import { before, describe, it } from 'mocha'
 import fetch from 'node-fetch'
 import request from 'request'
+import { envSettings, createCachePath } from '../../../src/utils/utils.js'
 
 import edgeCorePlugins from '../../../src/index.js'
 
@@ -24,12 +25,6 @@ const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const FIXTURES_FOLDER = join(__dirname, 'fixtures')
 
 const fixtureFile = 'tests.json'
-const DATA_FILES = [
-  'addresses.json',
-  'txs.json',
-  'txHeights.json',
-  'headers.json'
-]
 
 const createCallbacks = (emitter: EventEmitter) => ({
   onAddressesChecked (progressRatio) {
@@ -133,11 +128,16 @@ for (const dir of dirs) {
   describe(`Testing Currency Engine for Wallet type ${WALLET_TYPE}`, function () {
     before(async function () {
       tools = await toolsPromise
-      for (const file of DATA_FILES) {
-        const filePath = join(fixtureDataPath, file)
-        const fileData = readFileSync(filePath)
-        const dataStr = JSON.stringify(fileData)
-        await engineOpts.walletLocalDisklet.setText(file, dataStr)
+      const { fileNames } = envSettings
+      for (const file in fileNames) {
+        try {
+          const fileName = fileNames[file]
+          const filePath = join(fixtureDataPath, fileName)
+          const fileData = readFileSync(filePath)
+          const dataStr = JSON.stringify(fileData)
+          const cachePath = createCachePath(fileName)
+          await engineOpts.walletLocalDisklet.setText(cachePath, dataStr)
+        } catch (e) {}
       }
     })
 

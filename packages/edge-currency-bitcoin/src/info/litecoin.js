@@ -1,18 +1,12 @@
 // @flow
 
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import { type EngineCurrencyInfo } from '../../types/engine.js'
-import { imageServerUrl } from './constants.js'
 
-const engineInfo: EngineCurrencyInfo = {
-  network: 'litecoin',
-  currencyCode: 'LTC',
-  gapLimit: 10,
+const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 50000,
-  feeUpdateInterval: 60000,
-  customFeeSettings: ['satPerByte'],
+
   simpleFeeSettings: {
     highFee: '300',
     lowFee: '100',
@@ -23,7 +17,7 @@ const engineInfo: EngineCurrencyInfo = {
   }
 }
 
-const currencyInfo: EdgeCurrencyInfo = {
+const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
   currencyCode: 'LTC',
   displayName: 'Litecoin',
@@ -32,11 +26,8 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'LTC', multiplier: '100000000', symbol: 'Ł' },
     { name: 'mLTC', multiplier: '100000', symbol: 'mŁ' }
   ],
-  walletType: 'wallet:litecoin',
-
   // Configuration options:
   defaultSettings: {
-    customFeeSettings: ['satPerByte'],
     electrumServers: [
       'electrum://electrum-ltc.festivaldelhumor.org:60001',
       'electrum://electrum-ltc.petrkr.net:60001',
@@ -68,19 +59,12 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrum://e-3.claudioboxx.com:50003',
       'electrums://node.ispol.sk:50004',
       'electrums://electrumx.nmdps.net:9434'
-    ],
-    disableFetchingServers: false
+    ]
   },
-  metaTokens: [],
-
   // Explorers:
   blockExplorer: 'https://blockchair.com/litecoin/block/%s',
   addressExplorer: 'https://blockchair.com/litecoin/address/%s',
-  transactionExplorer: 'https://blockchair.com/litecoin/transaction/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/litecoin-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/litecoin-logo-solo-64.png`
+  transactionExplorer: 'https://blockchair.com/litecoin/transaction/%s'
 }
 
 export const litecoin = { engineInfo, currencyInfo }

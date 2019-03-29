@@ -1,19 +1,12 @@
 // @flow
 
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import { type EngineCurrencyInfo } from '../../types/engine.js'
-import { imageServerUrl } from './constants.js'
 
-const engineInfo: EngineCurrencyInfo = {
-  network: 'eboost',
-  currencyCode: 'EBST',
-  gapLimit: 10,
+const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 50000,
-  feeUpdateInterval: 60000,
-  infoServer: 'https://info1.edgesecure.co:8444/v1',
-  customFeeSettings: ['satPerByte'],
+
   simpleFeeSettings: {
     highFee: '300',
     lowFee: '100',
@@ -24,7 +17,7 @@ const engineInfo: EngineCurrencyInfo = {
   }
 }
 
-const currencyInfo: EdgeCurrencyInfo = {
+const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
   currencyCode: 'EBST',
   displayName: 'eBoost',
@@ -33,11 +26,8 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'EBST', multiplier: '100000000', symbol: 'EBST' },
     { name: 'mEBST', multiplier: '100000', symbol: 'mEBST' }
   ],
-  walletType: 'wallet:eboost',
-
   // Configuration options:
   defaultSettings: {
-    customFeeSettings: ['satPerByte'],
     electrumServers: [
       'electrums://electrum1.eboost.fun:50002',
       'electrums://electrum2.eboost.fun:50002',
@@ -48,16 +38,10 @@ const currencyInfo: EdgeCurrencyInfo = {
     ],
     disableFetchingServers: true
   },
-  metaTokens: [],
-
   // Explorers:
   addressExplorer: 'https://www.blockexperts.com/ebst/address/%s',
   blockExplorer: 'https://www.blockexperts.com/ebst/hash/%s',
-  transactionExplorer: 'https://www.blockexperts.com/ebst/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/eboost-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/eboost-logo-solo-64.png`
+  transactionExplorer: 'https://www.blockexperts.com/ebst/tx/%s'
 }
 
 export const eboost = { engineInfo, currencyInfo }

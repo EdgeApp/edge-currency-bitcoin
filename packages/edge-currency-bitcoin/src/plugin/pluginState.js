@@ -5,14 +5,13 @@ import { type EdgeIo } from 'edge-core-js/types'
 
 import { type PluginStateSettings } from '../../types/plugin.js'
 import { type EngineState } from '../engine/engineState.js'
-import { FixCurrencyCode, InfoServer } from '../info/constants'
 import { cache } from '../utils/utils.js'
 import { ServerCache } from './serverCache.js'
 
 export class PluginState extends ServerCache {
   // On-disk header information:
-  heightCache: { latest: number }
-  headerCache: {
+  height: { latest: number }
+  headers: {
     [height: string]: {
       timestamp: number
     }
@@ -24,7 +23,7 @@ export class PluginState extends ServerCache {
   }
 
   // On-disk server information:
-  serverCache: ServerCache
+  servers: ServerCache
 
   /**
    * Begins notifying the engine of state changes. Used at connection time.
@@ -43,18 +42,18 @@ export class PluginState extends ServerCache {
   disconnect () {
     return Promise.all([
       // $FlowFixMe
-      this.headerCache('stop'),
+      this.headers('stop'),
       // $FlowFixMe
-      this.heightCache('stop'),
+      this.height('stop'),
       // $FlowFixMe
-      this.serverCache('stop')
+      this.servers('stop')
     ])
   }
 
   dumpData (): any {
     return {
-      'pluginState.headerCache': this.headerCache,
-      'pluginState.serverCache': this.serverCache
+      'pluginState.headers': this.headers,
+      'pluginState.servers': this.servers
     }
   }
 
@@ -64,57 +63,49 @@ export class PluginState extends ServerCache {
   io: EdgeIo
   disableFetchingServers: boolean
   defaultServers: Array<string>
-  infoServerUris: string
+  electrumServersUrl: string
 
   engines: Array<EngineState>
   disklet: Disklet
 
-  headerCacheDirty: boolean
+  headersDirty: boolean
   pluginName: string
   headersFile: string
-  serverCacheFile: string
+  serversFile: string
   heightFile: string
 
   constructor ({
     io,
-    files,
+    electrumServersUrl,
     defaultSettings,
     currencyCode,
     pluginName
   }: PluginStateSettings) {
     super()
     this.io = io
-    this.headersFile = files.headers
-    this.serverCacheFile = files.serverCache
-    this.heightFile = files.height
 
     this.defaultServers = defaultSettings.electrumServers
     this.disableFetchingServers = !!defaultSettings.disableFetchingServers
     // Rename the bitcoin currencyCode to get the new version of the server list
-    const fixedCode = FixCurrencyCode(currencyCode)
-    this.infoServerUris = `${InfoServer}/electrumServers/${fixedCode}`
+    this.electrumServersUrl = electrumServersUrl
+
     this.engines = []
     this.disklet = navigateDisklet(io.disklet, 'plugins/' + pluginName)
     this.pluginName = pluginName
   }
 
   async load () {
-    this.headerCache = await cache(
+    const { headers, height, servers } = await cache(
       this.disklet,
-      this.headersFile,
+      [ 'headers', 'servers', 'height' ],
       this.pluginName
     )
-    this.heightCache = await cache(
-      this.disklet,
-      this.heightFile,
-      this.pluginName
-    )
-    if (!this.heightCache.latest) this.heightCache.latest = 0
-    this.serverCache = await cache(
-      this.disklet,
-      this.serverCacheFile,
-      this.pluginName
-    )
+
+    this.headers = headers
+    this.height = height
+    this.servers = servers
+
+    if (!this.height.latest) this.height.latest = 0
 
     // Fetch stratum servers in the background:
     this.fetchStratumServers()
@@ -124,12 +115,12 @@ export class PluginState extends ServerCache {
 
   async clearCache () {
     // $FlowFixMe
-    await this.headerCache({})
+    await this.headers({})
     // $FlowFixMe
-    await this.heightCache({})
+    await this.height({})
     this.clearServerCache()
     // $FlowFixMe
-    await this.serverCache({})
+    await this.servers({})
     await this.fetchStratumServers()
   }
 
@@ -138,11 +129,11 @@ export class PluginState extends ServerCache {
     let serverList = this.defaultServers
     if (!this.disableFetchingServers) {
       try {
-        console.log(`${this.pluginName} - GET ${this.infoServerUris}`)
-        const result = await io.fetch(this.infoServerUris)
+        console.log(`${this.pluginName} - GET ${this.electrumServersUrl}`)
+        const result = await io.fetch(this.electrumServersUrl)
         if (!result.ok) {
           console.log(
-            `${this.pluginName} - Fetching ${this.infoServerUris} failed with ${
+            `${this.pluginName} - Fetching ${this.electrumServersUrl} failed with ${
               result.status
             }`
           )
@@ -156,7 +147,7 @@ export class PluginState extends ServerCache {
     if (!Array.isArray(serverList)) {
       serverList = this.defaultServers
     }
-    this.addServers(this.serverCache, serverList)
+    this.addServers(this.servers, serverList)
 
     // Tell the engines about the new servers:
     for (const engine of this.engines) {
@@ -165,8 +156,8 @@ export class PluginState extends ServerCache {
   }
 
   updateHeight (height: number) {
-    if (this.heightCache.latest < height) {
-      this.heightCache.latest = height
+    if (this.height.latest < height) {
+      this.height.latest = height
 
       // Tell the engines about our new height:
       for (const engine of this.engines) {
@@ -193,7 +184,7 @@ export class PluginState extends ServerCache {
     await Promise.all(disconnects)
     this.clearServerCache()
     // $FlowFixMe
-    await this.serverCache({})
+    await this.servers({})
     await this.fetchStratumServers()
     for (const engine of engines) {
       engine.connect()

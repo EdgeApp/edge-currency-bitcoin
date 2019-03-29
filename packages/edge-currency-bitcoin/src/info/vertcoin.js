@@ -1,18 +1,11 @@
 // @flow
 
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import { type EngineCurrencyInfo } from '../../types/engine.js'
-import { imageServerUrl } from './constants.js'
 
-const engineInfo: EngineCurrencyInfo = {
-  network: 'vertcoin',
-  currencyCode: 'VTC',
-  gapLimit: 10,
+const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 1000,
-  feeUpdateInterval: 60000,
-  customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '150',
     lowFee: '20',
@@ -23,7 +16,7 @@ const engineInfo: EngineCurrencyInfo = {
   }
 }
 
-const currencyInfo: EdgeCurrencyInfo = {
+const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
   currencyCode: 'VTC',
   displayName: 'Vertcoin',
@@ -32,28 +25,18 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'VTC', multiplier: '100000000', symbol: 'V' },
     { name: 'mVTC', multiplier: '100000', symbol: 'mV' }
   ],
-  walletType: 'wallet:vertcoin',
-
   // Configuration options:
   defaultSettings: {
-    customFeeSettings: ['satPerByte'],
     electrumServers: [
       'electrum://electrum-alts-wusa2-az.edge.app:50001',
       'electrum://electrum-alts-weuro-az.edge.app:50001',
       'electrum://electrum-alts-ejapan-az.edge.app:50001'
-    ],
-    disableFetchingServers: false
+    ]
   },
-  metaTokens: [],
-
   // Explorers:
   blockExplorer: 'https://bitinfocharts.com/vertcoin/block/%s',
   addressExplorer: 'https://bitinfocharts.com/vertcoin/address/%s',
-  transactionExplorer: 'https://bitinfocharts.com/vertcoin/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/vertcoin-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/vertcoin-logo-solo-64.png`
+  transactionExplorer: 'https://bitinfocharts.com/vertcoin/tx/%s'
 }
 
 export const vertcoin = { engineInfo, currencyInfo }

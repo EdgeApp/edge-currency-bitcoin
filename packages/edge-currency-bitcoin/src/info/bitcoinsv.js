@@ -1,18 +1,12 @@
 // @flow
 
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import { type EngineCurrencyInfo } from '../../types/engine.js'
-import { imageServerUrl } from './constants.js'
 
-const engineInfo: EngineCurrencyInfo = {
-  network: 'bitcoinsv',
-  currencyCode: 'BSV',
-  gapLimit: 10,
+const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 10000,
-  feeUpdateInterval: 60000,
-  customFeeSettings: ['satPerByte'],
+
   simpleFeeSettings: {
     highFee: '20',
     lowFee: '3',
@@ -23,7 +17,7 @@ const engineInfo: EngineCurrencyInfo = {
   }
 }
 
-const currencyInfo: EdgeCurrencyInfo = {
+const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
   currencyCode: 'BSV',
   displayName: 'Bitcoin SV',
@@ -33,11 +27,8 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'mBSV', multiplier: '100000', symbol: 'm₿' },
     { name: 'cash', multiplier: '100', symbol: 'ƀ' }
   ],
-  walletType: 'wallet:bitcoinsv',
-
   // Configuration options:
   defaultSettings: {
-    customFeeSettings: ['satPerByte'],
     electrumServers: [
       'electrum://bch.electrumx.cash:50001',
       'electrums://bch.electrumx.cash:50002',
@@ -48,19 +39,12 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrums://electrumx-sv.1209k.com:50002',
       'electrum://electroncash.cascharia.com:50001',
       'electrums://electroncash.cascharia.com:50002'
-    ],
-    disableFetchingServers: false
+    ]
   },
-  metaTokens: [],
-
   // Explorers:
   blockExplorer: 'https://bsvexplorer.info/#/block/%s',
   addressExplorer: 'https://bsvexplorer.info/#/address/%s',
-  transactionExplorer: 'https://bsvexplorer.info/#/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/bitcoinsv-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bitcoinsv-logo-solo-64.png`
+  transactionExplorer: 'https://bsvexplorer.info/#/tx/%s'
 }
 
 export const bitcoinsv = { engineInfo, currencyInfo }

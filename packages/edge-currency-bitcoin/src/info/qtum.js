@@ -1,18 +1,11 @@
 // @flow
 
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import { type EngineCurrencyInfo } from '../../types/engine.js'
-import { imageServerUrl } from './constants.js'
 
-const engineInfo: EngineCurrencyInfo = {
-  network: 'qtum',
-  currencyCode: 'QTUM',
-  gapLimit: 10,
+const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 1000,
-  feeUpdateInterval: 60000,
-  customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '1000',
     lowFee: '400',
@@ -23,17 +16,14 @@ const engineInfo: EngineCurrencyInfo = {
   }
 }
 
-const currencyInfo: EdgeCurrencyInfo = {
+const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
   currencyCode: 'QTUM',
   displayName: 'Qtum',
   pluginName: 'qtum',
   denominations: [{ name: 'QTUM', multiplier: '100000000', symbol: 'Q' }],
-  walletType: 'wallet:qtum',
-
   // Configuration options:
   defaultSettings: {
-    customFeeSettings: ['satPerByte'],
     electrumServers: [
       'electrum://s1.qtum.info:50001',
       'electrum://s2.qtum.info:50001',
@@ -44,19 +34,12 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrum://s7.qtum.info:50001',
       'electrum://s8.qtum.info:50001',
       'electrum://s9.qtum.info:50001'
-    ],
-    disableFetchingServers: false
+    ]
   },
-  metaTokens: [],
-
   // Explorers:
   blockExplorer: 'https://explorer.qtum.org/block/%s',
   addressExplorer: 'https://explorer.qtum.org/address/%s',
-  transactionExplorer: 'https://explorer.qtum.org/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/qtum-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/qtum-logo-solo-64.png`
+  transactionExplorer: 'https://explorer.qtum.org/tx/%s'
 }
 
 export const qtum = { engineInfo, currencyInfo }

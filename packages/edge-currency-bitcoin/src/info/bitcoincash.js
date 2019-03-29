@@ -1,18 +1,12 @@
 // @flow
 
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
-
 import { type EngineCurrencyInfo } from '../../types/engine.js'
-import { imageServerUrl } from './constants.js'
 
-const engineInfo: EngineCurrencyInfo = {
-  network: 'bitcoincash',
-  currencyCode: 'BCH',
-  gapLimit: 10,
+const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 10000,
-  feeUpdateInterval: 60000,
-  customFeeSettings: ['satPerByte'],
+
   simpleFeeSettings: {
     highFee: '20',
     lowFee: '3',
@@ -23,7 +17,7 @@ const engineInfo: EngineCurrencyInfo = {
   }
 }
 
-const currencyInfo: EdgeCurrencyInfo = {
+const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
   currencyCode: 'BCH',
   displayName: 'Bitcoin Cash',
@@ -33,11 +27,8 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'mBCH', multiplier: '100000', symbol: 'm₿' },
     { name: 'cash', multiplier: '100', symbol: 'ƀ' }
   ],
-  walletType: 'wallet:bitcoincash',
-
   // Configuration options:
   defaultSettings: {
-    customFeeSettings: ['satPerByte'],
     electrumServers: [
       'electrum://abc1.hsmiths.com:60001',
       'electrums://electroncash.bitcoinplug.com:50002',
@@ -67,19 +58,12 @@ const currencyInfo: EdgeCurrencyInfo = {
       'electrums://electrumx-cash.itmettke.de:50002',
       'electrums://electrumx-bch.adminsehow.com:50012',
       'electrum://electrumx-bch.adminsehow.com:50011'
-    ],
-    disableFetchingServers: false
+    ]
   },
-  metaTokens: [],
-
   // Explorers:
   blockExplorer: 'https://blockchair.com/bitcoin-cash/block/%s',
   addressExplorer: 'https://blockchair.com/bitcoin-cash/address/%s',
-  transactionExplorer: 'https://blockchair.com/bitcoin-cash/transaction/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/bitcoincash-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bitcoincash-logo-solo-64.png`
+  transactionExplorer: 'https://blockchair.com/bitcoin-cash/transaction/%s'
 }
 
 export const bitcoincash = { engineInfo, currencyInfo }
