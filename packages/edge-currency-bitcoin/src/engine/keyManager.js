@@ -119,7 +119,10 @@ export class KeyManager extends EventEmitter {
       }
     }
     if (!this.xpub) {
-      this.xpub = await HDKey.toString(this.masterKey, this.network, true)
+      const hdPath = this.hdPaths[0].path.slice(0, -1)
+      const xkey = HDKey.getKey(this.masterKey, hdPath)
+      if (!xkey) throw new Error('Missing XKey')
+      this.xpub = await HDKey.toString(xkey, this.network, true)
     }
   }
 

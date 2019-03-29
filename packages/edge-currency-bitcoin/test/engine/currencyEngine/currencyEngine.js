@@ -95,17 +95,9 @@ const createTestSettings = dir => {
 }
 
 const createKeys = async (tools, { format, type }) => {
-  let keys
   // Hack for now until we change all the dummy data to represent the new derivation path
-  keys = await tools.createPrivateKey(type)
-  Object.assign(keys, { coinType: 0, format })
-  // $FlowFixMe
-  keys = await tools.internalDerivePublicKey({
-    type,
-    keys,
-    id: '!'
-  })
-  return keys
+  const keys = await tools.createPrivateKey(type)
+  return Object.assign(keys, { coinType: 0, format })
 }
 
 // return only the directories inside fixtures dir

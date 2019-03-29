@@ -28,7 +28,7 @@ for (const fixture of fixtures) {
         const pubSeed = keyManager.getPublicSeed()
         const seed = keyManager.getSeed()
         assert.equal(seed, options.seed)
-        assert.equal(pubSeed, options.rawKeys.master.xpub)
+        assert.equal(pubSeed, options.xpub)
         for (const path in keyManager.addressesMap) {
           const addresses = keyManager.addressesMap[path]
           assert.equal(Object.keys(addresses).length, 10)
