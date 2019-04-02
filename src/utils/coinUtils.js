@@ -126,7 +126,7 @@ export const setKeyType = async (
     witness = false
     keyRing = await primitives.KeyRing.fromScript(
       key.privateKey || key.publicKey,
-      script.fromString(redeemScript),
+      script.fromRaw(Buffer.from(redeemScript.replace(/^0x/, ''), 'hex')),
       isCompressed(key.publicKey),
       network
     )
