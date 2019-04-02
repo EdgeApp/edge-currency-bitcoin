@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.0.3 (2019-04-02)
+
+- Change LTC explorer to blockchair.com.
+- Fix BCH -> BSV splitting.
+
 # 4.0.3 (2019-03-22)
 
 - Fix fee estimation for P2WPKH nested inside of P2SH
