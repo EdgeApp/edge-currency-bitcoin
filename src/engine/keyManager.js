@@ -402,8 +402,6 @@ export class KeyManager {
           closeGaps
         )
       }
-    } catch (e) {
-      console.log(e)
     } finally {
       unlock()
     }
