@@ -32,8 +32,8 @@ describe(`Mining Fees`, function () {
     assert.equal(outBitcoinFees.standardFeeLowAmount, '100000')
     assert.equal(outBitcoinFees.standardFeeHighAmount, '10000000')
     assert.equal(outBitcoinFees.lowFee, '10')
-    assert.equal(outBitcoinFees.standardFeeLow, '281')
-    assert.equal(outBitcoinFees.standardFeeHigh, '300')
+    assert.equal(outBitcoinFees.standardFeeLow, '221')
+    assert.equal(outBitcoinFees.standardFeeHigh, '290')
     assert.equal(outBitcoinFees.highFee, '300')
   })
   it('calcFeesFromEarnCom blank array', function () {
