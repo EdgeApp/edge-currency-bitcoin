@@ -1,6 +1,10 @@
 # edge-currency-bitcoin
 
-# 4.0.3 (2019-04-02)
+# 4.0.5 (2019-04-04)
+
+- Avoid outrageous mining fees found in the next-block confirmation window.
+
+# 4.0.4 (2019-04-02)
 
 - Change LTC explorer to blockchair.com.
 - Fix BCH -> BSV splitting.
