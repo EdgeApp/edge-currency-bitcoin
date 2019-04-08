@@ -1,8 +1,6 @@
 // @flow
 
 import { parse } from 'uri-js'
-
-<<<<<<< HEAD:packages/edge-currency-bitcoin/src/stratum/stratumConnection.js
 import { type EdgeSocket, type PluginIo } from '../../types/plugin.js'
 import {
   type PendingMessage,
@@ -10,9 +8,6 @@ import {
   type StratumOptions,
   type StratumTask
 } from '../../types/stratum.js'
-=======
-import { type EdgeSocket, type PluginIo } from '../plugin/pluginIo.js'
->>>>>>> master:src/stratum/stratumConnection.js
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 import { fetchPing, fetchVersion } from './stratumMessages.js'
 
