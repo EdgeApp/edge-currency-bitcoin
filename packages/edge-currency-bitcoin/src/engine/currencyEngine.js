@@ -507,6 +507,7 @@ export class CurrencyEngine {
       }
       // Get the rate according to the latest fee
       const rate = this.getRate(edgeSpendInfo)
+      this.io.console.info(`spend: Using fee rate ${rate} sat/K`)
       // Create outputs from spendTargets
 
       const outputs = []

@@ -1,8 +1,20 @@
 # edge-currency-bitcoin
 
-# 4.0.2 (2019-03-21)
+# 4.0.5 (2019-04-04)
+
+- Avoid outrageous mining fees found in the next-block confirmation window.
+
+# 4.0.4 (2019-04-02)
+
+- Change LTC explorer to blockchair.com.
+- Fix BCH -> BSV splitting.
+
+# 4.0.3 (2019-03-22)
 
 - Fix fee estimation for P2WPKH nested inside of P2SH
+
+# 4.0.2 (2019-03-21)
+
 - Report unconfirmed transaction block height as 0
 - Throttle network calls (external servers)
 
