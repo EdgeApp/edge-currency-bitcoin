@@ -3,17 +3,20 @@
 import bcoin from 'bcoin'
 import { type EdgeFreshAddress } from 'edge-core-js'
 import { Core } from 'nidavellir'
-
+import { toLegacyFormat } from '../addressFormat/addressFormatIndex.js'
 import { type EdgeAddress } from '../../../types/bcoinUtils.js'
 
 const { Lock } = bcoin.utils
 
 export const scriptTypesToEdgeTypes = (
-  addresses: EdgeAddress
-): EdgeFreshAddress => ({
-  publicAddress: addresses['P2WPKH-P2SH'] || addresses['P2PKH'],
-  segwitAddress: addresses['P2WPKH']
-})
+  addresses: EdgeAddress,
+  network: string
+): EdgeFreshAddress => {
+  const publicAddress = addresses['P2WPKH-P2SH'] || addresses['P2PKH']
+  const segwitAddress = addresses['P2WPKH']
+  const legacyAddress = toLegacyFormat(publicAddress, network)
+  return { publicAddress, segwitAddress, legacyAddress }
+}
 
 export const formatToBips = (
   network: string,

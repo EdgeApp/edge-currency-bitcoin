@@ -9,7 +9,7 @@ import {
   type Utxo
 } from '../../../types/bcoinUtils.js'
 import {
-  toBitcoinFormat,
+  changeNetwork,
   toNewFormat
 } from '../addressFormat/addressFormatIndex.js'
 import { reverseHexString } from '../utils.js'
@@ -88,7 +88,7 @@ export const createTX = async ({
     return coin
   })
 
-  changeAddress = toBitcoinFormat(changeAddress, network)
+  changeAddress = changeNetwork(changeAddress, network)
 
   // Try to fund the transaction
   await mtx.fund(coins, {

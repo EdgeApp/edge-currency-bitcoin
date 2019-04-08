@@ -83,15 +83,6 @@ export async function getPaymentDetails (
   return getBitPayPayment(paymentProtocolURL, network, fetch)
 }
 
-export function createPayment (
-  paymentDetails: EdgePaymentProtocolInfo,
-  refundAddress: string,
-  tx: string,
-  currencyCode: string
-): any {
-  return { currency: currencyCode, transactions: [tx] }
-}
-
 export async function sendPayment (
   fetch: any,
   network: string,
