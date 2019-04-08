@@ -24,14 +24,14 @@ export const changeFormat = (
   }
 }
 
-export const toBitcoinFormat = (address: string, network: string): string => {
-  const { addressPrefix, serializers } = networks[network]
-  const bitcoinSerializers = networks['bitcoin'].serializers
-  address = bitcoinSerializers.address.encode(serializers.address.decode(address))
-  if (!isLegacy(address, network) && addressPrefix.cashAddress) {
-    address = cashAddressToLegacy(address, network)
+export const changeNetwork = (address: string, oldNetwork: string, newNetwork: string = 'bitcoin'): string => {
+  const oldPrefix = networks[oldNetwork].addressPrefix
+  const newPrefix = networks[newNetwork].addressPrefix
+  if (!isLegacy(address, oldNetwork) && oldPrefix.cashAddress) {
+    address = cashAddressToLegacy(address, oldNetwork)
   }
-  return changeFormat(address, network, networks['bitcoin'].addressPrefix)
+  address = changeFormat(address, oldNetwork, newPrefix)
+  return address
 }
 
 export const toLegacyFormat = (address: string, network: string): string => {

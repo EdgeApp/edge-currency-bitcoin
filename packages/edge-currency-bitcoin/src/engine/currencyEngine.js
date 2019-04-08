@@ -24,10 +24,7 @@ import {
 import { type BitcoinFees, type EarnComFees } from '../../types/fees.js'
 import { type PluginIo } from '../../types/plugin.js'
 import { PluginState } from '../plugin/pluginState.js'
-import {
-  getAddressPrefix,
-  toLegacyFormat
-} from '../utils/addressFormat/addressFormatIndex.js'
+import { getAddressPrefix } from '../utils/addressFormat/addressFormatIndex.js'
 import * as Address from '../utils/bcoinUtils/address.js'
 import {
   formatToBips,
@@ -376,11 +373,10 @@ export class CurrencyEngine {
   }
 
   getFreshAddress (options: any): EdgeFreshAddress {
-    const addresses = scriptTypesToEdgeTypes(
-      this.keyManager.getReceiveAddress()
+    return scriptTypesToEdgeTypes(
+      this.keyManager.getReceiveAddress(),
+      this.network
     )
-    const legacyAddress = toLegacyFormat(addresses.publicAddress, this.network)
-    return { ...addresses, legacyAddress }
   }
 
   addGapLimitAddresses (addresses: Array<string>, options: any): void {
@@ -588,14 +584,7 @@ export class CurrencyEngine {
     const { paymentProtocolInfo } = otherParams
     const { signedTx, txid } = await this.keyManager.sign(bcoinTx, privateKeys)
     if (paymentProtocolInfo) {
-      const publicAddress = this.getFreshAddress().publicAddress
-      const address = toLegacyFormat(publicAddress, this.network)
-      const payment = PaymentRequest.createPayment(
-        paymentProtocolInfo,
-        address,
-        signedTx,
-        this.currencyCode
-      )
+      const payment = { currency: this.currencyCode, transactions: [signedTx] }
       Object.assign(edgeTransaction.otherParams, {
         paymentProtocolInfo: { ...paymentProtocolInfo, payment }
       })

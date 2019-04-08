@@ -16,7 +16,6 @@ import {
   type SignMessage,
   type createTxOptions
 } from '../../types/engine.js'
-import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 import * as Address from '../utils/bcoinUtils/address.js'
 import * as Key from '../utils/bcoinUtils/key.js'
 import * as Misc from '../utils/bcoinUtils/misc.js'
@@ -313,9 +312,8 @@ export class KeyManager extends EventEmitter {
       this.network,
       redeemScript
     )
-    const displayAddress = toNewFormat(address.displayAddress, this.network)
 
-    const { scriptHash } = address
+    const { scriptHash, displayAddress } = address
 
     const pathArray = path.split('/')
     const index = parseInt(pathArray.pop())

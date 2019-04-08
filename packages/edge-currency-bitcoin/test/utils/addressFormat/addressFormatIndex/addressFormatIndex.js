@@ -7,7 +7,8 @@ import * as Factories from '../../../../src/index.js'
 import {
   getAddressPrefix,
   toLegacyFormat,
-  toNewFormat
+  toNewFormat,
+  changeNetwork
 } from '../../../../src/utils/addressFormat/addressFormatIndex.js'
 import fixtures from './fixtures.json'
 
@@ -18,6 +19,12 @@ for (const fixture of fixtures) {
     fixture['valid'].forEach(address => {
       it(`test valid for ${address}`, function () {
         assert.notEqual(getAddressPrefix(address, network), null)
+      })
+    })
+
+    fixture['valid'].forEach(address => {
+      it(`test convertion to valid bitcoin ${address}`, function () {
+        assert.equal(changeNetwork(address, network), address)
       })
     })
 
