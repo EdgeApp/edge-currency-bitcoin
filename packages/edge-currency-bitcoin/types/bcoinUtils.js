@@ -4,7 +4,7 @@ import { type HexPair, type ScriptType } from 'nidavellir'
 
 export type EdgeAddress = { [scriptType: ScriptType]: string }
 export type RawAddress = {
-  type: string,
+  type: ScriptType,
   hash: string,
   version: number
 }
@@ -35,11 +35,6 @@ export type Output = {
   value: number
 }
 
-export type StandardOutput = {
-  address: string,
-  value: number
-}
-
 export type Utxo = {
   tx: any,
   index: number,
@@ -62,7 +57,7 @@ export type CreateTxOptions = {
   maxFee: number,
   changeAddress: string,
   network: string,
-  outputs?: Array<StandardOutput>,
+  outputs?: Array<Output>,
   height?: number,
   estimate?: Function,
   txOptions: TxOptions

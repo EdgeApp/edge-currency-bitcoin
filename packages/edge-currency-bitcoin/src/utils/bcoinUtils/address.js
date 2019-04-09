@@ -50,7 +50,7 @@ export const fromBaseString = (
     if (addressPrefix.bech32 !== hrp) {
       throw new Error(`Bad bech32 prefix ${hrp} for network ${network}`)
     }
-    const type = hash.length <= 40 ? 'witnesspubkeyhash' : 'witnesspubkeyhash'
+    const type: ScriptType = hash.length <= 40 ? 'witnesspubkeyhash' : 'witnesspubkeyhash'
     return { version, hash, type }
   } catch (e) {
     try {

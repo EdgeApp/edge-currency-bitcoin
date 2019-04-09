@@ -23,14 +23,13 @@ export type ReplayProtection = {
   forkId?: number
 }
 export type KeyPrefix = {
-  privkey: number,
   xpubkey: number,
   xprivkey: number,
-  xpubkey58: string,
-  xprivkey58: string,
-  coinType: number
+  ypubkey: number,
+  yprivkey: number
 }
 
+// change every prefix type to be an array
 export type AddressPrefix = {
   pubkeyhash?: number,
   scripthash?: number,
@@ -40,26 +39,35 @@ export type AddressPrefix = {
   bech32?: string
 }
 
+export type Prefixes = Array<number | string> | { [type: string]: Prefixes }
+
+export type Configurator = {
+  prefixes?: Prefixes,
+  formatter: BaseDecoder | HashFunction<string> | HashFunction<Buffer>
+}
+
 export type NetworkInfo = {
-  magic: number,
-  keyPrefix: KeyPrefix,
-  addressPrefix: AddressPrefix,
-  legacyAddressPrefix: AddressPrefix,
+  coinType: number,
   bips: Array<number>,
   forks: Array<string>,
   replayProtection: ReplayProtection,
-  serializers: Serializers
+  WIFConfig: Configurator,
+  HDKeyConfig: Configurator,
+  addressConfig: Configurator,
+  txHashConfig: Configurator,
+  sigHashConfig: Configurator
 }
 
 export type PartialInfo = {
-  magic?: number,
-  keyPrefix?: KeyPrefix,
-  addressPrefix?: AddressPrefix,
-  legacyAddressPrefix?: AddressPrefix,
+  coinType?: number,
   bips?: Array<number>,
   forks?: Array<string>,
   replayProtection?: ReplayProtection,
-  serializers?: Serializers
+  WIFConfig?: Configurator,
+  HDKeyConfig?: Configurator,
+  addressConfig?: Configurator,
+  txHashConfig?: Configurator,
+  sigHashConfig?: Configurator
 }
 
 export type NetworkInfos = { [network: string]: NetworkInfo }

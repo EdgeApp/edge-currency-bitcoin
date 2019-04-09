@@ -5,7 +5,7 @@ import { describe, it } from 'mocha'
 // eslint-disable-next-line no-unused-vars
 import * as Factories from '../../../../src/index.js'
 import {
-  getAddressPrefix,
+  isValidAddress,
   toLegacyFormat,
   toNewFormat,
   changeNetwork
@@ -18,7 +18,7 @@ for (const fixture of fixtures) {
   describe(`Address format for ${network}`, function () {
     fixture['valid'].forEach(address => {
       it(`test valid for ${address}`, function () {
-        assert.notEqual(getAddressPrefix(address, network), null)
+        assert.notEqual(isValidAddress(address, network), null)
       })
     })
 
@@ -30,7 +30,7 @@ for (const fixture of fixtures) {
 
     fixture['inValid'].forEach(address => {
       it(`test invalid for ${address}`, function () {
-        assert.equal(getAddressPrefix(address, network), null)
+        assert.equal(isValidAddress(address, network), null)
       })
     })
 

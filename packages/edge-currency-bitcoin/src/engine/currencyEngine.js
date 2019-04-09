@@ -24,7 +24,7 @@ import {
 import { type BitcoinFees, type EarnComFees } from '../../types/fees.js'
 import { type PluginIo } from '../../types/plugin.js'
 import { PluginState } from '../plugin/pluginState.js'
-import { getAddressPrefix } from '../utils/addressFormat/addressFormatIndex.js'
+import { isValidAddress } from '../utils/addressFormat/addressFormatIndex.js'
 import * as Address from '../utils/bcoinUtils/address.js'
 import {
   formatToBips,
@@ -397,7 +397,7 @@ export class CurrencyEngine {
   }
 
   isAddressUsed (address: string, options: any): boolean {
-    if (!getAddressPrefix(address, this.network)) {
+    if (!isValidAddress(address, this.network)) {
       throw new Error('Wrong formatted address')
     }
     for (const scriptHash in this.engineState.addressInfos) {

@@ -12,7 +12,7 @@ import parse from 'url-parse'
 
 import {
   dirtyAddress,
-  getAddressPrefix,
+  isValidAddress,
   isLegacy,
   sanitizeAddress,
   toNewFormat
@@ -25,7 +25,7 @@ const parsePathname = (pathname: string, network: string) => {
     Core.KeyPair.privateFromWIF(pathname, network)
     return { privateKeys: [pathname] }
   } catch (e) {}
-  if (getAddressPrefix(pathname, network)) {
+  if (isValidAddress(pathname, network)) {
     return { publicAddress: dirtyAddress(pathname, network) }
   } else if (isLegacy(pathname, network)) {
     return {
@@ -91,7 +91,7 @@ export const encodeUri = (
 ): string => {
   const { publicAddress, legacyAddress } = obj
   const address = legacyAddress || publicAddress
-  if (!getAddressPrefix(address, network) && !isLegacy(address, network)) {
+  if (!isValidAddress(address, network) && !isLegacy(address, network)) {
     throw new Error('InvalidPublicAddressError')
   }
   // $FlowFixMe

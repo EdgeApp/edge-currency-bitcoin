@@ -9,7 +9,7 @@ import {
   type Utxo
 } from '../../../types/bcoinUtils.js'
 import {
-  changeNetwork,
+  // changeNetwork,
   toNewFormat
 } from '../addressFormat/addressFormatIndex.js'
 import { reverseHexString } from '../utils.js'
@@ -76,9 +76,11 @@ export const createTX = async ({
   }
 
   // Add the outputs
-  outputs.forEach(async ({ address, value }) => {
-    const addressScript = toScript(fromBaseString(address, network))
-    mtx.addOutput(addressScript, value)
+  outputs.forEach(async ({ address, script, value }) => {
+    if (address) {
+      const addressScript = toScript(fromBaseString(address, network))
+      mtx.addOutput(addressScript, value)
+    }
   })
 
   // Create coins
@@ -88,7 +90,9 @@ export const createTX = async ({
     return coin
   })
 
-  changeAddress = changeNetwork(changeAddress, network)
+  // change address is currently using network specific format
+  // mtx only understands Bitcoin address formats
+  // changeAddress = changeNetwork(changeAddress, network)
 
   // Try to fund the transaction
   await mtx.fund(coins, {

@@ -7,8 +7,7 @@ import {
   type Address as AddressObj,
   type EdgeAddress,
   type Script,
-  type ScriptHashMap,
-  type StandardOutput
+  type ScriptHashMap
 } from '../../types/bcoinUtils.js'
 import {
   type AddressInfos,
@@ -170,11 +169,6 @@ export class KeyManager extends EventEmitter {
 
   async createTX (options: createTxOptions): any {
     const { outputs = [], ...rest } = options
-    const standardOutputs: Array<StandardOutput> = []
-    for (const output of outputs) {
-      const address = output.address
-      if (address) standardOutputs.push({ address, value: output.value })
-    }
 
     const hdPath = this.hdPaths.length > 1 ? this.hdPaths[1] : this.hdPaths[0]
     const { path, scriptType = 'P2PKH' } = hdPath
@@ -184,7 +178,7 @@ export class KeyManager extends EventEmitter {
 
     return Tx.createTX({
       ...rest,
-      outputs: standardOutputs,
+      outputs,
       changeAddress,
       estimate: prev => Tx.estimateSize(scriptType, prev),
       network: this.network
