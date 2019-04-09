@@ -28,6 +28,12 @@ for (const fixture of fixtures) {
       })
     })
 
+    fixture['valid'].forEach(address => {
+      it(`test convertion to valid bitcoin ${address}`, function () {
+        assert.equal(changeNetwork(address, network), address)
+      })
+    })
+
     fixture['inValid'].forEach(address => {
       it(`test invalid for ${address}`, function () {
         assert.equal(isValidAddress(address, network), null)
