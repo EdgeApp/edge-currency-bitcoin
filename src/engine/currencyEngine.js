@@ -290,9 +290,14 @@ export class CurrencyEngine {
         if (results.status !== 200) {
           throw new Error(results.body)
         }
-        const { fees }: EarnComFees = await results.json()
-        this.fees = calcFeesFromEarnCom(this.fees, { fees })
-        this.fees.timestamp = Date.now()
+        const feesJson: EarnComFees = await results.json()
+        if (validateObject(feesJson, EarnComFeesSchema)) {
+          const newFees = calcFeesFromEarnCom(feesJson.fees)
+          this.fees = { ...this.fees, ...newFees }
+          this.fees.timestamp = Date.now()
+        } else {
+          throw new Error('Fetched invalid networkFees')
+        }
       }
     } catch (e) {
       console.log(

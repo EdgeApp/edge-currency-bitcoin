@@ -5,18 +5,18 @@
 
 import { bns } from 'biggystring'
 
-import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
-import { EarnComFeesSchema } from '../utils/jsonSchemas.js'
-import { validateObject } from '../utils/utils.js'
+import { type BitcoinFees, type EarnComFee } from '../utils/flowTypes.js'
 
 export const ES_FEE_LOW = 'low'
 export const ES_FEE_STANDARD = 'standard'
 export const ES_FEE_HIGH = 'high'
 export const ES_FEE_CUSTOM = 'custom'
 
-const MAX_FEE = 999999999.0
-const MAX_STANDARD_DELAY = 3
-const MIN_STANDARD_DELAY = 1
+const HIGH_STANDARD_DELAY = 4
+const LOW_STANDARD_DELAY = 2
+const MAX_ALLOWABLE_DELAY = 10000
+const MIN_ALLOWABLE_DELAY = 1
+const MIN_FEE = 0
 
 /**
  * Calculate the BitcoinFees object given a default BitcoinFees object and EarnComFees
@@ -25,119 +25,51 @@ const MIN_STANDARD_DELAY = 1
  * @returns {BitcoinFees}
  */
 export function calcFeesFromEarnCom (
-  bitcoinFees: BitcoinFees,
-  earnComFeesJson: any
-): BitcoinFees {
-  let highDelay = 999999
-  let lowDelay = 0
-  let highFee = MAX_FEE
-  let standardFeeHigh
-  let standardFeeLow = MAX_FEE
-  let lowFee = MAX_FEE
+  fees?: Array<EarnComFee> | null
+): $Shape<BitcoinFees> {
+  if (!fees || !fees.length) return {}
 
-  const valid = validateObject(earnComFeesJson, EarnComFeesSchema)
-  if (!valid) {
-    return bitcoinFees
+  // Keep only the fees that has an estimatation BIGGER then MIN_FEE
+  fees = fees.filter(
+    ({ maxFee, minFee }) => maxFee > MIN_FEE && minFee > MIN_FEE
+  )
+
+  /**
+   * Finds and returns appropriate fee option for a given condition
+   * @param delay: number or function - number is target delay, function can be custom condition
+   * @param sortKey: criteria to use for select best choice from relevant list of fees
+   * @returns EarnComFee
+   */
+
+  const calcEarnFee = (delay, sortKey) => {
+    const condition = fee =>
+      typeof delay !== 'function' ? fee.maxDelay < delay : delay(fee)
+    const compare = (a, b) => a[sortKey] - b[sortKey]
+    const earnFee = (fees: any).filter(condition).sort(compare)[0]
+    return { ...earnFee, feeString: earnFee[sortKey].toFixed(0) }
   }
 
-  const earnComFees: EarnComFees = earnComFeesJson
-  for (const fee of earnComFees.fees) {
-    // If this is a zero fee estimate, then skip
-    if (fee.maxFee === 0 || fee.minFee === 0) {
-      continue
-    }
+  // Calculate the lowFee
+  const lowFee = calcEarnFee(MAX_ALLOWABLE_DELAY, 'maxFee')
+  // Calculate the highFee
+  const highFee = calcEarnFee(MIN_ALLOWABLE_DELAY, 'minFee')
+  // The low end should have a delay less than the lowFee from above and a maxDelay of MAX_STANDARD_DELAY.
+  const standardFeeLow = calcEarnFee(
+    Math.min(HIGH_STANDARD_DELAY, lowFee.maxDelay),
+    'minFee'
+  )
+  // The high end should have a delay that's greater than the highFee from above and a maxDelay of MIN_STANDARD_DELAY.
+  const standardFeeHigh = calcEarnFee(
+    fee =>
+      fee.maxDelay < LOW_STANDARD_DELAY && fee.maxFee > standardFeeLow.minFee,
+    'maxFee'
+  )
 
-    // Set the lowFee if the delay in blocks and minutes is less that 10000.
-    // 21.co uses 10000 to mean infinite
-    if (fee.maxDelay < 10000 && fee.maxMinutes < 10000) {
-      if (fee.maxFee < lowFee) {
-        // Set the low fee if the current fee estimate is lower than the previously set low fee
-        lowDelay = fee.maxDelay
-        lowFee = fee.maxFee
-      }
-    }
-
-    // Set the high fee only if the delay is 0
-    if (fee.maxDelay === 0) {
-      if (fee.maxFee < highFee) {
-        // Set the low fee if the current fee estimate is lower than the previously set high fee
-        highFee = fee.maxFee
-        highDelay = fee.maxDelay
-      }
-    }
-  }
-
-  // Now find the standard fee range. We want the range to be within a maxDelay of
-  // 3 to 18 blocks (about 30 mins to 3 hours). The standard fee at the low end should
-  // have a delay less than the lowFee from above. The standard fee at the high end
-  // should have a delay that's greater than the highFee from above.
-  for (const fee of earnComFees.fees) {
-    // If this is a zero fee estimate, then skip
-    if (fee.maxFee === 0 || fee.minFee === 0) {
-      continue
-    }
-
-    if (fee.maxDelay < lowDelay && fee.maxDelay <= MAX_STANDARD_DELAY) {
-      if (standardFeeLow > fee.minFee) {
-        standardFeeLow = fee.minFee
-      }
-    }
-  }
-
-  // Go backwards looking for lowest standardFeeHigh that:
-  // 1. Is < highFee
-  // 2. Has a blockDelay > highDelay
-  // 3. Has a delay that is > MIN_STANDARD_DELAY
-  // Use the highFee as the default standardHighFee
-  standardFeeHigh = highFee
-  for (let i = earnComFees.fees.length - 1; i >= 0; i--) {
-    const fee = earnComFees.fees[i]
-
-    if (i < 0) {
-      break
-    }
-
-    // If this is a zero fee estimate, then skip
-    if (fee.maxFee === 0 || fee.minFee === 0) {
-      continue
-    }
-
-    // Dont ever go below standardFeeLow
-    if (fee.maxFee <= standardFeeLow) {
-      break
-    }
-
-    if (fee.maxDelay > highDelay) {
-      standardFeeHigh = fee.maxFee
-    }
-
-    // If we have a delay that's greater than MIN_STANDARD_DELAY, then we're done.
-    // Otherwise we'd be getting bigger delays and further reducing fees.
-    if (fee.maxDelay >= MIN_STANDARD_DELAY) {
-      break
-    }
-  }
-
-  //
-  // Check if we have a complete set of fee info.
-  //
-  if (
-    highFee < MAX_FEE &&
-    lowFee < MAX_FEE &&
-    standardFeeHigh > 0 &&
-    standardFeeLow < MAX_FEE
-  ) {
-    const out: BitcoinFees = bitcoinFees
-
-    // Overwrite the fees with those from earn.com
-    out.lowFee = lowFee.toFixed(0)
-    out.standardFeeLow = standardFeeLow.toFixed(0)
-    out.standardFeeHigh = standardFeeHigh.toFixed(0)
-    out.highFee = highFee.toFixed(0)
-
-    return out
-  } else {
-    return bitcoinFees
+  return {
+    lowFee: lowFee.feeString,
+    highFee: highFee.feeString,
+    standardFeeLow: standardFeeLow.feeString,
+    standardFeeHigh: standardFeeHigh.feeString
   }
 }
 
