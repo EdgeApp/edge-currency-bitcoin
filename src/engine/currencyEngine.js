@@ -34,7 +34,10 @@ import {
 } from '../utils/coinUtils.js'
 import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
 import { getAllAddresses } from '../utils/formatSelector.js'
-import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
+import {
+  EarnComFeesSchema,
+  InfoServerFeesSchema
+} from '../utils/jsonSchemas.js'
 import { promiseAny, validateObject } from '../utils/utils.js'
 import { broadcastFactories } from './broadcastApi.js'
 import { EngineState } from './engineState.js'
@@ -259,26 +262,22 @@ export class CurrencyEngine {
     return edgeTransaction
   }
 
-  async updateFeeTable () {
+  async updateFeeFromEdge () {
     try {
-      await this.fetchFee()
-      if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        const url = `${InfoServer}/networkFees/${this.currencyCode}`
-        const feesResponse = await this.io.fetch(url)
-        const feesJson = await feesResponse.json()
-        this.fees.timestamp = Date.now()
-        if (validateObject(feesJson, InfoServerFeesSchema)) {
-          this.fees = feesJson
-        } else {
-          throw new Error('Fetched invalid networkFees')
-        }
+      const url = `${InfoServer}/networkFees/${this.currencyCode}`
+      const feesResponse = await this.io.fetch(url)
+      const feesJson = await feesResponse.json()
+      if (validateObject(feesJson, InfoServerFeesSchema)) {
+        this.fees = { ...this.fees, ...feesJson }
+      } else {
+        throw new Error('Fetched invalid networkFees')
       }
     } catch (err) {
       console.log(`${this.prunedWalletId} - ${err.toString()}`)
     }
   }
 
-  async fetchFee () {
+  async updateFeeFromVendor () {
     const { feeInfoServer } = this.engineInfo
     if (!feeInfoServer || feeInfoServer === '') {
       clearTimeout(this.feeTimer)
@@ -306,7 +305,10 @@ export class CurrencyEngine {
         } - Error while trying to update fee table ${e.toString()}`
       )
     }
-    this.feeTimer = setTimeout(() => this.fetchFee(), this.feeUpdateInterval)
+    this.feeTimer = setTimeout(
+      () => this.updateFeeFromVendor(),
+      this.feeUpdateInterval
+    )
   }
 
   getRate ({
@@ -366,7 +368,7 @@ export class CurrencyEngine {
 
   async startEngine (): Promise<void> {
     this.callbacks.onBalanceChanged(this.currencyCode, this.getBalance())
-    this.updateFeeTable()
+    this.updateFeeFromEdge().then(this.updateFeeFromVendor)
     return this.engineState.connect()
   }
 
@@ -556,7 +558,7 @@ export class CurrencyEngine {
     try {
       // If somehow we have outdated fees, try and get new ones
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        await this.updateFeeTable()
+        await this.updateFeeFromVendor()
       }
       // Get the rate according to the latest fee
       const rate = this.getRate(edgeSpendInfo)
