@@ -3,13 +3,12 @@
 import {
   type NetworkInfo,
   type NetworkInfos,
-  type NewNetworks,
-  type PartialInfo
+  type NewNetworks
 } from '../../types/core.js'
 import { main } from '../networks/baseInfo.js'
 import * as Networks from '../networks/networks.js'
 
-export const createInfo = (info: PartialInfo): NetworkInfo => {
+export const createInfo = (info: $Shape<NetworkInfo>): NetworkInfo => {
   const newNetwork: NetworkInfo = ({}: any)
 
   for (const set in main) {
@@ -52,44 +51,51 @@ export const addNetworks = (newInfos: NewNetworks) =>
 export const getExtendedKeyVersion = (
   hdKey: { privateKey?: any, publicKey?: any },
   network: string = 'main'
-) => {
-  const { keyPrefix = {} } = networks[network]
-  if (hdKey.privateKey) return keyPrefix.xprivkey
-  if (hdKey.publicKey) return keyPrefix.xpubkey
+): number => {
+  const { HDKeyConfig } = networks[network]
+  // $FlowFixMe - kylanfixes
+  if (hdKey.privateKey) return HDKeyConfig.prefixes.xprivkey[0]
+  // $FlowFixMe - kylanfixes
+  if (hdKey.publicKey) return HDKeyConfig.prefixes.xpubkey[0]
   throw new Error("Can't get version without a key")
 }
 
 export const getNetworkForVersion = (version: number): string => {
   for (const network in networks) {
     try {
-      checkVersion(version, network)
+      validateHDKeyPrefix(version, network)
       return network
     } catch (e) {}
   }
   throw new Error('Unknown network version')
 }
 
-export const checkVersion = (version: number, network: string = 'main') => {
-  const { keyPrefix = {} } = networks[network]
-  if (version) {
-    for (const prefix in keyPrefix) {
-      if (keyPrefix[prefix] === version) return version
-    }
+export const validateHDKeyPrefix = (keyPrefix: number, network: string = 'main') => {
+  const { HDKeyConfig } = networks[network]
+  if (HDKeyConfig.prefixes) {
+    // $FlowFixMe - kylanfixes
+    const { xprivkey, xpubkey } = HDKeyConfig.prefixes
+    // $FlowFixMe - kylanfixes
+    if (xprivkey[0] === keyPrefix || xpubkey[0] === keyPrefix) return keyPrefix
     throw new Error('Wrong key prefix for network')
   }
 }
 
 export const getPrefixType = (prefixNum: number, network: string = 'main') => {
-  const getPrefix = addressPrefix => {
-    for (const prefixType in addressPrefix) {
-      if (addressPrefix[prefixType] === prefixNum) {
-        return prefixType
+  const getPrefix = addressPrefixes => {
+    // $FlowFixMe - kylanfixes
+    for (const prefixType in addressPrefixes) {
+    // $FlowFixMe - kylanfixes
+      for (const prefixVersion of addressPrefixes[prefixType]) {
+        if (prefixVersion === prefixNum) {
+          return prefixType
+        }
       }
     }
     return null
   }
-  const { addressPrefix, legacyAddressPrefix } = networks[network]
-  const type = getPrefix(addressPrefix) || getPrefix(legacyAddressPrefix)
+  const { addressConfig } = networks[network]
+  const type = getPrefix(addressConfig.prefixes)
 
   if (!type) {
     throw new Error(`Unknown prefix ${prefixNum} for network ${network}`)
@@ -97,8 +103,11 @@ export const getPrefixType = (prefixNum: number, network: string = 'main') => {
   return type
 }
 
-export const getPrefixNum = (type: string, network: string = 'main') => {
-  const { addressPrefix, legacyAddressPrefix } = networks[network]
-  const cashAddress = addressPrefix.cashAddress
-  return !cashAddress ? addressPrefix[type] : legacyAddressPrefix[type]
+export const getPrefixNum = (scriptType: string, network: string = 'main') => {
+  const { addressConfig } = networks[network]
+  // $FlowFixMe - kylanfixes
+  const scriptTypePrefix = addressConfig.prefixes[scriptType]
+  if (!scriptTypePrefix) return 0
+  // $FlowFixMe - kylanfixes
+  return scriptTypePrefix[0]
 }

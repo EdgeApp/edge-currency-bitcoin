@@ -37,9 +37,10 @@ export const privateFromWIF = (
   wif: string,
   network: string = 'main'
 ): { privateKey: string, compress: boolean } => {
-  const { serializers, keyPrefix } = networks[network]
-  const keyHex = serializers.wif.decode(wif)
-  if (parseInt(keyHex.slice(0, 2), 16) !== keyPrefix.privkey) {
+  const { WIFConfig } = networks[network]
+  const keyHex = WIFConfig.formatter.decode(wif)
+  // $FlowFixMe - kylanfixes
+  if (parseInt(keyHex.slice(0, 2), 16) !== WIFConfig.prefixes[0]) {
     throw new Error(
       `Unknown key prefix ${keyHex.slice(0, 2)} for network ${network}`
     )

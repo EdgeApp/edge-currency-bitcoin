@@ -32,10 +32,10 @@ export const keysFromEntropy = (
   network: string,
   opts: any = {}
 ) => {
-  const { keyPrefix = {} } = Core.Networks[network] || {}
+  const { coinType = 0 } = Core.Networks[network] || {}
   return {
     [`${network}Key`]: Mnemonic.fromEntropy(entropy).getPhrase(),
-    coinType: opts.coinType || keyPrefix.coinType || 0
+    coinType: opts.coinType || coinType
   }
 }
 

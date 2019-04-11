@@ -8,7 +8,7 @@ import {
 import { type HexPair } from '../../types/core.js'
 import * as KeyPair from '../core/keyPair.js'
 import {
-  checkVersion,
+  validateHDKeyPrefix,
   getExtendedKeyVersion,
   getNetworkForVersion,
   networks
@@ -59,7 +59,7 @@ export const fromIndex = async (
 
 export const fromHex = (keyHex: string, network?: string): ExtendedKeyPair => {
   const version = parseInt(keyHex.slice(0, 8), 16)
-  if (network) checkVersion(version, network)
+  if (network) validateHDKeyPrefix(version, network)
   return {
     version,
     depth: parseInt(keyHex.slice(9, 10), 16),
@@ -74,7 +74,7 @@ export const fromString = (
   hdKey: string,
   network: string = 'main'
 ): ExtendedKeyPair => {
-  const keyHex = networks[network].serializers['xkey'].decode(hdKey)
+  const keyHex = networks[network].HDKeyConfig.formatter.decode(hdKey)
   return fromHex(keyHex, network)
 }
 
@@ -83,7 +83,7 @@ export const toHex = (
   network?: string,
   forcePublic: boolean = false
 ): string => {
-  if (network) checkVersion(hdKey.version, network)
+  if (network) validateHDKeyPrefix(hdKey.version, network)
   const { privateKey, publicKey } = hdKey
   const keyPair: HexPair = { publicKey }
   if (!forcePublic) keyPair.privateKey = privateKey
@@ -105,5 +105,5 @@ export const toString = (
   forcePublic: boolean = false
 ): string => {
   const keyHex = toHex(hdKey, network, forcePublic)
-  return networks[network].serializers['xkey'].encode(keyHex)
+  return networks[network].HDKeyConfig.formatter.decode(keyHex)
 }
