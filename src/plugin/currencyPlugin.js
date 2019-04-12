@@ -31,8 +31,8 @@ import {
   getFromatsForNetwork,
   keysFromEntropy
 } from '../utils/coinUtils.js'
+import { type PluginIo } from '../utils/flowTypes.js'
 import { getXPubFromSeed } from '../utils/formatSelector.js'
-import { type PluginIo } from './pluginIo.js'
 import { PluginState } from './pluginState.js'
 import { encodeUri, parseUri } from './uri.js'
 

@@ -17,7 +17,6 @@ import {
 } from 'edge-core-js/types'
 
 import { InfoServer } from '../info/constants'
-import { type PluginIo } from '../plugin/pluginIo.js'
 import { PluginState } from '../plugin/pluginState.js'
 import {
   toLegacyFormat,
@@ -33,6 +32,7 @@ import {
   verifyTxAmount
 } from '../utils/coinUtils.js'
 import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
+import { type PluginIo } from '../utils/flowTypes.js'
 import { getAllAddresses } from '../utils/formatSelector.js'
 import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
 import { promiseAny, validateObject } from '../utils/utils.js'

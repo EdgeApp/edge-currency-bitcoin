@@ -2,7 +2,7 @@
 
 import { parse } from 'uri-js'
 
-import { type EdgeSocket, type PluginIo } from '../plugin/pluginIo.js'
+import { type PluginIo } from '../utils/flowTypes.js'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 import { fetchPing, fetchVersion } from './stratumMessages.js'
 import type { StratumBlockHeader } from './stratumMessages.js'

@@ -5,7 +5,6 @@ import EventEmitter from 'eventemitter3'
 import stable from 'stable'
 import { parse } from 'uri-js'
 
-import { type PluginIo } from '../plugin/pluginIo.js'
 import { type PluginState } from '../plugin/pluginState.js'
 // import { scoreServer2 } from '../plugin/pluginState.js'
 import type {
@@ -28,6 +27,7 @@ import type {
   StratumUtxo
 } from '../stratum/stratumMessages.js'
 import { parseTransaction } from '../utils/coinUtils.js'
+import { type PluginIo } from '../utils/flowTypes.js'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 
 export type UtxoInfo = {
