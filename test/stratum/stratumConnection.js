@@ -1,10 +1,11 @@
 // @flow
 
+import { Socket } from 'net'
+
 import { assert, expect } from 'chai'
 import { makeFakeIo } from 'edge-core-js'
 import { describe, it } from 'mocha'
 
-import { makeNodeIo } from '../../src/index.js'
 import {
   type StratumCallbacks,
   StratumConnection
@@ -23,7 +24,7 @@ import {
 
 // const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
 const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'
-const io = makeNodeIo(makeFakeIo())
+const io = { ...makeFakeIo(), Socket }
 
 describe('StratumConnection', function () {
   this.timeout(10000)

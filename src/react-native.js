@@ -2,18 +2,34 @@
 
 import 'regenerator-runtime/runtime'
 
-import { type EdgeCorePluginOptions } from 'edge-core-js/types'
+import EventEmitter from 'eventemitter3'
 
 import { makeEdgeCorePlugins } from './plugin/currencyPlugin.js'
 
-window.addEdgeCorePlugins(
-  makeEdgeCorePlugins((opts: EdgeCorePluginOptions) => {
-    const nativeIo = opts.nativeIo['edge-currency-bitcoin']
-    if (nativeIo == null) {
-      throw new Error('React Native Bitcoin IO object not loaded')
-    }
+const DEFAULT_PROTOCOL = 'echo-protocol'
 
-    const { pbkdf2, secp256k1, makeSocket } = nativeIo
-    return { ...opts.io, pbkdf2, secp256k1, makeSocket }
-  })
+const createTcpSocket = io =>
+  class TcpSocket extends EventEmitter {
+    connect ({ host, port }) {
+      const uri = `ws://${this.host}:${this.port}/`
+      const socket = new io.WebSocket(uri, DEFAULT_PROTOCOL)
+
+      const { send, close } = socket
+      this.write = send
+      this.destroy = close
+      this.end = close
+
+      socket.onclose = ({ code, reason, wasClean }) =>
+        (!wasClean && this.emit('error', reason)) || this.emit('close')
+      socket.onopen = () => this.emit('connect')
+      socket.onmessage = ({ data }) => this.emit('data', data)
+    }
+  }
+
+window.addEdgeCorePlugins(
+  makeEdgeCorePlugins(({ io, nativeIo }) => ({
+    ...io,
+    ...nativeIo['edge-currency-bitcoin'],
+    Socket: createTcpSocket(io)
+  }))
 )

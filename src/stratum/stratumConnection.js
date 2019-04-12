@@ -103,27 +103,23 @@ export class StratumConnection {
     }
 
     // Connect to the server:
-    const io: PluginIo = this.io
-    return io
-      .makeSocket({
-        host: parsed.host,
-        port: Number(parsed.port),
-        type: parsed.scheme === 'electrum' ? 'tcp' : 'tls'
-      })
-      .then(socket => {
-        socket.on('close', () => this.onSocketClose())
-        socket.on('error', (e: Error) => {
-          this.error = e
-        })
-        socket.on('open', () => this.onSocketConnect())
-        socket.on('message', (data: string) => this.onSocketData(data))
-        this.socket = socket
-        this.cancelConnect = false
-        return socket.connect()
-      })
-      .catch(e => {
-        this.handleError(e)
-      })
+    const socket =
+      parsed.scheme === 'electrums' && this.io.TLSSocket
+        ? new this.io.TLSSocket(new this.io.Socket())
+        : new this.io.Socket()
+    socket.setEncoding('utf8')
+    socket.on('close', () => this.onSocketClose())
+    socket.on('error', (e: Error) => {
+      this.error = e
+    })
+    socket.on('connect', () => this.onSocketConnect())
+    socket.on('data', (data: string) => this.onSocketData(data))
+    socket.connect({
+      host: parsed.host,
+      port: Number(parsed.port)
+    })
+    this.socket = socket
+    this.cancelConnect = false
   }
 
   wakeUp () {
@@ -179,7 +175,7 @@ export class StratumConnection {
     clearTimeout(this.timer)
     this.sigkill = true
     this.connected = false
-    if (this.socket) this.socket.close()
+    if (this.socket) this.socket.destroy(this.error)
     removeIdFromQueue(this.uri)
   }
 
@@ -202,7 +198,7 @@ export class StratumConnection {
   cancelConnect: boolean
   lastKeepAlive: number
   partialMessage: string
-  socket: EdgeSocket | void
+  socket: net$Socket | void
   timer: TimeoutID
   error: Error | void
   sigkill: boolean
@@ -238,7 +234,7 @@ export class StratumConnection {
    */
   onSocketConnect () {
     if (this.cancelConnect) {
-      if (this.socket) this.socket.close()
+      if (this.socket) this.socket.end()
       return
     }
 
@@ -401,7 +397,7 @@ export class StratumConnection {
         method: pending.task.method,
         params: pending.task.params
       }
-      this.socket.send(JSON.stringify(message) + '\n')
+      this.socket.write(JSON.stringify(message) + '\n')
     }
   }
 }
