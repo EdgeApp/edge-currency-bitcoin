@@ -1,33 +1,37 @@
 // @flow
+import { bip84, bip49 } from '../hd/paths.js'
 
-export const main = {
-  bips: [84, 49],
-  forks: ['bitcoincash', 'bitcoingold', 'bitcoindiamond'],
-  addressPrefix: {
-    pubkeyhash: 0x00,
-    scripthash: 0x05,
-    witnesspubkeyhash: 0x06,
-    witnessscripthash: 0x0a,
-    bech32: 'bc'
-  }
-}
+const forks = ['bitcoincash', 'bitcoingold', 'bitcoindiamond']
+
+export const main = { supportedHDPaths: [ bip84, bip49 ], forks }
 
 export const testnet = {
-  ...main,
-  magic: 0x0709110b,
-  keyPrefix: {
-    privkey: 0xef,
-    xpubkey: 0x043587cf,
-    xprivkey: 0x04358394,
-    xpubkey58: 'tpub',
-    xprivkey58: 'tprv',
-    coinType: 1
-  },
-  addressPrefix: {
-    pubkeyhash: 0x6f,
-    scripthash: 0xc4,
-    witnesspubkeyhash: 0x03,
-    witnessscripthash: 0x28,
-    bech32: 'tb'
-  }
+  coinType: 1,
+  wif: 0xef,
+  supportedHDPaths: [
+    {
+      purpose: 32,
+      xpriv: 0x04358394,
+      xpub: 0x043587cf,
+      address: 0x6f
+    },
+    {
+      purpose: 44,
+      xpriv: 0x04358394,
+      xpub: 0x043587cf,
+      address: 0x6f
+    },
+    {
+      purpose: 49,
+      xpriv: 0x04358394,
+      xpub: 0x043587cf,
+      address: 0xc4
+    },
+    {
+      purpose: 84,
+      xpriv: 0x04358394,
+      xpub: 0x043587cf,
+      address: 'tb'
+    }
+  ]
 }

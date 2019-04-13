@@ -8,6 +8,52 @@ import {
 import { main } from '../networks/baseInfo.js'
 import * as Networks from '../networks/networks.js'
 
+export const getHDSetting = (network: string, value: any) => {
+  const { supportedHDPaths } = networks[network]
+  for (const hdSetting of supportedHDPaths) {
+    for (const key in hdSetting) {
+      let setting = hdSetting[key]
+
+      if (Array.isArray(setting)) {
+        setting = setting.find(({ prefix }) => prefix === value)
+      } else {
+        setting = setting.prefix
+      }
+
+      if (setting === value) return hdSetting
+    }
+  }
+}
+
+// export type Decoder = {
+//   prefix: number | string,
+//   decoder: BaseDecoder
+// }
+
+// export type HDPathSetting = {
+//   scriptType: ScriptType,
+//   purpose: number,
+//   xpriv: Decoder,
+//   xpub: Decoder,
+//   address: Decoder | Array<Decoder>
+// }
+
+// export type ReplayProtection = {
+//   forkSighash?: number,
+//   forcedMinVersion?: number,
+//   forkId?: number
+// }
+
+// export type NetworkInfo = {
+//   coinType: number,
+//   forks: Array<string>,
+//   replayProtection: ReplayProtection,
+//   wif: Decoder,
+//   supportedHDPaths: Array<HDPathSetting>,
+//   txHash: HashFunction<string>,
+//   sigHash: HashFunction<Buffer>
+// }
+
 export const createInfo = (info: $Shape<NetworkInfo>): NetworkInfo => {
   const newNetwork: NetworkInfo = ({}: any)
 
@@ -52,7 +98,7 @@ export const getExtendedKeyVersion = (
   hdKey: { privateKey?: any, publicKey?: any },
   network: string = 'main'
 ): number => {
-  const { HDKeyConfig } = networks[network]
+  const { supportedHDPaths } = networks[network]
   // $FlowFixMe - kylanfixes
   if (hdKey.privateKey) return HDKeyConfig.prefixes.xprivkey[0]
   // $FlowFixMe - kylanfixes
@@ -63,51 +109,29 @@ export const getExtendedKeyVersion = (
 export const getNetworkForVersion = (version: number): string => {
   for (const network in networks) {
     try {
-      validateHDKeyPrefix(version, network)
+      validateHDKeyVersion(version, network)
       return network
     } catch (e) {}
   }
   throw new Error('Unknown network version')
 }
 
-export const validateHDKeyPrefix = (keyPrefix: number, network: string = 'main') => {
-  const { HDKeyConfig } = networks[network]
-  if (HDKeyConfig.prefixes) {
-    // $FlowFixMe - kylanfixes
-    const { xprivkey, xpubkey } = HDKeyConfig.prefixes
-    // $FlowFixMe - kylanfixes
-    if (xprivkey[0] === keyPrefix || xpubkey[0] === keyPrefix) return keyPrefix
-    throw new Error('Wrong key prefix for network')
-  }
+export const validateHDKeyVersion = (version: number, network: string = 'main') => {
+  const setting = getHDSetting(network, version)
+  if (!setting) throw new Error('Wrong key prefix for network')
+  return version
 }
 
-export const getPrefixType = (prefixNum: number, network: string = 'main') => {
-  const getPrefix = addressPrefixes => {
-    // $FlowFixMe - kylanfixes
-    for (const prefixType in addressPrefixes) {
-    // $FlowFixMe - kylanfixes
-      for (const prefixVersion of addressPrefixes[prefixType]) {
-        if (prefixVersion === prefixNum) {
-          return prefixType
-        }
-      }
-    }
-    return null
-  }
-  const { addressConfig } = networks[network]
-  const type = getPrefix(addressConfig.prefixes)
-
-  if (!type) {
-    throw new Error(`Unknown prefix ${prefixNum} for network ${network}`)
-  }
-  return type
+export const getScriptType = (prefixNum: number, network: string = 'main') => {
+  const setting = getHDSetting(network, prefixNum)
+  if (!setting) throw new Error(`Unknown address prefix ${prefixNum} for network ${network}`)
+  return setting.scriptType
 }
 
 export const getPrefixNum = (scriptType: string, network: string = 'main') => {
-  const { addressConfig } = networks[network]
-  // $FlowFixMe - kylanfixes
-  const scriptTypePrefix = addressConfig.prefixes[scriptType]
-  if (!scriptTypePrefix) return 0
-  // $FlowFixMe - kylanfixes
-  return scriptTypePrefix[0]
+  const { supportedHDPaths } = networks[network]
+  const hdSetting = supportedHDPaths.find(({ scriptType: Script }) => scriptType === Script)
+  if (!hdSetting) return 0
+  const { address } = hdSetting
+  return Array.isArray(address) ? address[0].prefix : address.prefix
 }

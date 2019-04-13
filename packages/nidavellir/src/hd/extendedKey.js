@@ -4,26 +4,29 @@ import {
   type DerivedKey,
   type ExtendedKeyPair,
   type ExtendedMasterKeys
-} from '../../types/bip32.js'
+} from '../../types/hd.js'
 import { type HexPair } from '../../types/core.js'
 import * as KeyPair from '../core/keyPair.js'
 import {
-  validateHDKeyPrefix,
+  validateHDKeyVersion,
   getExtendedKeyVersion,
-  getNetworkForVersion,
+  getHDSetting,
   networks
 } from '../core/networkInfo.js'
 import { hash160 } from '../utils/hash.js'
 import { publicKeyCreate } from '../utils/secp256k1.js'
-import { deriveKeyPair, deriveMasterKeyPair } from './derive.js'
+import { hmac, deriveKeyPair } from './derive.js'
 
 const MAX_DEPTH = 0xff
+const SEED = '426974636f696e2073656564'
 
 export const fromSeed = async (
   seed: string,
   network?: string
 ): Promise<ExtendedMasterKeys> => {
-  const masterKeyPair = await deriveMasterKeyPair(seed)
+  const { left, right } = hmac(seed, SEED)
+  const publicKey = await publicKeyCreate(left, true)
+  const masterKeyPair = { privateKey: left, publicKey, chainCode: right, childIndex: 0 }
   return {
     ...masterKeyPair,
     parentFingerPrint: 0,
@@ -48,7 +51,7 @@ export const fromIndex = async (
   }
   const parentFingerPrint = await hash160(parentKeys.publicKey)
   network = network || getNetworkForVersion(parentKeys.version)
-
+  const hdSettings = getHDSetting(network, parentKeys.version)
   return {
     ...derivedKey,
     parentFingerPrint: parseInt(parentFingerPrint.slice(0, 8), 16),
@@ -59,7 +62,7 @@ export const fromIndex = async (
 
 export const fromHex = (keyHex: string, network?: string): ExtendedKeyPair => {
   const version = parseInt(keyHex.slice(0, 8), 16)
-  if (network) validateHDKeyPrefix(version, network)
+  if (network) validateHDKeyVersion(version, network)
   return {
     version,
     depth: parseInt(keyHex.slice(9, 10), 16),
@@ -83,14 +86,12 @@ export const toHex = (
   network?: string,
   forcePublic: boolean = false
 ): string => {
-  if (network) validateHDKeyPrefix(hdKey.version, network)
+  if (network) validateHDKeyVersion(hdKey.version, network)
   const { privateKey, publicKey } = hdKey
   const keyPair: HexPair = { publicKey }
   if (!forcePublic) keyPair.privateKey = privateKey
   return (
-    getExtendedKeyVersion(keyPair, network)
-      .toString(16)
-      .padStart(8, '0') +
+    hdKey.version.toString(16).padStart(8, '0') +
     hdKey.depth.toString(16).padStart(2, '0') +
     hdKey.parentFingerPrint.toString(16).padStart(8, '0') +
     hdKey.childIndex.toString(16).padStart(8, '0') +
@@ -105,5 +106,5 @@ export const toString = (
   forcePublic: boolean = false
 ): string => {
   const keyHex = toHex(hdKey, network, forcePublic)
-  return networks[network].HDKeyConfig.formatter.decode(keyHex)
+  return networks[network].HDKeyConfig.formatter.encode(keyHex)
 }

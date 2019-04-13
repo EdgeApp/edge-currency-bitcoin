@@ -3,8 +3,8 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import * as ExtendedKey from '../../src/bip32/extendedKey.js'
-import fixtures from './fixtures.json'
+import * as ExtendedKey from '../../src/hd/extendedKey.js'
+import fixtures from './fixtures/extendedKey.json'
 
 const XKeyFixtures = fixtures.extendedKey
 const network = 'main'

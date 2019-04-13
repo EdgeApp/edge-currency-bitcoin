@@ -24,7 +24,7 @@ export const fromHexString = (
   network: string = 'main'
 ): RawAddress => {
   const prefixNum = parseInt(addressHex.slice(0, 2), 16)
-  const type = Core.NetworkInfo.getPrefixType(prefixNum, network)
+  const scriptType = Core.NetworkInfo.getScriptType(prefixNum, network)
   let version = -1
   let index = 2
   if (addressHex.length > 50) {
@@ -36,7 +36,7 @@ export const fromHexString = (
     index += 2
   }
   const hash = addressHex.slice(index)
-  return { type, version, hash }
+  return { scriptType, version, hash }
 }
 
 export const fromBaseString = (
@@ -50,8 +50,9 @@ export const fromBaseString = (
     if (addressPrefix.bech32 !== hrp) {
       throw new Error(`Bad bech32 prefix ${hrp} for network ${network}`)
     }
-    const type: ScriptType = hash.length <= 40 ? 'witnesspubkeyhash' : 'witnesspubkeyhash'
-    return { version, hash, type }
+    // TODO - FIX scriptType
+    const scriptType: ScriptType = hash.length <= 40 ? 'P2WPKH' : 'P2WPKH'
+    return { version, hash, scriptType }
   } catch (e) {
     try {
       addressHex = serializers.address.decode(displayAddress)
@@ -59,9 +60,9 @@ export const fromBaseString = (
     } catch (e) {
       if (!addressPrefix.cashAddress) throw e
       displayAddress = dirtyAddress(displayAddress, network)
-      const { hashBuffer, type } = cashAddressToHash(displayAddress)
+      const { hashBuffer, scriptType } = cashAddressToHash(displayAddress)
       const hash = hashBuffer.toString('hex')
-      return { hash, type, version: -1, hrp: addressPrefix.cashAddress }
+      return { hash, scriptType, version: -1, hrp: addressPrefix.cashAddress }
     }
   }
 }
@@ -72,10 +73,10 @@ export const fromKeyPair = (
   network: string = 'main',
   scriptHex: string = ''
 ): Address => {
-  const { type, version, getHash, getData } = defaultScriptTypes[scriptType]
+  const { version, getHash, getData } = defaultScriptTypes[scriptType]
   const data = getData(keyPair, scriptHex)
   const hash = getHash(data)
-  const rawAddress = { hash, type, version }
+  const rawAddress = { hash, scriptType, version }
   const displayAddress = toBaseString(rawAddress, network)
   const scriptHash = toScriptHash(rawAddress)
   return { displayAddress, scriptHash }
@@ -86,8 +87,8 @@ export const toHexString = (
   network: string = 'main',
   prefixNum: number = -1
 ): string => {
-  const { type, hash, version = -1 } = address
-  if (prefixNum === -1) prefixNum = Core.NetworkInfo.getPrefixNum(type, network)
+  const { scriptType, hash, version = -1 } = address
+  if (prefixNum === -1) prefixNum = Core.NetworkInfo.getPrefixNum(scriptType, network)
   const prefixHex = prefixNum.toString(16).padStart(2, '0')
   const versionHex = version !== -1 ? version.toString(16).padEnd(4, '0') : ''
   return `${prefixHex}${versionHex}${hash}`
@@ -110,25 +111,25 @@ export const toBaseString = (
     return serializers.address.encode(prefixedAddress)
   } catch (e) {
     if (addressPrefix.cashAddress) {
-      return toCashAddress(hashBuffer, address.type, addressPrefix.cashAddress)
+      return toCashAddress(hashBuffer, address.scriptType, addressPrefix.cashAddress)
     }
     throw e
   }
 }
 
 export const toScript = (address: RawAddress): Object => {
-  const { hash, type = 'pubkeyhash', version = -1 } = address
+  const { hash, scriptType = 'P2PKH', version = -1 } = address
   let script
   const hashBuffer = Buffer.from(hash, 'hex')
-  if (type === 'pubkeyhash') {
+  if (scriptType === 'P2PKH') {
     script = fromPubkeyhash(hashBuffer)
-  } else if (type === 'scripthash') {
+  } else if (scriptType === 'P2SH') {
     script = fromScripthash(hashBuffer)
   } else if (version !== -1) {
     script = fromProgram(version, hashBuffer)
   }
   if (!script) {
-    throw new Error(`Unknown script type ${type} and/or version ${version}`)
+    throw new Error(`Unknown script type ${scriptType} and/or version ${version}`)
   }
   return script
 }

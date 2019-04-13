@@ -3,8 +3,8 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import * as HDKey from '../../src/bip32/hdKey.js'
-import fixtures from './fixtures.json'
+import * as HDKey from '../../src/hd/hdKey.js'
+import fixtures from './fixtures/hdKey.json'
 
 const HDKeyFixtures = fixtures.hdKey
 const network = 'main'

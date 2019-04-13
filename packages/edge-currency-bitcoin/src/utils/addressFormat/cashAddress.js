@@ -89,9 +89,9 @@ export const toCashAddress = (
 
   function getTypeBits (type: string) {
     switch (type) {
-      case 'pubkeyhash':
+      case 'P2PKH':
         return 0
-      case 'scripthash':
+      case 'P2SH':
         return 8
       default:
         throw new Error('Invalid type:' + type)
@@ -227,9 +227,9 @@ export const cashAddressToHash = (address: string) => {
   function getType (versionByte: number) {
     switch (versionByte & 120) {
       case 0:
-        return 'pubkeyhash'
+        return 'P2PKH'
       case 8:
-        return 'scripthash'
+        return 'P2SH'
       default:
         throw new Error('Invalid address type in version byte:' + versionByte)
     }
@@ -240,6 +240,6 @@ export const cashAddressToHash = (address: string) => {
   const info = {}
 
   info.hashBuffer = Buffer.from(hash)
-  info.type = type
+  info.scriptType = type
   return info
 }

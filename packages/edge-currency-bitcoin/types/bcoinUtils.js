@@ -4,7 +4,7 @@ import { type HexPair, type ScriptType } from 'nidavellir'
 
 export type EdgeAddress = { [scriptType: ScriptType]: string }
 export type RawAddress = {
-  type: ScriptType,
+  scriptType: ScriptType,
   hash: string,
   version: number
 }
@@ -18,10 +18,11 @@ export type AddressesMap = { [parentPath: string]: Addresses }
 export type ScriptHashMap = { [parentPath: string]: Array<string> }
 
 export type ScriptTypeSettings = {
-  type: string,
-  version: number,
-  getHash: (data: string) => string,
-  getData: (k?: HexPair, s?: string) => string
+  [scriptType: ScriptType]: {
+    version: number,
+    getHash: (data: string) => string,
+    getData: (k?: HexPair, s?: string) => string
+  }
 }
 
 export type Script = {

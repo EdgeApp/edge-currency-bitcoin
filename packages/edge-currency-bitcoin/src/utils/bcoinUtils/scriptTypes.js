@@ -3,7 +3,7 @@
 import { Buffer } from 'buffer'
 
 import bcoin from 'bcoin'
-import { type HexPair, type ScriptType, Utils } from 'nidavellir'
+import { type HexPair, Utils } from 'nidavellir'
 
 import { type ScriptTypeSettings } from '../../../types/bcoinUtils.js'
 
@@ -26,23 +26,18 @@ const dataFromScript = (keyPair?: HexPair, scriptHex?: string): string => {
     .toString('hex')
 }
 
-export const defaultScriptTypes: {
-  [scriptType: ScriptType]: ScriptTypeSettings
-} = {
+export const defaultScriptTypes: ScriptTypeSettings = {
   P2PKH: {
-    type: 'pubkeyhash',
     version: -1,
     getData: dataFromPubKey,
     getHash: hash160
   },
   P2SH: {
-    type: 'scripthash',
     version: -1,
     getData: dataFromScript,
     getHash: hash160
   },
   'P2WPKH-P2SH': {
-    type: 'scripthash',
     version: -1,
     getData: dataFromPubKey,
     getHash: (s: string) => {
@@ -54,13 +49,11 @@ export const defaultScriptTypes: {
     }
   },
   P2WPKH: {
-    type: 'witnesspubkeyhash',
     version: 0,
     getData: dataFromPubKey,
     getHash: hash160
   },
   P2WSH: {
-    type: 'witnessscripthash',
     version: 0,
     getData: dataFromScript,
     getHash: sha256

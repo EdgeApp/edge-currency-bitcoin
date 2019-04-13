@@ -1,7 +1,7 @@
 // @flow
 
-import { type HDPath, type ScriptType } from '../../types/bip32.js'
-import { createPath } from '../bip32/hdKey.js'
+import { type HDPath } from '../../types/hd.js'
+import { createPath } from './hdKey.js'
 import { networks } from '../core/networkInfo.js'
 
 export const createPaths = (
@@ -10,7 +10,8 @@ export const createPaths = (
   account: number = 0,
   network: string = 'main'
 ): Array<HDPath> => {
-  if (!purpose) purpose = networks[network].bips
+  const { supportedHDPaths } = networks[network]
+  if (!purpose) purpose = supportedHDPaths[0].purpose
 
   if (Array.isArray(purpose)) {
     const paths = []
@@ -22,9 +23,10 @@ export const createPaths = (
 
   if (purpose === 32) return [createPath(account)]
 
-  const scriptType = ScriptTypes[`${purpose}`]
-  if (!scriptType) throw new Error(`Unknown derivation purpose ${purpose}`)
+  const pathSettings = supportedHDPaths.find(path => path.purpose === purpose)
+  if (!pathSettings) throw new Error(`Unknown derivation purpose ${purpose}`)
 
+  const { scriptType } = pathSettings
   const path = ['m', `${purpose}'`, `${coinType || 0}'`]
   const hdPath = { path, scriptType }
   const hdPathInt = { ...hdPath, chain: 'internal' }
@@ -33,10 +35,4 @@ export const createPaths = (
     createPath(account, hdPath, true),
     createPath(account, hdPathInt, true)
   ]
-}
-
-export const ScriptTypes: { [purpose: string]: ScriptType } = {
-  '44': 'P2PKH',
-  '49': 'P2WPKH-P2SH',
-  '84': 'P2WPKH'
 }

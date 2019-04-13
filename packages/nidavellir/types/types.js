@@ -1,5 +1,5 @@
 // @flow
 
-export * from './bip32.js'
+export * from './hd.js'
 export * from './core.js'
 export * from './utils.js'

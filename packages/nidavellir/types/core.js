@@ -8,6 +8,19 @@ export type KeyPairType<T> = { privateKey?: T, publicKey?: T }
 export type HexPair = KeyPairType<string>
 
 export type MasterKeyPair<T> = { privateKey: T, publicKey: T }
+export type ScriptType = 'P2PKH' | 'P2SH' | 'P2WPKH-P2SH' | 'P2WPKH' | 'P2WSH'
+export type Decoder = {
+  prefix: number | string,
+  decoder: BaseDecoder
+}
+
+export type HDPathSetting = {
+  scriptType: ScriptType,
+  purpose: number,
+  xpriv: Decoder,
+  xpub: Decoder,
+  address: Decoder | Array<Decoder>
+}
 
 export type ReplayProtection = {
   forkSighash?: number,
@@ -15,24 +28,33 @@ export type ReplayProtection = {
   forkId?: number
 }
 
-export type Prefixes = Array<number | string> | { [type: string]: Prefixes }
-
-export type Configurator = {
-  prefixes?: Prefixes,
-  formatter: BaseDecoder | HashFunction<string> | HashFunction<Buffer>
-}
-
 export type NetworkInfo = {
   coinType: number,
-  bips: Array<number>,
   forks: Array<string>,
   replayProtection: ReplayProtection,
-  WIFConfig: Configurator,
-  HDKeyConfig: Configurator,
-  addressConfig: Configurator,
-  txHashConfig: Configurator,
-  sigHashConfig: Configurator
+  wif: Decoder,
+  supportedHDPaths: Array<HDPathSetting>,
+  txHash: HashFunction<string>,
+  sigHash: HashFunction<Buffer>
+}
+
+export type NewDecoder = Decoder | number
+export type NewHDPathSetting = {
+  scriptType?: ScriptType,
+  purpose: number,
+  xpriv?: NewDecoder,
+  xpub?: NewDecoder,
+  address: NewDecoder | Array<NewDecoder>
+}
+export type NewNetwork = {
+  coinType?: number,
+  forks?: Array<string>,
+  replayProtection?: ReplayProtection,
+  wif?: NewDecoder,
+  supportedHDPaths?: Array<NewHDPathSetting>,
+  txHash?: HashFunction<string>,
+  sigHash?: HashFunction<Buffer>
 }
 
 export type NetworkInfos = { [network: string]: NetworkInfo }
-export type NewNetworks = { [network: string]: $Shape<NetworkInfo> }
+export type NewNetworks = { [network: string]: NewNetwork }

@@ -2,20 +2,18 @@
 
 import {
   type DerivedKeyPair,
-  type DerivedMasterKeys,
   type DerivedPoint,
   type KeyHmac
-} from '../../types/bip32.js'
+} from '../../types/hd.js'
 import { type HexPair } from '../../types/core.js'
 import { sha512Hmac } from '../utils/hash.js'
 import * as Secp256k1 from '../utils/secp256k1'
 
-export const SEED = '426974636f696e2073656564'
 export const HARDENED = 0x80000000
 export const MAX_INDEX = 0xffffffff
 export const TWEAK_OUT_OF_RANGE_ERROR = 'tweak out of range'
 
-const hmac = (key: string, data: string): KeyHmac => {
+export const hmac = (key: string, data: string): KeyHmac => {
   const hash = sha512Hmac(key, data)
   const left = hash.slice(0, 64)
   const right = hash.slice(64, 128)
@@ -128,12 +126,4 @@ export const deriveKeyPair = async (
     publicKey = await Secp256k1.publicKeyCreate(privateKey, true)
   }
   return derivePublic(publicKey, index, chainCode, hardened)
-}
-
-export const deriveMasterKeyPair = async (
-  seed: string
-): Promise<DerivedMasterKeys> => {
-  const { left, right } = hmac(seed, SEED)
-  const publicKey = await Secp256k1.publicKeyCreate(left, true)
-  return { privateKey: left, publicKey, chainCode: right, childIndex: 0 }
 }

@@ -1,6 +1,6 @@
 // @flow
 
-import { type KeyPairType, type MasterKeyPair } from './core.js'
+import { type KeyPairType, type MasterKeyPair, type ScriptType } from './core.js'
 
 export type KeyHmac = {
   left: string,
@@ -19,7 +19,6 @@ export type DerivedKey<T> = {
 } & KeyPairType<T>
 
 export type DerivedKeyPair = DerivedKey<string>
-export type DerivedMasterKeys = MasterKeyPair<string> & DerivedKey<string>
 
 export type ExtendedKey<T> = {
   version: number,
@@ -30,7 +29,6 @@ export type ExtendedKey<T> = {
 export type ExtendedKeyPair = ExtendedKey<string>
 export type ExtendedMasterKeys = MasterKeyPair<string> & ExtendedKeyPair
 
-export type ScriptType = 'P2PKH' | 'P2SH' | 'P2WPKH-P2SH' | 'P2WPKH' | 'P2WSH'
 export type Chain = 'external' | 'internal'
 export type Index = string
 export type Path = Array<Index>
