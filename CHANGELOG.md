@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.0.6-alpha (2019-04-15)
+
+- Fix more mining fee issues
+
 # 4.0.5 (2019-04-04)
 
 - Avoid outrageous mining fees found in the next-block confirmation window.
