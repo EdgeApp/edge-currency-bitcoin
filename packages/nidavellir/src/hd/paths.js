@@ -5,10 +5,12 @@ export const bip32 = {
   purpose: 32,
   scriptType: 'P2PKH',
   xpriv: {
+    stringPrefix: 'xprv',
     prefix: 0x0488ade4,
     decoder: base['58'].check
   },
   xpub: {
+    stringPrefix: 'xpub',
     prefix: 0x0488b21e,
     decoder: base['58'].check
   },
@@ -22,10 +24,12 @@ export const bip44 = {
   purpose: 44,
   scriptType: 'P2PKH',
   xpriv: {
+    stringPrefix: 'xprv',
     prefix: 0x0488ade4,
     decoder: base['58'].check
   },
   xpub: {
+    stringPrefix: 'xpub',
     prefix: 0x0488b21e,
     decoder: base['58'].check
   },
@@ -39,11 +43,13 @@ export const bip49 = {
   purpose: 49,
   scriptType: 'P2WPKH-P2SH',
   xpriv: {
-    prefix: 0x0488ade4,
+    stringPrefix: 'yprv',
+    prefix: 0x049d7878,
     decoder: base['58'].check
   },
   xpub: {
-    prefix: 0x0488b21e,
+    stringPrefix: 'ypub',
+    prefix: 0x049d7cb2,
     decoder: base['58'].check
   },
   address: {
@@ -56,10 +62,12 @@ export const bip84 = {
   purpose: 84,
   scriptType: 'P2WPKH',
   xpriv: {
+    stringPrefix: 'zprv',
     prefix: 0x04b2430c,
     decoder: base['58'].check
   },
   xpub: {
+    stringPrefix: 'zpub',
     prefix: 0x04b24746,
     decoder: base['58'].check
   },

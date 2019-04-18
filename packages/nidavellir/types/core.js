@@ -10,6 +10,7 @@ export type HexPair = KeyPairType<string>
 export type MasterKeyPair<T> = { privateKey: T, publicKey: T }
 export type ScriptType = 'P2PKH' | 'P2SH' | 'P2WPKH-P2SH' | 'P2WPKH' | 'P2WSH'
 export type Decoder = {
+  stringPrefix: string,
   prefix: number | string,
   decoder: BaseDecoder
 }

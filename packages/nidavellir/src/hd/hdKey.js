@@ -63,7 +63,7 @@ export const fromIndex = async (
   network?: string
 ): Promise<HDKeyPair> => {
   // Derive an ExtendedKey key from the current parentKey and index
-  const childKey = await ExtendedKey.fromIndex(parentKey, index, network)
+  const childKey = await ExtendedKey.fromIndex(parentKey, index)
   const childHDPath = {
     ...parentKey,
     path: [...parentKey.path, index]

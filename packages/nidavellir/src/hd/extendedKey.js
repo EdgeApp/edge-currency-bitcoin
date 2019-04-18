@@ -9,9 +9,8 @@ import { type HexPair } from '../../types/core.js'
 import * as KeyPair from '../core/keyPair.js'
 import {
   validateHDKeyVersion,
-  getExtendedKeyVersion,
-  getHDSetting,
-  networks
+  getDecoder,
+  getHDSetting
 } from '../core/networkInfo.js'
 import { hash160 } from '../utils/hash.js'
 import { publicKeyCreate } from '../utils/secp256k1.js'
@@ -22,23 +21,24 @@ const SEED = '426974636f696e2073656564'
 
 export const fromSeed = async (
   seed: string,
-  network?: string
+  network: string = 'main',
+  purpose: number = 32
 ): Promise<ExtendedMasterKeys> => {
   const { left, right } = hmac(seed, SEED)
   const publicKey = await publicKeyCreate(left, true)
   const masterKeyPair = { privateKey: left, publicKey, chainCode: right, childIndex: 0 }
+  const version = getHDSetting(network, purpose).xpriv.prefix
   return {
     ...masterKeyPair,
     parentFingerPrint: 0,
-    version: getExtendedKeyVersion(masterKeyPair, network),
+    version: parseInt(version),
     depth: 0
   }
 }
 
 export const fromIndex = async (
   parentKeys: ExtendedKeyPair,
-  index: string,
-  network?: string
+  index: string
 ): Promise<ExtendedKeyPair> => {
   if (parentKeys.depth >= MAX_DEPTH) throw new Error('Depth too high.')
 
@@ -50,12 +50,11 @@ export const fromIndex = async (
     parentKeys.publicKey = await publicKeyCreate(parentKeys.privateKey, true)
   }
   const parentFingerPrint = await hash160(parentKeys.publicKey)
-  network = network || getNetworkForVersion(parentKeys.version)
-  const hdSettings = getHDSetting(network, parentKeys.version)
+
   return {
     ...derivedKey,
     parentFingerPrint: parseInt(parentFingerPrint.slice(0, 8), 16),
-    version: getExtendedKeyVersion(derivedKey, network),
+    version: parentKeys.version,
     depth: parentKeys.depth + 1
   }
 }
@@ -77,7 +76,7 @@ export const fromString = (
   hdKey: string,
   network: string = 'main'
 ): ExtendedKeyPair => {
-  const keyHex = networks[network].HDKeyConfig.formatter.decode(hdKey)
+  const keyHex = getDecoder(network, hdKey.slice(0, 3)).decode(hdKey)
   return fromHex(keyHex, network)
 }
 
@@ -106,5 +105,5 @@ export const toString = (
   forcePublic: boolean = false
 ): string => {
   const keyHex = toHex(hdKey, network, forcePublic)
-  return networks[network].HDKeyConfig.formatter.encode(keyHex)
+  return getDecoder(network, hdKey.version).encode(keyHex)
 }

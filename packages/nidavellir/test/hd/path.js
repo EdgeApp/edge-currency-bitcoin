@@ -4,8 +4,8 @@ import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
 import * as HDKey from '../../src/hd/hdKey.js'
-import { createPaths } from '../../src/hd/paths.js'
-import fixtures from './fixtures/paths.json'
+import { createPaths } from '../../src/hd/path.js'
+import fixtures from './fixtures/path.json'
 
 const network = 'main'
 

@@ -9,6 +9,7 @@ export const main: NetworkInfo = {
   coinType: 0,
   wif: {
     prefix: 0x80,
+    stringPrefix: '1',
     decoder: base['58'].check
   },
   supportedHDPaths: [ bip44, bip32 ],

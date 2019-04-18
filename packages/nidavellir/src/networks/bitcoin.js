@@ -11,26 +11,50 @@ export const testnet = {
   supportedHDPaths: [
     {
       purpose: 32,
-      xpriv: 0x04358394,
-      xpub: 0x043587cf,
+      xpriv: {
+        prefix: 0x04358394,
+        stringPrefix: 'tprv'
+      },
+      xpub: {
+        prefix: 0x043587cf,
+        stringPrefix: 'tpub'
+      },
       address: 0x6f
     },
     {
       purpose: 44,
-      xpriv: 0x04358394,
-      xpub: 0x043587cf,
+      xpriv: {
+        prefix: 0x04358394,
+        stringPrefix: 'tprv'
+      },
+      xpub: {
+        prefix: 0x043587cf,
+        stringPrefix: 'tpub'
+      },
       address: 0x6f
     },
     {
       purpose: 49,
-      xpriv: 0x04358394,
-      xpub: 0x043587cf,
+      xpriv: {
+        prefix: 0x04358394,
+        stringPrefix: 'tprv'
+      },
+      xpub: {
+        prefix: 0x043587cf,
+        stringPrefix: 'tpub'
+      },
       address: 0xc4
     },
     {
       purpose: 84,
-      xpriv: 0x04358394,
-      xpub: 0x043587cf,
+      xpriv: {
+        prefix: 0x04358394,
+        stringPrefix: 'tprv'
+      },
+      xpub: {
+        prefix: 0x043587cf,
+        stringPrefix: 'tpub'
+      },
       address: 'tb'
     }
   ]
