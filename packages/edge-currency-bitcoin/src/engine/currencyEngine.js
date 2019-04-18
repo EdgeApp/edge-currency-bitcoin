@@ -32,7 +32,7 @@ import {
 } from '../utils/bcoinUtils/misc.js'
 import * as PaymentRequest from '../utils/bcoinUtils/paymentRequest.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
-import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
+import { InfoServerFeesSchema, EarnComFeesSchema } from '../utils/jsonSchemas.js'
 import { envSettings, promiseAny, validateObject } from '../utils/utils.js'
 import { broadcastFactories } from './broadcastApi.js'
 import { EngineState } from './engineState.js'
@@ -206,26 +206,22 @@ export class CurrencyEngine {
     return edgeTransaction
   }
 
-  async updateFeeTable () {
+  async updateFeeFromEdge () {
     try {
-      await this.fetchFee()
-      if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        const url = this.engineInfo.networkFeesUrl
-        const feesResponse = await this.io.fetch(url)
-        const feesJson = await feesResponse.json()
-        this.fees.timestamp = Date.now()
-        if (validateObject(feesJson, InfoServerFeesSchema)) {
-          this.fees = feesJson
-        } else {
-          throw new Error('Fetched invalid networkFees')
-        }
+      const url = `${InfoServer}/networkFees/${this.currencyCode}`
+      const feesResponse = await this.io.fetch(url)
+      const feesJson = await feesResponse.json()
+      if (validateObject(feesJson, InfoServerFeesSchema)) {
+        this.fees = { ...this.fees, ...feesJson }
+      } else {
+        throw new Error('Fetched invalid networkFees')
       }
     } catch (err) {
       console.log(`${this.prunedWalletId} - ${err.toString()}`)
     }
   }
 
-  async fetchFee () {
+  async updateFeeFromVendor () {
     const { feeInfoServer } = this.engineInfo
     if (!feeInfoServer || feeInfoServer === '') {
       clearTimeout(this.feeTimer)
@@ -237,9 +233,14 @@ export class CurrencyEngine {
         if (results.status !== 200) {
           throw new Error(results.body)
         }
-        const { fees }: EarnComFees = await results.json()
-        this.fees = calcFeesFromEarnCom(this.fees, { fees })
-        this.fees.timestamp = Date.now()
+        const feesJson: EarnComFees = await results.json()
+        if (validateObject(feesJson, EarnComFeesSchema)) {
+          const newFees = calcFeesFromEarnCom(feesJson.fees)
+          this.fees = { ...this.fees, ...newFees }
+          this.fees.timestamp = Date.now()
+        } else {
+          throw new Error('Fetched invalid networkFees')
+        }
       }
     } catch (e) {
       console.log(
@@ -248,7 +249,10 @@ export class CurrencyEngine {
         } - Error while trying to update fee table ${e.toString()}`
       )
     }
-    this.feeTimer = setTimeout(() => this.fetchFee(), this.feeUpdateInterval)
+    this.feeTimer = setTimeout(
+      () => this.updateFeeFromVendor(),
+      this.feeUpdateInterval
+    )
   }
 
   getRate ({
@@ -306,7 +310,7 @@ export class CurrencyEngine {
 
   async startEngine (): Promise<void> {
     this.callbacks.onBalanceChanged(this.currencyCode, this.getBalance())
-    this.updateFeeTable()
+    this.updateFeeFromVendor()
     return this.engineState.connect()
   }
 
