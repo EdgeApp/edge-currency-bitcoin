@@ -14,6 +14,7 @@ export const scriptTypesToEdgeTypes = (
 ): EdgeFreshAddress => {
   const publicAddress = addresses['P2WPKH-P2SH'] || addresses['P2PKH']
   const segwitAddress = addresses['P2WPKH']
+  // kylan functionUsage - toLegacyFormat - scriptTypesToEdgeTypes
   const legacyAddress = toLegacyFormat(publicAddress, network)
   return { publicAddress, segwitAddress, legacyAddress }
 }

@@ -21,6 +21,7 @@ const getSpendTargets = (
     nativeAmount += jsonObj.value
     spendTargets.push({
       currencyCode: currencyCode,
+      // kylan functionUsage - toNewFormat - getSpendTargets
       publicAddress: toNewFormat(jsonObj.address, network),
       nativeAmount: `${jsonObj.value}`
     })
@@ -49,6 +50,7 @@ const getBitPayPayment = async (
     currency
   } = paymentRequest
   const parsedOutputs = outputs.map(({ amount, address }) => {
+    // kylan functionUsage - toLegacyFormat - getBitPayPayment
     const legacyAddress = toLegacyFormat(address, network)
     return primitives.Output.fromOptions({
       value: amount,

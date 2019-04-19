@@ -18,6 +18,7 @@ for (const fixture of fixtures) {
   describe(`Address format for ${network}`, function () {
     fixture['valid'].forEach(address => {
       it(`test valid for ${address}`, function () {
+        // kylan functionUsage - isValidAddress - test
         assert.notEqual(isValidAddress(address, network), null)
       })
     })
@@ -36,18 +37,21 @@ for (const fixture of fixtures) {
 
     fixture['inValid'].forEach(address => {
       it(`test invalid for ${address}`, function () {
+        // kylan functionUsage - isValidAddress - test
         assert.equal(isValidAddress(address, network), null)
       })
     })
 
     fixture['toLegacy'].forEach(([address, expected]) => {
       it(`get legacy format for ${address}`, function () {
+        // kylan functionUsage - toLegacyFormat - test
         assert.equal(toLegacyFormat(address, network), expected)
       })
     })
 
     fixture['toNewFormat'].forEach(([address, expected]) => {
       it(`get new format for ${address}`, function () {
+      // kylan functionUsage - toNewFormat - test
         assert.equal(toNewFormat(address, network), expected)
       })
     })

@@ -59,6 +59,7 @@ export const fromBaseString = (
       return fromHexString(addressHex, network)
     } catch (e) {
       if (!addressPrefix.cashAddress) throw e
+      // kylan functionUsage - dirtyAddress - fromBaseString
       displayAddress = dirtyAddress(displayAddress, network)
       const { hashBuffer, scriptType } = cashAddressToHash(displayAddress)
       const hash = hashBuffer.toString('hex')

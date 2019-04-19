@@ -25,10 +25,14 @@ const parsePathname = (pathname: string, network: string) => {
     Core.KeyPair.privateFromWIF(pathname, network)
     return { privateKeys: [pathname] }
   } catch (e) {}
+  // kylan functionUsage - isValidAddress - parsePathName
   if (isValidAddress(pathname, network)) {
+    // kylan functionUsage - dirtyAddress - parsePathName
     return { publicAddress: dirtyAddress(pathname, network) }
+    // kylan functionUsage - isLegacy - parsePathName
   } else if (isLegacy(pathname, network)) {
     return {
+      // kylan functionUsage - toNewFormat - parsePathName
       publicAddress: toNewFormat(pathname, network),
       legacyAddress: pathname
     }
@@ -91,6 +95,8 @@ export const encodeUri = (
 ): string => {
   const { publicAddress, legacyAddress } = obj
   const address = legacyAddress || publicAddress
+  // kylan functionUsage - isValidAddress - encodeUri
+  // kylan functionUsage - isLegacy - encodeUri
   if (!isValidAddress(address, network) && !isLegacy(address, network)) {
     throw new Error('InvalidPublicAddressError')
   }
@@ -120,6 +126,7 @@ export const encodeUri = (
 
   return serialize({
     scheme: pluginName.toLowerCase(),
+    // kylan functionUsage - sanitizeAddress - encodeUri
     path: sanitizeAddress(address, network),
     query: queryString
   })

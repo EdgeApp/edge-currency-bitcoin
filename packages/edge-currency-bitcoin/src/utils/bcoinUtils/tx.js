@@ -226,6 +226,7 @@ export const getReceiveAddresses = (
 ): Array<string> =>
   filterOutputs(bcoinTx.outputs).map(output => {
     const address = output.getAddress().toString(network)
+    // kylan functionUsage - toNewFormat - getReceiveAddresses
     return toNewFormat(address, network)
   })
 

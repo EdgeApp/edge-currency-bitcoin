@@ -401,6 +401,7 @@ export class CurrencyEngine {
   }
 
   isAddressUsed (address: string, options: any): boolean {
+    // kylan functionUsage - isValidAddress - isAddressUsed
     if (!isValidAddress(address, this.network)) {
       throw new Error('Wrong formatted address')
     }
