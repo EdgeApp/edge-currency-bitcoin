@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.0.6-alpha (2019-04-19)
+
+- Fix console logging issue
+
 # 4.0.6-alpha (2019-04-15)
 
 - Fix more mining fee issues
