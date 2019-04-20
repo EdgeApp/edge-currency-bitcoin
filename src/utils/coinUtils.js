@@ -1,7 +1,7 @@
 // @flow
 
 import { Buffer } from 'buffer'
-
+import { type EngineState } from '../engine/engineState.js'
 import {
   network as Network,
   hd,
@@ -10,6 +10,7 @@ import {
   script,
   utils
 } from 'bcoin'
+import { logger } from '../utils/logger.js'
 
 import {
   toLegacyFormat,
@@ -252,7 +253,7 @@ export const getPrivateFromSeed = async (seed: string, network: string) => {
     const mnemonic = hd.Mnemonic.fromPhrase(seed)
     return hd.PrivateKey.fromMnemonic(mnemonic, network)
   } catch (e) {
-    console.log('Not a mnemonic, treating the seed as base64')
+    logger.error('Not a mnemonic, treating the seed as base64')
     return hd.PrivateKey.fromSeed(Buffer.from(seed, 'base64'), network)
   }
 }
@@ -336,7 +337,7 @@ export const addressFromKey = async (
 export const sumTransaction = (
   bcoinTransaction: any,
   network: string,
-  engineState: any
+  engineState: EngineState
 ) => {
   const ourReceiveAddresses = []
   let totalOutputAmount = 0
@@ -364,7 +365,7 @@ export const sumTransaction = (
         ? serializers.address.encode(address)
         : address
     } catch (e) {
-      console.log(e)
+      logger.error(e)
       if (value <= 0) {
         continue
       } else {

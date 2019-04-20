@@ -6,6 +6,7 @@ import { type EdgeIo } from 'edge-core-js/types'
 import type { EngineState } from '../engine/engineState.js'
 import { FixCurrencyCode, InfoServer } from '../info/constants'
 import { ServerCache } from './serverCache.js'
+import { logger } from '../utils/logger.js'
 
 export type CurrencySettings = {
   customFeeSettings: Array<string>,
@@ -119,7 +120,7 @@ export class PluginState extends ServerCache {
 
       this.serverCacheJson = serverCacheJson
     } catch (e) {
-      console.log(e)
+      logger.info(e)
     }
 
     // Fetch stratum servers in the background:
@@ -149,10 +150,10 @@ export class PluginState extends ServerCache {
           })
         )
         .then(() => {
-          console.log(`${this.pluginName} - Saved header cache`)
+          logger.info(`${this.pluginName} - Saved header cache`)
           this.headerCacheDirty = false
         })
-        .catch(e => console.log(`${this.pluginName} - ${e.toString()}`))
+        .catch(e => logger.info(`${this.pluginName} - ${e.toString()}`))
     }
     return Promise.resolve()
   }
@@ -167,9 +168,9 @@ export class PluginState extends ServerCache {
         )
         this.serverCacheDirty = false
         this.cacheLastSave_ = Date.now()
-        console.log(`${this.pluginName} - Saved server cache`)
+        logger.info(`${this.pluginName} - Saved server cache`)
       } catch (e) {
-        console.log(`${this.pluginName} - ${e.toString()}`)
+        logger.info(`${this.pluginName} - ${e.toString()}`)
       }
     }
   }
@@ -203,10 +204,10 @@ export class PluginState extends ServerCache {
     let serverList = this.defaultServers
     if (!this.disableFetchingServers) {
       try {
-        console.log(`${this.pluginName} - GET ${this.infoServerUris}`)
+        logger.info(`${this.pluginName} - GET ${this.infoServerUris}`)
         const result = await io.fetch(this.infoServerUris)
         if (!result.ok) {
-          console.log(
+          logger.info(
             `${this.pluginName} - Fetching ${this.infoServerUris} failed with ${
               result.status
             }`
@@ -215,7 +216,7 @@ export class PluginState extends ServerCache {
           serverList = await result.json()
         }
       } catch (e) {
-        console.log(e)
+        logger.info(e)
       }
     }
     if (!Array.isArray(serverList)) {

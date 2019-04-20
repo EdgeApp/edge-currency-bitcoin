@@ -13,6 +13,12 @@ import { before, describe, it } from 'mocha'
 import edgeCorePlugins from '../../../src/index.js'
 import fixtures from './fixtures.json'
 
+const fakeLogger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {}
+}
+
 for (const fixture of fixtures) {
   const WALLET_TYPE = fixture['WALLET_TYPE']
   const WALLET_FORMAT = fixture['WALLET_FORMAT']
@@ -26,6 +32,7 @@ for (const fixture of fixtures) {
   const pluginOpts: EdgeCorePluginOptions = {
     io: {
       ...fakeIo,
+      console: fakeLogger,
       random: size => fixture['key']
     },
     initOptions: {},
