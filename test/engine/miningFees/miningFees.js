@@ -24,9 +24,7 @@ describe(`Mining Fees`, function () {
       standardFeeHighAmount: '10000000',
       timestamp: 0
     }
-    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom(
-      earnComTestFees.fees
-    )
+    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom(earnComTestFees)
     const outBitcoinFees: BitcoinFees = { ...inBitcoinFees, ...edgeBitcoinFees }
     assert.equal(outBitcoinFees.standardFeeLowAmount, '100000')
     assert.equal(outBitcoinFees.standardFeeHighAmount, '10000000')
