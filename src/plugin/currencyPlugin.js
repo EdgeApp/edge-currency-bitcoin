@@ -15,7 +15,7 @@ import {
   type EdgeParsedUri,
   type EdgeWalletInfo
 } from 'edge-core-js/types'
-
+import { setLogger, logger } from '../utils/logger.js'
 import {
   CurrencyEngine,
   type EngineCurrencyInfo
@@ -73,9 +73,9 @@ export class CurrencyTools {
     // Public API:
     this.currencyInfo = currencyInfo
     this.pluginName = currencyInfo.pluginName
-    console.log(`Creating Currency Plugin for ${this.pluginName}`)
     // Private API:
     this.io = io
+    logger.info(`Creating Currency Plugin for ${this.pluginName}`)
     this.network = engineInfo.network
     const { defaultSettings, pluginName, currencyCode } = this.currencyInfo
     this.state = new PluginState({
@@ -141,7 +141,7 @@ const makeCurrencyPluginFactory = (
     options: EdgeCorePluginOptions
   ): EdgeCurrencyPlugin {
     const io = makeIo(options)
-
+    setLogger(io.console)
     // Extend bcoin to support this plugin currency info
     // and faster crypto if possible
     const { secp256k1, pbkdf2 } = io
