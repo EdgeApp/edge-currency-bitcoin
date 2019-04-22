@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.0.7 (2019-04-22)
+
+- Fix console logging
+- Fix Litecoin electrum server algorithm
+
 # 4.0.6-alpha (2019-04-15)
 
 - Fix more mining fee issues
