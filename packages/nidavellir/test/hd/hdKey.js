@@ -6,7 +6,7 @@ import { describe, it } from 'mocha'
 import * as HDKey from '../../src/hd/hdKey.js'
 import fixtures from './fixtures/hdKey.json'
 
-const HDKeyFixtures = fixtures.hdKey
+const HDKeyFixtures = fixtures
 const network = 'main'
 
 describe('Testing HD Key', function () {

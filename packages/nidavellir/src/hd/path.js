@@ -1,8 +1,8 @@
 // @flow
 
 import { type HDPath } from '../../types/hd.js'
-import { createPath } from './hdKey.js'
 import { networks } from '../core/networkInfo.js'
+import { createPath } from './hdKey.js'
 
 export const createPaths = (
   purpose?: number | Array<number>,

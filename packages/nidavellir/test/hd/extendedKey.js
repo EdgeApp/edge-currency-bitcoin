@@ -6,7 +6,7 @@ import { describe, it } from 'mocha'
 import * as ExtendedKey from '../../src/hd/extendedKey.js'
 import fixtures from './fixtures/extendedKey.json'
 
-const XKeyFixtures = fixtures.extendedKey
+const XKeyFixtures = fixtures
 const network = 'main'
 
 describe(`Testing Extended Key functions`, function () {

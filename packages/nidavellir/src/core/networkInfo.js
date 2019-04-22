@@ -1,10 +1,10 @@
 // @flow
 
 import {
+  type HDPathSetting,
   type NetworkInfo,
   type NetworkInfos,
-  type NewNetworks,
-  type HDPathSetting
+  type NewNetworks
 } from '../../types/core.js'
 import { main } from '../networks/baseInfo.js'
 import * as Networks from '../networks/networks.js'
@@ -16,15 +16,17 @@ export const getHDSetting = (network: string, value: any): HDPathSetting => {
       const setting = hdSetting[key]
       // checking if address that has legacy
       if (Array.isArray(setting)) {
-        return setting.find(({ prefix, stringPrefix }) =>
-          prefix === value || stringPrefix === value)
+        return setting.find(
+          ({ prefix, stringPrefix }) =>
+            prefix === value || stringPrefix === value
+        )
       }
 
       // checking if xpub, xpriv, or address
       if (
         typeof setting === 'object' &&
         (setting.prefix === value || setting.stringPrefix === value)
-      ) return hdSetting
+      ) { return hdSetting }
 
       // if scriptType or purpose
       if (setting === value) return hdSetting
@@ -40,14 +42,13 @@ export const getDecoder = (network: string, value: any) => {
       const decoder = hdSetting[key]
 
       if (Array.isArray(decoder)) {
-        return decoder.find(({ prefix, stringPrefix }) =>
-          prefix === value || stringPrefix === value)
+        return decoder.find(
+          ({ prefix, stringPrefix }) =>
+            prefix === value || stringPrefix === value
+        )
       }
 
-      if (
-        decoder.prefix === value ||
-        decoder.stringPrefix === value
-      ) return decoder.decoder
+      if (decoder.prefix === value || decoder.stringPrefix === value) { return decoder.decoder }
     }
   }
   throw new Error(`Wrong value: ${value} for network: ${network}`)
@@ -103,7 +104,10 @@ export const getNetworkForVersion = (version: number): string => {
   throw new Error('Unknown network version')
 }
 
-export const validateHDKeyVersion = (version: number, network: string = 'main') => {
+export const validateHDKeyVersion = (
+  version: number,
+  network: string = 'main'
+) => {
   const setting = getHDSetting(network, version)
   if (!setting) throw new Error('Wrong key prefix for network')
   return version
@@ -111,13 +115,19 @@ export const validateHDKeyVersion = (version: number, network: string = 'main') 
 
 export const getScriptType = (prefixNum: number, network: string = 'main') => {
   const setting = getHDSetting(network, prefixNum)
-  if (!setting) throw new Error(`Unknown address prefix ${prefixNum} for network ${network}`)
+  if (!setting) {
+    throw new Error(
+      `Unknown address prefix ${prefixNum} for network ${network}`
+    )
+  }
   return setting.scriptType
 }
 
 export const getPrefixNum = (scriptType: string, network: string = 'main') => {
   const { supportedHDPaths } = networks[network]
-  const hdSetting = supportedHDPaths.find(({ scriptType: Script }) => scriptType === Script)
+  const hdSetting = supportedHDPaths.find(
+    ({ scriptType: Script }) => scriptType === Script
+  )
   if (!hdSetting) return 0
   const { address } = hdSetting
   return Array.isArray(address) ? address[0].prefix : address.prefix

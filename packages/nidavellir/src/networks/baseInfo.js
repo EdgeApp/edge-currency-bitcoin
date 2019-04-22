@@ -1,9 +1,9 @@
 // @flow
 
 import { type NetworkInfo } from '../../types/core.js'
+import { bip32, bip44 } from '../hd/paths.js'
 import { base } from '../utils/base.js'
 import { hash256 } from '../utils/hash.js'
-import { bip32, bip44 } from '../hd/paths.js'
 
 export const main: NetworkInfo = {
   coinType: 0,
@@ -12,7 +12,7 @@ export const main: NetworkInfo = {
     stringPrefix: '1',
     decoder: base['58'].check
   },
-  supportedHDPaths: [ bip44, bip32 ],
+  supportedHDPaths: [bip44, bip32],
   txHash: hash256,
   sigHash: (str: Buffer) => Buffer.from(hash256(str.toString('hex')), 'hex'),
   forks: [],

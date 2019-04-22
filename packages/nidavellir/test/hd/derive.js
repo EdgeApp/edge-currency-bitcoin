@@ -6,7 +6,7 @@ import { describe, it } from 'mocha'
 import * as Derive from '../../src/hd/derive.js'
 import fixtures from './fixtures/derive.json'
 
-const deriveFixtures = fixtures.derive
+const deriveFixtures = fixtures
 
 describe('Testing Key derivation', function () {
   deriveFixtures.private.forEach(test => {

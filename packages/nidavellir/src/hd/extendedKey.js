@@ -5,16 +5,15 @@ import {
   type ExtendedKeyPair,
   type ExtendedMasterKeys
 } from '../../types/hd.js'
-import { type HexPair } from '../../types/core.js'
 import * as KeyPair from '../core/keyPair.js'
 import {
-  validateHDKeyVersion,
   getDecoder,
-  getHDSetting
+  getHDSetting,
+  validateHDKeyVersion
 } from '../core/networkInfo.js'
 import { hash160 } from '../utils/hash.js'
 import { publicKeyCreate } from '../utils/secp256k1.js'
-import { hmac, deriveKeyPair } from './derive.js'
+import { deriveKeyPair, hmac } from './derive.js'
 
 const MAX_DEPTH = 0xff
 const SEED = '426974636f696e2073656564'
@@ -26,7 +25,12 @@ export const fromSeed = async (
 ): Promise<ExtendedMasterKeys> => {
   const { left, right } = hmac(seed, SEED)
   const publicKey = await publicKeyCreate(left, true)
-  const masterKeyPair = { privateKey: left, publicKey, chainCode: right, childIndex: 0 }
+  const masterKeyPair = {
+    privateKey: left,
+    publicKey,
+    chainCode: right,
+    childIndex: 0
+  }
   const version = getHDSetting(network, purpose).xpriv.prefix
   return {
     ...masterKeyPair,
@@ -76,21 +80,26 @@ export const fromString = (
   hdKey: string,
   network: string = 'main'
 ): ExtendedKeyPair => {
-  const keyHex = getDecoder(network, hdKey.slice(0, 3)).decode(hdKey)
+  const keyHex = getDecoder(network, hdKey.slice(0, 4)).decode(hdKey)
   return fromHex(keyHex, network)
 }
 
 export const toHex = (
   hdKey: ExtendedKeyPair,
-  network?: string,
+  network: string = 'main',
   forcePublic: boolean = false
 ): string => {
-  if (network) validateHDKeyVersion(hdKey.version, network)
+  const setting = getHDSetting(network, hdKey.version)
   const { privateKey, publicKey } = hdKey
-  const keyPair: HexPair = { publicKey }
-  if (!forcePublic) keyPair.privateKey = privateKey
+  const keyPair: Object = { publicKey, version: hdKey.version }
+  if (forcePublic) {
+    keyPair.version = setting.xpub.prefix
+  } else {
+    keyPair.privateKey = privateKey
+  }
+
   return (
-    hdKey.version.toString(16).padStart(8, '0') +
+    keyPair.version.toString(16).padStart(8, '0') +
     hdKey.depth.toString(16).padStart(2, '0') +
     hdKey.parentFingerPrint.toString(16).padStart(8, '0') +
     hdKey.childIndex.toString(16).padStart(8, '0') +

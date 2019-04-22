@@ -1,12 +1,12 @@
 // @flow
 
+import * as KeyPair from './src/core/keyPair.js'
+import * as NetworkInfo from './src/core/networkInfo.js'
 import * as Derive from './src/hd/derive.js'
 import * as ExtendedKey from './src/hd/extendedKey.js'
 import * as HDKey from './src/hd/hdKey.js'
-import * as Paths from './src/hd/paths.js'
 import * as Path from './src/hd/path.js'
-import * as KeyPair from './src/core/keyPair.js'
-import * as NetworkInfo from './src/core/networkInfo.js'
+import * as Paths from './src/hd/paths.js'
 import * as Base from './src/utils/base.js'
 import * as Formatter from './src/utils/formatter.js'
 import * as Hash from './src/utils/hash.js'

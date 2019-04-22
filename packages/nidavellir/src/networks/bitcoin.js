@@ -1,9 +1,9 @@
 // @flow
-import { bip84, bip49 } from '../hd/paths.js'
+import { bip49, bip84 } from '../hd/paths.js'
 
 const forks = ['bitcoincash', 'bitcoingold', 'bitcoindiamond']
 
-export const main = { supportedHDPaths: [ bip84, bip49 ], forks }
+export const main = { supportedHDPaths: [bip84, bip49], forks }
 
 export const testnet = {
   coinType: 1,
