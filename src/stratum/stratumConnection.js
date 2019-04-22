@@ -1,6 +1,7 @@
 // @flow
 
 import { parse } from 'uri-js'
+import { logger } from '../utils/logger.js'
 
 import { type EdgeSocket, type PluginIo } from '../plugin/pluginIo.js'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
@@ -366,7 +367,7 @@ export class StratumConnection {
   }
 
   logError (e: Error) {
-    console.log(`${this.walletId} - ${e.toString()}`)
+    logger.info(`${this.walletId} - ${e.toString()}`)
   }
 
   setupTimer () {

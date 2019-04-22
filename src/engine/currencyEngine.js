@@ -15,6 +15,7 @@ import {
   type EdgeTransaction,
   type EdgeWalletInfo
 } from 'edge-core-js/types'
+import { logger } from '../utils/logger.js'
 
 import { InfoServer } from '../info/constants'
 import { type PluginIo } from '../plugin/pluginIo.js'
@@ -138,7 +139,7 @@ export class CurrencyEngine {
     this.network = this.engineInfo.network
 
     this.fees = { ...engineInfo.simpleFeeSettings, timestamp: 0 }
-    console.log(
+    logger.info(
       `${this.prunedWalletId}: create engine type: ${this.walletInfo.type}`
     )
   }
@@ -190,7 +191,7 @@ export class CurrencyEngine {
     const xpub = keys[`${this.network}Xpub`]
     const rawKeys = { ...otherKeys, master: { xpub, ...master } }
 
-    console.log(
+    logger.info(
       `${this.walletId} - Created Wallet Type ${format} for Currency Plugin ${
         this.pluginState.pluginName
       }`
@@ -273,7 +274,7 @@ export class CurrencyEngine {
         throw new Error('Fetched invalid networkFees')
       }
     } catch (err) {
-      console.log(`${this.prunedWalletId} - ${err.toString()}`)
+      logger.info(`${this.prunedWalletId} - ${err.toString()}`)
     }
   }
 
@@ -299,7 +300,7 @@ export class CurrencyEngine {
         }
       }
     } catch (e) {
-      console.log(
+      logger.info(
         `${
           this.prunedWalletId
         } - Error while trying to update fee table ${e.toString()}`
@@ -355,7 +356,7 @@ export class CurrencyEngine {
       log += JSON.stringify(edgeTransaction.otherParams.txJson, null, 2) + '\n'
     }
     log += '------------------------------------------------------------------'
-    console.log(`${this.prunedWalletId}: ${log}`)
+    logger.info(`${this.prunedWalletId}: ${log}`)
   }
 
   // ------------------------------------------------------------------------
@@ -451,7 +452,7 @@ export class CurrencyEngine {
         this.engineState.markAddressesUsed(scriptHashs)
         if (this.keyManager) this.keyManager.setLookAhead()
       })
-      .catch(e => console.log(`${this.prunedWalletId}: ${e.toString()}`))
+      .catch(e => logger.info(`${this.prunedWalletId}: ${e.toString()}`))
   }
 
   isAddressUsed (address: string, options: any): boolean {
@@ -530,7 +531,7 @@ export class CurrencyEngine {
         this.io.fetch
       )
     } catch (err) {
-      console.log(`${this.prunedWalletId} - ${err.toString()}`)
+      logger.info(`${this.prunedWalletId} - ${err.toString()}`)
       throw err
     }
   }
@@ -562,7 +563,7 @@ export class CurrencyEngine {
       }
       // Get the rate according to the latest fee
       const rate = this.getRate(edgeSpendInfo)
-      this.io.console.info(`spend: Using fee rate ${rate} sat/K`)
+      logger.info(`spend: Using fee rate ${rate} sat/K`)
       // Create outputs from spendTargets
 
       const outputs = []

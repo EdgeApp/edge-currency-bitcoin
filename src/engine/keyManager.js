@@ -12,6 +12,7 @@ import type {
 import { createTX, getLock, parsePath } from '../utils/coinUtils.js'
 import { FormatSelector, getAllKeyRings } from '../utils/formatSelector.js'
 import type { AddressInfo, AddressInfos } from './engineState.js'
+import { logger } from '../utils/logger.js'
 
 const GAP_LIMIT = 10
 const nop = () => {}
@@ -313,7 +314,7 @@ export class KeyManager {
       try {
         return this.fSelector.parseSeed(this.seed)
       } catch (e) {
-        console.log(e)
+        logger.error(e)
         return null
       }
     }
@@ -387,7 +388,7 @@ export class KeyManager {
       }
       this.onNewKey(keys)
     } catch (e) {
-      console.log(e)
+      logger.error(e)
     }
   }
 

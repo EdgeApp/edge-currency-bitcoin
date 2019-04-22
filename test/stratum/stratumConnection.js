@@ -21,12 +21,18 @@ import {
   subscribeScriptHash
 } from '../../src/stratum/stratumMessages.js'
 
+const fakeLogger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {}
+}
+
 // const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
 const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'
-const io = makeNodeIo(makeFakeIo())
+const io = Object.assign({}, makeNodeIo(makeFakeIo()), { console: fakeLogger })
 
 describe('StratumConnection', function () {
-  this.timeout(10000)
+  this.timeout(3000)
   it('fetchVersion', function (done) {
     let gotReply = false
     const callbacks: StratumCallbacks = {

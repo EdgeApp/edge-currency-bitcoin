@@ -2,7 +2,7 @@
 
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
-
+import { setLogger, logger } from '../../../src/utils/logger.js'
 import { KeyManager } from '../../../src/engine/keyManager.js'
 import type { KeyManagerCallbacks } from '../../../src/engine/keyManager.js'
 // InfoFiles for networks
@@ -16,13 +16,21 @@ import fixtures from './fixtures.json'
 addNetwork(bitcoin.bcoinInfo)
 addNetwork(bitcoincash.bcoinInfo)
 
+const fakeLogger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {}
+}
+
+setLogger(fakeLogger)
+
 for (const fixture of fixtures) {
   const keyManagerCallbacks: KeyManagerCallbacks = {
     onNewAddress: (scriptHash: string, address: string, path: string) => {
-      console.log(scriptHash, address, path)
+      logger.info(scriptHash, address, path)
     },
     onNewKey: (keys: any) => {
-      console.log(keys)
+      logger.info(keys)
     }
   }
   describe(`Key Manager for ${fixture.network}`, function () {

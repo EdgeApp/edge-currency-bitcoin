@@ -3,7 +3,7 @@
 import EventEmitter from 'events'
 import { readdirSync, statSync } from 'fs'
 import { join } from 'path'
-
+import { logger } from '../../../src/utils/logger.js'
 import { assert } from 'chai'
 import { downgradeDisklet, navigateDisklet } from 'disklet'
 import {
@@ -21,6 +21,12 @@ import fetch from 'node-fetch'
 import request from 'request'
 
 import edgeCorePlugins from '../../../src/index.js'
+
+const fakeLogger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {}
+}
 
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const FIXTURES_FOLDER = join(__dirname, 'fixtures')
@@ -59,6 +65,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   const pluginOpts: EdgeCorePluginOptions = {
     io: {
       ...fakeIo,
+      console: fakeLogger,
       random: size => fixture['key'],
       fetch: fetch
     },
@@ -74,19 +81,19 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   const emitter = new EventEmitter()
   const callbacks = {
     onAddressesChecked (progressRatio) {
-      // console.log('onAddressesCheck', progressRatio)
+      logger.info('onAddressesCheck', progressRatio)
       emitter.emit('onAddressesCheck', progressRatio)
     },
     onBalanceChanged (currencyCode, balance) {
-      console.log('onBalanceChange:', currencyCode, balance)
+      logger.info('onBalanceChange:', currencyCode, balance)
       emitter.emit('onBalanceChange', currencyCode, balance)
     },
     onBlockHeightChanged (height) {
-      // console.log('onBlockHeightChange:', height)
+      logger.info('onBlockHeightChange:', height)
       emitter.emit('onBlockHeightChange', height)
     },
     onTransactionsChanged (transactionList) {
-      // console.log('onTransactionsChanged:', transactionList)
+      logger.info('onTransactionsChanged:', transactionList)
       emitter.emit('onTransactionsChanged', transactionList)
     },
     onTxidsChanged () {}
@@ -341,7 +348,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   describe('Should start engine', function () {
     it('Get BlockHeight', function (done) {
       const { uri, defaultHeight } = fixture.BlockHeight
-      this.timeout(10000)
+      this.timeout(3000)
       const testHeight = () => {
         emitter.on('onBlockHeightChange', height => {
           if (height >= heightExpected) {
@@ -351,7 +358,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
           }
         })
         engine.startEngine().catch(e => {
-          console.log('startEngine error', e, e.message)
+          logger.info('startEngine error', e, e.message)
         })
       }
       let heightExpected = defaultHeight
@@ -399,7 +406,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
 
   describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
     it('Should provide a non used BTC address when no options are provided', function (done) {
-      this.timeout(10000)
+      this.timeout(3000)
       const { uri } = fixture.FreshAddress
       setTimeout(() => {
         const address = engine.getFreshAddress({}) // TODO
@@ -420,7 +427,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
           }
           done()
         })
-      }, 2000)
+      }, 1500)
     })
   })
 
@@ -444,7 +451,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
 
     Object.keys(spendTests).forEach(test => {
       it(`Should build transaction with ${test}`, function () {
-        this.timeout(10000)
+        this.timeout(3000)
         const templateSpend = spendTests[test]
         return engine
           .makeSpend(templateSpend)
@@ -452,7 +459,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
             return engine.signTx(a)
           })
           .then(a => {
-            // console.log('sign', a)
+            logger.info('sign', a)
           })
       })
     })
@@ -472,7 +479,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
 
     Object.keys(sweepTests).forEach(test => {
       it(`Should build transaction with ${test}`, function () {
-        this.timeout(10000)
+        this.timeout(3000)
         const templateSpend = sweepTests[test]
         if (engine.sweepPrivateKeys == null) {
           throw new Error('No sweepPrivateKeys')
@@ -505,7 +512,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     })
 
     it('Stop the engine', function (done) {
-      console.log('kill engine')
+      logger.info('kill engine')
       engine.killEngine().then(done)
     })
   })
