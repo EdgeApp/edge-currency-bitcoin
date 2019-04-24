@@ -8,5 +8,5 @@ export const setLogger = (printer: EdgeConsole) => {
   // $FlowFixMe
   logger.warn = printer.warn
   // $FlowFixMe
-  logger.error = printer.error
+  logger.error = printer.warn
 }
