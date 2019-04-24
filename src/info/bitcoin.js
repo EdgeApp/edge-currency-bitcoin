@@ -35,7 +35,7 @@ const engineInfo: EngineCurrencyInfo = {
   maxFee: 1000000,
   defaultFee: 1000,
   feeUpdateInterval: 60000,
-  feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
+  feeInfoServer: 'https://Bitcoinfees.Earn.com/api/v1/fees/list',
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '150',
