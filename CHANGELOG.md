@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+#4.0.9 (2019-04-24)
+
+- Change Vertcoin block explorer
+
 # 4.0.8 (2019-04-22)
 
 - Fix Litecoin electrum server algorithm
