@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+#4.0.10 (2019-04-24)
+
+- Change Earn.com Bitcoin mining fee API URL
+- Remove blocking mining fee fetch from makeSpend
+
 #4.0.9 (2019-04-24)
 
 - Change Vertcoin block explorer
