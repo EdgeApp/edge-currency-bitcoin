@@ -17,30 +17,36 @@ import { readFileSync } from 'jsonfile'
 import { before, describe, it } from 'mocha'
 import fetch from 'node-fetch'
 import request from 'request'
-
+import { logger } from '../../../src/utils/logger.js'
 import edgeCorePlugins from '../../../src/index.js'
 import { createCachePath, envSettings } from '../../../src/utils/utils.js'
 
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const FIXTURES_FOLDER = join(__dirname, 'fixtures')
 
+const fakeLogger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {}
+}
+
 const fixtureFile = 'tests.json'
 
 const createCallbacks = (emitter: EventEmitter) => ({
   onAddressesChecked (progressRatio) {
-    // console.log('onAddressesCheck', progressRatio)
+    // logger.info('onAddressesCheck', progressRatio)
     emitter.emit('onAddressesCheck', progressRatio)
   },
   onBalanceChanged (currencyCode, balance) {
-    console.log('onBalanceChange:', currencyCode, balance)
+    logger.info('onBalanceChange:', currencyCode, balance)
     emitter.emit('onBalanceChange', currencyCode, balance)
   },
   onBlockHeightChanged (height) {
-    // console.log('onBlockHeightChange:', height)
+    // logger.info('onBlockHeightChange:', height)
     emitter.emit('onBlockHeightChange', height)
   },
   onTransactionsChanged (transactionList) {
-    // console.log('onTransactionsChanged:', transactionList)
+    // logger.info('onTransactionsChanged:', transactionList)
     emitter.emit('onTransactionsChanged', transactionList)
   },
   onTxidsChanged () {}
@@ -51,7 +57,8 @@ const createPlugin = (io, { key, pluginName, currencyCode }) => {
     io: {
       ...io,
       random: size => key,
-      fetch: fetch
+      fetch: fetch,
+      console: fakeLogger
     },
     initOptions: {},
     nativeIo: {},
@@ -326,7 +333,7 @@ for (const dir of dirs) {
             }
           })
           engine.startEngine().catch(e => {
-            console.log('startEngine error', e, e.message)
+            logger.info('startEngine error', e, e.message)
           })
         }
         if (uri) {
@@ -420,7 +427,7 @@ for (const dir of dirs) {
               return engine.signTx(a)
             })
             .then(a => {
-              // console.log('sign', a)
+              // logger.info('sign', a)
             })
         })
       })
@@ -451,7 +458,7 @@ for (const dir of dirs) {
               return engine.signTx(a)
             })
             .then(a => {
-              // console.warn('sign', a)
+              // logger.info('sign', a)
             })
         })
       })
@@ -471,7 +478,7 @@ for (const dir of dirs) {
       })
 
       it('Stop the engine', async function () {
-        console.log('kill engine')
+        logger.info('kill engine')
         await engine.killEngine()
       })
 

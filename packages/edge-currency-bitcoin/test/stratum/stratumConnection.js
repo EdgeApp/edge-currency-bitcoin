@@ -21,9 +21,14 @@ import {
   type StratumUtxo
 } from '../../types/stratum.js'
 
+const fakeLogger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {}
+}
 const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
 // const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'
-const io = makeNodeIo(makeFakeIo())
+const io = Object.assign({}, makeNodeIo(makeFakeIo()), { console: fakeLogger })
 
 describe('StratumConnection', function () {
   this.timeout(10000)

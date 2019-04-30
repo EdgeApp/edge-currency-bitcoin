@@ -206,11 +206,11 @@ function refillServers () {
     const uri = pickServerUri(serverCache, connections)
     const callbacks = {
       onOpen () {
-        console.log(`Connected to ${uri}`)
+        logger.info(`Connected to ${uri}`)
       },
 
       onClose () {
-        console.log(`Disconnected from ${uri}`)
+        logger.info(`Disconnected from ${uri}`)
         delete connections[uri]
         if (engineStarted) refillServers()
       },

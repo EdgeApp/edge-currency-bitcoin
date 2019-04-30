@@ -334,7 +334,7 @@ export class StratumConnection {
   }
 
   logError (e: Error) {
-    console.log(`${this.walletId} - ${e.toString()}`)
+    logger.info(`${this.walletId} - ${e.toString()}`)
   }
 
   setupTimer () {

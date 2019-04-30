@@ -6,6 +6,7 @@
 import { type Disklet } from 'disklet'
 import { validate } from 'jsonschema'
 import { Utils } from 'nidavellir'
+import { logger } from '../utils/logger.js'
 
 const SAVE_DATASTORE_MILLISECONDS = 10000
 
@@ -32,7 +33,7 @@ export function validateObject (object: any, schema: any) {
   try {
     result = validate(object, schema)
   } catch (e) {
-    console.log(e)
+    logger.info(e)
     return false
   }
 
@@ -91,9 +92,9 @@ export const cache = async (
     if (!fileName) return
     try {
       await folder.setText(filePath, JSON.stringify(data))
-      console.log(`${id} - Saved ${filePath}`)
+      logger.info(`${id} - Saved ${filePath}`)
     } catch (e) {
-      console.log(`${id} - Error when saving ${filePath} - ${e.toString()}`)
+      logger.info(`${id} - Error when saving ${filePath} - ${e.toString()}`)
     }
   }
   const load = async (): Promise<Object> => {
@@ -108,7 +109,7 @@ export const cache = async (
         await folder.delete(legacyPath)
       }
       await folder.delete(fileName)
-      console.log(`${id} - Error when loading ${filePath} - ${e.toString()}`)
+      logger.info(`${id} - Error when loading ${filePath} - ${e.toString()}`)
       return {}
     }
   }

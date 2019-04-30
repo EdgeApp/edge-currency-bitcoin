@@ -3,7 +3,7 @@
 import { primitives } from 'bcoin'
 import { type EdgePaymentProtocolInfo } from 'edge-core-js'
 import parse from 'url-parse'
-
+import { logger } from '../logger.js'
 import {
   toLegacyFormat,
   toNewFormat
@@ -102,7 +102,7 @@ export async function sendPayment (
       const paymentACK = JSON.parse(result)
       return paymentACK
     } catch (e) {
-      console.log(e)
+      logger.info(e)
       throw e
     }
   }

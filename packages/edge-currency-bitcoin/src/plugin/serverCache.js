@@ -4,6 +4,7 @@
  */
 
 import { type ServerInfo } from '../../types/plugin.js'
+import { logger } from '../utils/logger.js'
 
 const RESPONSE_TIME_UNINITIALIZED = 999999999
 const MAX_SCORE = 500
@@ -73,7 +74,7 @@ export class ServerCache {
   }
 
   printServerCache () {
-    console.log('**** printServerCache ****')
+    logger.info('**** printServerCache ****')
     const serverInfos: Array<ServerInfo> = []
     for (const s in this.servers_) {
       serverInfos.push(this.servers_[s])
@@ -88,9 +89,9 @@ export class ServerCache {
       const response = s.responseTime.toString()
       const numResponse = s.numResponseTimes.toString()
       const url = s.serverUrl
-      console.log(`ServerCache ${score} ${response}ms ${numResponse} ${url}`)
+      logger.info(`ServerCache ${score} ${response}ms ${numResponse} ${url}`)
     }
-    console.log('**************************')
+    logger.info('**************************')
   }
 
   serverScoreUp (
@@ -110,7 +111,7 @@ export class ServerCache {
       this.setResponseTime(serverUrl, responseTimeMilliseconds)
     }
 
-    console.log(
+    logger.info(
       `${serverUrl}: score UP to ${
         serverInfo.serverScore
       } ${responseTimeMilliseconds}ms`
@@ -134,7 +135,7 @@ export class ServerCache {
       this.setResponseTime(serverUrl, 9999)
     }
 
-    console.log(`${serverUrl}: score DOWN to ${serverInfo.serverScore}`)
+    logger.info(`${serverUrl}: score DOWN to ${serverInfo.serverScore}`)
   }
 
   setResponseTime (serverUrl: string, responseTimeMilliseconds: number) {

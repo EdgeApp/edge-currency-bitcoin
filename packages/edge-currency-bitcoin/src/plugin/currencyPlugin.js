@@ -27,6 +27,7 @@ import { patchCrypto } from '../utils/bcoinExtender/patchCrypto.js'
 import { keysFromEntropy, seedToHex } from '../utils/bcoinUtils/key.js'
 import { PluginState } from './pluginState.js'
 import { encodeUri, parseUri } from './uri.js'
+import { setLogger, logger } from '../utils/logger.js'
 
 /**
  * The core currency plugin.
@@ -54,7 +55,7 @@ export class CurrencyTools {
     // Public API:
     this.currencyInfo = currencyInfo
     this.pluginName = currencyInfo.pluginName
-    console.log(`Creating Currency Plugin for ${this.pluginName}`)
+    logger.info(`Creating Currency Plugin for ${this.pluginName}`)
     // Private API:
     this.io = io
     this.network = engineInfo.network
@@ -123,6 +124,7 @@ const makeCurrencyPluginFactory = (
 ) =>
   function makePlugin (options: EdgeCorePluginOptions): EdgeCurrencyPlugin {
     const io = makeIo(options)
+    setLogger(io.console)
 
     // Extend bcoin to support this plugin currency info
     // and faster crypto if possible

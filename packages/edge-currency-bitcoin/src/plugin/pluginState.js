@@ -7,7 +7,7 @@ import { type PluginStateSettings } from '../../types/plugin.js'
 import { type EngineState } from '../engine/engineState.js'
 import { cache } from '../utils/utils.js'
 import { ServerCache } from './serverCache.js'
-
+import { logger } from '../utils/logger.js'
 export class PluginState extends ServerCache {
   // On-disk header information:
   height: { latest: number }
@@ -129,10 +129,10 @@ export class PluginState extends ServerCache {
     let serverList = this.defaultServers
     if (!this.disableFetchingServers) {
       try {
-        console.log(`${this.pluginName} - GET ${this.electrumServersUrl}`)
+        logger.info(`${this.pluginName} - GET ${this.electrumServersUrl}`)
         const result = await io.fetch(this.electrumServersUrl)
         if (!result.ok) {
-          console.log(
+          logger.info(
             `${this.pluginName} - Fetching ${
               this.electrumServersUrl
             } failed with ${result.status}`
@@ -141,7 +141,7 @@ export class PluginState extends ServerCache {
           serverList = await result.json()
         }
       } catch (e) {
-        console.log(e)
+        logger.info(e)
       }
     }
     if (!Array.isArray(serverList)) {

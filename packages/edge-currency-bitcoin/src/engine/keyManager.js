@@ -19,6 +19,7 @@ import * as Address from '../utils/bcoinUtils/address.js'
 import * as Key from '../utils/bcoinUtils/key.js'
 import * as Misc from '../utils/bcoinUtils/misc.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
+import { logger } from '../utils/logger.js'
 
 const { ExtendedKey, HDKey } = HD
 
@@ -218,7 +219,7 @@ export class KeyManager extends EventEmitter {
       const signature = await Utils.Secp256k1.sign(message, privateKey)
       return { signature, publicKey }
     } catch (e) {
-      console.log(e)
+      logger.info(e)
       throw e
     }
   }
@@ -228,7 +229,7 @@ export class KeyManager extends EventEmitter {
       try {
         return Key.parseSeed(this.seed)
       } catch (e) {
-        console.log(e)
+        logger.info(e)
       }
     }
     return null
@@ -260,7 +261,7 @@ export class KeyManager extends EventEmitter {
         await this.deriveNewKeys(path)
       }
     } catch (e) {
-      console.log(e)
+      logger.info(e)
     } finally {
       unlock()
     }

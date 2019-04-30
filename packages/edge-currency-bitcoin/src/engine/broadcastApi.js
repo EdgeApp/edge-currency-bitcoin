@@ -1,6 +1,7 @@
 // @flow
 
 import { type EdgeIo } from 'edge-core-js/types'
+import { logger } from '../utils/logger.js'
 
 const makeBroadcastBlockchainInfo = (io: EdgeIo, currencyCode: string) => {
   const supportedCodes = ['BTC']
@@ -15,14 +16,14 @@ const makeBroadcastBlockchainInfo = (io: EdgeIo, currencyCode: string) => {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       })
       if (response.ok) {
-        io.console.info('SUCCESS makeBroadcastBlockchainInfo')
+        logger.info('SUCCESS makeBroadcastBlockchainInfo')
         return true
       } else {
-        io.console.info('ERROR makeBroadcastBlockchainInfo', response)
+        logger.info('ERROR makeBroadcastBlockchainInfo', response)
         throw new Error(`blockchain.info failed with status ${response.status}`)
       }
     } catch (e) {
-      io.console.info('ERROR makeBroadcastBlockchainInfo', e)
+      logger.info('ERROR makeBroadcastBlockchainInfo', e)
       throw e
     }
   }
@@ -49,16 +50,16 @@ const makeBroadcastInsight = (io: EdgeIo, currencyCode: string) => {
       if (response.ok) {
         const out = await response.json()
         if (out.txid) {
-          io.console.info('SUCCESS makeBroadcastInsight:' + JSON.stringify(out))
+          logger.info('SUCCESS makeBroadcastInsight:' + JSON.stringify(out))
           return out
         }
       }
-      io.console.info('ERROR makeBroadcastInsight', response)
+      logger.info('ERROR makeBroadcastInsight', response)
       throw new Error(
         `${urls[currencyCode]} failed with status ${response.status}`
       )
     } catch (e) {
-      io.console.info('ERROR makeBroadcastInsight:', e)
+      logger.info('ERROR makeBroadcastInsight:', e)
       throw e
     }
   }
@@ -85,10 +86,10 @@ const makeBroadcastBlockcypher = (io: EdgeIo, currencyCode: string) => {
         }
       )
       const out = await response.json()
-      io.console.info('SUCCESS makeBroadcastBlockcypher: ', out)
+      logger.info('SUCCESS makeBroadcastBlockcypher: ', out)
       return out.hash
     } catch (e) {
-      io.console.info('ERROR makeBroadcastBlockcypher: ', e)
+      logger.info('ERROR makeBroadcastBlockcypher: ', e)
       throw e
     }
   }
