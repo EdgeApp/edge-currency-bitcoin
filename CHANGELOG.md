@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+#4.0.11 (2019-05-01)
+
+- Modify score of re-added servers to -10 to help prioritize them over dropped servers.
+
+
 #4.0.10 (2019-04-24)
 
 - Change Earn.com Bitcoin mining fee API URL
