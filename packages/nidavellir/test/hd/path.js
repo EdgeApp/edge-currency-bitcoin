@@ -4,13 +4,13 @@ import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
 import * as HDKey from '../../src/hd/hdKey.js'
-import { createPaths } from '../../src/hd/path.js'
+import { createMultiplePaths } from '../../src/hd/path.js'
 import fixtures from './fixtures/path.json'
 
 const network = 'main'
 
 describe('Testing Bip44 HD Key path derivation', function () {
-  fixtures.createPaths.forEach(test => {
+  fixtures.createMultiplePaths.forEach(test => {
     it(`Deriving HD key ${test[0]} from HD Settings ${
       test[3]
     }`, async function () {
@@ -22,8 +22,8 @@ describe('Testing Bip44 HD Key path derivation', function () {
         account = test[1][0]
         coinType = test[1][1]
       }
-
-      const hdPaths = createPaths(test[2], coinType, account, 'bitcoin')
+      const hdPaths = createMultiplePaths(test[2], coinType, account, 'bitcoin')
+      // console.log('hdPaths: ', hdPaths)
       const hdKey = await HDKey.fromPaths(parentKey, hdPaths, network)
       let testIndex = 3
       for (const hdPath of hdPaths) {

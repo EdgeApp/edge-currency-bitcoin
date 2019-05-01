@@ -2,9 +2,22 @@
 
 import { type HDPath } from '../../types/hd.js'
 import { networks } from '../core/networkInfo.js'
-import { createPath } from './hdKey.js'
 
-export const createPaths = (
+export const createSinglePath = (
+  account: number = 0,
+  parent: HDPath = { path: ['m'] },
+  hardened?: boolean
+): HDPath => {
+  const { chain = 'external', scriptType = 'P2PKH' } = parent
+
+  const accountStr = `${account}${hardened ? "'" : ''}`
+  const index = chain === 'external' ? '0' : '1'
+  const path = [...parent.path, accountStr, index]
+
+  return { path, chain, scriptType }
+}
+
+export const createMultiplePaths = (
   purpose?: number | Array<number>,
   coinType: number = 0,
   account: number = 0,
@@ -16,12 +29,12 @@ export const createPaths = (
   if (Array.isArray(purpose)) {
     const paths = []
     for (const p of purpose) {
-      paths.push(...createPaths(p, coinType, account))
+      paths.push(...createMultiplePaths(p, coinType, account, network))
     }
     return paths
   }
 
-  if (purpose === 32) return [createPath(account)]
+  if (purpose === 32) return [createSinglePath(account)]
 
   const pathSettings = supportedHDPaths.find(path => path.purpose === purpose)
   if (!pathSettings) throw new Error(`Unknown derivation purpose ${purpose}`)
@@ -32,7 +45,7 @@ export const createPaths = (
   const hdPathInt = { ...hdPath, chain: 'internal' }
 
   return [
-    createPath(account, hdPath, true),
-    createPath(account, hdPathInt, true)
+    createSinglePath(account, hdPath, true),
+    createSinglePath(account, hdPathInt, true)
   ]
 }

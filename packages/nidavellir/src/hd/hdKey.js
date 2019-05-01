@@ -147,18 +147,4 @@ export const getKey = (parentKey: HDKeyPair, path: Path): HDKeyPair | null => {
   return parentKey
 }
 
-export const createPath = (
-  account: number = 0,
-  parent: HDPath = { path: ['m'] },
-  hardened?: boolean
-): HDPath => {
-  const { chain = 'external', scriptType = 'P2PKH' } = parent
-
-  const accountStr = `${account}${hardened ? "'" : ''}`
-  const index = chain === 'external' ? '0' : '1'
-  const path = [...parent.path, accountStr, index]
-
-  return { path, chain, scriptType }
-}
-
 export const toString = ExtendedKey.toString
