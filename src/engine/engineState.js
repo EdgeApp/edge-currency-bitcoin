@@ -670,7 +670,7 @@ export class EngineState extends EventEmitter {
         const queryTime = Date.now()
         return fetchBlockHeader(
           parseInt(height),
-          (header: any) => {
+          (header: StratumBlockHeader) => {
             logger.info(`${prefix} received header for block number ${height}`)
             this.fetchingHeaders[height] = false
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
@@ -997,7 +997,7 @@ export class EngineState extends EventEmitter {
   }
 
   // A server has sent a header, so update the cache and txs:
-  handleHeaderFetch (height: string, header: any) {
+  handleHeaderFetch (height: string, header: StratumBlockHeader) {
     if (!this.pluginState.headerCache[height]) {
       this.pluginState.headerCache[height] = header
       const affectedTXIDS = this.findAffectedTransactions(height)
