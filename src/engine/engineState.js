@@ -569,14 +569,18 @@ export class EngineState extends EventEmitter {
           const msg = error ? ` !! Connection ERROR !! ${error.message}` : ''
           logger.info(`${prefix} onClose ${msg}`)
           this.emit('connectionClose', uri)
-          error && this.pluginState.serverScoreDown(uri)
+          if (error != null) {
+            if (/Bad Stratum version/.test(error.message)) {
+              this.pluginState.serverScoreDown(uri, 100)
+            } else this.pluginState.serverScoreDown(uri)
+          }
           this.reconnect()
           this.saveAddressCache()
           this.saveTxCache()
         },
 
-        onQueueSpace: () => {
-          const task = this.pickNextTask(uri)
+        onQueueSpace: (stratumVersion: string) => {
+          const task = this.pickNextTask(uri, stratumVersion)
           if (task) {
             const taskMessage = task
               ? `${task.method} params: ${task.params.toString()}`
@@ -624,9 +628,8 @@ export class EngineState extends EventEmitter {
     }
   }
 
-  pickNextTask (uri: string): StratumTask | void {
+  pickNextTask (uri: string, stratumVersion: string): StratumTask | void {
     const serverState = this.serverStates[uri]
-    const connection = this.connections[uri]
     const prefix = `${this.walletId} ${uri.replace('electrum://', '')}:`
 
     // Subscribe to height if this has never happened:
@@ -646,18 +649,6 @@ export class EngineState extends EventEmitter {
           this.handleMessageError(uri, 'subscribing to height', e)
         }
       )
-    }
-
-    // If this server is too old, bail out!
-    // TODO: Stop checking the height in the Stratum message creator.
-    // TODO: Check block headers to ensure we are on the right chain.
-    if (connection.version == null) return
-    if (connection.version < '1.1') {
-      this.connections[uri].handleError(
-        new Error('Server protocol version is too old')
-      )
-      this.pluginState.serverScoreDown(uri, 100)
-      return
     }
 
     // Fetch Headers:

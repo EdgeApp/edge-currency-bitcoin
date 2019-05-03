@@ -28,7 +28,7 @@ export interface StratumTask {
 export interface StratumCallbacks {
   +onOpen: () => void;
   +onClose: (error?: Error) => void;
-  +onQueueSpace: () => StratumTask | void;
+  +onQueueSpace: (stratumVersion: string) => StratumTask | void;
   +onNotifyHeader: (headerInfo: StratumBlockHeader) => void;
   +onNotifyScriptHash: (scriptHash: string, hash: string) => void;
   +onTimer: (queryTime: number) => void;
@@ -140,9 +140,10 @@ export class StratumConnection {
    * Re-triggers the `onQueueSpace` callback if there is space in the queue.
    */
   doWakeUp () {
-    if (this.connected) {
+    const { connected, version } = this
+    if (connected && version != null) {
       while (Object.keys(this.pendingMessages).length < this.queueSize) {
-        const task = this.callbacks.onQueueSpace()
+        const task = this.callbacks.onQueueSpace(version)
         if (!task) break
         this.submitTask(task)
       }
