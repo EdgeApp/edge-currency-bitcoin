@@ -184,6 +184,7 @@ export class CurrencyEngine {
     }
 
     const cachedRawKeys = await this.engineState.loadKeys()
+    // $FlowFixMe master is missing in object literal
     const { master = {}, ...otherKeys } = cachedRawKeys || {}
     const keys = this.walletInfo.keys || {}
     const { format, coinType = -1 } = keys
@@ -513,6 +514,7 @@ export class CurrencyEngine {
     await engineState.load()
     const addresses = await getAllAddresses(privateKeys, this.network)
     addresses.forEach(({ address, scriptHash }) =>
+      // $FlowFixMe missing path parameter
       engineState.addAddress(scriptHash, address)
     )
     engineState.connect()
