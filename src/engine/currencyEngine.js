@@ -79,7 +79,8 @@ export type EngineCurrencyInfo = {
 
   // Optional Settings
   forks?: Array<string>,
-  feeInfoServer?: string
+  feeInfoServer?: string,
+  timestampFromHeader?: (header: Buffer, height: number) => number
 }
 
 export type CurrencyEngineSettings = {
@@ -161,7 +162,8 @@ export class CurrencyEngine {
       localDisklet: this.walletLocalDisklet,
       encryptedLocalDisklet: this.walletLocalEncryptedDisklet,
       pluginState: this.pluginState,
-      walletId: this.prunedWalletId
+      walletId: this.prunedWalletId,
+      engineInfo: this.engineInfo
     })
 
     await this.engineState.load()
@@ -508,7 +510,8 @@ export class CurrencyEngine {
       localDisklet: this.walletLocalDisklet,
       encryptedLocalDisklet: this.walletLocalEncryptedDisklet,
       pluginState: this.pluginState,
-      walletId: this.prunedWalletId
+      walletId: this.prunedWalletId,
+      engineInfo: this.engineInfo
     })
 
     await engineState.load()

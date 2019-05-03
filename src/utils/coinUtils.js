@@ -426,3 +426,10 @@ export const getReceiveAddresses = (
     const address = output.getAddress().toString(network)
     return toNewFormat(address, network)
   })
+
+export const bitcoinTimestampFromHeader = (header: Buffer): number => {
+  if (header.length !== 80) {
+    throw new Error(`Cannot interpret block header ${header.toString('hex')}`)
+  }
+  return header.readUInt32LE(4 + 32 + 32)
+}

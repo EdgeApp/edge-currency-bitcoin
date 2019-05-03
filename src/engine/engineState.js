@@ -27,9 +27,13 @@ import type {
   StratumHistoryRow,
   StratumUtxo
 } from '../stratum/stratumMessages.js'
-import { parseTransaction } from '../utils/coinUtils.js'
+import {
+  bitcoinTimestampFromHeader,
+  parseTransaction
+} from '../utils/coinUtils.js'
 import { logger } from '../utils/logger.js'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
+import { type EngineCurrencyInfo } from './currencyEngine.js'
 
 export type UtxoInfo = {
   txid: string, // tx_hash from Stratum
@@ -91,6 +95,7 @@ export interface EngineStateOptions {
   encryptedLocalDisklet: Disklet;
   pluginState: PluginState;
   walletId?: string;
+  engineInfo: EngineCurrencyInfo;
 }
 
 function nop () {}
@@ -396,6 +401,7 @@ export class EngineState extends EventEmitter {
   localDisklet: Disklet
   encryptedLocalDisklet: Disklet
   pluginState: PluginState
+  engineInfo: EngineCurrencyInfo
   onBalanceChanged: () => void
   onAddressUsed: () => void
   onHeightUpdated: (height: number) => void
@@ -433,6 +439,7 @@ export class EngineState extends EventEmitter {
     this.encryptedLocalDisklet = options.encryptedLocalDisklet
     this.pluginState = options.pluginState
     this.serverList = []
+    this.engineInfo = options.engineInfo
     const {
       onBalanceChanged = nop,
       onAddressUsed = nop,
@@ -661,8 +668,12 @@ export class EngineState extends EventEmitter {
         const queryTime = Date.now()
         return fetchBlockHeader(
           parseInt(height),
+          this.engineInfo.timestampFromHeader || bitcoinTimestampFromHeader,
           (header: StratumBlockHeader) => {
-            logger.info(`${prefix} received header for block number ${height}`)
+            const prettyDate = new Date(header.timestamp * 1000).toISOString()
+            logger.info(
+              `${prefix} received header for block number ${height} @ ${prettyDate}`
+            )
             this.fetchingHeaders[height] = false
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleHeaderFetch(height, header)
@@ -678,7 +689,8 @@ export class EngineState extends EventEmitter {
             } else {
               // TODO: Don't penalize the server score either.
             }
-          }
+          },
+          stratumVersion
         )
       }
     }
