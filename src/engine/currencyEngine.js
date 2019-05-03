@@ -15,7 +15,6 @@ import {
   type EdgeTransaction,
   type EdgeWalletInfo
 } from 'edge-core-js/types'
-import { logger } from '../utils/logger.js'
 
 import { InfoServer } from '../info/constants'
 import { type PluginIo } from '../plugin/pluginIo.js'
@@ -39,6 +38,7 @@ import {
   EarnComFeesSchema,
   InfoServerFeesSchema
 } from '../utils/jsonSchemas.js'
+import { logger } from '../utils/logger.js'
 import { promiseAny, validateObject } from '../utils/utils.js'
 import { broadcastFactories } from './broadcastApi.js'
 import { EngineState } from './engineState.js'

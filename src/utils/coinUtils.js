@@ -1,7 +1,7 @@
 // @flow
 
 import { Buffer } from 'buffer'
-import { type EngineState } from '../engine/engineState.js'
+
 import {
   network as Network,
   hd,
@@ -10,8 +10,9 @@ import {
   script,
   utils
 } from 'bcoin'
-import { logger } from '../utils/logger.js'
 
+import { type EngineState } from '../engine/engineState.js'
+import { logger } from '../utils/logger.js'
 import {
   toLegacyFormat,
   toNewFormat

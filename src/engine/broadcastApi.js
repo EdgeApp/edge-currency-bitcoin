@@ -1,6 +1,7 @@
 // @flow
 
 import { type EdgeIo } from 'edge-core-js/types'
+
 import { logger } from '../utils/logger.js'
 
 const makeBroadcastBlockchainInfo = (io: EdgeIo, currencyCode: string) => {

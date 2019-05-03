@@ -11,8 +11,8 @@ import type {
 } from '../utils/coinUtils.js'
 import { createTX, getLock, parsePath } from '../utils/coinUtils.js'
 import { FormatSelector, getAllKeyRings } from '../utils/formatSelector.js'
-import type { AddressInfo, AddressInfos } from './engineState.js'
 import { logger } from '../utils/logger.js'
+import type { AddressInfo, AddressInfos } from './engineState.js'
 
 const GAP_LIMIT = 10
 const nop = () => {}
