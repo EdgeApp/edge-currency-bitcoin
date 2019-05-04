@@ -3,7 +3,7 @@
 import EventEmitter from 'events'
 import { readdirSync, statSync } from 'fs'
 import { join } from 'path'
-import { logger } from '../../../src/utils/logger.js'
+
 import { assert } from 'chai'
 import { downgradeDisklet, navigateDisklet } from 'disklet'
 import {
@@ -21,6 +21,7 @@ import fetch from 'node-fetch'
 import request from 'request'
 
 import edgeCorePlugins from '../../../src/index.js'
+import { logger } from '../../../src/utils/logger.js'
 
 const fakeLogger = {
   info: () => {},

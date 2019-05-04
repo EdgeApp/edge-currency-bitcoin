@@ -5,8 +5,8 @@ import { type EdgeIo } from 'edge-core-js/types'
 
 import type { EngineState } from '../engine/engineState.js'
 import { FixCurrencyCode, InfoServer } from '../info/constants'
-import { ServerCache } from './serverCache.js'
 import { logger } from '../utils/logger.js'
+import { ServerCache } from './serverCache.js'
 
 export type CurrencySettings = {
   customFeeSettings: Array<string>,

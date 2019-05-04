@@ -15,7 +15,7 @@ import {
   type EdgeParsedUri,
   type EdgeWalletInfo
 } from 'edge-core-js/types'
-import { setLogger, logger } from '../utils/logger.js'
+
 import {
   CurrencyEngine,
   type EngineCurrencyInfo
@@ -32,6 +32,7 @@ import {
   keysFromEntropy
 } from '../utils/coinUtils.js'
 import { getXPubFromSeed } from '../utils/formatSelector.js'
+import { logger, setLogger } from '../utils/logger.js'
 import { type PluginIo } from './pluginIo.js'
 import { PluginState } from './pluginState.js'
 import { encodeUri, parseUri } from './uri.js'

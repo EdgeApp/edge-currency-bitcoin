@@ -6,6 +6,7 @@
 import crypto from 'crypto'
 
 import { validate } from 'jsonschema'
+
 import { logger } from '../utils/logger.js'
 
 export function validateObject (object: any, schema: any) {

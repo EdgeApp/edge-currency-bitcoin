@@ -39,6 +39,12 @@ const engineInfo: EngineCurrencyInfo = {
     standardFeeHigh: '700',
     standardFeeLowAmount: '20000000',
     standardFeeHighAmount: '981000000'
+  },
+  timestampFromHeader (header: Buffer): number {
+    if (header.length < 80 + 64) {
+      throw new Error(`Cannot interpret block header ${header.toString('hex')}`)
+    }
+    return header.readUInt32LE(4 + 32 + 32)
   }
 }
 

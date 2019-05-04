@@ -4,7 +4,6 @@ import { type Disklet } from 'disklet'
 import EventEmitter from 'eventemitter3'
 import stable from 'stable'
 import { parse } from 'uri-js'
-import { logger } from '../utils/logger.js'
 
 import { type PluginIo } from '../plugin/pluginIo.js'
 import { type PluginState } from '../plugin/pluginState.js'
@@ -28,8 +27,13 @@ import type {
   StratumHistoryRow,
   StratumUtxo
 } from '../stratum/stratumMessages.js'
-import { parseTransaction } from '../utils/coinUtils.js'
+import {
+  bitcoinTimestampFromHeader,
+  parseTransaction
+} from '../utils/coinUtils.js'
+import { logger } from '../utils/logger.js'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
+import { type EngineCurrencyInfo } from './currencyEngine.js'
 
 export type UtxoInfo = {
   txid: string, // tx_hash from Stratum
@@ -91,6 +95,7 @@ export interface EngineStateOptions {
   encryptedLocalDisklet: Disklet;
   pluginState: PluginState;
   walletId?: string;
+  engineInfo: EngineCurrencyInfo;
 }
 
 function nop () {}
@@ -396,6 +401,7 @@ export class EngineState extends EventEmitter {
   localDisklet: Disklet
   encryptedLocalDisklet: Disklet
   pluginState: PluginState
+  engineInfo: EngineCurrencyInfo
   onBalanceChanged: () => void
   onAddressUsed: () => void
   onHeightUpdated: (height: number) => void
@@ -433,6 +439,7 @@ export class EngineState extends EventEmitter {
     this.encryptedLocalDisklet = options.encryptedLocalDisklet
     this.pluginState = options.pluginState
     this.serverList = []
+    this.engineInfo = options.engineInfo
     const {
       onBalanceChanged = nop,
       onAddressUsed = nop,
@@ -569,14 +576,18 @@ export class EngineState extends EventEmitter {
           const msg = error ? ` !! Connection ERROR !! ${error.message}` : ''
           logger.info(`${prefix} onClose ${msg}`)
           this.emit('connectionClose', uri)
-          error && this.pluginState.serverScoreDown(uri)
+          if (error != null) {
+            if (/Bad Stratum version/.test(error.message)) {
+              this.pluginState.serverScoreDown(uri, 100)
+            } else this.pluginState.serverScoreDown(uri)
+          }
           this.reconnect()
           this.saveAddressCache()
           this.saveTxCache()
         },
 
-        onQueueSpace: () => {
-          const task = this.pickNextTask(uri)
+        onQueueSpace: (stratumVersion: string) => {
+          const task = this.pickNextTask(uri, stratumVersion)
           if (task) {
             const taskMessage = task
               ? `${task.method} params: ${task.params.toString()}`
@@ -593,10 +604,10 @@ export class EngineState extends EventEmitter {
           logger.info(`${prefix}received version ${version}`)
           this.pluginState.serverScoreUp(uri, requestMs)
         },
-        onNotifyHeader: (headerInfo: StratumBlockHeader) => {
-          logger.info(`${prefix} returned height: ${headerInfo.block_height}`)
-          this.serverStates[uri].height = headerInfo.block_height
-          this.pluginState.updateHeight(headerInfo.block_height)
+        onNotifyHeight: (height: number) => {
+          logger.info(`${prefix} returned height: ${height}`)
+          this.serverStates[uri].height = height
+          this.pluginState.updateHeight(height)
         },
 
         onNotifyScriptHash: (scriptHash: string, hash: string) => {
@@ -624,9 +635,8 @@ export class EngineState extends EventEmitter {
     }
   }
 
-  pickNextTask (uri: string): StratumTask | void {
+  pickNextTask (uri: string, stratumVersion: string): StratumTask | void {
     const serverState = this.serverStates[uri]
-    const connection = this.connections[uri]
     const prefix = `${this.walletId} ${uri.replace('electrum://', '')}:`
 
     // Subscribe to height if this has never happened:
@@ -648,18 +658,6 @@ export class EngineState extends EventEmitter {
       )
     }
 
-    // If this server is too old, bail out!
-    // TODO: Stop checking the height in the Stratum message creator.
-    // TODO: Check block headers to ensure we are on the right chain.
-    if (connection.version == null) return
-    if (connection.version < '1.1') {
-      this.connections[uri].handleError(
-        new Error('Server protocol version is too old')
-      )
-      this.pluginState.serverScoreDown(uri, 100)
-      return
-    }
-
     // Fetch Headers:
     for (const height of Object.keys(this.missingHeaders)) {
       if (
@@ -670,8 +668,12 @@ export class EngineState extends EventEmitter {
         const queryTime = Date.now()
         return fetchBlockHeader(
           parseInt(height),
-          (header: any) => {
-            logger.info(`${prefix} received header for block number ${height}`)
+          this.engineInfo.timestampFromHeader || bitcoinTimestampFromHeader,
+          (header: StratumBlockHeader) => {
+            const prettyDate = new Date(header.timestamp * 1000).toISOString()
+            logger.info(
+              `${prefix} received header for block number ${height} @ ${prettyDate}`
+            )
             this.fetchingHeaders[height] = false
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleHeaderFetch(height, header)
@@ -687,7 +689,8 @@ export class EngineState extends EventEmitter {
             } else {
               // TODO: Don't penalize the server score either.
             }
-          }
+          },
+          stratumVersion
         )
       }
     }
@@ -997,7 +1000,7 @@ export class EngineState extends EventEmitter {
   }
 
   // A server has sent a header, so update the cache and txs:
-  handleHeaderFetch (height: string, header: any) {
+  handleHeaderFetch (height: string, header: StratumBlockHeader) {
     if (!this.pluginState.headerCache[height]) {
       this.pluginState.headerCache[height] = header
       const affectedTXIDS = this.findAffectedTransactions(height)

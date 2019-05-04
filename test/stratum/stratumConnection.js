@@ -20,6 +20,7 @@ import {
   subscribeHeight,
   subscribeScriptHash
 } from '../../src/stratum/stratumMessages.js'
+import { bitcoinTimestampFromHeader } from '../../src/utils/coinUtils.js'
 
 const fakeLogger = {
   info: () => {},
@@ -42,7 +43,7 @@ describe('StratumConnection', function () {
         expect(parseFloat(version)).to.be.at.least(1.1)
         gotReply = true
       },
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {
@@ -71,7 +72,7 @@ describe('StratumConnection', function () {
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion (version) {},
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {
@@ -91,11 +92,16 @@ describe('StratumConnection', function () {
     let gotReply = false
     const task = fetchBlockHeader(
       400000,
+      bitcoinTimestampFromHeader,
       (data: StratumBlockHeader) => {
-        expect(data.block_height).to.equal(400000)
-        expect(data.prev_block_hash).to.equal(
-          '0000000000000000030034b661aed920a9bdf6bbfa6d2e7a021f78481882fa39'
-        )
+        if (data.block_height != null) {
+          expect(data.block_height).to.equal(400000)
+        }
+        if (data.prev_block_hash != null) {
+          expect(data.prev_block_hash).to.equal(
+            '0000000000000000030034b661aed920a9bdf6bbfa6d2e7a021f78481882fa39'
+          )
+        }
         expect(data.timestamp).to.equal(1456417484)
         gotReply = true
         connection.disconnect()
@@ -109,7 +115,7 @@ describe('StratumConnection', function () {
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion (version) {},
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {
@@ -145,7 +151,7 @@ describe('StratumConnection', function () {
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion (version) {},
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {
@@ -182,7 +188,7 @@ describe('StratumConnection', function () {
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion (version) {},
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {
@@ -221,7 +227,7 @@ describe('StratumConnection', function () {
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion (version) {},
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {
@@ -262,7 +268,7 @@ describe('StratumConnection', function () {
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion () {},
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {

@@ -1,7 +1,7 @@
 // @flow
 
 import { Buffer } from 'buffer'
-import { type EngineState } from '../engine/engineState.js'
+
 import {
   network as Network,
   hd,
@@ -10,8 +10,9 @@ import {
   script,
   utils
 } from 'bcoin'
-import { logger } from '../utils/logger.js'
 
+import { type EngineState } from '../engine/engineState.js'
+import { logger } from '../utils/logger.js'
 import {
   toLegacyFormat,
   toNewFormat
@@ -425,3 +426,10 @@ export const getReceiveAddresses = (
     const address = output.getAddress().toString(network)
     return toNewFormat(address, network)
   })
+
+export const bitcoinTimestampFromHeader = (header: Buffer): number => {
+  if (header.length !== 80) {
+    throw new Error(`Cannot interpret block header ${header.toString('hex')}`)
+  }
+  return header.readUInt32LE(4 + 32 + 32)
+}
