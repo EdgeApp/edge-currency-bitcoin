@@ -1,16 +1,20 @@
 # edge-currency-bitcoin
 
-#4.0.11 (2019-05-01)
+# 4.1.0 (2019-05-03)
+
+- Add support for Stratum v1.4
+
+# 4.0.11 (2019-05-01)
 
 - Modify score of re-added servers to -10 to help prioritize them over dropped servers.
 
 
-#4.0.10 (2019-04-24)
+# 4.0.10 (2019-04-24)
 
 - Change Earn.com Bitcoin mining fee API URL
 - Remove blocking mining fee fetch from makeSpend
 
-#4.0.9 (2019-04-24)
+# 4.0.9 (2019-04-24)
 
 - Change Vertcoin block explorer
 
