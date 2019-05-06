@@ -3,8 +3,9 @@
 import bcoin from 'bcoin'
 import { type EdgeFreshAddress } from 'edge-core-js'
 import { Core } from 'nidavellir'
-import { toLegacyFormat } from '../addressFormat/addressFormatIndex.js'
+
 import { type EdgeAddress } from '../../../types/bcoinUtils.js'
+import { toLegacyFormat } from '../addressFormat/addressFormatIndex.js'
 
 const { Lock } = bcoin.utils
 
@@ -24,7 +25,10 @@ export const formatToBips = (
   format?: string
 ): Array<number> => {
   const { supportedHDPaths } = Core.Networks[network]
-  const bips = supportedHDPaths.reduce((res, { purpose }) => [...res, purpose], [])
+  const bips = supportedHDPaths.reduce(
+    (res, { purpose }) => [...res, purpose],
+    []
+  )
   if (!format) {
     if (bips.includes(49)) return [49]
     return [44]

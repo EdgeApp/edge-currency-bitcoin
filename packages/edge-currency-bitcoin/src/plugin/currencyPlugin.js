@@ -25,9 +25,9 @@ import { CurrencyEngine } from '../engine/currencyEngine.js'
 import { allInfo } from '../info/all.js'
 import { patchCrypto } from '../utils/bcoinExtender/patchCrypto.js'
 import { keysFromEntropy, seedToHex } from '../utils/bcoinUtils/key.js'
+import { logger, setLogger } from '../utils/logger.js'
 import { PluginState } from './pluginState.js'
 import { encodeUri, parseUri } from './uri.js'
-import { setLogger, logger } from '../utils/logger.js'
 
 /**
  * The core currency plugin.
@@ -114,7 +114,10 @@ export class CurrencyTools {
         const networkInfo = Core.Networks[network]
         if (!networkInfo) return false
         const { supportedHDPaths } = networkInfo
-        const bips = supportedHDPaths.reduce((res, { purpose }) => [...res, purpose], [])
+        const bips = supportedHDPaths.reduce(
+          (res, { purpose }) => [...res, purpose],
+          []
+        )
         return bips.includes(bip)
       })
       .map(network => `wallet:${network}`)

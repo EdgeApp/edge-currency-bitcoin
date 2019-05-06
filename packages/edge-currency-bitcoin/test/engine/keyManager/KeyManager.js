@@ -2,10 +2,11 @@
 
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
-import { setLogger, logger } from '../../../src/utils/logger.js'
+
 import { KeyManager } from '../../../src/engine/keyManager.js'
 // eslint-disable-next-line no-unused-vars
 import * as Factories from '../../../src/index.js'
+import { logger, setLogger } from '../../../src/utils/logger.js'
 import fixtures from './fixtures.json'
 
 const fakeLogger = {

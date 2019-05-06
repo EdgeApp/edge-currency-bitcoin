@@ -17,8 +17,9 @@ import { readFileSync } from 'jsonfile'
 import { before, describe, it } from 'mocha'
 import fetch from 'node-fetch'
 import request from 'request'
-import { logger } from '../../../src/utils/logger.js'
+
 import edgeCorePlugins from '../../../src/index.js'
+import { logger } from '../../../src/utils/logger.js'
 import { createCachePath, envSettings } from '../../../src/utils/utils.js'
 
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'

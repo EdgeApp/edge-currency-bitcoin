@@ -31,9 +31,9 @@ import {
   subscribeScriptHash
 } from '../stratum/stratumMessages.js'
 import { parseTransaction } from '../utils/bcoinUtils/tx.js'
+import { logger } from '../utils/logger.js'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 import { cache } from '../utils/utils.js'
-import { logger } from '../utils/logger.js'
 
 function nop () {}
 

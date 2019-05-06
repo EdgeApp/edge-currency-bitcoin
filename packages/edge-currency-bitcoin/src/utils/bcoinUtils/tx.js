@@ -8,10 +8,7 @@ import {
   type KeyRings,
   type Utxo
 } from '../../../types/bcoinUtils.js'
-import {
-  // changeNetwork,
-  toNewFormat
-} from '../addressFormat/addressFormatIndex.js'
+import { toNewFormat } from '../addressFormat/addressFormatIndex.js'
 import { reverseHexString } from '../utils.js'
 import { fromBaseString, toScript } from './address.js'
 

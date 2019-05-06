@@ -3,11 +3,12 @@
 import { primitives } from 'bcoin'
 import { type EdgePaymentProtocolInfo } from 'edge-core-js'
 import parse from 'url-parse'
-import { logger } from '../logger.js'
+
 import {
   toLegacyFormat,
   toNewFormat
 } from '../addressFormat/addressFormatIndex.js'
+import { logger } from '../logger.js'
 
 const getSpendTargets = (
   outputs: Array<any>,

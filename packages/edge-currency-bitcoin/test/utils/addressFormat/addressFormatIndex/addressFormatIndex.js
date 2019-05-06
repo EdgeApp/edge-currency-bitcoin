@@ -5,10 +5,10 @@ import { describe, it } from 'mocha'
 // eslint-disable-next-line no-unused-vars
 import * as Factories from '../../../../src/index.js'
 import {
+  changeNetwork,
   isValidAddress,
   toLegacyFormat,
-  toNewFormat,
-  changeNetwork
+  toNewFormat
 } from '../../../../src/utils/addressFormat/addressFormatIndex.js'
 import fixtures from './fixtures.json'
 
@@ -51,7 +51,7 @@ for (const fixture of fixtures) {
 
     fixture['toNewFormat'].forEach(([address, expected]) => {
       it(`get new format for ${address}`, function () {
-      // kylan functionUsage - toNewFormat - test
+        // kylan functionUsage - toNewFormat - test
         assert.equal(toNewFormat(address, network), expected)
       })
     })

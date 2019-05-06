@@ -89,7 +89,7 @@ export const toHexString = (
   prefixNum: number = -1
 ): string => {
   const { scriptType, hash, version = -1 } = address
-  if (prefixNum === -1) prefixNum = Core.NetworkInfo.getPrefix(scriptType, network)
+  if (prefixNum === -1) { prefixNum = Core.NetworkInfo.getPrefix(scriptType, network) }
   const prefixHex = prefixNum.toString(16).padStart(2, '0')
   const versionHex = version !== -1 ? version.toString(16).padEnd(4, '0') : ''
   return `${prefixHex}${versionHex}${hash}`
@@ -112,7 +112,11 @@ export const toBaseString = (
     return serializers.address.encode(prefixedAddress)
   } catch (e) {
     if (addressPrefix.cashAddress) {
-      return toCashAddress(hashBuffer, address.scriptType, addressPrefix.cashAddress)
+      return toCashAddress(
+        hashBuffer,
+        address.scriptType,
+        addressPrefix.cashAddress
+      )
     }
     throw e
   }
@@ -130,7 +134,9 @@ export const toScript = (address: RawAddress): Object => {
     script = fromProgram(version, hashBuffer)
   }
   if (!script) {
-    throw new Error(`Unknown script type ${scriptType} and/or version ${version}`)
+    throw new Error(
+      `Unknown script type ${scriptType} and/or version ${version}`
+    )
   }
   return script
 }

@@ -1,6 +1,7 @@
 // @flow
 
 import { parse } from 'uri-js'
+
 import { type EdgeSocket, type PluginIo } from '../../types/plugin.js'
 import {
   type PendingMessage,
@@ -8,9 +9,9 @@ import {
   type StratumOptions,
   type StratumTask
 } from '../../types/stratum.js'
+import { logger } from '../utils/logger.js'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 import { fetchPing, fetchVersion } from './stratumMessages.js'
-import { logger } from '../utils/logger.js'
 
 // Timing can vary a little in either direction for fewer wake ups:
 const TIMER_SLACK = 500

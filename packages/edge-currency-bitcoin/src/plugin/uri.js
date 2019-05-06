@@ -12,8 +12,8 @@ import parse from 'url-parse'
 
 import {
   dirtyAddress,
-  isValidAddress,
   isLegacy,
+  isValidAddress,
   sanitizeAddress,
   toNewFormat
 } from '../utils/addressFormat/addressFormatIndex.js'

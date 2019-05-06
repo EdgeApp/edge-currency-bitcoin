@@ -26,7 +26,9 @@ export const getHDSetting = (network: string, value: any): HDPathSetting => {
       if (
         typeof setting === 'object' &&
         (setting.prefix === value || setting.stringPrefix === value)
-      ) { return hdSetting }
+      ) {
+        return hdSetting
+      }
 
       // if scriptType or purpose
       if (setting === value) return hdSetting
@@ -48,7 +50,9 @@ export const getDecoder = (network: string, value: any) => {
         )
       }
 
-      if (decoder.prefix === value || decoder.stringPrefix === value) { return decoder.decoder }
+      if (decoder.prefix === value || decoder.stringPrefix === value) {
+        return decoder.decoder
+      }
     }
   }
   throw new Error(`Wrong value: ${value} for network: ${network}`)

@@ -32,13 +32,16 @@ import {
 } from '../utils/bcoinUtils/misc.js'
 import * as PaymentRequest from '../utils/bcoinUtils/paymentRequest.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
-import { InfoServerFeesSchema, EarnComFeesSchema } from '../utils/jsonSchemas.js'
+import {
+  EarnComFeesSchema,
+  InfoServerFeesSchema
+} from '../utils/jsonSchemas.js'
+import { logger } from '../utils/logger.js'
 import { envSettings, promiseAny, validateObject } from '../utils/utils.js'
 import { broadcastFactories } from './broadcastApi.js'
 import { EngineState } from './engineState.js'
 import { KeyManager } from './keyManager'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
-import { logger } from '../utils/logger.js'
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000

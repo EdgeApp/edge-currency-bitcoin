@@ -5,9 +5,10 @@ import { type EdgeIo } from 'edge-core-js/types'
 
 import { type PluginStateSettings } from '../../types/plugin.js'
 import { type EngineState } from '../engine/engineState.js'
+import { logger } from '../utils/logger.js'
 import { cache } from '../utils/utils.js'
 import { ServerCache } from './serverCache.js'
-import { logger } from '../utils/logger.js'
+
 export class PluginState extends ServerCache {
   // On-disk header information:
   height: { latest: number }
