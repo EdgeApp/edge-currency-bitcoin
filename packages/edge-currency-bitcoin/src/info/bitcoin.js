@@ -7,7 +7,7 @@ import { type EngineCurrencyInfo } from '../../types/engine.js'
 const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 1000,
-  feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
+  feeInfoServer: 'https://Bitcoinfees.Earn.com/api/v1/fees/list',
   simpleFeeSettings: {
     highFee: '150',
     lowFee: '20',

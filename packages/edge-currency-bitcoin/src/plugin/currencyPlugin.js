@@ -112,7 +112,10 @@ export class CurrencyTools {
     return forks
       .filter(network => {
         const networkInfo = Core.Networks[network]
-        return networkInfo && networkInfo.bips.includes(bip)
+        if (!networkInfo) return false
+        const { supportedHDPaths } = networkInfo
+        const bips = supportedHDPaths.reduce((res, { purpose }) => [...res, purpose], [])
+        return bips.includes(bip)
       })
       .map(network => `wallet:${network}`)
   }

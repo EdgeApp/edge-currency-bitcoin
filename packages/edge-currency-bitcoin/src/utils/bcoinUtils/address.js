@@ -89,7 +89,7 @@ export const toHexString = (
   prefixNum: number = -1
 ): string => {
   const { scriptType, hash, version = -1 } = address
-  if (prefixNum === -1) prefixNum = Core.NetworkInfo.getPrefixNum(scriptType, network)
+  if (prefixNum === -1) prefixNum = Core.NetworkInfo.getPrefix(scriptType, network)
   const prefixHex = prefixNum.toString(16).padStart(2, '0')
   const versionHex = version !== -1 ? version.toString(16).padEnd(4, '0') : ''
   return `${prefixHex}${versionHex}${hash}`

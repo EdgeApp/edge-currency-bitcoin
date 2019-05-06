@@ -10,6 +10,7 @@ import {
 } from '../../types/stratum.js'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 import { fetchPing, fetchVersion } from './stratumMessages.js'
+import { logger } from '../utils/logger.js'
 
 // Timing can vary a little in either direction for fewer wake ups:
 const TIMER_SLACK = 500

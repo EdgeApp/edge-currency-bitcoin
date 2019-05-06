@@ -140,7 +140,7 @@ export class KeyManager extends EventEmitter {
     }
 
     if (!parentKey) throw new Error('Cannot get parent key')
-    const key = await ExtendedKey.fromIndex(parentKey, index, this.network)
+    const key = await ExtendedKey.fromIndex(parentKey, index)
 
     const hdKey = HDKey.fromExtendedKey(key, parentKey)
     return hdKey

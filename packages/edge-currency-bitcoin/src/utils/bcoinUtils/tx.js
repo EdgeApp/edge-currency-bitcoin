@@ -44,7 +44,7 @@ export const createTX = async ({
     setRBF = false
   }
 }: CreateTxOptions) => {
-  const { serializers } = Core.Networks[network]
+  const { txHash } = Core.Networks[network]
 
   // Create the Mutable Transaction
   const mtx = new MTX()
@@ -86,7 +86,7 @@ export const createTX = async ({
   // Create coins
   const coins = utxos.map(({ tx, index, height }) => {
     const coin = Coin.fromTX(tx, index, height)
-    coin.hash = serializers.txHash(tx.toNormal().toString('hex'))
+    coin.hash = txHash(tx.toNormal().toString('hex'))
     return coin
   })
 
@@ -252,9 +252,9 @@ export const sign = async (
   await tx.template(keyRings)
   tx.network = network
   await tx.sign(keyRings, Core.Networks[network].replayProtection)
-  const { serializers } = Core.Networks[network]
-  const txHash = serializers.txHash(tx.toNormal().toString('hex'))
-  const txid = reverseHexString(txHash)
+  const { txHash } = Core.Networks[network]
+  const hexTxHash = txHash(tx.toNormal().toString('hex'))
+  const txid = reverseHexString(hexTxHash)
   return { txid, signedTx: tx.toRaw().toString('hex') }
 }
 

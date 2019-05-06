@@ -209,7 +209,7 @@ export class CurrencyEngine {
 
   async updateFeeFromEdge () {
     try {
-      const url = `${InfoServer}/networkFees/${this.currencyCode}`
+      const url = this.engineInfo.networkFeesUrl
       const feesResponse = await this.io.fetch(url)
       const feesJson = await feesResponse.json()
       if (validateObject(feesJson, InfoServerFeesSchema)) {
@@ -503,10 +503,6 @@ export class CurrencyEngine {
       throw new Error('InsufficientFundsError')
     }
     try {
-      // If somehow we have outdated fees, try and get new ones
-      if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        await this.updateFeeTable()
-      }
       // Get the rate according to the latest fee
       const rate = this.getRate(edgeSpendInfo)
       logger.info(`spend: Using fee rate ${rate} sat/K`)

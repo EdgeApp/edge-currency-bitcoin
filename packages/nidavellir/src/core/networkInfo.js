@@ -123,7 +123,7 @@ export const getScriptType = (prefixNum: number, network: string = 'main') => {
   return setting.scriptType
 }
 
-export const getPrefixNum = (scriptType: string, network: string = 'main') => {
+export const getPrefix = (scriptType: string, network: string = 'main') => {
   const { supportedHDPaths } = networks[network]
   const hdSetting = supportedHDPaths.find(
     ({ scriptType: Script }) => scriptType === Script

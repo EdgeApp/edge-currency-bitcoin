@@ -23,7 +23,8 @@ export const formatToBips = (
   network: string,
   format?: string
 ): Array<number> => {
-  const { bips } = Core.Networks[network]
+  const { supportedHDPaths } = Core.Networks[network]
+  const bips = supportedHDPaths.reduce((res, { purpose }) => [...res, purpose], [])
   if (!format) {
     if (bips.includes(49)) return [49]
     return [44]
