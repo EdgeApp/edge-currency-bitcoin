@@ -56,7 +56,8 @@ const currencyInfo: EdgeCurrencyInfo = {
     electrumServers: [
       'electrum://electrum-alts-wusa2.edge.app:50011',
       'electrum://electrum-alts-weuro-az.edge.app:50011',
-      'electrum://electrum-alts-neuro-az.edge.app:50011'
+      'electrum://electrum-alts-neuro-az.edge.app:50011',
+      'electrum://electrum-alts-neuro.edge.app:50011'
     ],
     disableFetchingServers: false
   },

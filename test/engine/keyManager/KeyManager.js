@@ -8,6 +8,8 @@ import type { KeyManagerCallbacks } from '../../../src/engine/keyManager.js'
 // InfoFiles for networks
 import { bitcoin } from '../../../src/info/bitcoin.js'
 import { bitcoincash } from '../../../src/info/bitcoincash.js'
+import { dogecoin } from '../../../src/info/dogecoin.js'
+
 // Bcoin extender function
 import { addNetwork } from '../../../src/utils/bcoinExtender/bcoinExtender.js'
 import { logger, setLogger } from '../../../src/utils/logger.js'
@@ -16,6 +18,7 @@ import fixtures from './fixtures.json'
 // Add network to bcoin
 addNetwork(bitcoin.bcoinInfo)
 addNetwork(bitcoincash.bcoinInfo)
+addNetwork(dogecoin.bcoinInfo)
 
 const fakeLogger = {
   info: () => {},
