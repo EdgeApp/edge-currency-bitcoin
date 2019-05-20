@@ -1,5 +1,7 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -44,17 +46,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'EBST',
-  currencyName: 'eBoost',
+  displayName: 'eBoost',
   pluginName: 'eboost',
   denominations: [
     { name: 'EBST', multiplier: '100000000', symbol: 'EBST' },
     { name: 'mEBST', multiplier: '100000', symbol: 'mEBST' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:eboost'],
+  walletType: 'wallet:eboost',
 
   // Configuration options:
   defaultSettings: {

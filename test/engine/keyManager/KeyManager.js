@@ -1,29 +1,37 @@
 // @flow
 
+import { assert } from 'chai'
+import { describe, it } from 'mocha'
+
+import { KeyManager } from '../../../src/engine/keyManager.js'
+import type { KeyManagerCallbacks } from '../../../src/engine/keyManager.js'
 // InfoFiles for networks
 import { bitcoin } from '../../../src/info/bitcoin.js'
 import { bitcoincash } from '../../../src/info/bitcoincash.js'
-
 // Bcoin extender function
 import { addNetwork } from '../../../src/utils/bcoinExtender/bcoinExtender.js'
-
-import { describe, it } from 'mocha'
-import { assert } from 'chai'
-import { KeyManager } from '../../../src/engine/keyManager.js'
-import type { KeyManagerCallbacks } from '../../../src/engine/keyManager.js'
+import { logger, setLogger } from '../../../src/utils/logger.js'
 import fixtures from './fixtures.json'
 
 // Add network to bcoin
 addNetwork(bitcoin.bcoinInfo)
 addNetwork(bitcoincash.bcoinInfo)
 
+const fakeLogger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {}
+}
+
+setLogger(fakeLogger)
+
 for (const fixture of fixtures) {
   const keyManagerCallbacks: KeyManagerCallbacks = {
     onNewAddress: (scriptHash: string, address: string, path: string) => {
-      console.log(scriptHash, address, path)
+      logger.info(scriptHash, address, path)
     },
     onNewKey: (keys: any) => {
-      console.log(keys)
+      logger.info(keys)
     }
   }
   describe(`Key Manager for ${fixture.network}`, function () {

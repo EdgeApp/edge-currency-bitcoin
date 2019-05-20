@@ -1,5 +1,7 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -50,21 +52,14 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'TBCH',
-  currencyName: 'Bitcoin Cash Testnet',
+  displayName: 'Bitcoin Cash Testnet',
   pluginName: 'bitcoincashtestnet',
   denominations: [
     { name: 'TBCH', multiplier: '100000000', symbol: '₿' },
     { name: 'mTBCH', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:bitcoincash-testnet',
-    'wallet:bitcoincash-bip44-testnet'
-  ],
+  walletType: 'wallet:bitcoincash-testnet',
 
   // Configuration options:
   defaultSettings: {

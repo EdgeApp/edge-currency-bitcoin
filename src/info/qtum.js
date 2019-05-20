@@ -1,5 +1,7 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -37,20 +39,22 @@ const engineInfo: EngineCurrencyInfo = {
     standardFeeHigh: '700',
     standardFeeLowAmount: '20000000',
     standardFeeHighAmount: '981000000'
+  },
+  timestampFromHeader (header: Buffer): number {
+    if (header.length < 80 + 64) {
+      throw new Error(`Cannot interpret block header ${header.toString('hex')}`)
+    }
+    return header.readUInt32LE(4 + 32 + 32)
   }
 }
 
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'QTUM',
-  currencyName: 'Qtum',
+  displayName: 'Qtum',
   pluginName: 'qtum',
   denominations: [{ name: 'QTUM', multiplier: '100000000', symbol: 'Q' }],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:qtum', 'wallet:qtum-bip44'],
+  walletType: 'wallet:qtum',
 
   // Configuration options:
   defaultSettings: {

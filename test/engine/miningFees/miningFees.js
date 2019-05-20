@@ -6,11 +6,11 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import type { BitcoinFees } from '../../src/utils/flowTypes.js'
 import {
   calcFeesFromEarnCom,
   calcMinerFeePerByte
 } from '../../../src/engine/miningFees.js'
+import type { BitcoinFees } from '../../../src/utils/flowTypes.js'
 import earnComTestFees from './earnComTestFees.json'
 
 describe(`Mining Fees`, function () {
@@ -24,17 +24,14 @@ describe(`Mining Fees`, function () {
       standardFeeHighAmount: '10000000',
       timestamp: 0
     }
-    const outBitcoinFees: BitcoinFees = calcFeesFromEarnCom(
-      inBitcoinFees,
-      earnComTestFees
-    )
-
+    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom(earnComTestFees)
+    const outBitcoinFees: BitcoinFees = { ...inBitcoinFees, ...edgeBitcoinFees }
     assert.equal(outBitcoinFees.standardFeeLowAmount, '100000')
     assert.equal(outBitcoinFees.standardFeeHighAmount, '10000000')
     assert.equal(outBitcoinFees.lowFee, '10')
-    assert.equal(outBitcoinFees.standardFeeLow, '101')
-    assert.equal(outBitcoinFees.standardFeeHigh, '280')
-    assert.equal(outBitcoinFees.highFee, '300')
+    assert.equal(outBitcoinFees.standardFeeLow, '221')
+    assert.equal(outBitcoinFees.standardFeeHigh, '290')
+    assert.equal(outBitcoinFees.highFee, '291')
   })
   it('calcFeesFromEarnCom blank array', function () {
     const inBitcoinFees = {
@@ -46,8 +43,8 @@ describe(`Mining Fees`, function () {
       standardFeeHighAmount: '22222222',
       timestamp: 0
     }
-    const outBitcoinFees = calcFeesFromEarnCom(inBitcoinFees, [])
-
+    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom([])
+    const outBitcoinFees: BitcoinFees = { ...inBitcoinFees, ...edgeBitcoinFees }
     assert.equal(outBitcoinFees.standardFeeLowAmount, '1111111')
     assert.equal(outBitcoinFees.standardFeeHighAmount, '22222222')
     assert.equal(outBitcoinFees.lowFee, '11')
@@ -65,8 +62,8 @@ describe(`Mining Fees`, function () {
       standardFeeHighAmount: '22222222',
       timestamp: 0
     }
-    const outBitcoinFees = calcFeesFromEarnCom(inBitcoinFees, null)
-
+    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom(null)
+    const outBitcoinFees: BitcoinFees = { ...inBitcoinFees, ...edgeBitcoinFees }
     assert.equal(outBitcoinFees.standardFeeLowAmount, '1111111')
     assert.equal(outBitcoinFees.standardFeeHighAmount, '22222222')
     assert.equal(outBitcoinFees.lowFee, '11')
@@ -84,8 +81,8 @@ describe(`Mining Fees`, function () {
       standardFeeHighAmount: '22222222',
       timestamp: 0
     }
-    const outBitcoinFees = calcFeesFromEarnCom(inBitcoinFees, { fees: [] })
-
+    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom([])
+    const outBitcoinFees: BitcoinFees = { ...inBitcoinFees, ...edgeBitcoinFees }
     assert.equal(outBitcoinFees.standardFeeLowAmount, '1111111')
     assert.equal(outBitcoinFees.standardFeeHighAmount, '22222222')
     assert.equal(outBitcoinFees.lowFee, '11')

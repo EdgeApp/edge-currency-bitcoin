@@ -2,6 +2,7 @@
  * Created by Paul Puey on 2017/11/09
  * @flow
  */
+import { logger } from '../utils/logger.js'
 
 export type ServerInfo = {
   serverUrl: string,
@@ -13,6 +14,8 @@ export type ServerInfo = {
 const RESPONSE_TIME_UNINITIALIZED = 999999999
 const MAX_SCORE = 500
 const MIN_SCORE = -100
+const DROPPED_SERVER_SCORE = -100
+const RE_ADDED_SERVER_SCORE = -10
 
 export class ServerCache {
   servers_: { [serverUrl: string]: ServerInfo }
@@ -68,8 +71,12 @@ export class ServerCache {
 
       let serverScore = oldServer.serverScore
       if (!match) {
-        if (serverScore >= 0) {
-          serverScore = -1
+        if (serverScore > DROPPED_SERVER_SCORE) {
+          serverScore = DROPPED_SERVER_SCORE
+        }
+      } else {
+        if (serverScore < RE_ADDED_SERVER_SCORE) {
+          serverScore = RE_ADDED_SERVER_SCORE
         }
       }
 
@@ -91,7 +98,7 @@ export class ServerCache {
   }
 
   printServerCache () {
-    console.log('**** printServerCache ****')
+    logger.info('**** printServerCache ****')
     const serverInfos: Array<ServerInfo> = []
     for (const s in this.servers_) {
       serverInfos.push(this.servers_[s])
@@ -106,9 +113,9 @@ export class ServerCache {
       const response = s.responseTime.toString()
       const numResponse = s.numResponseTimes.toString()
       const url = s.serverUrl
-      console.log(`ServerCache ${score} ${response}ms ${numResponse} ${url}`)
+      logger.info(`ServerCache ${score} ${response}ms ${numResponse} ${url}`)
     }
-    console.log('**************************')
+    logger.info('**************************')
   }
 
   serverScoreUp (
@@ -128,7 +135,7 @@ export class ServerCache {
       this.setResponseTime(serverUrl, responseTimeMilliseconds)
     }
 
-    console.log(
+    logger.info(
       `${serverUrl}: score UP to ${
         serverInfo.serverScore
       } ${responseTimeMilliseconds}ms`
@@ -153,7 +160,7 @@ export class ServerCache {
       this.setResponseTime(serverUrl, 9999)
     }
 
-    console.log(`${serverUrl}: score DOWN to ${serverInfo.serverScore}`)
+    logger.info(`${serverUrl}: score DOWN to ${serverInfo.serverScore}`)
     this.dirtyServerCache(serverUrl)
   }
 

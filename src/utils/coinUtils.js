@@ -1,21 +1,24 @@
 // @flow
-// $FlowFixMe
-import buffer from 'buffer-hack'
+
+import { Buffer } from 'buffer'
+
 import {
-  utils,
+  network as Network,
   hd,
+  networks,
   primitives,
   script,
-  networks,
-  network as Network
+  utils
 } from 'bcoin'
-import { hash256, hash256Sync, reverseBufferToHex } from './utils.js'
+
+import { type EngineState } from '../engine/engineState.js'
+import { logger } from '../utils/logger.js'
 import {
   toLegacyFormat,
   toNewFormat
 } from './addressFormat/addressFormatIndex.js'
+import { hash256, hash256Sync, reverseBufferToHex } from './utils.js'
 
-const { Buffer } = buffer
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
 
 export type RawTx = string
@@ -125,7 +128,7 @@ export const setKeyType = async (
     witness = false
     keyRing = await primitives.KeyRing.fromScript(
       key.privateKey || key.publicKey,
-      script.fromString(redeemScript),
+      script.fromRaw(Buffer.from(redeemScript.replace(/^0x/, ''), 'hex')),
       isCompressed(key.publicKey),
       network
     )
@@ -251,7 +254,7 @@ export const getPrivateFromSeed = async (seed: string, network: string) => {
     const mnemonic = hd.Mnemonic.fromPhrase(seed)
     return hd.PrivateKey.fromMnemonic(mnemonic, network)
   } catch (e) {
-    console.log('Not a mnemonic, treating the seed as base64')
+    logger.error('Not a mnemonic, treating the seed as base64')
     return hd.PrivateKey.fromSeed(Buffer.from(seed, 'base64'), network)
   }
 }
@@ -335,7 +338,7 @@ export const addressFromKey = async (
 export const sumTransaction = (
   bcoinTransaction: any,
   network: string,
-  engineState: any
+  engineState: EngineState
 ) => {
   const ourReceiveAddresses = []
   let totalOutputAmount = 0
@@ -363,7 +366,7 @@ export const sumTransaction = (
         ? serializers.address.encode(address)
         : address
     } catch (e) {
-      console.log(e)
+      logger.error(e)
       if (value <= 0) {
         continue
       } else {
@@ -423,3 +426,10 @@ export const getReceiveAddresses = (
     const address = output.getAddress().toString(network)
     return toNewFormat(address, network)
   })
+
+export const bitcoinTimestampFromHeader = (header: Buffer): number => {
+  if (header.length !== 80) {
+    throw new Error(`Cannot interpret block header ${header.toString('hex')}`)
+  }
+  return header.readUInt32LE(4 + 32 + 32)
+}

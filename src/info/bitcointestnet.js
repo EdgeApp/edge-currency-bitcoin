@@ -1,9 +1,11 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { crypto } from 'bcoin'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
-import { crypto } from 'bcoin'
 
 const hash256 = (rawTx: string) => {
   const buf = Buffer.from(rawTx, 'hex')
@@ -57,41 +59,19 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'TBTC',
-  currencyName: 'Bitcoin Testnet',
+  displayName: 'Bitcoin Testnet',
   pluginName: 'bitcointestnet',
   denominations: [
     { name: 'TBTC', multiplier: '100000000', symbol: '₿' },
     { name: 'mTBTC', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:bitcoin-testnet',
-    'wallet:bitcoin-bip84-testnet',
-    'wallet:bitcoin-bip49-testnet',
-    'wallet:bitcoin-bip44-testnet'
-  ],
+  walletType: 'wallet:bitcoin-testnet',
 
   // Configuration options:
   defaultSettings: {
     customFeeSettings: ['satPerByte'],
-    electrumServers: [
-      'electrum://testnet.hsmiths.com:53011',
-      'electrum://testnet1.bauerj.eu:50001',
-      'electrum://electrum.akinbo.org:51001',
-      'electrum://testnetnode.arihanc.com:51001',
-      'electrum://electrum.akinbo.org:51001',
-      'electrum://testnet1.bauerj.eu:50001',
-      'electrum://testnet.qtornado.com:51001',
-      'electrum://testnet.hsmiths.com:53011',
-      'electrums://testnet.hsmiths.com:53012',
-      'electrums://testnet.qtornado.com:51002',
-      'electrums://electrum.akinbo.org:51002',
-      'electrum://testnetnode.arihanc.com:51001'
-    ],
+    electrumServers: ['electrum://testnet.qtornado.com:51001'],
     disableFetchingServers: true
   },
   metaTokens: [],

@@ -1,5 +1,7 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -47,22 +49,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'LTC',
-  currencyName: 'Litecoin',
+  displayName: 'Litecoin',
   pluginName: 'litecoin',
   denominations: [
     { name: 'LTC', multiplier: '100000000', symbol: 'Ł' },
     { name: 'mLTC', multiplier: '100000', symbol: 'mŁ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:litecoin',
-    'wallet:litecoin-bip84',
-    'wallet:litecoin-bip49',
-    'wallet:litecoin-bip44'
-  ],
+  walletType: 'wallet:litecoin',
 
   // Configuration options:
   defaultSettings: {
@@ -104,9 +97,9 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  addressExplorer: 'https://live.blockcypher.com/ltc/address/%s',
-  blockExplorer: 'https://live.blockcypher.com/ltc/block/%s',
-  transactionExplorer: 'https://live.blockcypher.com/ltc/tx/%s',
+  blockExplorer: 'https://blockchair.com/litecoin/block/%s',
+  addressExplorer: 'https://blockchair.com/litecoin/address/%s',
+  transactionExplorer: 'https://blockchair.com/litecoin/transaction/%s',
 
   // Images:
   symbolImage: `${imageServerUrl}/litecoin-logo-solo-64.png`,

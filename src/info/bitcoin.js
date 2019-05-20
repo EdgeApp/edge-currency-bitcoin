@@ -1,5 +1,7 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -33,7 +35,7 @@ const engineInfo: EngineCurrencyInfo = {
   maxFee: 1000000,
   defaultFee: 1000,
   feeUpdateInterval: 60000,
-  feeInfoServer: 'https://bitcoinfees.21.co/api/v1/fees/list',
+  feeInfoServer: 'https://Bitcoinfees.Earn.com/api/v1/fees/list',
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '150',
@@ -48,23 +50,14 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BTC',
-  currencyName: 'Bitcoin',
+  displayName: 'Bitcoin',
   pluginName: 'bitcoin',
   denominations: [
     { name: 'BTC', multiplier: '100000000', symbol: '₿' },
     { name: 'mBTC', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: [
-    'wallet:bitcoin',
-    'wallet:bitcoin-bip84',
-    'wallet:bitcoin-bip49',
-    'wallet:bitcoin-bip44'
-  ],
+  walletType: 'wallet:bitcoin',
 
   // Configuration options:
   defaultSettings: {

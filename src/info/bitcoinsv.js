@@ -1,5 +1,7 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -49,18 +51,14 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BSV',
-  currencyName: 'Bitcoin SV',
+  displayName: 'Bitcoin SV',
   pluginName: 'bitcoinsv',
   denominations: [
     { name: 'BSV', multiplier: '100000000', symbol: '₿' },
     { name: 'mBSV', multiplier: '100000', symbol: 'm₿' },
     { name: 'cash', multiplier: '100', symbol: 'ƀ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:bitcoinsv', 'wallet:bitcoinsv-bip44'],
+  walletType: 'wallet:bitcoinsv',
 
   // Configuration options:
   defaultSettings: {
@@ -81,9 +79,9 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  blockExplorer: 'https://bsvexplorer.info/#/block/%s',
-  addressExplorer: 'https://bsvexplorer.info/#/address/%s',
-  transactionExplorer: 'https://bsvexplorer.info/#/tx/%s',
+  blockExplorer: 'https://blockchair.com/bitcoin-sv/block/%s',
+  addressExplorer: 'https://blockchair.com/bitcoin-sv/address/%s',
+  transactionExplorer: 'https://blockchair.com/bitcoin-sv/transaction/%s',
 
   // Images:
   symbolImage: `${imageServerUrl}/bitcoinsv-logo-solo-64.png`,

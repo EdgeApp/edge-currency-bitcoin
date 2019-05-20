@@ -1,14 +1,14 @@
 // @flow
-// $FlowFixMe
-import buffer from 'buffer-hack'
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { Buffer } from 'buffer'
+
+import { crypto, utils } from 'bcoin'
+import bs58sc from 'bs58smartcheck'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
-import bs58sc from 'bs58smartcheck'
-import { utils, crypto } from 'bcoin'
-
-const { Buffer } = buffer
 
 const base58 = {
   decode: (address: string) => {
@@ -74,17 +74,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'SMART',
-  currencyName: 'SmartCash',
+  displayName: 'SmartCash',
   pluginName: 'smartcash',
   denominations: [
     { name: 'SMART', multiplier: '100000000', symbol: 'S' },
     { name: 'mSMART', multiplier: '100000', symbol: 'mS' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:smartcash'],
+  walletType: 'wallet:smartcash',
 
   // Configuration options:
   defaultSettings: {

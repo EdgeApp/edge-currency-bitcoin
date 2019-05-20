@@ -1,42 +1,49 @@
 // @flow
-import { expect, assert } from 'chai'
-import { describe, it } from 'mocha'
-import net from 'net'
-import tls from 'tls'
 
-import type { StratumCallbacks } from '../../src/stratum/stratumConnection.js'
-import { StratumConnection } from '../../src/stratum/stratumConnection.js'
+import { assert, expect } from 'chai'
+import { makeFakeIo } from 'edge-core-js'
+import { describe, it } from 'mocha'
+
+import { makeNodeIo } from '../../src/index.js'
 import {
-  subscribeHeight,
+  type StratumCallbacks,
+  StratumConnection
+} from '../../src/stratum/stratumConnection.js'
+import {
+  type StratumBlockHeader,
+  type StratumHistoryRow,
+  type StratumUtxo,
   fetchBlockHeader,
-  fetchTransaction,
-  subscribeScriptHash,
   fetchScriptHashHistory,
   fetchScriptHashUtxo,
-  type StratumHistoryRow,
-  type StratumBlockHeader
+  fetchTransaction,
+  subscribeHeight,
+  subscribeScriptHash
 } from '../../src/stratum/stratumMessages.js'
-import type { StratumUtxo } from '../../src/stratum/stratumMessages.js'
+import { bitcoinTimestampFromHeader } from '../../src/utils/coinUtils.js'
+
+const fakeLogger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {}
+}
 
 // const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
 const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'
-const io = {
-  Socket: net.Socket,
-  TLSSocket: tls.TLSSocket
-}
+const io = Object.assign({}, makeNodeIo(makeFakeIo()), { console: fakeLogger })
 
 describe('StratumConnection', function () {
-  this.timeout(10000)
+  this.timeout(3000)
   it('fetchVersion', function (done) {
     let gotReply = false
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion (version) {
-        connection.close()
+        connection.disconnect()
         expect(parseFloat(version)).to.be.at.least(1.1)
         gotReply = true
       },
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {
@@ -54,18 +61,18 @@ describe('StratumConnection', function () {
       data => {
         expect(data).to.be.at.least(400000)
         gotReply = true
-        connection.close()
+        connection.disconnect()
       },
       e => {
         console.error(e)
-        connection.close()
+        connection.disconnect()
       }
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion (version) {},
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {
@@ -85,25 +92,30 @@ describe('StratumConnection', function () {
     let gotReply = false
     const task = fetchBlockHeader(
       400000,
+      bitcoinTimestampFromHeader,
       (data: StratumBlockHeader) => {
-        expect(data.block_height).to.equal(400000)
-        expect(data.prev_block_hash).to.equal(
-          '0000000000000000030034b661aed920a9bdf6bbfa6d2e7a021f78481882fa39'
-        )
+        if (data.block_height != null) {
+          expect(data.block_height).to.equal(400000)
+        }
+        if (data.prev_block_hash != null) {
+          expect(data.prev_block_hash).to.equal(
+            '0000000000000000030034b661aed920a9bdf6bbfa6d2e7a021f78481882fa39'
+          )
+        }
         expect(data.timestamp).to.equal(1456417484)
         gotReply = true
-        connection.close()
+        connection.disconnect()
       },
       e => {
         console.error(e)
-        connection.close()
+        connection.disconnect()
       }
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion (version) {},
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {
@@ -128,18 +140,18 @@ describe('StratumConnection', function () {
           '01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff0704ffff001d0104ffffffff0100f2052a0100000043410496b538e853519c726a2c91e61ec11600ae1390813a627c66fb8be7947be63c52da7589379515d4e0a604f8141781e62294721166bf621e73a82cbf2342c858eeac00000000'
         )
         gotReply = true
-        connection.close()
+        connection.disconnect()
       },
       e => {
         console.error(e)
-        connection.close()
+        connection.disconnect()
       }
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion (version) {},
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {
@@ -165,18 +177,18 @@ describe('StratumConnection', function () {
           'a1e0a04e5c66342aca0171a398ff131f9cb51edb30c1e68cf67dd28bb3615b57'
         )
         gotReply = true
-        connection.close()
+        connection.disconnect()
       },
       e => {
         console.error(e)
-        connection.close()
+        connection.disconnect()
       }
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion (version) {},
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {
@@ -204,18 +216,18 @@ describe('StratumConnection', function () {
         )
         assert.equal(data[0].height, 496162)
         gotReply = true
-        connection.close()
+        connection.disconnect()
       },
       e => {
         console.error(e)
-        connection.close()
+        connection.disconnect()
       }
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion (version) {},
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {
@@ -245,18 +257,18 @@ describe('StratumConnection', function () {
         assert.equal(data[0].tx_pos, 0)
         assert.equal(data[0].value, 10874)
         gotReply = true
-        connection.close()
+        connection.disconnect()
       },
       e => {
         console.error(e)
-        connection.close()
+        connection.disconnect()
       }
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
       onTimer () {},
       onVersion () {},
-      onNotifyHeader () {},
+      onNotifyHeight () {},
       onNotifyScriptHash () {},
       onOpen () {},
       onClose () {

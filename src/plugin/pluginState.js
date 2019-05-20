@@ -1,10 +1,11 @@
 // @flow
 
-import type { DiskletFolder } from 'disklet'
-import type { EdgeIo } from 'edge-core-js'
+import { type Disklet, navigateDisklet } from 'disklet'
+import { type EdgeIo } from 'edge-core-js/types'
 
 import type { EngineState } from '../engine/engineState.js'
-import { InfoServer, FixCurrencyCode } from '../info/constants'
+import { FixCurrencyCode, InfoServer } from '../info/constants'
+import { logger } from '../utils/logger.js'
 import { ServerCache } from './serverCache.js'
 
 export type CurrencySettings = {
@@ -71,7 +72,7 @@ export class PluginState extends ServerCache {
   infoServerUris: string
 
   engines: Array<EngineState>
-  folder: DiskletFolder
+  disklet: Disklet
 
   headerCacheDirty: boolean
   serverCacheJson: Object
@@ -93,9 +94,8 @@ export class PluginState extends ServerCache {
     const fixedCode = FixCurrencyCode(currencyCode)
     this.infoServerUris = `${InfoServer}/electrumServers/${fixedCode}`
     this.engines = []
-    // The core object still includes `folder`, even though the type doesn't:
-    const flowHack: any = io
-    this.folder = flowHack.folder.folder('plugins').folder(pluginName)
+    this.disklet = navigateDisklet(io.disklet, 'plugins/' + pluginName)
+
     this.pluginName = pluginName
     this.headerCacheDirty = false
     this.serverCacheJson = {}
@@ -103,7 +103,7 @@ export class PluginState extends ServerCache {
 
   async load () {
     try {
-      const headerCacheText = await this.folder.file('headers.json').getText()
+      const headerCacheText = await this.disklet.getText('headers.json')
       const headerCacheJson = JSON.parse(headerCacheText)
       // TODO: Validate JSON
 
@@ -114,15 +114,13 @@ export class PluginState extends ServerCache {
     }
 
     try {
-      const serverCacheText = await this.folder
-        .file('serverCache.json')
-        .getText()
+      const serverCacheText = await this.disklet.getText('serverCache.json')
       const serverCacheJson = JSON.parse(serverCacheText)
       // TODO: Validate JSON
 
       this.serverCacheJson = serverCacheJson
     } catch (e) {
-      console.log(e)
+      logger.info(e)
     }
 
     // Fetch stratum servers in the background:
@@ -143,19 +141,19 @@ export class PluginState extends ServerCache {
 
   saveHeaderCache (): Promise<void> {
     if (this.headerCacheDirty) {
-      return this.folder
-        .file('headers.json')
+      return this.disklet
         .setText(
+          'headers.json',
           JSON.stringify({
             height: this.height,
             headers: this.headerCache
           })
         )
         .then(() => {
-          console.log(`${this.pluginName} - Saved header cache`)
+          logger.info(`${this.pluginName} - Saved header cache`)
           this.headerCacheDirty = false
         })
-        .catch(e => console.log(`${this.pluginName} - ${e.toString()}`))
+        .catch(e => logger.info(`${this.pluginName} - ${e.toString()}`))
     }
     return Promise.resolve()
   }
@@ -164,14 +162,15 @@ export class PluginState extends ServerCache {
     // this.printServerCache()
     if (this.serverCacheDirty) {
       try {
-        await this.folder
-          .file('serverCache.json')
-          .setText(JSON.stringify(this.servers_))
+        await this.disklet.setText(
+          'serverCache.json',
+          JSON.stringify(this.servers_)
+        )
         this.serverCacheDirty = false
         this.cacheLastSave_ = Date.now()
-        console.log(`${this.pluginName} - Saved server cache`)
+        logger.info(`${this.pluginName} - Saved server cache`)
       } catch (e) {
-        console.log(`${this.pluginName} - ${e.toString()}`)
+        logger.info(`${this.pluginName} - ${e.toString()}`)
       }
     }
   }
@@ -202,13 +201,13 @@ export class PluginState extends ServerCache {
 
   async fetchStratumServers (): Promise<void> {
     const { io } = this
-    console.log(`${this.pluginName} - GET ${this.infoServerUris}`)
     let serverList = this.defaultServers
     if (!this.disableFetchingServers) {
       try {
+        logger.info(`${this.pluginName} - GET ${this.infoServerUris}`)
         const result = await io.fetch(this.infoServerUris)
         if (!result.ok) {
-          console.log(
+          logger.info(
             `${this.pluginName} - Fetching ${this.infoServerUris} failed with ${
               result.status
             }`
@@ -217,7 +216,7 @@ export class PluginState extends ServerCache {
           serverList = await result.json()
         }
       } catch (e) {
-        console.log(e)
+        logger.info(e)
       }
     }
     if (!Array.isArray(serverList)) {

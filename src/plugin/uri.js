@@ -1,19 +1,22 @@
 // @flow
-import type {
-  EdgeEncodeUri,
-  EdgeParsedUri,
-  EdgeCurrencyInfo
-} from 'edge-core-js'
+
+import { bns } from 'biggystring'
 import {
-  validAddress,
-  sanitizeAddress,
-  dirtyAddress,
-  toNewFormat
-} from '../utils/addressFormat/addressFormatIndex.js'
-import { verifyWIF, verifyUriProtocol } from '../utils/coinUtils.js'
+  type EdgeCurrencyInfo,
+  type EdgeEncodeUri,
+  type EdgeParsedUri
+} from 'edge-core-js/types'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
-import { bns } from 'biggystring'
+
+import {
+  dirtyAddress,
+  sanitizeAddress,
+  toNewFormat,
+  validAddress
+} from '../utils/addressFormat/addressFormatIndex.js'
+import { verifyUriProtocol, verifyWIF } from '../utils/coinUtils.js'
+
 // import bcoin from 'bcoin'
 
 const parsePathname = (pathname: string, network: string) => {
@@ -55,7 +58,7 @@ export const parseUri = (
     throw new Error('InvalidUriError')
   }
   // Get all posible query params
-  const { label, message, amount, r } = query
+  const { label, message, amount, r, category } = query
   // If we don't have a pathname or a paymentProtocolURL uri then we bail
   if (!pathname && !r) throw new Error('InvalidUriError')
   // Create the returned object
@@ -70,8 +73,9 @@ export const parseUri = (
   // Assign the query params to the parsedUri object
   const metadata = {}
   if (label) Object.assign(metadata, { name: label })
-  if (message) Object.assign(metadata, { message })
+  if (message) Object.assign(metadata, { notes: message })
   if (r) parsedUri.paymentProtocolURL = r
+  if (category) Object.assign(metadata, { category: category })
   Object.assign(parsedUri, { metadata })
   // Get amount in native denomination if exists
   if (amount && typeof amount === 'string') {
@@ -123,8 +127,8 @@ export const encodeUri = (
     if (typeof metadata.name === 'string') {
       queryString += `label=${metadata.name}&`
     }
-    if (typeof metadata.message === 'string') {
-      queryString += `message=${metadata.message}&`
+    if (typeof metadata.notes === 'string') {
+      queryString += `message=${metadata.notes}&`
     }
   }
   queryString = queryString.substr(0, queryString.length - 1)

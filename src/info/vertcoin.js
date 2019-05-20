@@ -1,5 +1,7 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -47,17 +49,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'VTC',
-  currencyName: 'Vertcoin',
+  displayName: 'Vertcoin',
   pluginName: 'vertcoin',
   denominations: [
     { name: 'VTC', multiplier: '100000000', symbol: 'V' },
     { name: 'mVTC', multiplier: '100000', symbol: 'mV' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:vertcoin'],
+  walletType: 'wallet:vertcoin',
 
   // Configuration options:
   defaultSettings: {
@@ -72,9 +70,9 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  blockExplorer: 'https://bitinfocharts.com/vertcoin/block/%s',
-  addressExplorer: 'https://bitinfocharts.com/vertcoin/address/%s',
-  transactionExplorer: 'https://bitinfocharts.com/vertcoin/tx/%s',
+  blockExplorer: 'https://insight.vertcoin.org/block/%s',
+  addressExplorer: 'https://insight.vertcoin.org/address/%s',
+  transactionExplorer: 'https://insight.vertcoin.org/tx/%s',
 
   // Images:
   symbolImage: `${imageServerUrl}/vertcoin-logo-solo-64.png`,

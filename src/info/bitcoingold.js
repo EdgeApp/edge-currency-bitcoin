@@ -1,5 +1,7 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -46,6 +48,23 @@ const engineInfo: EngineCurrencyInfo = {
     standardFeeHigh: '140',
     standardFeeLowAmount: '17320',
     standardFeeHighAmount: '86700000'
+  },
+  timestampFromHeader (header: Buffer, height: number): number {
+    if (height < 491407 || header.readUInt32LE(0) & 0x04000000) {
+      if (header.length !== 80) {
+        throw new Error(
+          `Cannot interpret block header ${header.toString('hex')}`
+        )
+      }
+      return header.readUInt32LE(4 + 32 + 32)
+    } else {
+      if (header.length < 80 + 32 + 32) {
+        throw new Error(
+          `Cannot interpret block header ${header.toString('hex')}`
+        )
+      }
+      return header.readUInt32LE(4 + 32 + 32 + 32)
+    }
   }
 }
 
@@ -53,18 +72,14 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
 
   currencyCode: 'BTG',
-  currencyName: 'Bitcoin Gold',
+  displayName: 'Bitcoin Gold',
   pluginName: 'bitcoingold',
   denominations: [
     { name: 'BTG', multiplier: '100000000', symbol: '₿' },
     { name: 'mBTG', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:bitcoingold'],
+  walletType: 'wallet:bitcoingold',
 
   // Configuration options:
   defaultSettings: {

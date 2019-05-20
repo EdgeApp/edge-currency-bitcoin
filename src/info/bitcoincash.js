@@ -1,10 +1,12 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { script } from 'bcoin'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 import { hexToVarByte } from '../utils/utils.js'
-import { script } from 'bcoin'
+import { imageServerUrl } from './constants.js'
 
 const scriptProto = script.prototype
 const getPubkey = scriptProto.getPubkey
@@ -100,18 +102,14 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BCH',
-  currencyName: 'Bitcoin Cash',
+  displayName: 'Bitcoin Cash',
   pluginName: 'bitcoincash',
   denominations: [
     { name: 'BCH', multiplier: '100000000', symbol: '₿' },
     { name: 'mBCH', multiplier: '100000', symbol: 'm₿' },
     { name: 'cash', multiplier: '100', symbol: 'ƀ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:bitcoincash', 'wallet:bitcoincash-bip44'],
+  walletType: 'wallet:bitcoincash',
 
   // Configuration options:
   defaultSettings: {

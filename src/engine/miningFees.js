@@ -3,9 +3,10 @@
  * @flow
  */
 
-import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
-import { EarnComFeesSchema } from '../utils/jsonSchemas.js'
 import { bns } from 'biggystring'
+
+import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
+import { EarnComFeesSchema } from '../utils/jsonSchemas.js'
 import { validateObject } from '../utils/utils.js'
 
 export const ES_FEE_LOW = 'low'
@@ -14,8 +15,8 @@ export const ES_FEE_HIGH = 'high'
 export const ES_FEE_CUSTOM = 'custom'
 
 const MAX_FEE = 999999999.0
-const MAX_STANDARD_DELAY = 9
-const MIN_STANDARD_DELAY = 2
+const MAX_STANDARD_DELAY = 3
+const MIN_STANDARD_DELAY = 1
 
 /**
  * Calculate the BitcoinFees object given a default BitcoinFees object and EarnComFees
@@ -23,10 +24,7 @@ const MIN_STANDARD_DELAY = 2
  * @param earnComFees
  * @returns {BitcoinFees}
  */
-export function calcFeesFromEarnCom (
-  bitcoinFees: BitcoinFees,
-  earnComFeesJson: any
-): BitcoinFees {
+export function calcFeesFromEarnCom (earnComFeesJson: any): $Shape<BitcoinFees> {
   let highDelay = 999999
   let lowDelay = 0
   let highFee = MAX_FEE
@@ -35,9 +33,7 @@ export function calcFeesFromEarnCom (
   let lowFee = MAX_FEE
 
   const valid = validateObject(earnComFeesJson, EarnComFeesSchema)
-  if (!valid) {
-    return bitcoinFees
-  }
+  if (!valid) return {}
 
   const earnComFees: EarnComFees = earnComFeesJson
   for (const fee of earnComFees.fees) {
@@ -60,7 +56,7 @@ export function calcFeesFromEarnCom (
     if (fee.maxDelay === 0) {
       if (fee.maxFee < highFee) {
         // Set the low fee if the current fee estimate is lower than the previously set high fee
-        highFee = fee.maxFee
+        highFee = fee.minFee
         highDelay = fee.maxDelay
       }
     }
@@ -126,17 +122,17 @@ export function calcFeesFromEarnCom (
     standardFeeHigh > 0 &&
     standardFeeLow < MAX_FEE
   ) {
-    const out: BitcoinFees = bitcoinFees
-
     // Overwrite the fees with those from earn.com
-    out.lowFee = lowFee.toFixed(0)
-    out.standardFeeLow = standardFeeLow.toFixed(0)
-    out.standardFeeHigh = standardFeeHigh.toFixed(0)
-    out.highFee = highFee.toFixed(0)
+    const out: $Shape<BitcoinFees> = {
+      lowFee: lowFee.toFixed(0),
+      standardFeeLow: standardFeeLow.toFixed(0),
+      standardFeeHigh: standardFeeHigh.toFixed(0),
+      highFee: highFee.toFixed(0)
+    }
 
     return out
   } else {
-    return bitcoinFees
+    return {}
   }
 }
 

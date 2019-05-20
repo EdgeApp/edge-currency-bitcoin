@@ -1,5 +1,7 @@
 // @flow
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
 import { imageServerUrl } from './constants.js'
@@ -43,17 +45,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'DASH',
-  currencyName: 'Dash',
+  displayName: 'Dash',
   pluginName: 'dash',
   denominations: [
     { name: 'DASH', multiplier: '100000000', symbol: 'Ð' },
     { name: 'mDASH', multiplier: '100000', symbol: 'mÐ' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:dash', 'wallet:dash-bip44'],
+  walletType: 'wallet:dash',
 
   // Configuration options:
   defaultSettings: {
@@ -74,9 +72,9 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  addressExplorer: 'https://live.blockcypher.com/dash/address/%s',
-  blockExplorer: 'https://live.blockcypher.com/dash/block/%s',
-  transactionExplorer: 'https://live.blockcypher.com/dash/tx/%s',
+  blockExplorer: 'https://blockchair.com/dash/block/%s',
+  addressExplorer: 'https://blockchair.com/dash/address/%s',
+  transactionExplorer: 'https://blockchair.com/dash/transaction/%s',
 
   // Images:
   symbolImage: `${imageServerUrl}/dash-logo-solo-64.png`,

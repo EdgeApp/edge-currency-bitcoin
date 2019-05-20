@@ -1,14 +1,15 @@
 // @flow
-import type { OnFailHandler, StratumTask } from './stratumConnection.js'
-import { validateObject } from '../utils/utils.js'
+
 import {
   electrumFetchHeaderSchema,
-  electrumSubscribeHeadersSchema,
   electrumFetchHistorySchema,
-  electrumSubscribeScriptHashSchema,
+  electrumFetchUtxoSchema,
   electrumHeaderSchema,
-  electrumFetchUtxoSchema
+  electrumSubscribeHeadersSchema,
+  electrumSubscribeScriptHashSchema
 } from '../utils/jsonSchemas.js'
+import { validateObject } from '../utils/utils.js'
+import type { OnFailHandler, StratumTask } from './stratumConnection.js'
 
 /**
  * Creates a server ping message.
@@ -36,14 +37,19 @@ export function fetchVersion (
 ): StratumTask {
   return {
     method: 'server.version',
-    params: ['Edge wallet', ['1.1', '1.3']],
+    params: ['Edge wallet', ['1.1', '1.4']],
     onDone (reply: any, requestMs: number) {
       if (
         Array.isArray(reply) &&
         (typeof reply[1] === 'string' || typeof reply[1] === 'number')
       ) {
         const version = reply[1].toString()
-        if (version !== '1.1' && version !== '1.2' && version !== '1.3') {
+        if (
+          version !== '1.1' &&
+          version !== '1.2' &&
+          version !== '1.3' &&
+          version !== '1.4'
+        ) {
           throw new Error(`Bad Stratum version ${version}`)
         }
         return onDone(version, requestMs)
@@ -82,7 +88,7 @@ export function subscribeHeight (
   }
 }
 
-export type StratumBlockHeader = {
+type LegacyBlockHeader = {
   block_height: number,
   version: number,
   prev_block_hash: string,
@@ -92,6 +98,13 @@ export type StratumBlockHeader = {
   nonce: number
 }
 
+type RawBlockHeader = {
+  hex: string,
+  timestamp: number
+}
+
+export type StratumBlockHeader = LegacyBlockHeader | RawBlockHeader
+
 /**
  * Gets a block header.
  * @param {number} blockNumber Block number to fetch header for
@@ -100,17 +113,46 @@ export type StratumBlockHeader = {
  */
 export function fetchBlockHeader (
   blockNumber: number,
+  timestampFromHeader: (header: Buffer, height: number) => number,
   onDone: (header: StratumBlockHeader) => void,
-  onFail: OnFailHandler
+  onFail: OnFailHandler,
+  stratumVersion: string = '1.4'
 ): StratumTask {
+  // Legacy message format:
+  if (stratumVersion < '1.4') {
+    return {
+      method: 'blockchain.block.get_header',
+      params: [blockNumber],
+      onDone (reply: any) {
+        if (validateObject(reply, electrumFetchHeaderSchema)) {
+          return onDone(reply)
+        }
+        throw new Error(`Bad Stratum get_header reply ${JSON.stringify(reply)}`)
+      },
+      onFail
+    }
+  }
+
+  // Modern message format:
   return {
-    method: 'blockchain.block.get_header',
+    method: 'blockchain.block.header',
     params: [blockNumber],
     onDone (reply: any) {
-      if (validateObject(reply, electrumFetchHeaderSchema)) {
-        return onDone(reply)
+      if (typeof reply === 'string') {
+        const header = Buffer.from(reply, 'hex')
+        return onDone({
+          hex: header.toString('hex'),
+          timestamp: timestampFromHeader(header, blockNumber)
+        })
+      } else if (reply != null && typeof reply.header === 'string') {
+        const header = Buffer.from(reply.header, 'hex')
+        return onDone({
+          hex: header.toString('hex'),
+          timestamp: timestampFromHeader(header, blockNumber)
+        })
+      } else {
+        throw new Error(`Bad Stratum header reply ${JSON.stringify(reply)}`)
       }
-      throw new Error(`Bad Stratum get_header reply ${JSON.stringify(reply)}`)
     },
     onFail
   }

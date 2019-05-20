@@ -1,52 +1,56 @@
 // @flow
 
 import { bns } from 'biggystring'
-import type { DiskletFolder } from 'disklet'
-import type {
-  EdgeTransaction,
-  EdgeWalletInfo,
-  EdgeCurrencyEngine,
-  EdgeCurrencyEngineOptions,
-  EdgeCurrencyEngineCallbacks,
-  EdgeGetTransactionsOptions,
-  EdgePaymentProtocolInfo,
-  EdgeFreshAddress,
-  EdgeSpendInfo,
-  EdgeSpendTarget,
-  EdgeDataDump,
-  EdgeIo
-} from 'edge-core-js'
+import { type Disklet } from 'disklet'
+import {
+  type EdgeCurrencyEngine,
+  type EdgeCurrencyEngineCallbacks,
+  type EdgeCurrencyEngineOptions,
+  type EdgeDataDump,
+  type EdgeFreshAddress,
+  type EdgeGetTransactionsOptions,
+  type EdgePaymentProtocolInfo,
+  type EdgeSpendInfo,
+  type EdgeSpendTarget,
+  type EdgeTransaction,
+  type EdgeWalletInfo
+} from 'edge-core-js/types'
 
-import { EngineState } from './engineState.js'
-import { PluginState } from '../plugin/pluginState.js'
-import { KeyManager } from './keyManager'
-import type { EngineStateCallbacks } from './engineState.js'
-import type { KeyManagerCallbacks } from './keyManager'
-import type { EarnComFees, BitcoinFees } from '../utils/flowTypes.js'
-import type { TxOptions } from '../utils/coinUtils.js'
-import { validateObject, promiseAny } from '../utils/utils.js'
-import {
-  getPaymentDetails,
-  createPayment,
-  sendPayment
-} from './paymentRequest.js'
-import { InfoServerFeesSchema } from '../utils/jsonSchemas.js'
-import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
-import { broadcastFactories } from './broadcastApi.js'
-import { getAllAddresses } from '../utils/formatSelector.js'
 import { InfoServer } from '../info/constants'
-import {
-  addressToScriptHash,
-  verifyTxAmount,
-  sumUtxos,
-  sumTransaction,
-  getReceiveAddresses,
-  parseJsonTransaction
-} from '../utils/coinUtils.js'
+import { type PluginIo } from '../plugin/pluginIo.js'
+import { PluginState } from '../plugin/pluginState.js'
 import {
   toLegacyFormat,
   validAddress
 } from '../utils/addressFormat/addressFormatIndex.js'
+import type { TxOptions } from '../utils/coinUtils.js'
+import {
+  addressToScriptHash,
+  getReceiveAddresses,
+  parseJsonTransaction,
+  sumTransaction,
+  sumUtxos,
+  verifyTxAmount
+} from '../utils/coinUtils.js'
+import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
+import { getAllAddresses } from '../utils/formatSelector.js'
+import {
+  EarnComFeesSchema,
+  InfoServerFeesSchema
+} from '../utils/jsonSchemas.js'
+import { logger } from '../utils/logger.js'
+import { promiseAny, validateObject } from '../utils/utils.js'
+import { broadcastFactories } from './broadcastApi.js'
+import { EngineState } from './engineState.js'
+import type { EngineStateCallbacks } from './engineState.js'
+import { KeyManager } from './keyManager'
+import type { KeyManagerCallbacks } from './keyManager'
+import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
+import {
+  createPayment,
+  getPaymentDetails,
+  sendPayment
+} from './paymentRequest.js'
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000
@@ -75,7 +79,8 @@ export type EngineCurrencyInfo = {
 
   // Optional Settings
   forks?: Array<string>,
-  feeInfoServer?: string
+  feeInfoServer?: string,
+  timestampFromHeader?: (header: Buffer, height: number) => number
 }
 
 export type CurrencyEngineSettings = {
@@ -83,7 +88,7 @@ export type CurrencyEngineSettings = {
   engineInfo: EngineCurrencyInfo,
   pluginState: PluginState,
   options: EdgeCurrencyEngineOptions,
-  io: EdgeIo
+  io: PluginIo
 }
 /**
  * The core currency plugin.
@@ -101,9 +106,9 @@ export class CurrencyEngine {
   engineState: EngineState
   pluginState: PluginState
   callbacks: EdgeCurrencyEngineCallbacks
-  walletLocalFolder: DiskletFolder
-  walletLocalEncryptedFolder: DiskletFolder
-  io: EdgeIo
+  walletLocalDisklet: Disklet
+  walletLocalEncryptedDisklet: Disklet
+  io: PluginIo
   feeUpdateInterval: number
   feeTimer: any
   fees: BitcoinFees
@@ -126,8 +131,8 @@ export class CurrencyEngine {
     this.prunedWalletId = this.walletId.slice(0, 6)
     this.pluginState = pluginState
     this.callbacks = options.callbacks
-    this.walletLocalFolder = options.walletLocalFolder
-    this.walletLocalEncryptedFolder = options.walletLocalEncryptedFolder
+    this.walletLocalDisklet = options.walletLocalDisklet
+    this.walletLocalEncryptedDisklet = options.walletLocalEncryptedDisklet
     this.io = io
     this.engineInfo = engineInfo
     this.feeUpdateInterval = this.engineInfo.feeUpdateInterval
@@ -135,7 +140,7 @@ export class CurrencyEngine {
     this.network = this.engineInfo.network
 
     this.fees = { ...engineInfo.simpleFeeSettings, timestamp: 0 }
-    console.log(
+    logger.info(
       `${this.prunedWalletId}: create engine type: ${this.walletInfo.type}`
     )
   }
@@ -154,10 +159,11 @@ export class CurrencyEngine {
       files: { txs: 'txs.json', addresses: 'addresses.json' },
       callbacks: engineStateCallbacks,
       io: this.io,
-      localFolder: this.walletLocalFolder,
-      encryptedLocalFolder: this.walletLocalEncryptedFolder,
+      localDisklet: this.walletLocalDisklet,
+      encryptedLocalDisklet: this.walletLocalEncryptedDisklet,
       pluginState: this.pluginState,
-      walletId: this.prunedWalletId
+      walletId: this.prunedWalletId,
+      engineInfo: this.engineInfo
     })
 
     await this.engineState.load()
@@ -180,6 +186,7 @@ export class CurrencyEngine {
     }
 
     const cachedRawKeys = await this.engineState.loadKeys()
+    // $FlowFixMe master is missing in object literal
     const { master = {}, ...otherKeys } = cachedRawKeys || {}
     const keys = this.walletInfo.keys || {}
     const { format, coinType = -1 } = keys
@@ -187,7 +194,7 @@ export class CurrencyEngine {
     const xpub = keys[`${this.network}Xpub`]
     const rawKeys = { ...otherKeys, master: { xpub, ...master } }
 
-    console.log(
+    logger.info(
       `${this.walletId} - Created Wallet Type ${format} for Currency Plugin ${
         this.pluginState.pluginName
       }`
@@ -251,7 +258,7 @@ export class CurrencyEngine {
       otherParams: {},
       txid: txid,
       date: date,
-      blockHeight: height,
+      blockHeight: height === -1 ? 0 : height,
       nativeAmount: `${nativeAmount}`,
       networkFee: `${fee}`,
       signedTx: this.engineState.txCache[txid]
@@ -259,26 +266,22 @@ export class CurrencyEngine {
     return edgeTransaction
   }
 
-  async updateFeeTable () {
+  async updateFeeFromEdge () {
     try {
-      await this.fetchFee()
-      if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        const url = `${InfoServer}/networkFees/${this.currencyCode}`
-        const feesResponse = await this.io.fetch(url)
-        const feesJson = await feesResponse.json()
-        this.fees.timestamp = Date.now()
-        if (validateObject(feesJson, InfoServerFeesSchema)) {
-          this.fees = feesJson
-        } else {
-          throw new Error('Fetched invalid networkFees')
-        }
+      const url = `${InfoServer}/networkFees/${this.currencyCode}`
+      const feesResponse = await this.io.fetch(url)
+      const feesJson = await feesResponse.json()
+      if (validateObject(feesJson, InfoServerFeesSchema)) {
+        this.fees = { ...this.fees, ...feesJson }
+      } else {
+        throw new Error('Fetched invalid networkFees')
       }
     } catch (err) {
-      console.log(`${this.prunedWalletId} - ${err.toString()}`)
+      logger.info(`${this.prunedWalletId} - ${err.toString()}`)
     }
   }
 
-  async fetchFee () {
+  async updateFeeFromVendor () {
     const { feeInfoServer } = this.engineInfo
     if (!feeInfoServer || feeInfoServer === '') {
       clearTimeout(this.feeTimer)
@@ -290,18 +293,26 @@ export class CurrencyEngine {
         if (results.status !== 200) {
           throw new Error(results.body)
         }
-        const { fees }: EarnComFees = await results.json()
-        this.fees = calcFeesFromEarnCom(this.fees, { fees })
-        this.fees.timestamp = Date.now()
+        const feesJson: EarnComFees = await results.json()
+        if (validateObject(feesJson, EarnComFeesSchema)) {
+          const newFees = calcFeesFromEarnCom(feesJson.fees)
+          this.fees = { ...this.fees, ...newFees }
+          this.fees.timestamp = Date.now()
+        } else {
+          throw new Error('Fetched invalid networkFees')
+        }
       }
     } catch (e) {
-      console.log(
+      logger.info(
         `${
           this.prunedWalletId
         } - Error while trying to update fee table ${e.toString()}`
       )
     }
-    this.feeTimer = setTimeout(() => this.fetchFee(), this.feeUpdateInterval)
+    this.feeTimer = setTimeout(
+      () => this.updateFeeFromVendor(),
+      this.feeUpdateInterval
+    )
   }
 
   getRate ({
@@ -348,14 +359,20 @@ export class CurrencyEngine {
       log += JSON.stringify(edgeTransaction.otherParams.txJson, null, 2) + '\n'
     }
     log += '------------------------------------------------------------------'
-    console.log(`${this.prunedWalletId}: ${log}`)
+    logger.info(`${this.prunedWalletId}: ${log}`)
   }
+
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
+
+  async changeUserSettings (userSettings: Object): Promise<mixed> {
+    await this.pluginState.updateServers(userSettings)
+  }
+
   async startEngine (): Promise<void> {
     this.callbacks.onBalanceChanged(this.currencyCode, this.getBalance())
-    this.updateFeeTable()
+    this.updateFeeFromEdge().then(() => this.updateFeeFromVendor())
     return this.engineState.connect()
   }
 
@@ -438,7 +455,7 @@ export class CurrencyEngine {
         this.engineState.markAddressesUsed(scriptHashs)
         if (this.keyManager) this.keyManager.setLookAhead()
       })
-      .catch(e => console.log(`${this.prunedWalletId}: ${e.toString()}`))
+      .catch(e => logger.info(`${this.prunedWalletId}: ${e.toString()}`))
   }
 
   isAddressUsed (address: string, options: any): boolean {
@@ -490,15 +507,17 @@ export class CurrencyEngine {
       files: { txs: '', addresses: '' },
       callbacks: engineStateCallbacks,
       io: this.io,
-      localFolder: this.walletLocalFolder,
-      encryptedLocalFolder: this.walletLocalEncryptedFolder,
+      localDisklet: this.walletLocalDisklet,
+      encryptedLocalDisklet: this.walletLocalEncryptedDisklet,
       pluginState: this.pluginState,
-      walletId: this.prunedWalletId
+      walletId: this.prunedWalletId,
+      engineInfo: this.engineInfo
     })
 
     await engineState.load()
     const addresses = await getAllAddresses(privateKeys, this.network)
     addresses.forEach(({ address, scriptHash }) =>
+      // $FlowFixMe missing path parameter
       engineState.addAddress(scriptHash, address)
     )
     engineState.connect()
@@ -517,7 +536,7 @@ export class CurrencyEngine {
         this.io.fetch
       )
     } catch (err) {
-      console.log(`${this.prunedWalletId} - ${err.toString()}`)
+      logger.info(`${this.prunedWalletId} - ${err.toString()}`)
       throw err
     }
   }
@@ -543,12 +562,9 @@ export class CurrencyEngine {
       throw new Error('InsufficientFundsError')
     }
     try {
-      // If somehow we have outdated fees, try and get new ones
-      if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        await this.updateFeeTable()
-      }
       // Get the rate according to the latest fee
       const rate = this.getRate(edgeSpendInfo)
+      logger.info(`spend: Using fee rate ${rate} sat/K`)
       // Create outputs from spendTargets
 
       const outputs = []

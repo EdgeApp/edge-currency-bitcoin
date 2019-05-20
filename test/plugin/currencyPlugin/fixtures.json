@@ -1,6 +1,6 @@
 [
   {
-    "factory": "bitcoinCurrencyPluginFactory",
+    "pluginName": "bitcoin",
     "WALLET_TYPE": "wallet:bitcoin",
     "WALLET_FORMAT": "bip32",
     "Test Currency code": "BTC",
@@ -53,7 +53,7 @@
         "publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX",
         "metadata": {
           "name": "Johnny Bitcoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "BTC"
@@ -124,7 +124,7 @@
         "currencyCode": "BTC",
         "metadata": {
           "name": "Johnny Bitcoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }, "bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.5678&label=Johnny%20Bitcoin&message=Hello%20World,%20I%20miss%20you%20!"],
       "invalid currencyCode": [{
@@ -133,19 +133,19 @@
         "currencyCode": "INVALID",
         "metadata": {
           "name": "Johnny Bitcoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }]
     },
-    "getSplittableTypes": { 
-      "bip32": ["wallet:bitcoincash", "wallet:bitcoingold"], 
+    "getSplittableTypes": {
+      "bip32": ["wallet:bitcoincash", "wallet:bitcoingold"],
       "bip44": ["wallet:bitcoincash", "wallet:bitcoingold"],
       "bip49": ["wallet:bitcoingold"],
       "bip84": ["wallet:bitcoingold"]
     }
   },
   {
-    "factory": "litecoinCurrencyPluginFactory",
+    "pluginName": "litecoin",
     "WALLET_TYPE": "wallet:litecoin",
     "WALLET_FORMAT": "bip44",
     "Test Currency code": "LTC",
@@ -193,7 +193,7 @@
         "publicAddress": "LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T",
         "metadata": {
           "name": "Johnny Litecoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "LTC"
@@ -234,7 +234,7 @@
         "publicAddress": "MLh6oJm8tWbTNKTXpiREMoAMqE3CbYzgi6",
         "metadata": {
           "name": "Johnny Litecoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "LTC",
@@ -309,7 +309,7 @@
         "currencyCode": "LTC",
         "metadata": {
           "name": "Johnny Litecoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }, "litecoin:LajyQBeZaBA1NkZDeY8YT5RYYVRkXMvb2T?amount=1234.5678&label=Johnny%20Litecoin&message=Hello%20World,%20I%20miss%20you%20!"],
       "invalid currencyCode": [{
@@ -318,13 +318,13 @@
         "currencyCode": "INVALID",
         "metadata": {
           "name": "Johnny Litecoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }]
     }
   },
   {
-    "factory": "bitcoincashCurrencyPluginFactory",
+    "pluginName": "bitcoincash",
     "WALLET_TYPE": "wallet:bitcoincash",
     "WALLET_FORMAT": "bip44",
     "Test Currency code": "BCH",
@@ -372,7 +372,7 @@
         "publicAddress": "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a",
         "metadata": {
           "name": "Johnny BitcoinCash",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "BCH"
@@ -413,7 +413,7 @@
         "publicAddress": "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a",
         "metadata": {
           "name": "Johnny BitcoinCash",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "BCH",
@@ -472,7 +472,7 @@
         "currencyCode": "BCH",
         "metadata": {
           "name": "Johnny BitcoinCash",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }, "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a?amount=1234.5678&label=Johnny%20BitcoinCash&message=Hello%20World,%20I%20miss%20you%20!"],
       "invalid currencyCode": [{
@@ -481,13 +481,13 @@
         "currencyCode": "INVALID",
         "metadata": {
           "name": "Johnny BitcoinCash",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }]
     }
   },
   {
-    "factory": "zcoinCurrencyPluginFactory",
+    "pluginName": "zcoin",
     "WALLET_TYPE": "wallet:zcoin",
     "WALLET_FORMAT": "bip44",
     "Test Currency code": "XZC",
@@ -535,7 +535,7 @@
         "publicAddress": "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty",
         "metadata": {
           "name": "Johnny Zcoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "XZC"
@@ -595,7 +595,7 @@
         "currencyCode": "XZC",
         "metadata": {
           "name": "Johnny Zcoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }, "zcoin:aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty?amount=1234.5678&label=Johnny%20Zcoin&message=Hello%20World,%20I%20miss%20you%20!"],
       "invalid currencyCode": [{
@@ -604,13 +604,13 @@
         "currencyCode": "INVALID",
         "metadata": {
           "name": "Johnny Zcoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }]
     }
   },
   {
-    "factory": "feathercoinCurrencyPluginFactory",
+    "pluginName": "feathercoin",
     "WALLET_TYPE": "wallet:feathercoin",
     "WALLET_FORMAT": "bip44",
     "Test Currency code": "FTC",
@@ -658,7 +658,7 @@
         "publicAddress": "6fLKmA19ESYgg5HPq9q3UvY3EJ6HThr5DD",
         "metadata": {
           "name": "Johnny feathercoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "FTC"
@@ -717,7 +717,7 @@
         "currencyCode": "FTC",
         "metadata": {
           "name": "Johnny feathercoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }, "feathercoin:6fLKmA19ESYgg5HPq9q3UvY3EJ6HThr5DD?amount=1234.5678&label=Johnny%20feathercoin&message=Hello%20World,%20I%20miss%20you%20!"],
       "invalid currencyCode": [{
@@ -726,13 +726,13 @@
         "currencyCode": "INVALID",
         "metadata": {
           "name": "Johnny feathercoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }]
     }
   },
   {
-    "factory": "smartcashCurrencyPluginFactory",
+    "pluginName": "smartcash",
     "WALLET_TYPE": "wallet:smartcash",
     "Test Currency code": "SMART",
     "WALLET_FORMAT": "bip44",
@@ -780,7 +780,7 @@
         "publicAddress": "ScZ5enspA3DpbSkX1SYxkCLyu8gh4qzTWH",
         "metadata": {
           "name": "Johnny smartcash",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "SMART"
@@ -790,7 +790,7 @@
         "metadata": {},
         "nativeAmount": "1234567890000",
         "currencyCode": "SMART"
-      }],      
+      }],
       "wif 1 - Non Compressed": ["VLqHRdvdNPgspEjPM6ee5CcLKc4CFBvafN183pevjxXKX1uZGe1m", {
         "metadata": {},
         "privateKeys": [ "VLqHRdvdNPgspEjPM6ee5CcLKc4CFBvafN183pevjxXKX1uZGe1m"]
@@ -827,7 +827,7 @@
         "currencyCode": "SMART",
         "metadata": {
           "name": "Johnny smartcash",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }, "smartcash:ScZ5enspA3DpbSkX1SYxkCLyu8gh4qzTWH?amount=1234.5678&label=Johnny%20smartcash&message=Hello%20World,%20I%20miss%20you%20!"],
       "invalid currencyCode": [{
@@ -836,13 +836,13 @@
         "currencyCode": "INVALID",
         "metadata": {
           "name": "Johnny smartcash",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }]
     }
   },
   {
-    "factory": "groestlcoinCurrencyPluginFactory",
+    "pluginName": "groestlcoin",
     "WALLET_TYPE": "wallet:groestlcoin",
     "Test Currency code": "GRS",
     "WALLET_FORMAT": "bip49",
@@ -894,7 +894,7 @@
         "publicAddress": "3933BTHZdySDxk7PBqtPjARNfcj1ULbatY",
         "metadata": {
           "name": "Johnny groestlcoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         },
         "nativeAmount": "123456789000",
         "currencyCode": "GRS"
@@ -904,7 +904,7 @@
         "metadata": {},
         "nativeAmount": "1234567890000",
         "currencyCode": "GRS"
-      }],      
+      }],
       "wif 1 - Compressed": ["5KZF3uBKFVgFpGGVuj1nihZGSFaovM4i32BXGTHENHF5ytp5e2g", {
         "metadata": {},
         "privateKeys": [ "5KZF3uBKFVgFpGGVuj1nihZGSFaovM4i32BXGTHENHF5ytp5e2g"]
@@ -912,7 +912,7 @@
       "wif 2 - Compressed": ["L3JqVWfMMvd62HYpeUEX7xWk5K24j4KuP8NeCYr3mL9UY9qQ8Zw4", {
         "metadata": {},
         "privateKeys": [ "L3JqVWfMMvd62HYpeUEX7xWk5K24j4KuP8NeCYr3mL9UY9qQ8Zw4"]
-      }],    
+      }],
       "wif 1 - Non Compressed": ["L1qoZLKEyzShjLNxSbXw1xXgvj8CHMoNKVjek5uEB6DY39udr3Nc", {
         "metadata": {},
         "privateKeys": [ "L1qoZLKEyzShjLNxSbXw1xXgvj8CHMoNKVjek5uEB6DY39udr3Nc"]
@@ -939,7 +939,7 @@
         "currencyCode": "GRS",
         "metadata": {
           "name": "Johnny groestlcoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }, "groestlcoin:3933BTHZdySDxk7PBqtPjARNfcj1ULbatY?amount=1234.5678&label=Johnny%20groestlcoin&message=Hello%20World,%20I%20miss%20you%20!"],
       "invalid currencyCode": [{
@@ -948,7 +948,7 @@
         "currencyCode": "INVALID",
         "metadata": {
           "name": "Johnny groestlcoin",
-          "message": "Hello World, I miss you !"
+          "notes": "Hello World, I miss you !"
         }
       }]
     }

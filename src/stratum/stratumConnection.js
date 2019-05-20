@@ -1,8 +1,11 @@
 // @flow
+
 import { parse } from 'uri-js'
 
+import { type EdgeSocket, type PluginIo } from '../plugin/pluginIo.js'
+import { logger } from '../utils/logger.js'
+import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 import { fetchPing, fetchVersion } from './stratumMessages.js'
-import type { StratumBlockHeader } from './stratumMessages.js'
 
 export type OnFailHandler = (error: Error) => void
 
@@ -24,8 +27,8 @@ export interface StratumTask {
 export interface StratumCallbacks {
   +onOpen: () => void;
   +onClose: (error?: Error) => void;
-  +onQueueSpace: () => StratumTask | void;
-  +onNotifyHeader: (headerInfo: StratumBlockHeader) => void;
+  +onQueueSpace: (stratumVersion: string) => StratumTask | void;
+  +onNotifyHeight: (height: number) => void;
   +onNotifyScriptHash: (scriptHash: string, hash: string) => void;
   +onTimer: (queryTime: number) => void;
   +onVersion: (version: string, requestMs: number) => void;
@@ -33,7 +36,7 @@ export interface StratumCallbacks {
 
 export interface StratumOptions {
   callbacks: StratumCallbacks;
-  io: any;
+  io: PluginIo;
   queueSize?: number; // defaults to 10
   timeout?: number; // seconds, defaults to 30
   walletId?: string; // for logging purposes
@@ -53,17 +56,16 @@ export class StratumConnection {
   uri: string
   connected: boolean
   version: string | void
-  errStr: (e: Error) => string
 
   constructor (uri: string, options: StratumOptions) {
     const {
       callbacks,
       io,
-      queueSize = 10,
+      queueSize = 5,
       timeout = 30,
       walletId = ''
     } = options
-    this.errStr = e => `${walletId} - ${e.toString()}`
+    this.walletId = walletId
     this.io = io
     this.callbacks = callbacks
     this.queueSize = queueSize
@@ -82,7 +84,7 @@ export class StratumConnection {
           this.version = version
           this.callbacks.onVersion(version, requestMs)
         },
-        (e: Error) => this.close(e)
+        (e: Error) => this.handleError(e)
       )
     )
   }
@@ -101,33 +103,49 @@ export class StratumConnection {
     }
 
     // Connect to the server:
-    const socket =
-      parsed.scheme === 'electrums'
-        ? new this.io.TLSSocket()
-        : new this.io.Socket()
-    socket.setEncoding('utf8')
-    socket.on('close', (hadError: boolean) => this.onSocketClose(hadError))
-    socket.on('error', (e: Error) => {
-      this.error = e
+    const io: PluginIo = this.io
+    return io
+      .makeSocket({
+        host: parsed.host,
+        port: Number(parsed.port),
+        type: parsed.scheme === 'electrum' ? 'tcp' : 'tls'
+      })
+      .then(socket => {
+        socket.on('close', () => this.onSocketClose())
+        socket.on('error', (e: Error) => {
+          this.error = e
+        })
+        socket.on('open', () => this.onSocketConnect())
+        socket.on('message', (data: string) => this.onSocketData(data))
+        this.socket = socket
+        this.cancelConnect = false
+        return socket.connect()
+      })
+      .catch(e => {
+        this.handleError(e)
+      })
+  }
+
+  wakeUp () {
+    pushUpdate({
+      id: this.walletId + '==' + this.uri,
+      updateFunc: () => {
+        this.doWakeUp()
+      }
     })
-    socket.on('connect', () => this.onSocketConnect(socket))
-    socket.on('data', (data: string) => this.onSocketData(data))
-    socket.connect({
-      host: parsed.host,
-      port: Number(parsed.port)
-    })
-    this.socket = socket
-    this.needsDisconnect = false
   }
 
   /**
    * Re-triggers the `onQueueSpace` callback if there is space in the queue.
    */
-  wakeUp () {
-    while (Object.keys(this.pendingMessages).length < this.queueSize) {
-      const task = this.callbacks.onQueueSpace()
-      if (!task) break
-      this.submitTask(task)
+  doWakeUp () {
+    const { connected, version } = this
+    if (connected && version != null) {
+      while (Object.keys(this.pendingMessages).length < this.queueSize) {
+        const task = this.callbacks.onQueueSpace(version)
+        if (!task) break
+        this.submitTask(task)
+      }
     }
   }
 
@@ -146,63 +164,82 @@ export class StratumConnection {
     this.transmitMessage(id, message)
   }
 
+  /**
+   * Closes the connection in response to an error.
+   */
+  handleError (e: Error) {
+    if (!this.error) this.error = e
+    if (this.connected && this.socket) this.disconnect()
+    else this.cancelConnect = true
+  }
+
+  /**
+   * Closes the connection on engine shutdown.
+   */
+  disconnect () {
+    clearTimeout(this.timer)
+    this.sigkill = true
+    this.connected = false
+    if (this.socket) this.socket.close()
+    removeIdFromQueue(this.uri)
+  }
+
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------
 
   // Options:
-  io: any
+  io: PluginIo
   queueSize: number
   timeout: number // Converted to ms
   callbacks: StratumCallbacks
+  walletId: string
 
   // Message queue:
   nextId: number
   pendingMessages: { [id: string]: PendingMessage }
 
   // Connection state:
-  needsDisconnect: boolean
+  cancelConnect: boolean
   lastKeepAlive: number
   partialMessage: string
-  socket: net$Socket | void
+  socket: EdgeSocket | void
   timer: TimeoutID
-  error: Error
+  error: Error | void
   sigkill: boolean
 
   /**
    * Called when the socket disconnects for any reason.
    */
-  onSocketClose (hadError: boolean) {
-    if ((hadError && !this.error) || !this.sigkill) {
-      this.error = new Error('Unknown Server Error')
-    }
+  onSocketClose () {
+    const error = this.error || new Error('Socket closed')
     clearTimeout(this.timer)
     this.connected = false
     this.socket = void 0
-    this.needsDisconnect = false
+    this.cancelConnect = false
     this.sigkill = false
     for (const id of Object.keys(this.pendingMessages)) {
       const message = this.pendingMessages[id]
       try {
-        message.task.onFail(this.error)
+        message.task.onFail(error)
       } catch (e) {
-        console.log(this.errStr(e))
+        this.logError(e)
       }
     }
     this.pendingMessages = {}
     try {
       this.callbacks.onClose(this.error)
     } catch (e) {
-      console.log(this.errStr(e))
+      this.logError(e)
     }
   }
 
   /**
    * Called when the socket completes its connection.
    */
-  onSocketConnect (socket: net$Socket) {
-    if (this.needsDisconnect) {
-      if (this.socket) this.socket.end()
+  onSocketConnect () {
+    if (this.cancelConnect) {
+      if (this.socket) this.socket.close()
       return
     }
 
@@ -213,7 +250,7 @@ export class StratumConnection {
     try {
       this.callbacks.onOpen()
     } catch (e) {
-      this.close(e)
+      this.handleError(e)
     }
 
     // Launch pending messages:
@@ -268,17 +305,26 @@ export class StratumConnection {
         }
       } else if (json.method === 'blockchain.headers.subscribe') {
         try {
-          // TODO: Validate
-          this.callbacks.onNotifyHeader(json.params[0])
+          if (json.params == null || json.params[0] == null) {
+            throw new Error(`Bad Stratum reply ${messageJson}`)
+          }
+          const reply = json.params[0]
+          if (typeof reply.height === 'number') {
+            this.callbacks.onNotifyHeight(reply.height)
+          } else if (typeof reply.block_height === 'number') {
+            this.callbacks.onNotifyHeight(reply.block_height)
+          } else {
+            throw new Error(`Bad Stratum reply ${messageJson}`)
+          }
         } catch (e) {
-          console.log(this.errStr(e))
+          this.logError(e)
         }
       } else if (json.method === 'blockchain.scripthash.subscribe') {
         try {
           // TODO: Validate
           this.callbacks.onNotifyScriptHash(json.params[0], json.params[1])
         } catch (e) {
-          console.log(this.errStr(e))
+          this.logError(e)
         }
       } else if (/subscribe$/.test(json.method)) {
         // It's some other kind of subscription.
@@ -286,7 +332,7 @@ export class StratumConnection {
         throw new Error(`Bad Stratum reply ${messageJson}`)
       }
     } catch (e) {
-      this.close(e)
+      this.handleError(e)
     }
     this.wakeUp()
   }
@@ -304,13 +350,13 @@ export class StratumConnection {
             (version: string) => {
               this.callbacks.onTimer(now)
             },
-            (e: Error) => this.close(e)
+            (e: Error) => this.handleError(e)
           )
           : fetchPing(
             () => {
               this.callbacks.onTimer(now)
             },
-            (e: Error) => this.close(e)
+            (e: Error) => this.handleError(e)
           )
       )
     }
@@ -321,7 +367,7 @@ export class StratumConnection {
         try {
           message.task.onFail(new Error('Timeout'))
         } catch (e) {
-          console.log(this.errStr(e))
+          this.logError(e)
         }
         delete this.pendingMessages[id]
       }
@@ -329,20 +375,8 @@ export class StratumConnection {
     this.setupTimer()
   }
 
-  /**
-   * Call whenever we want to close the connection for any reason
-   */
-  close (e?: Error) {
-    if (e && !this.error) this.error = e
-    if (this.connected && this.socket) this.disconnect()
-    else this.needsDisconnect = true
-  }
-
-  disconnect () {
-    clearTimeout(this.timer)
-    this.sigkill = true
-    this.connected = false
-    if (this.socket) this.socket.destroy(this.error)
+  logError (e: Error) {
+    logger.info(`${this.walletId} - ${e.toString()}`)
   }
 
   setupTimer () {
@@ -362,7 +396,7 @@ export class StratumConnection {
 
   transmitMessage (id: number, pending: PendingMessage) {
     const now = Date.now()
-    if (this.socket && this.connected && !this.needsDisconnect) {
+    if (this.socket && this.connected && !this.cancelConnect) {
       pending.startTime = now
       // If this is a keepAlive, record the time:
       if (
@@ -377,7 +411,7 @@ export class StratumConnection {
         method: pending.task.method,
         params: pending.task.params
       }
-      this.socket.write(JSON.stringify(message) + '\n')
+      this.socket.send(JSON.stringify(message) + '\n')
     }
   }
 }

@@ -1,14 +1,14 @@
 // @flow
-// $FlowFixMe
-import buffer from 'buffer-hack'
-import type { EdgeCurrencyInfo } from 'edge-core-js'
+
+import { Buffer } from 'buffer'
+
+import { crypto, utils } from 'bcoin'
+import bs58grscheck from 'bs58grscheck'
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { utils, crypto } from 'bcoin'
-import bs58grscheck from 'bs58grscheck'
 import { imageServerUrl } from './constants.js'
-
-const { Buffer } = buffer
 
 const isBech32 = address => {
   try {
@@ -86,17 +86,13 @@ const engineInfo: EngineCurrencyInfo = {
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'GRS',
-  currencyName: 'Groestlcoin',
+  displayName: 'Groestlcoin',
   pluginName: 'groestlcoin',
   denominations: [
     { name: 'GRS', multiplier: '100000000', symbol: 'G' },
     { name: 'mGRS', multiplier: '100000', symbol: 'mG' }
   ],
-
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!! - About to be deprecated - !!!!!!!!!!!!!!!!!!!
-  // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  walletTypes: ['wallet:groestlcoin'],
+  walletType: 'wallet:groestlcoin',
 
   // Configuration options:
   defaultSettings: {

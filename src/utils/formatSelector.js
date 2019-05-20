@@ -1,15 +1,16 @@
 // @flow
-// $FlowFixMe
-import buffer from 'buffer-hack'
+
+import { Buffer } from 'buffer'
+
+import { consensus, hd, networks, primitives } from 'bcoin'
+
 import type { Script } from '../utils/coinUtils.js'
-import { hd, primitives, consensus, networks } from 'bcoin'
 import {
-  getPrivateFromSeed,
   addressFromKey,
+  getPrivateFromSeed,
   setKeyType
 } from '../utils/coinUtils.js'
 
-const { Buffer } = buffer
 const witScale = consensus.WITNESS_SCALE_FACTOR
 
 export type DerivedAddress = {
@@ -182,10 +183,8 @@ export const FormatSelector = (
 
     keysFromRaw: (rawKeys: any = {}) => {
       const keyRings = {}
-      const branchesNames: Array<string> = [
-        'master',
-        ...(Object.values(branches): any)
-      ]
+      const branchesNames: Array<string> = ['master']
+      for (const n in branches) branchesNames.push(branches[n])
       for (const branchName of branchesNames) {
         const { xpub, xpriv } = rawKeys[branchName] || {}
         keyRings[branchName] = {
@@ -211,6 +210,12 @@ export const FormatSelector = (
           size += 1
           // Calculate vsize
           size = ((size + witScale - 1) / witScale) | 0
+          // witness portion
+          // OP_PUSHDATA0 [signature]
+          let witness = 1 + 73
+          // OP_PUSHDATA0 [key]
+          witness += 1 + 33
+          size += witness / witScale
         }
       }
 
