@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+#4.2.0 (2019-05-21)
+
+- Add Dogecoin
+
 # 4.1.0 (2019-05-03)
 
 - Add support for Stratum v1.4
