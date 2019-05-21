@@ -16,7 +16,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
     xprivkey: 0x0488ade4,
     xpubkey58: 'xpub',
     xprivkey58: 'xprv',
-    coinType: 515
+    coinType: 324
   },
   addressPrefix: {
     pubkeyhash: 0x5c,
