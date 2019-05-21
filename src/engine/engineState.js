@@ -807,7 +807,7 @@ export class EngineState extends EventEmitter {
         return fetchScriptHashHistory(
           address,
           (history: Array<StratumHistoryRow>) => {
-            logger.info(`${prefix}received history for ${address}`)
+            logger.info(`${prefix} received history for ${address}`)
             addressState.fetchingTxids = false
             if (!addressState.hash) {
               throw new Error(
