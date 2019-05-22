@@ -8,23 +8,19 @@ import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'eboost',
-  magic: 0xd9b4bef9,
-  formats: ['bip49', 'bip84', 'bip44', 'bip32'],
+  magic: 0xddb7d9fc,
+  formats: ['bip44', 'bip32'],
   keyPrefix: {
     privkey: 0xb0,
     xpubkey: 0x0488b21e,
     xprivkey: 0x0488ade4,
     xpubkey58: 'xpub',
     xprivkey58: 'xprv',
-    coinType: 2
+    coinType: 324
   },
   addressPrefix: {
     pubkeyhash: 0x5c,
-    scripthash: 0x0a,
-    scripthashLegacy: 0x05,
-    witnesspubkeyhash: 0x06,
-    witnessscripthash: 0x0a,
-    bech32: 'ebst'
+    scripthash: 0x05
   }
 }
 
@@ -32,8 +28,8 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'eboost',
   currencyCode: 'EBST',
   gapLimit: 10,
-  maxFee: 1000000,
-  defaultFee: 50000,
+  maxFee: 10000000,
+  defaultFee: 500000,
   feeUpdateInterval: 60000,
   infoServer: 'https://info1.edgesecure.co:8444/v1',
   customFeeSettings: ['satPerByte'],
