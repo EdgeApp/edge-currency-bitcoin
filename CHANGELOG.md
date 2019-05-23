@@ -1,6 +1,12 @@
 # edge-currency-bitcoin
 
-#4.2.0 (2019-05-21)
+# 4.2.1 (2019-05-23)
+
+- Fix eBoost parameters.
+- Change Dogecoin block explorers.
+- Do not broadcast Dash transactions through blockcypher.
+
+# 4.2.0 (2019-05-21)
 
 - Add Dogecoin
 
