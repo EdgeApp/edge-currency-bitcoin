@@ -15,6 +15,7 @@ import { feathercoin } from './feathercoin.js'
 import { groestlcoin } from './groestlcoin.js'
 import { litecoin } from './litecoin.js'
 import { qtum } from './qtum.js'
+import { ravencoin } from './ravencoin.js'
 import { smartcash } from './smartcash.js'
 import { ufo } from './ufo.js'
 import { vertcoin } from './vertcoin.js'
@@ -36,6 +37,7 @@ export const allInfo = [
   groestlcoin,
   litecoin,
   qtum,
+  ravencoin,
   smartcash,
   ufo,
   vertcoin,
