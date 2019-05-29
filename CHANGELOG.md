@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.2.2. (2019-05-28)
+
+- Implementation of Ravencoin (RVN)
+
 # 4.2.1 (2019-05-23)
 
 - Fix eBoost parameters.
