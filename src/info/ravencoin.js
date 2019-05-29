@@ -16,7 +16,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
     xprivkey: 0x0488ade4,
     xpubkey58: 'xpub',
     xprivkey58: 'xprv',
-    coinType: 0 // 175?
+    coinType: 175 // https://github.com/satoshilabs/slips/blob/master/slip-0044.md
   },
   addressPrefix: {
     pubkeyhash: 0x3c, // done
@@ -47,17 +47,13 @@ const currencyInfo: EdgeCurrencyInfo = {
   currencyCode: 'RVN',
   displayName: 'Ravencoin',
   pluginName: 'ravencoin',
-  denominations: [
-    { name: 'RVN', multiplier: '100000000', symbol: 'R' }
-  ],
+  denominations: [{ name: 'RVN', multiplier: '100000000', symbol: 'R' }],
   walletType: 'wallet:ravencoin',
 
   // Configuration options:
   defaultSettings: {
     customFeeSettings: ['satPerByte'],
-    electrumServers: [
-      'electrum://rvn.satoshi.org.uk:50001'
-    ],
+    electrumServers: ['electrum://rvn.satoshi.org.uk:50001'],
     disableFetchingServers: false
   },
   metaTokens: [],
