@@ -1,6 +1,10 @@
 # edge-currency-bitcoin
 
-# 4.2.2. (2019-05-28)
+# 4.2.3 (2019-05-30)
+
+- Fix fee-estimation algorithm to properly use vendor data
+
+# 4.2.2 (2019-05-28)
 
 - Implementation of Ravencoin (RVN)
 
