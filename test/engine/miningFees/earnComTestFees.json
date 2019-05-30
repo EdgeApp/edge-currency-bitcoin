@@ -1,5 +1,4 @@
 
-{"fees":
 [
   {"minFee":0,"maxFee":0,"dayCount":12,"memCount":0,"minDelay":59,"maxDelay":10000,"minMinutes":480,"maxMinutes":10000},
   {"minFee":1,"maxFee":10,"dayCount":23546,"memCount":21491,"minDelay":3,"maxDelay":112,"minMinutes":30,"maxMinutes":1140},
@@ -40,4 +39,3 @@
   {"minFee":351,"maxFee":360,"dayCount":3592,"memCount":11,"minDelay":0,"maxDelay":0,"minMinutes":0,"maxMinutes":25},
   {"minFee":361,"maxFee":33450,"dayCount":17917,"memCount":213,"minDelay":0,"maxDelay":0,"minMinutes":0,"maxMinutes":25}
 ]
-}
