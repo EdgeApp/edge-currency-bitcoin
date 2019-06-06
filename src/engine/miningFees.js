@@ -7,6 +7,7 @@ import { bns } from 'biggystring'
 
 import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
 import { EarnComFeesSchema } from '../utils/jsonSchemas.js'
+import { logger } from '../utils/logger.js'
 import { validateObject } from '../utils/utils.js'
 
 export const ES_FEE_LOW = 'low'
@@ -36,7 +37,10 @@ export function calcFeesFromEarnCom (earnComFeesJson: any): $Shape<BitcoinFees> 
     fees: earnComFeesJson
   }
   const valid = validateObject(earnComData, EarnComFeesSchema)
-  if (!valid) return {}
+  if (!valid) {
+    logger.info('Not valid fee data structure from vendor')
+    return {}
+  }
 
   const earnComFees: EarnComFees = earnComData
   for (const fee of earnComFees.fees) {
