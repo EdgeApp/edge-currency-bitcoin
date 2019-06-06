@@ -59,9 +59,9 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  addressExplorer: 'https://explorer.ravencoin.world/address/%s',
-  blockExplorer: 'https://explorer.ravencoin.world/block/%s',
-  transactionExplorer: 'https://explorer.ravencoin.world/tx/%s',
+  addressExplorer: 'https://ravencoin.network/address/%s',
+  blockExplorer: 'https://ravencoin.network/block/%s',
+  transactionExplorer: 'https://ravencoin.network/tx/%s',
 
   // Images:
   symbolImage: `${imageServerUrl}/ravencoin-logo-solo-64.png`,
