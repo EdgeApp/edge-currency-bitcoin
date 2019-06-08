@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.2.4 (2019-06-06)
+
+- Change Ravencoin block explorer
+
 # 4.2.3 (2019-05-30)
 
 - Fix fee-estimation algorithm to properly use vendor data
