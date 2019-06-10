@@ -13,6 +13,7 @@ import {
   type EdgeCurrencyEngineOptions,
   type EdgeCurrencyPlugin,
   type EdgeCurrencyTools,
+  errorNames,
   makeFakeIo
 } from 'edge-core-js'
 import { readFileSync } from 'jsonfile'
@@ -347,7 +348,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   })
 
   describe('Should start engine', function () {
-    it('Get BlockHeight', function (done) {
+    it.skip('Get BlockHeight', function (done) {
       const { uri, defaultHeight } = fixture.BlockHeight
       this.timeout(3000)
       const testHeight = () => {
@@ -470,7 +471,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
         const templateSpend = insufficientTests[test]
         return engine
           .makeSpend(templateSpend)
-          .catch(e => assert.equal(e.message, 'InsufficientFundsError'))
+          .catch(e => assert.equal(e.name, errorNames.InsufficientFundsError))
       })
     })
   })
@@ -480,7 +481,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
 
     Object.keys(sweepTests).forEach(test => {
       it(`Should build transaction with ${test}`, function () {
-        this.timeout(3000)
+        this.timeout(5000)
         const templateSpend = sweepTests[test]
         if (engine.sweepPrivateKeys == null) {
           throw new Error('No sweepPrivateKeys')
