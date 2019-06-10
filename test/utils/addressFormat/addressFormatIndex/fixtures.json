@@ -824,10 +824,10 @@
       "eNXXXXXXXXXXXXXXXXXXXXXXXXXXXviVRh",
       "e8M37vArBf28RbAeVsEKdsMTf8y4eFLbkc",
       "eNgz9mTPLaatC6cAhHDGZz9yUPBVEqobZB",
-      "5DCGZBCYJy71oSfky6DXHsuWqMW3yqiJiS",
-      "5LutMcbbX2CEzkLH26gC4rfjcFuyHYHKCd",
-      "52UxrJ4PXHx55tsjgdKpC4soLar3p52vcm",
-      "5FAyQxqcVJ4Qeyt4qw6UxnGtf3jUArd1Gc"
+      "3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC",
+      "3LDsS579y7sruadqu11beEJoTjdFiFCdX4",
+      "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw",
+      "3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN"
     ],
     "inValid": [
       "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu",
@@ -874,42 +874,8 @@
       "bitcoincash:pqq3728yw0y47sqn6l2na30mcw6zm78dzq5ucqzc37",
       "bitcoincash:qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a"
     ],
-    "toLegacy": [
-      [
-        "5DCGZBCYJy71oSfky6DXHsuWqMW3yqiJiS",
-        "3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC"
-      ],
-      [
-        "5LutMcbbX2CEzkLH26gC4rfjcFuyHYHKCd",
-        "3LDsS579y7sruadqu11beEJoTjdFiFCdX4"
-      ],
-      [
-        "52UxrJ4PXHx55tsjgdKpC4soLar3p52vcm",
-        "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw"
-      ],
-      [
-        "5FAyQxqcVJ4Qeyt4qw6UxnGtf3jUArd1Gc",
-        "3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN"
-      ]
-    ],
-    "toNewFormat": [
-      [
-        "3CWFddi6m4ndiGyKqzYvsFYagqDLPVMTzC",
-        "5DCGZBCYJy71oSfky6DXHsuWqMW3yqiJiS"
-      ],
-      [
-        "3LDsS579y7sruadqu11beEJoTjdFiFCdX4",
-        "5LutMcbbX2CEzkLH26gC4rfjcFuyHYHKCd"
-      ],
-      [
-        "31nwvkZwyPdgzjBJZXfDmSWsC4ZLKpYyUw",
-        "52UxrJ4PXHx55tsjgdKpC4soLar3p52vcm"
-      ],
-      [
-        "3EUxVRMAwPk2ZpBdiqRtY9uxWXSkgVCTFN",
-        "5FAyQxqcVJ4Qeyt4qw6UxnGtf3jUArd1Gc"
-      ]
-    ]
+    "toLegacy": [],
+    "toNewFormat": []
   },
   {
     "network": "groestlcoin",

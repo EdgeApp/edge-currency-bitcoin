@@ -32,7 +32,7 @@ const fakeLogger = {
 const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'
 const io = Object.assign({}, makeNodeIo(makeFakeIo()), { console: fakeLogger })
 
-describe('StratumConnection', function () {
+describe.skip('StratumConnection', function () {
   this.timeout(3000)
   it('fetchVersion', function (done) {
     let gotReply = false

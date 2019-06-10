@@ -84,7 +84,7 @@ describe(`ServerCache`, function () {
       'newServer1',
       'newServer2',
       'newServer3',
-      'server6'
+      'server5'
     ]
     assert.equal(JSON.stringify(result), JSON.stringify(control))
     // assert.equal(outBitcoinFees.highFee, '300')
@@ -234,8 +234,8 @@ describe(`ServerCache`, function () {
       'server1',
       'server2',
       'server3',
-      'server5',
-      'server6'
+      'server4',
+      'server5'
     ]
     assert.equal(JSON.stringify(result), JSON.stringify(control))
   })
