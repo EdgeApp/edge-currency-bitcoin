@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.2.5 (2019-06-10)
+
+- Throw actual `InsufficientFundsError` instances.
+
 # 4.2.4 (2019-06-06)
 
 - Change Ravencoin block explorer
@@ -29,7 +33,6 @@
 # 4.0.11 (2019-05-01)
 
 - Modify score of re-added servers to -10 to help prioritize them over dropped servers.
-
 
 # 4.0.10 (2019-04-24)
 
