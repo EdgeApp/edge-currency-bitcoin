@@ -84,9 +84,13 @@ export class StratumConnection {
           this.version = version
           this.callbacks.onVersion(version, requestMs)
         },
-        (e: Error) => this.handleError(e)
+        (error: Error) => {
+          logger.info(`${this.walletId} Failed initial ping ${this.uri}`)
+          this.handleError(error)
+        }
       )
     )
+    this.setupTimer()
   }
 
   /**
@@ -259,7 +263,6 @@ export class StratumConnection {
       this.transmitMessage(Number(id), message)
     }
 
-    this.setupTimer()
     this.wakeUp()
   }
 
