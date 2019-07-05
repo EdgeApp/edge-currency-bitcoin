@@ -364,7 +364,8 @@ export class EngineState extends EventEmitter {
         if (this.txHeightCache[txid]) {
           height = this.txHeightCache[txid].height
         }
-        const tx = this.parsedTxs[txid] || {}
+        const tx = this.parsedTxs[txid]
+        if (tx == null) continue
         utxos.push({ index, tx, height })
       }
     }
