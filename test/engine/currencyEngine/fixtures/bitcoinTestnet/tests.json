@@ -34,9 +34,6 @@
     "uri": "https://api.blocktrail.com/v1/tBTC/block/latest?api_key=MY_APIKEY",
     "defaultHeight": 1286739
   },
-  "FreshAddress": {
-    "uri": "https://testnet.blockchain.info/rawaddr/"
-  },
   "ChangeSettings": {
     "electrumServers": ["electrum://testnet.qtornado.com:51001"],
     "disableFetchingServers": true
