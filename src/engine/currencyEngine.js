@@ -209,9 +209,7 @@ export class CurrencyEngine {
       callbacks: callbacks,
       gapLimit: this.engineInfo.gapLimit,
       network: this.network,
-      addressInfos: this.engineState.addressInfos,
-      scriptHashes: this.engineState.scriptHashes,
-      txInfos: this.engineState.parsedTxs
+      engineState: this.engineState
     })
 
     this.engineState.onAddressUsed = () => {
