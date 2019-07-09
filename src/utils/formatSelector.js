@@ -18,11 +18,28 @@ export type DerivedAddress = {
   scriptHash: string,
   redeemScript?: string
 }
-export type BranchName = string
 
 export type Branches = {
-  [branchNum: string]: BranchName
+  [branchNum: string]: string
 }
+
+export type FormatSelector = {
+  branches: Branches,
+
+  createMasterPath: Function,
+  deriveAddress: Function,
+  deriveHdKey: Function,
+  deriveKeyRing: Function,
+  deriveScriptAddress: Function,
+  estimateSize: Function,
+  getMasterKeys: Function,
+  hasScript: Function,
+  keysFromRaw: Function,
+  parseSeed: Function,
+  setKeyType: Function,
+  sign: Function
+}
+
 export const SUPPORTED_BIPS = ['bip32', 'bip44', 'bip49', 'bip84']
 
 export const getAllKeyRings = (
@@ -33,7 +50,7 @@ export const getAllKeyRings = (
   const { formats, serializers = {} } = networks[network] || {}
   for (const bip of formats) {
     for (const key of privateKeys) {
-      const fSelector = FormatSelector(bip, network)
+      const fSelector = formatSelector(bip, network)
       const standardKey = serializers.wif ? serializers.wif.decode(key) : key
       const keyRing = primitives.KeyRing.fromSecret(standardKey, network)
       keysPromises.push(Promise.resolve(keyRing).then(fSelector.setKeyType))
@@ -58,17 +75,17 @@ export const getXPubFromSeed = async ({
   coinType = 0
 }: any) => {
   const masterKey = await getPrivateFromSeed(seed, network)
-  const fSelector = FormatSelector(format, network)
+  const fSelector = formatSelector(format, network)
   const masterPath = fSelector.createMasterPath(account, coinType)
   const privateKey = await masterKey.derivePath(masterPath)
   const xpubKey = await privateKey.xpubkey()
   return xpubKey
 }
 
-export const FormatSelector = (
+export const formatSelector = (
   format: string = 'bip32',
   network: string = 'main'
-) => {
+): FormatSelector => {
   if (!SUPPORTED_BIPS.includes(format)) throw new Error('Unknown bip type')
   const bip = parseInt(format.split('bip')[1])
 

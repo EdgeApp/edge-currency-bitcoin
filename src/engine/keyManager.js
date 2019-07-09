@@ -10,7 +10,11 @@ import type {
   Utxo
 } from '../utils/coinUtils.js'
 import { createTX, getLock, parsePath } from '../utils/coinUtils.js'
-import { FormatSelector, getAllKeyRings } from '../utils/formatSelector.js'
+import {
+  type FormatSelector,
+  formatSelector,
+  getAllKeyRings
+} from '../utils/formatSelector.js'
 import { logger } from '../utils/logger.js'
 import type { AddressInfo, AddressInfos } from './engineState.js'
 
@@ -77,28 +81,43 @@ export interface KeyManagerCallbacks {
 }
 
 export type KeyManagerOptions = {
+  // Derivation:
   account?: number,
   bip?: string,
   coinType?: number,
-  rawKeys?: RawKeys,
-  seed?: string,
   gapLimit: number,
   network: string,
-  callbacks: KeyManagerCallbacks,
+  rawKeys?: RawKeys,
+  seed?: string,
+
+  // EngineState:
   addressInfos?: AddressInfos,
+  txInfos?: { [txid: string]: any },
   scriptHashes?: { [displayAddress: string]: string },
-  txInfos?: { [txid: string]: any }
+
+  // Callbacks:
+  callbacks: KeyManagerCallbacks
 }
 
 export class KeyManager {
+  // Derivation:
   masterPath: string
-  writeLock: any
   bip: string
-  keys: Keys
   seed: string
   gapLimit: number
   network: string
-  fSelector: any
+  fSelector: FormatSelector
+
+  // Our state:
+  writeLock: any
+  keys: Keys
+
+  // EngineState:
+  addressInfos: AddressInfos
+  scriptHashes: { [displayAddress: string]: string }
+  txInfos: { [txid: string]: any }
+
+  // Callbacks:
   onNewAddress: (
     scriptHash: string,
     address: string,
@@ -106,9 +125,6 @@ export class KeyManager {
     redeemScript?: string
   ) => mixed
   onNewKey: (keys: any) => mixed
-  addressInfos: AddressInfos
-  scriptHashes: { [displayAddress: string]: string }
-  txInfos: { [txid: string]: any }
 
   constructor (opts: KeyManagerOptions) {
     const {
@@ -136,7 +152,7 @@ export class KeyManager {
     this.gapLimit = gapLimit
     this.network = network
     this.bip = bip
-    this.fSelector = FormatSelector(bip, network)
+    this.fSelector = formatSelector(bip, network)
     // Create a lock for when deriving addresses
     this.writeLock = getLock()
     // Create the master derivation path
@@ -220,7 +236,7 @@ export class KeyManager {
           if (!branch) throw new Error(`Branch does not exist`)
           const addressObj = await this.deriveAddress(
             keyRing,
-            branch,
+            Number(branch),
             index,
             output.script
           )
@@ -251,7 +267,7 @@ export class KeyManager {
       }
       await this.initMasterKeys()
       const { branches } = this.fSelector
-      for (const input: any of tx.inputs) {
+      for (const input of tx.inputs) {
         const { prevout } = input
         if (prevout) {
           const { branch, index, redeemScript } = this.utxoToAddress(prevout)
