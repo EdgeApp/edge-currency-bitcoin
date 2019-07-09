@@ -407,29 +407,14 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   // })
 
   describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
-    it('Should provide a non used BTC address when no options are provided', function (done) {
+    it('Should provide a non used BTC address when no options are provided', function () {
       this.timeout(3000)
-      const { uri } = fixture.FreshAddress
-      setTimeout(() => {
-        const address = engine.getFreshAddress({}) // TODO
-        request.get(`${uri}${address.publicAddress}`, (err, res, body) => {
-          if (!err) {
-            const thirdPartyBalance = JSON.parse(body).total_received
-            assert(!err, 'getting address incoming txs from a second source')
-            assert(thirdPartyBalance === 0, 'Should have never received coins')
-          } else {
-            // $FlowFixMe
-            const engineState: any = engine.engineState
-            const scriptHash = engineState.scriptHashes[address.publicAddress]
-            const transactions = engineState.addressInfos[scriptHash].txids
-            assert(
-              transactions.length === 0,
-              'Should have never received coins'
-            )
-          }
-          done()
-        })
-      }, 1500)
+      const address = engine.getFreshAddress({}) // TODO
+      // $FlowFixMe
+      const engineState: any = engine.engineState
+      const scriptHash = engineState.scriptHashes[address.publicAddress]
+      const transactions = engineState.addressInfos[scriptHash].txids
+      assert(transactions.length === 0, 'Should have never received coins')
     })
   })
 
@@ -480,7 +465,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     const sweepTests = fixture.Sweep || {}
 
     Object.keys(sweepTests).forEach(test => {
-      it(`Should build transaction with ${test}`, function () {
+      it.skip(`Should build transaction with ${test}`, function () {
         this.timeout(5000)
         const templateSpend = sweepTests[test]
         if (engine.sweepPrivateKeys == null) {

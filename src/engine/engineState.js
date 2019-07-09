@@ -255,7 +255,7 @@ export class EngineState extends EventEmitter {
       // TODO: Validate JSON
       return keysCacheJson.keys
     } catch (e) {
-      logger.info(`${this.walletId}: ${e.toString()}`)
+      logger.info(`${this.walletId}: Failed to load key cache: ${e}`)
       return {}
     }
   }
@@ -840,17 +840,20 @@ export class EngineState extends EventEmitter {
       const txCacheJson = JSON.parse(txCacheText)
 
       // TODO: Validate JSON
-      if (!txCacheJson.txs) throw new Error('Missing txs in cache')
-
-      // Update the cache:
-      this.txCache = txCacheJson.txs
+      const { txs } = txCacheJson
+      if (!txs) throw new Error('Missing txs in cache')
 
       // Update the derived information:
-      for (const txid of Object.keys(this.txCache)) {
-        this.parsedTxs[txid] = parseTransaction(this.txCache[txid])
+      const parsedTxs = {}
+      for (const txid of Object.keys(txs)) {
+        parsedTxs[txid] = parseTransaction(txs[txid])
       }
+
+      // Update the cache on success:
+      this.txCache = txs
+      this.parsedTxs = parsedTxs
     } catch (e) {
-      this.txCache = {}
+      logger.info(`${this.walletId}: Failed to load transaction cache: ${e}`)
     }
 
     // Load the address and height caches.
@@ -890,6 +893,7 @@ export class EngineState extends EventEmitter {
       this.addressCache = {}
       this.addressInfos = {}
       this.txHeightCache = {}
+      logger.info(`${this.walletId}: Failed to load address cache: ${e}`)
     }
 
     return this
@@ -1036,9 +1040,10 @@ export class EngineState extends EventEmitter {
 
   // A server has sent a transaction, so update the caches:
   handleTxFetch (txid: string, txData: string) {
+    const parsedTx = parseTransaction(txData)
     this.txCache[txid] = txData
+    this.parsedTxs[txid] = parsedTx
     delete this.missingTxs[txid]
-    this.parsedTxs[txid] = parseTransaction(txData)
     for (const scriptHash of this.findAffectedAddressesForInputs(txid)) {
       this.refreshAddressInfo(scriptHash)
     }

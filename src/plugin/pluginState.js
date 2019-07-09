@@ -111,6 +111,7 @@ export class PluginState extends ServerCache {
       this.headerCache = headerCacheJson.headers
     } catch (e) {
       this.headerCache = {}
+      logger.info(`${this.pluginName}: Failed to load header cache: ${e}`)
     }
 
     try {
@@ -120,7 +121,7 @@ export class PluginState extends ServerCache {
 
       this.serverCacheJson = serverCacheJson
     } catch (e) {
-      logger.info(e)
+      logger.info(`${this.pluginName}: Failed to load server cache: ${e}`)
     }
 
     // Fetch stratum servers in the background:

@@ -10,9 +10,13 @@ import type {
   Utxo
 } from '../utils/coinUtils.js'
 import { createTX, getLock, parsePath } from '../utils/coinUtils.js'
-import { FormatSelector, getAllKeyRings } from '../utils/formatSelector.js'
+import {
+  type FormatSelector,
+  formatSelector,
+  getAllKeyRings
+} from '../utils/formatSelector.js'
 import { logger } from '../utils/logger.js'
-import type { AddressInfo, AddressInfos } from './engineState.js'
+import { type AddressInfo } from './engineState.js'
 
 const GAP_LIMIT = 10
 const nop = () => {}
@@ -76,29 +80,47 @@ export interface KeyManagerCallbacks {
   +onNewKey?: (keys: any) => mixed;
 }
 
+// The subset of the EngineState object we actually need:
+type BasicEngineState = {
+  addressInfos: { [scriptHash: string]: AddressInfo },
+  parsedTxs: { [txid: string]: any },
+  scriptHashes: { [displayAddress: string]: string },
+}
+
 export type KeyManagerOptions = {
+  // Derivation:
   account?: number,
   bip?: string,
   coinType?: number,
-  rawKeys?: RawKeys,
-  seed?: string,
   gapLimit: number,
   network: string,
-  callbacks: KeyManagerCallbacks,
-  addressInfos?: AddressInfos,
-  scriptHashes?: { [displayAddress: string]: string },
-  txInfos?: { [txid: string]: any }
+  rawKeys?: RawKeys,
+  seed?: string,
+
+  // EngineState:
+  engineState: BasicEngineState,
+
+  // Callbacks:
+  callbacks: KeyManagerCallbacks
 }
 
 export class KeyManager {
+  // Derivation:
   masterPath: string
-  writeLock: any
   bip: string
-  keys: Keys
   seed: string
   gapLimit: number
   network: string
-  fSelector: any
+  fSelector: FormatSelector
+
+  // Our state:
+  writeLock: any
+  keys: Keys
+
+  // EngineState:
+  engineState: BasicEngineState
+
+  // Callbacks:
   onNewAddress: (
     scriptHash: string,
     address: string,
@@ -106,9 +128,6 @@ export class KeyManager {
     redeemScript?: string
   ) => mixed
   onNewKey: (keys: any) => mixed
-  addressInfos: AddressInfos
-  scriptHashes: { [displayAddress: string]: string }
-  txInfos: { [txid: string]: any }
 
   constructor (opts: KeyManagerOptions) {
     const {
@@ -119,10 +138,7 @@ export class KeyManager {
       seed = '',
       gapLimit = GAP_LIMIT,
       network,
-      callbacks,
-      addressInfos = {},
-      scriptHashes = {},
-      txInfos = {}
+      callbacks
     } = opts
 
     // Check for any way to init the wallet with either a seed or master keys
@@ -136,24 +152,22 @@ export class KeyManager {
     this.gapLimit = gapLimit
     this.network = network
     this.bip = bip
-    this.fSelector = FormatSelector(bip, network)
+    this.fSelector = formatSelector(bip, network)
     // Create a lock for when deriving addresses
     this.writeLock = getLock()
     // Create the master derivation path
     this.masterPath = this.fSelector.createMasterPath(account, coinType)
+    this.engineState = opts.engineState
     // Set the callbacks with nops as default
     const { onNewAddress = nop, onNewKey = nop } = callbacks
     this.onNewAddress = onNewAddress
     this.onNewKey = onNewKey
-    // Set the addresses and txs state objects
-    this.addressInfos = addressInfos
-    // Maps from display addresses to script hashes
-    this.scriptHashes = scriptHashes
-    this.txInfos = txInfos
+
     // Create KeyRings while tring to load as many of the pubKey/privKey from the cache
     this.keys = this.fSelector.keysFromRaw(rawKeys)
     // Load addresses from Cache
     const { branches } = this.fSelector
+    const { addressInfos } = this.engineState
     for (const scriptHash in addressInfos) {
       const addressObj: AddressInfo = addressInfos[scriptHash]
       const path = parsePath(addressObj.path, this.masterPath)
@@ -220,7 +234,7 @@ export class KeyManager {
           if (!branch) throw new Error(`Branch does not exist`)
           const addressObj = await this.deriveAddress(
             keyRing,
-            branch,
+            Number(branch),
             index,
             output.script
           )
@@ -251,7 +265,7 @@ export class KeyManager {
       }
       await this.initMasterKeys()
       const { branches } = this.fSelector
-      for (const input: any of tx.inputs) {
+      for (const input of tx.inputs) {
         const { prevout } = input
         if (prevout) {
           const { branch, index, redeemScript } = this.utxoToAddress(prevout)
@@ -281,10 +295,11 @@ export class KeyManager {
       throw new Error("Can't sign without private key")
     }
     await this.initMasterKeys()
+    const { addressInfos, scriptHashes } = this.engineState
     if (!address) throw new Error('Missing address to sign with')
-    const scriptHash = this.scriptHashes[address]
+    const scriptHash = scriptHashes[address]
     if (!scriptHash) throw new Error('Address is not part of this wallet')
-    const addressInfo = this.addressInfos[scriptHash]
+    const addressInfo = addressInfos[scriptHash]
     if (!addressInfo) throw new Error('Address is not part of this wallet')
     const { path } = addressInfo
     const pathSuffix = path.split(this.masterPath + '/')[1]
@@ -334,12 +349,14 @@ export class KeyManager {
   utxoToAddress (
     prevout: any
   ): { branch: number, index: number, redeemScript?: string } {
-    const parsedTx = this.txInfos[prevout.rhash()]
+    const { parsedTxs, addressInfos } = this.engineState
+
+    const parsedTx = parsedTxs[prevout.rhash()]
     if (!parsedTx) throw new Error('UTXO not synced yet')
     const output = parsedTx.outputs[prevout.index]
     if (!output) throw new Error('Corrupt UTXO or output list')
     const scriptHash = output.scriptHash
-    const address = this.addressInfos[scriptHash]
+    const address = addressInfos[scriptHash]
     if (!address) throw new Error('Address is not part of this wallet')
     const { path, redeemScript } = address
     const pathSuffix = path.split(this.masterPath + '/')[1]
@@ -348,13 +365,11 @@ export class KeyManager {
   }
 
   getNextAvailable (addresses: Array<Address>): string {
+    const { addressInfos } = this.engineState
     let key = null
     for (let i = 0; i < addresses.length; i++) {
       const scriptHash = addresses[i].scriptHash
-      if (
-        this.addressInfos[scriptHash] &&
-        !this.addressInfos[scriptHash].used
-      ) {
+      if (addressInfos[scriptHash] && !addressInfos[scriptHash].used) {
         key = addresses[i]
         break
       }
@@ -436,11 +451,12 @@ export class KeyManager {
     }
 
     // Find the last used address:
+    const { addressInfos } = this.engineState
     let lastUsed =
       children.length < this.gapLimit ? 0 : children.length - this.gapLimit
     for (let i = lastUsed; i < children.length; ++i) {
       const scriptHash = children[i].scriptHash
-      if (this.addressInfos[scriptHash] && this.addressInfos[scriptHash].used) {
+      if (addressInfos[scriptHash] && addressInfos[scriptHash].used) {
         lastUsed = i
       }
     }
