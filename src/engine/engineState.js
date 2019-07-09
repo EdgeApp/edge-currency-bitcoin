@@ -255,7 +255,7 @@ export class EngineState extends EventEmitter {
       // TODO: Validate JSON
       return keysCacheJson.keys
     } catch (e) {
-      logger.info(`${this.walletId}: ${e.toString()}`)
+      logger.info(`${this.walletId}: Failed to load key cache: ${e}`)
       return {}
     }
   }
@@ -852,7 +852,9 @@ export class EngineState extends EventEmitter {
       // Update the cache on success:
       this.txCache = txs
       this.parsedTxs = parsedTxs
-    } catch (e) {}
+    } catch (e) {
+      logger.info(`${this.walletId}: Failed to load transaction cache: ${e}`)
+    }
 
     // Load the address and height caches.
     // Must come after transactions are loaded for proper txid filtering:
@@ -891,6 +893,7 @@ export class EngineState extends EventEmitter {
       this.addressCache = {}
       this.addressInfos = {}
       this.txHeightCache = {}
+      logger.info(`${this.walletId}: Failed to load address cache: ${e}`)
     }
 
     return this
