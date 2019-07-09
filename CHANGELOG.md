@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.2.6 (2019-07-09)
+
+- Fix disconnection issue while phone is sleeping.
+- Fix "UTXO not synced yet" error while spending after clearing caches.
+
 # 4.2.5 (2019-06-10)
 
 - Throw actual `InsufficientFundsError` instances.
