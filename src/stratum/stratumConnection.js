@@ -9,8 +9,6 @@ import { fetchPing, fetchVersion } from './stratumMessages.js'
 
 export type OnFailHandler = (error: Error) => void
 
-const SOCKET_SERVERS = ['wss://sock-sing.edge.app:8002']
-
 // Timing can vary a little in either direction for fewer wake ups:
 const TIMER_SLACK = 500
 const KEEP_ALIVE_MS = 60000
@@ -99,63 +97,64 @@ export class StratumConnection {
    * Activates the underlying TCP connection.
    */
   open () {
+    logger.info(`${this.walletId} stratum.open: ${this.uri}`)
     const parsed = parse(this.uri)
     if (
-      (parsed.scheme !== 'electrum' && parsed.scheme !== 'electrums') ||
+      (parsed.scheme !== 'electrum' &&
+        parsed.scheme !== 'electrums' &&
+        parsed.scheme !== 'electrumwss') ||
       !parsed.host ||
       !parsed.port
     ) {
       throw new TypeError(`Bad stratum URI: ${this.uri}`)
     }
 
-    const idx = Math.floor(Math.random() * SOCKET_SERVERS.length)
-    const server = SOCKET_SERVERS[idx]
-    const protocol = parsed.scheme === 'electrums' ? 'tls' : 'tcp'
-    // Connect to the server:
-    const socket = new WebSocket(
-      `${server}/${protocol}/${parsed.host}/${parsed.port}`
-    )
-    socket.onclose = event => {
-      console.log(`onclose: ${JSON.stringify(event)}`)
-      this.onSocketClose()
+    // const idx = Math.floor(Math.random() * SOCKET_SERVERS.length)
+    // const server = SOCKET_SERVERS[idx]
+    if (parsed.scheme === 'electrum' || parsed.scheme === 'electrums') {
+      const protocol = parsed.scheme === 'electrums' ? 'tls' : 'tcp'
+      const io: PluginIo = this.io
+      io.makeSocket({
+        host: parsed.host,
+        port: Number(parsed.port),
+        type: protocol
+      })
+        .then(socket => {
+          socket.on('close', () => this.onSocketClose())
+          socket.on('error', (e: Error) => {
+            this.error = e
+          })
+          socket.on('open', () => this.onSocketConnect())
+          socket.on('message', (data: string) => this.onSocketData(data))
+          this.socket = socket
+          this.cancelConnect = false
+          socket.connect()
+          socket.close()
+        })
+        .catch(e => {
+          this.handleError(e)
+        })
+    } else if (parsed.scheme === 'electrumwss') {
+      // Connect to the server:
+      const server = this.uri.replace('electrumwss', 'wss')
+      const socket = new WebSocket(server)
+      socket.onclose = event => {
+        this.onSocketClose()
+      }
+      socket.onerror = event => {
+        this.error = new Error(JSON.stringify(event))
+      }
+      socket.onopen = event => {
+        this.onSocketConnect()
+      }
+      socket.onmessage = (event: Object) => {
+        this.onSocketData(event.data)
+      }
+      this.socket = socket
+      this.cancelConnect = false
+    } else {
+      logger.info(`${this.walletId} stratum.open invalid scheme: ${this.uri}`)
     }
-    socket.onerror = event => {
-      console.log(`onerror: ${JSON.stringify(event)}`)
-      this.error = new Error(JSON.stringify(event))
-    }
-    socket.onopen = event => {
-      console.log(`onopen: ${JSON.stringify(event)}`)
-      this.onSocketConnect()
-    }
-    socket.onmessage = (event: Object) => {
-      console.log(`onmessage: ${JSON.stringify(event)}`)
-      console.log(`onmessage event.data: ${JSON.stringify(event.data)}`)
-      this.onSocketData(event.data)
-    }
-    this.socket = socket
-    this.cancelConnect = false
-
-    // const io: PluginIo = this.io
-    // return io
-    //   .makeSocket({
-    //     host: parsed.host,
-    //     port: Number(parsed.port),
-    //     type: parsed.scheme === 'electrum' ? 'tcp' : 'tls'
-    //   })
-    //   .then(socket => {
-    //     socket.on('close', () => this.onSocketClose())
-    //     socket.on('error', (e: Error) => {
-    //       this.error = e
-    //     })
-    //     socket.on('open', () => this.onSocketConnect())
-    //     socket.on('message', (data: string) => this.onSocketData(data))
-    //     this.socket = socket
-    //     this.cancelConnect = false
-    //     socket.connect()
-    //   })
-    //   .catch(e => {
-    //     this.handleError(e)
-    //   })
   }
 
   wakeUp () {
