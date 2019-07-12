@@ -129,7 +129,6 @@ export class StratumConnection {
           this.socket = socket
           this.cancelConnect = false
           socket.connect()
-          socket.close()
         })
         .catch(e => {
           this.handleError(e)
