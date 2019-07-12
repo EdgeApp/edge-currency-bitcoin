@@ -84,6 +84,11 @@ export class ServerCache {
         serverScore = Math.min(serverScore, MAX_SCORE - 100)
       }
 
+      if (serverUrl.startsWith('electrumwss')) {
+        serverScore = 0
+        oldServer.responseTime = RESPONSE_TIME_UNINITIALIZED
+      }
+
       oldServer.serverScore = serverScore
       this.servers_[serverUrl] = oldServer
       this.dirtyServerCache(serverUrl)
@@ -148,6 +153,7 @@ export class ServerCache {
     if (currentTime - this.lastScoreUpTime_ > 60000) {
       // It has been over 1 minute since we got an up-vote for any server.
       // Assume the network is down and don't penalize anyone for now
+      logger.info(`${serverUrl}: score DOWN cancelled`)
       return
     }
     const serverInfo: ServerInfo = this.servers_[serverUrl]
@@ -227,9 +233,9 @@ export class ServerCache {
 
     //
     // Take the top 50% of servers that have
-    // 1. A score between 100 points of the highest score
-    // 2. A positive score of at least 5
-    // 3. A response time that is not RESPONSE_TIME_UNINITIALIZED
+    // 1. A score within 100 points of the highest score
+    // 2. And a positive score of at least 5
+    // 3. And a response time that is not RESPONSE_TIME_UNINITIALIZED
     //
     // Then sort those top servers by response time from lowest to highest
     //

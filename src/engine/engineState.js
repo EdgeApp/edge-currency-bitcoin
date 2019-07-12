@@ -531,10 +531,21 @@ export class EngineState extends EventEmitter {
     // if (!this.io.TLSSocket)
     ignorePatterns.push('electrums:')
     if (this.serverList.length === 0) {
-      this.serverList = this.pluginState.getServers(
+      const serverListTemp = this.pluginState.getServers(
         NEW_CONNECTIONS,
         ignorePatterns
       )
+      // sort list to prioritize tcp servers
+      const serverListWss = []
+      const serverListTcp = []
+      for (const server of serverListTemp) {
+        if (server.startsWith('electrumwss')) {
+          serverListWss.push(server)
+        } else {
+          serverListTcp.push(server)
+        }
+      }
+      this.serverList = serverListTcp.concat(serverListWss)
     }
     logger.info(
       `${this.walletId} : refillServers: Top ${NEW_CONNECTIONS} servers:`,
