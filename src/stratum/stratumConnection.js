@@ -97,37 +97,65 @@ export class StratumConnection {
    * Activates the underlying TCP connection.
    */
   open () {
+    logger.info(`${this.walletId} stratum.open: ${this.uri}`)
     const parsed = parse(this.uri)
     if (
-      (parsed.scheme !== 'electrum' && parsed.scheme !== 'electrums') ||
+      (parsed.scheme !== 'electrum' &&
+        parsed.scheme !== 'electrums' &&
+        parsed.scheme !== 'electrumwss' &&
+        parsed.scheme !== 'electrumws') ||
       !parsed.host ||
       !parsed.port
     ) {
-      throw new TypeError(`Bad stratum URI: ${this.uri}`)
+      logger.info(`Bad stratum URI: ${this.uri}`)
+      return Promise.resolve(
+        this.handleError(new TypeError(`Bad stratum URI: ${this.uri}`))
+      )
     }
 
-    // Connect to the server:
-    const io: PluginIo = this.io
-    return io
-      .makeSocket({
+    if (parsed.scheme === 'electrum' || parsed.scheme === 'electrums') {
+      const protocol = parsed.scheme === 'electrums' ? 'tls' : 'tcp'
+      const io: PluginIo = this.io
+      io.makeSocket({
         host: parsed.host,
         port: Number(parsed.port),
-        type: parsed.scheme === 'electrum' ? 'tcp' : 'tls'
+        type: protocol
       })
-      .then(socket => {
-        socket.on('close', () => this.onSocketClose())
-        socket.on('error', (e: Error) => {
-          this.error = e
+        .then(socket => {
+          socket.on('close', () => this.onSocketClose())
+          socket.on('error', (e: Error) => {
+            this.error = e
+          })
+          socket.on('open', () => this.onSocketConnect())
+          socket.on('message', (data: string) => this.onSocketData(data))
+          this.socket = socket
+          this.cancelConnect = false
+          socket.connect()
         })
-        socket.on('open', () => this.onSocketConnect())
-        socket.on('message', (data: string) => this.onSocketData(data))
-        this.socket = socket
-        this.cancelConnect = false
-        return socket.connect()
-      })
-      .catch(e => {
-        this.handleError(e)
-      })
+        .catch(e => {
+          this.handleError(e)
+        })
+    } else if (parsed.scheme === 'electrumwss') {
+      // Connect to the server:
+      const server = this.uri.replace('electrumwss', 'wss')
+      const socket = new WebSocket(server)
+      socket.onclose = event => {
+        this.onSocketClose()
+      }
+      socket.onerror = event => {
+        this.error = new Error(JSON.stringify(event))
+      }
+      socket.onopen = event => {
+        this.onSocketConnect()
+      }
+      socket.onmessage = (event: Object) => {
+        this.onSocketData(event.data)
+      }
+      this.socket = socket
+      this.cancelConnect = false
+    } else {
+      logger.info(`${this.walletId} stratum.open invalid scheme: ${this.uri}`)
+    }
   }
 
   wakeUp () {
@@ -207,7 +235,7 @@ export class StratumConnection {
   cancelConnect: boolean
   lastKeepAlive: number
   partialMessage: string
-  socket: EdgeSocket | void
+  socket: EdgeSocket | WebSocket | void
   timer: TimeoutID
   error: Error | void
   sigkill: boolean

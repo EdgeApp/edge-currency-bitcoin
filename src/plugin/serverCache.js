@@ -84,6 +84,11 @@ export class ServerCache {
         serverScore = Math.min(serverScore, MAX_SCORE - 100)
       }
 
+      if (serverUrl.startsWith('electrumwss')) {
+        serverScore = 0
+        oldServer.responseTime = RESPONSE_TIME_UNINITIALIZED
+      }
+
       oldServer.serverScore = serverScore
       this.servers_[serverUrl] = oldServer
       this.dirtyServerCache(serverUrl)
@@ -148,6 +153,7 @@ export class ServerCache {
     if (currentTime - lastScoreUpTime_ > 60000) {
       // It has been over 1 minute since we got an up-vote for any server.
       // Assume the network is down and don't penalize anyone for now
+      logger.info(`${serverUrl}: score DOWN cancelled`)
       return
     }
     const serverInfo: ServerInfo = this.servers_[serverUrl]
@@ -186,7 +192,7 @@ export class ServerCache {
 
   getServers (
     numServersWanted: number,
-    ignorePatterns?: Array<string> = []
+    includePatterns?: Array<string> = []
   ): Array<string> {
     if (!this.servers_ || this.servers_.length === 0) {
       return []
@@ -210,12 +216,13 @@ export class ServerCache {
     if (serverInfos.length === 0) {
       return []
     }
-    if (ignorePatterns.length) {
+    if (includePatterns.length) {
       const filter = (server: ServerInfo) => {
-        for (const pattern of ignorePatterns) {
-          if (server.serverUrl.includes(pattern)) return false
+        for (const pattern of includePatterns) {
+          // make sure that the server URL starts with 'electrumSomething'
+          if (server.serverUrl.indexOf(pattern) === 0) return true
         }
-        return true
+        return false
       }
       serverInfos = serverInfos.filter(filter)
       newServerInfos = newServerInfos.filter(filter)
@@ -227,9 +234,9 @@ export class ServerCache {
 
     //
     // Take the top 50% of servers that have
-    // 1. A score between 100 points of the highest score
-    // 2. A positive score of at least 5
-    // 3. A response time that is not RESPONSE_TIME_UNINITIALIZED
+    // 1. A score within 100 points of the highest score
+    // 2. And a positive score of at least 5
+    // 3. And a response time that is not RESPONSE_TIME_UNINITIALIZED
     //
     // Then sort those top servers by response time from lowest to highest
     //
