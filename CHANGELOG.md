@@ -1,5 +1,11 @@
 # edge-currency-bitcoin
 
+# 4.2.7 (2019-07-12)
+
+- Upgrade GRS to use BlockChair
+- Execute "score up" (no point increase) upon electrum hash subscribe
+- Disable BlockCypher for transactions broadcsts
+
 # 4.2.6 (2019-07-09)
 
 - Fix disconnection issue while phone is sleeping.
