@@ -14,6 +14,7 @@ import { eboost } from './eboost.js'
 import { feathercoin } from './feathercoin.js'
 import { groestlcoin } from './groestlcoin.js'
 import { litecoin } from './litecoin.js'
+import { monetaryunit } from './monetaryunit.js'
 import { qtum } from './qtum.js'
 import { ravencoin } from './ravencoin.js'
 import { smartcash } from './smartcash.js'
@@ -36,6 +37,7 @@ export const allInfo = [
   feathercoin,
   groestlcoin,
   litecoin,
+  monetaryunit,
   qtum,
   ravencoin,
   smartcash,
