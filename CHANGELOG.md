@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.2.8 (2019-07-17)
+
+- Make lastScoreUpTime_ global
+- Limit reconnectCounter (electrum) to 5 seconds instead of 30
+
 # 4.2.7 (2019-07-12)
 
 - Upgrade GRS to use BlockChair
