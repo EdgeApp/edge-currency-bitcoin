@@ -16,12 +16,12 @@ const MAX_SCORE = 500
 const MIN_SCORE = -100
 const DROPPED_SERVER_SCORE = -100
 const RE_ADDED_SERVER_SCORE = -10
+let lastScoreUpTime_: number
 
 export class ServerCache {
   servers_: { [serverUrl: string]: ServerInfo }
   serverCacheDirty: boolean
   cacheLastSave_: number
-  lastScoreUpTime_: number
 
   constructor () {
     this.clearServerCache()
@@ -94,7 +94,7 @@ export class ServerCache {
     this.servers_ = {}
     this.serverCacheDirty = false
     this.cacheLastSave_ = Date.now()
-    this.lastScoreUpTime_ = Date.now()
+    lastScoreUpTime_ = Date.now()
   }
 
   printServerCache () {
@@ -129,7 +129,7 @@ export class ServerCache {
     if (serverInfo.serverScore > MAX_SCORE) {
       serverInfo.serverScore = MAX_SCORE
     }
-    this.lastScoreUpTime_ = Date.now()
+    lastScoreUpTime_ = Date.now()
 
     if (responseTimeMilliseconds !== 0) {
       this.setResponseTime(serverUrl, responseTimeMilliseconds)
@@ -145,7 +145,7 @@ export class ServerCache {
 
   serverScoreDown (serverUrl: string, changeScore: number = 10) {
     const currentTime = Date.now()
-    if (currentTime - this.lastScoreUpTime_ > 60000) {
+    if (currentTime - lastScoreUpTime_ > 60000) {
       // It has been over 1 minute since we got an up-vote for any server.
       // Assume the network is down and don't penalize anyone for now
       return
