@@ -84,7 +84,7 @@ export interface KeyManagerCallbacks {
 type BasicEngineState = {
   addressInfos: { [scriptHash: string]: AddressInfo },
   parsedTxs: { [txid: string]: any },
-  scriptHashes: { [displayAddress: string]: string },
+  scriptHashes: { [displayAddress: string]: string }
 }
 
 export type KeyManagerOptions = {

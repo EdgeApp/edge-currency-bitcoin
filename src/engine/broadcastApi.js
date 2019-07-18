@@ -2,8 +2,8 @@
 
 import { type EdgeIo } from 'edge-core-js/types'
 
-import { logger } from '../utils/logger.js'
 import { allInfo } from '../info/all.js'
+import { logger } from '../utils/logger.js'
 
 const makeBroadcastBlockchainInfo = (io: EdgeIo, currencyCode: string) => {
   const supportedCodes = ['BTC']
@@ -102,10 +102,15 @@ const makeBroadcastBlockchair = (io: EdgeIo, currencyCode: string) => {
       if (out.context && out.context.error) {
         logger.info('makeBroadcastBlockchair fail with out: ', out)
         throw new Error(
-          `https://api.blockchair.com/${pluginName}/push/transaction failed with error ${out.context.error}`
+          `https://api.blockchair.com/${pluginName}/push/transaction failed with error ${
+            out.context.error
+          }`
         )
       }
-      logger.info('makeBroadcastBlockchair executed successfully with hash: ', out.data.transaction_hash)
+      logger.info(
+        'makeBroadcastBlockchair executed successfully with hash: ',
+        out.data.transaction_hash
+      )
       return out.data.transaction_hash
     } catch (e) {
       logger.info('ERROR makeBroadcastBlockchair: ', e)
