@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.2.9 (2019-07-19)
+
+- Use blockChair API for DOGE transaction broadcasting
+
 # 4.2.8 (2019-07-17)
 
 - Make lastScoreUpTime_ global
