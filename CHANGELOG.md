@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.3.0 (2019-09-22)
+
+- Include input and output information in `debugInfo` property of transaction `otherParams`
+
 # 4.2.9 (2019-07-19)
 
 - Use blockChair API for DOGE transaction broadcasting
