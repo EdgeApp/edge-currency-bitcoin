@@ -250,11 +250,16 @@ export class CurrencyEngine {
       this.network,
       this.engineState
     )
-
+    const sizes = bcoinTransaction.getSizes()
+    const debugInfo = `Inputs: ${bcoinTransaction.inputs.length}\nOutputs: ${
+      bcoinTransaction.outputs.length
+    }\nSize: ${sizes.size}\nWitness: ${sizes.witness}`
     const edgeTransaction: EdgeTransaction = {
       ourReceiveAddresses,
       currencyCode: this.currencyCode,
-      otherParams: {},
+      otherParams: {
+        debugInfo
+      },
       txid: txid,
       date: date,
       blockHeight: height === -1 ? 0 : height,
