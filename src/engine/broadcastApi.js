@@ -32,7 +32,7 @@ const makeBroadcastBlockchainInfo = (io: EdgeIo, currencyCode: string) => {
 }
 
 const makeBroadcastInsight = (io: EdgeIo, currencyCode: string) => {
-  const supportedCodes = ['BCH']
+  const supportedCodes = []
   if (!supportedCodes.find(c => c === currencyCode)) {
     return null
   }
