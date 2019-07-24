@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.3.1 (2019-09-24)
+
+- Remove Insight (BitPay) as broadcaster for BCH to fix broadcast errors
+
 # 4.3.0 (2019-09-22)
 
 - Include input and output information in `debugInfo` property of transaction `otherParams`
