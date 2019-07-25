@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.4.0 (2019-09-25)
+
+- Allow more currencies to be broadcast by Blockchair: BTC, BCH, LTC, BSV, DASH, GRS
+
 # 4.3.1 (2019-09-24)
 
 - Remove Insight (BitPay) as broadcaster for BCH to fix broadcast errors
