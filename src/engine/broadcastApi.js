@@ -68,7 +68,7 @@ const makeBroadcastInsight = (io: EdgeIo, currencyCode: string) => {
 }
 
 const makeBroadcastBlockchair = (io: EdgeIo, currencyCode: string) => {
-  const supportedCodes = ['DOGE']
+  const supportedCodes = ['DOGE', 'BTC', 'BCH', 'LTC', 'BSV', 'DASH', 'GRS'] // does seem to appear for GRS?
   if (!supportedCodes.find(c => c === currencyCode)) {
     return null
   }
@@ -79,6 +79,8 @@ const makeBroadcastBlockchair = (io: EdgeIo, currencyCode: string) => {
   let pluginName
   if (info && info.currencyInfo) {
     pluginName = info.currencyInfo.pluginName
+    if (pluginName === 'bitcoinsv') pluginName = 'bitcoin-sv' // special case (hyphen)
+    if (pluginName === 'bitcoincash') pluginName = 'bitcoin-cash' // special case (hyphen)
   } else {
     return null
   }
