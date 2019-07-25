@@ -68,7 +68,7 @@ const makeBroadcastInsight = (io: EdgeIo, currencyCode: string) => {
 }
 
 const makeBroadcastBlockchair = (io: EdgeIo, currencyCode: string) => {
-  const supportedCodes = ['DOGE', 'BTC', 'BCH', 'LTC', 'BSV', 'DASH', 'GRS']
+  const supportedCodes = ['DOGE', 'BTC', 'BCH', 'LTC', 'BSV', 'DASH', 'GRS'] // does seem to appear for GRS?
   if (!supportedCodes.find(c => c === currencyCode)) {
     return null
   }
