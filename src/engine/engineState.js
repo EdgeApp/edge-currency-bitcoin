@@ -530,6 +530,7 @@ export class EngineState extends EventEmitter {
     const ignorePatterns = []
     // if (!this.io.TLSSocket)
     ignorePatterns.push('electrums:')
+    ignorePatterns.push('electrumwss:')
     if (this.serverList.length === 0) {
       this.serverList = this.pluginState.getServers(
         NEW_CONNECTIONS,
