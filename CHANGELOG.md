@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.5.1 (2019-08-02)
+
+- Ad-hoc version bump
+
 # 4.5.0 (2019-08-02)
 
 - Implementation of websockets for stratum connections
