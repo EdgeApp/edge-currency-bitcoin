@@ -1,4 +1,5 @@
 // @flow
+/* global WebSocket */
 
 import { parse } from 'uri-js'
 
@@ -96,38 +97,68 @@ export class StratumConnection {
   /**
    * Activates the underlying TCP connection.
    */
-  open () {
-    const parsed = parse(this.uri)
-    if (
-      (parsed.scheme !== 'electrum' && parsed.scheme !== 'electrums') ||
-      !parsed.host ||
-      !parsed.port
-    ) {
-      throw new TypeError(`Bad stratum URI: ${this.uri}`)
-    }
+  async open () {
+    const { uri, io } = this
 
-    // Connect to the server:
-    const io: PluginIo = this.io
-    return io
-      .makeSocket({
-        host: parsed.host,
-        port: Number(parsed.port),
-        type: parsed.scheme === 'electrum' ? 'tcp' : 'tls'
-      })
-      .then(socket => {
-        socket.on('close', () => this.onSocketClose())
-        socket.on('error', (e: Error) => {
-          this.error = e
-        })
-        socket.on('open', () => this.onSocketConnect())
-        socket.on('message', (data: string) => this.onSocketData(data))
+    try {
+      if (uri.indexOf('electrumws') === 0 || uri.indexOf('electrumwss') === 0) {
+        // It's a websocket!
+        const server = this.uri
+          .replace(/^electrumwss/, 'wss')
+          .replace(/^electrumws/, 'ws')
+        const socket = new WebSocket(server)
+        socket.onclose = event => {
+          this.onSocketClose()
+        }
+        socket.onerror = event => {
+          this.error = new Error(JSON.stringify(event))
+        }
+        socket.onopen = event => {
+          this.onSocketConnect()
+        }
+        socket.onmessage = (event: Object) => {
+          this.onSocketData(event.data)
+        }
         this.socket = socket
         this.cancelConnect = false
-        return socket.connect()
-      })
-      .catch(e => {
-        this.handleError(e)
-      })
+      } else if (
+        uri.indexOf('electrum') === 0 ||
+        uri.indexOf('electrums') === 0
+      ) {
+        // It's a TCP!
+        const parsed = parse(uri)
+        if (
+          (parsed.scheme !== 'electrum' && parsed.scheme !== 'electrums') ||
+          !parsed.host ||
+          !parsed.port
+        ) {
+          throw new Error('Bad URL')
+        }
+
+        // Connect to the server:
+        await io
+          .makeSocket({
+            host: parsed.host,
+            port: Number(parsed.port),
+            type: parsed.scheme === 'electrum' ? 'tcp' : 'tls'
+          })
+          .then(socket => {
+            socket.on('close', () => this.onSocketClose())
+            socket.on('error', (e: Error) => {
+              this.error = e
+            })
+            socket.on('open', () => this.onSocketConnect())
+            socket.on('message', (data: string) => this.onSocketData(data))
+            this.socket = socket
+            this.cancelConnect = false
+            return socket.connect()
+          })
+      } else {
+        throw new Error('Wrong URL prefix')
+      }
+    } catch (e) {
+      this.handleError(e)
+    }
   }
 
   wakeUp () {
@@ -207,7 +238,7 @@ export class StratumConnection {
   cancelConnect: boolean
   lastKeepAlive: number
   partialMessage: string
-  socket: EdgeSocket | void
+  socket: EdgeSocket | WebSocket | void
   timer: TimeoutID
   error: Error | void
   sigkill: boolean
