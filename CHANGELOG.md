@@ -1,14 +1,18 @@
 # edge-currency-bitcoin
 
-# 4.4.0 (2019-09-25)
+# 4.4.1 (2019-08-02)
+
+- Implementation of websockets for stratum connections
+
+# 4.4.0 (2019-08-25)
 
 - Allow more currencies to be broadcast by Blockchair: BTC, BCH, LTC, BSV, DASH, GRS
 
-# 4.3.1 (2019-09-24)
+# 4.3.1 (2019-08-24)
 
 - Remove Insight (BitPay) as broadcaster for BCH to fix broadcast errors
 
-# 4.3.0 (2019-09-22)
+# 4.3.0 (2019-08-22)
 
 - Include input and output information in `debugInfo` property of transaction `otherParams`
 
