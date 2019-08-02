@@ -1,4 +1,5 @@
 // @flow
+/* global WebSocket */
 
 import { parse } from 'uri-js'
 
@@ -96,65 +97,67 @@ export class StratumConnection {
   /**
    * Activates the underlying TCP connection.
    */
-  open () {
-    logger.info(`${this.walletId} stratum.open: ${this.uri}`)
-    const parsed = parse(this.uri)
-    if (
-      (parsed.scheme !== 'electrum' &&
-        parsed.scheme !== 'electrums' &&
-        parsed.scheme !== 'electrumwss' &&
-        parsed.scheme !== 'electrumws') ||
-      !parsed.host ||
-      !parsed.port
-    ) {
-      logger.info(`Bad stratum URI: ${this.uri}`)
-      return Promise.resolve(
-        this.handleError(new TypeError(`Bad stratum URI: ${this.uri}`))
-      )
-    }
+  async open () {
+    const { uri, io } = this
 
-    if (parsed.scheme === 'electrum' || parsed.scheme === 'electrums') {
-      const protocol = parsed.scheme === 'electrums' ? 'tls' : 'tcp'
-      const io: PluginIo = this.io
-      io.makeSocket({
-        host: parsed.host,
-        port: Number(parsed.port),
-        type: protocol
-      })
-        .then(socket => {
-          socket.on('close', () => this.onSocketClose())
-          socket.on('error', (e: Error) => {
-            this.error = e
+    try {
+      if (uri.indexOf('electrumws') === 0 || uri.indexOf('electrumwss') === 0) {
+        // It's a websocket!
+        const server = this.uri
+          .replace(/^electrumwss/, 'wss')
+          .replace(/^electrumws/, 'ws')
+        const socket = new WebSocket(server)
+        socket.onclose = event => {
+          this.onSocketClose()
+        }
+        socket.onerror = event => {
+          this.error = new Error(JSON.stringify(event))
+        }
+        socket.onopen = event => {
+          this.onSocketConnect()
+        }
+        socket.onmessage = (event: Object) => {
+          this.onSocketData(event.data)
+        }
+        this.socket = socket
+        this.cancelConnect = false
+      } else if (
+        uri.indexOf('electrum') === 0 ||
+        uri.indexOf('electrums') === 0
+      ) {
+        // It's a TCP!
+        const parsed = parse(uri)
+        if (
+          (parsed.scheme !== 'electrum' && parsed.scheme !== 'electrums') ||
+          !parsed.host ||
+          !parsed.port
+        ) {
+          throw new Error('Bad URL')
+        }
+
+        // Connect to the server:
+        await io
+          .makeSocket({
+            host: parsed.host,
+            port: Number(parsed.port),
+            type: parsed.scheme === 'electrum' ? 'tcp' : 'tls'
           })
-          socket.on('open', () => this.onSocketConnect())
-          socket.on('message', (data: string) => this.onSocketData(data))
-          this.socket = socket
-          this.cancelConnect = false
-          socket.connect()
-        })
-        .catch(e => {
-          this.handleError(e)
-        })
-    } else if (parsed.scheme === 'electrumwss') {
-      // Connect to the server:
-      const server = this.uri.replace('electrumwss', 'wss')
-      const socket = new WebSocket(server)
-      socket.onclose = event => {
-        this.onSocketClose()
+          .then(socket => {
+            socket.on('close', () => this.onSocketClose())
+            socket.on('error', (e: Error) => {
+              this.error = e
+            })
+            socket.on('open', () => this.onSocketConnect())
+            socket.on('message', (data: string) => this.onSocketData(data))
+            this.socket = socket
+            this.cancelConnect = false
+            return socket.connect()
+          })
+      } else {
+        throw new Error('Wrong URL prefix')
       }
-      socket.onerror = event => {
-        this.error = new Error(JSON.stringify(event))
-      }
-      socket.onopen = event => {
-        this.onSocketConnect()
-      }
-      socket.onmessage = (event: Object) => {
-        this.onSocketData(event.data)
-      }
-      this.socket = socket
-      this.cancelConnect = false
-    } else {
-      logger.info(`${this.walletId} stratum.open invalid scheme: ${this.uri}`)
+    } catch (e) {
+      this.handleError(e)
     }
   }
 
