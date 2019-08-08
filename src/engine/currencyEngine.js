@@ -89,8 +89,7 @@ export type CurrencyEngineSettings = {
   engineInfo: EngineCurrencyInfo,
   pluginState: PluginState,
   options: EdgeCurrencyEngineOptions,
-  io: PluginIo,
-  fetchJson: Function
+  io: PluginIo
 }
 /**
  * The core currency plugin.
@@ -123,8 +122,7 @@ export class CurrencyEngine {
     engineInfo,
     pluginState,
     options,
-    io,
-    fetchJson
+    io
   }: CurrencyEngineSettings) {
     // Validate that we are a valid EdgeCurrencyEngine:
     // eslint-disable-next-line no-unused-vars

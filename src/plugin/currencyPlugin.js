@@ -31,7 +31,6 @@ import {
   getFromatsForNetwork,
   keysFromEntropy
 } from '../utils/coinUtils.js'
-import { getFetchJson } from '../react-native-io.js'
 import { getXPubFromSeed } from '../utils/formatSelector.js'
 import { logger, setLogger } from '../utils/logger.js'
 import { type PluginIo } from './pluginIo.js'
@@ -143,7 +142,6 @@ const makeCurrencyPluginFactory = (
     options: EdgeCorePluginOptions
   ): EdgeCurrencyPlugin {
     const io = makeIo(options)
-    const fetchJson = getFetchJson(options)
     setLogger(io.console)
     // Extend bcoin to support this plugin currency info
     // and faster crypto if possible
@@ -164,8 +162,7 @@ const makeCurrencyPluginFactory = (
           engineInfo,
           pluginState: tools.state,
           options,
-          io,
-          fetchJson
+          io
         })
         await engine.load()
         return engine

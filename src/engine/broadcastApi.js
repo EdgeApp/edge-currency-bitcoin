@@ -85,10 +85,10 @@ const makeBroadcastBlockchair = (io: EdgeIo, currencyCode: string) => {
     return null
   }
 
-  return async (rawTx: string, io: EdgeIo) => {
+  return async (rawTx: string) => {
     try {
       const body = { data: rawTx }
-      const response = await io.fetchJson(
+      const response = await io.fetch(
         `https://api.blockchair.com/${pluginName}/push/transaction`,
         {
           headers: {
@@ -100,7 +100,7 @@ const makeBroadcastBlockchair = (io: EdgeIo, currencyCode: string) => {
         }
       )
       const out = await response.json()
-      logger.info('makeBroadcastBlockchair fetch with body: ', body, ', response: ', response, ', out: ', out)
+      logger.info('SUCCESS makeBroadcastBlockchair: ', out)
       if (out.context && out.context.error) {
         logger.info('makeBroadcastBlockchair fail with out: ', out)
         throw new Error(
