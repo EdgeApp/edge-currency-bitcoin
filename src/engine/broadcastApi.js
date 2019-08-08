@@ -1,28 +1,33 @@
 // @flow
 
-import { type EdgeIo } from 'edge-core-js/types'
-
 import { allInfo } from '../info/all.js'
+import { type PluginIo } from '../plugin/pluginIo.js'
 import { logger } from '../utils/logger.js'
 
-const makeBroadcastBlockchainInfo = (io: EdgeIo, currencyCode: string) => {
+const makeBroadcastBlockchainInfo = (io: PluginIo, currencyCode: string) => {
   const supportedCodes = ['BTC']
   if (!supportedCodes.find(c => c === currencyCode)) {
     return null
   }
   return async (rawTx: string) => {
     try {
-      const response = await io.fetch('https://blockchain.info/pushtx', {
-        method: 'POST',
-        body: 'tx=' + rawTx,
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-      })
-      if (response.ok) {
-        logger.info('SUCCESS makeBroadcastBlockchainInfo')
+      const response: string = await io.fetchText(
+        'https://blockchain.info/pushtx',
+        {
+          method: 'POST',
+          body: 'tx=' + rawTx,
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        }
+      )
+      if (response === 'Transaction Submitted') {
+        logger.info(
+          'SUCCESS makeBroadcastBlockchainInfo has response',
+          response
+        )
         return true
       } else {
         logger.info('ERROR makeBroadcastBlockchainInfo', response)
-        throw new Error(`blockchain.info failed with status ${response.status}`)
+        throw new Error(`blockchain.info failed with status ${response}`)
       }
     } catch (e) {
       logger.info('ERROR makeBroadcastBlockchainInfo', e)
@@ -31,7 +36,7 @@ const makeBroadcastBlockchainInfo = (io: EdgeIo, currencyCode: string) => {
   }
 }
 
-const makeBroadcastInsight = (io: EdgeIo, currencyCode: string) => {
+const makeBroadcastInsight = (io: PluginIo, currencyCode: string) => {
   const supportedCodes = []
   if (!supportedCodes.find(c => c === currencyCode)) {
     return null
@@ -67,7 +72,7 @@ const makeBroadcastInsight = (io: EdgeIo, currencyCode: string) => {
   }
 }
 
-const makeBroadcastBlockchair = (io: EdgeIo, currencyCode: string) => {
+const makeBroadcastBlockchair = (io: PluginIo, currencyCode: string) => {
   const supportedCodes = ['DOGE', 'BTC', 'BCH', 'LTC', 'BSV', 'DASH', 'GRS'] // does seem to appear for GRS?
   if (!supportedCodes.find(c => c === currencyCode)) {
     return null
@@ -88,7 +93,7 @@ const makeBroadcastBlockchair = (io: EdgeIo, currencyCode: string) => {
   return async (rawTx: string) => {
     try {
       const body = { data: rawTx }
-      const response = await io.fetch(
+      const response = await io.fetchJson(
         `https://api.blockchair.com/${pluginName}/push/transaction`,
         {
           headers: {
@@ -99,8 +104,15 @@ const makeBroadcastBlockchair = (io: EdgeIo, currencyCode: string) => {
           body: JSON.stringify(body)
         }
       )
-      const out = await response.json()
-      logger.info('SUCCESS makeBroadcastBlockchair: ', out)
+      const out = await response
+      logger.info(
+        'makeBroadcastBlockchair fetch with body: ',
+        body,
+        ', response: ',
+        response,
+        ', out: ',
+        out
+      )
       if (out.context && out.context.error) {
         logger.info('makeBroadcastBlockchair fail with out: ', out)
         throw new Error(
