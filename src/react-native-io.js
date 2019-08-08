@@ -5,6 +5,7 @@
 import { pbkdf2, secp256k1 } from 'react-native-fast-crypto'
 import { Socket } from 'react-native-tcp'
 import { bridgifyObject } from 'yaob'
+import { type EdgeCorePluginOptions } from 'edge-core-js/types'
 
 import {
   type EdgeSocket,
@@ -13,6 +14,24 @@ import {
   makeEdgeSocket
 } from './plugin/pluginIo.js'
 
+type FetchJson = (uri: string, opts?: Object) => Object
+
+function makeFetchJson (io): FetchJson {
+  return function fetchJson (uri, opts) {
+    return io.fetch(uri, opts).then(reply => {
+      if (!reply.ok) {
+        throw new Error(`Error ${reply.status} while fetching ${uri}`)
+      }
+      return reply.json()
+    })
+  }
+}
+
+export function getFetchJson (opts: EdgeCorePluginOptions): FetchJson {
+  const nativeIo = opts.nativeIo['edge-currency-bitcoin']
+  return nativeIo != null ? nativeIo.fetchJson : makeFetchJson(opts.io)
+}
+
 export default function makeCustomIo (): ExtraIo {
   bridgifyObject(pbkdf2)
   bridgifyObject(secp256k1)
@@ -20,7 +39,7 @@ export default function makeCustomIo (): ExtraIo {
   return {
     pbkdf2,
     secp256k1,
-
+    fetchJson: makeFetchJson(window),
     makeSocket (opts: EdgeSocketOptions): Promise<EdgeSocket> {
       let socket: net$Socket
       if (opts.type === 'tcp') socket = new Socket()
