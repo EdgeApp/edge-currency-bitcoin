@@ -10,7 +10,9 @@ import {
   type EdgeSocket,
   type EdgeSocketOptions,
   type ExtraIo,
-  makeEdgeSocket
+  makeEdgeSocket,
+  makeFetchJson,
+  makeFetchText
 } from './plugin/pluginIo.js'
 
 export default function makeCustomIo (): ExtraIo {
@@ -18,9 +20,10 @@ export default function makeCustomIo (): ExtraIo {
   bridgifyObject(secp256k1)
 
   return {
+    fetchJson: makeFetchJson(window),
+    fetchText: makeFetchText(window),
     pbkdf2,
     secp256k1,
-
     makeSocket (opts: EdgeSocketOptions): Promise<EdgeSocket> {
       let socket: net$Socket
       if (opts.type === 'tcp') socket = new Socket()
