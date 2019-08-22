@@ -28,7 +28,6 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'dogecoin',
   currencyCode: 'DOGE',
   gapLimit: 10,
-  maxFee: 1000000,
   defaultFee: 1000,
   feeUpdateInterval: 10000,
   customFeeSettings: ['satPerByte'],

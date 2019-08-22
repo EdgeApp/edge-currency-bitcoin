@@ -28,7 +28,6 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'dash',
   currencyCode: 'DASH',
   gapLimit: 10,
-  maxFee: 100000,
   defaultFee: 10000,
   feeUpdateInterval: 60000,
   customFeeSettings: ['satPerByte'],

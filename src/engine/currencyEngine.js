@@ -65,7 +65,6 @@ export type EngineCurrencyInfo = {
   network: string, // The offical network in lower case - Needs to match the Bitcoin Lib Network Type
   currencyCode: string, // The offical currency code in upper case - Needs to match the EdgeCurrencyInfo currencyCode
   gapLimit: number,
-  maxFee: number,
   defaultFee: number,
   feeUpdateInterval: number,
   customFeeSettings: Array<string>,
@@ -588,7 +587,6 @@ export class CurrencyEngine {
         utxos,
         rate,
         txOptions,
-        maxFee: this.engineInfo.maxFee,
         height: this.getBlockHeight()
       })
 
