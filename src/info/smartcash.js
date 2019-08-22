@@ -57,7 +57,6 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'smartcash',
   currencyCode: 'SMART',
   gapLimit: 10,
-  maxFee: 1000000,
   defaultFee: 100000,
   feeUpdateInterval: 60000,
   customFeeSettings: ['satPerByte'],

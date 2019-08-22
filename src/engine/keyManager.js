@@ -59,7 +59,6 @@ export type createTxOptions = {
   utxos: Array<Utxo>,
   height: BlockHeight,
   rate: number,
-  maxFee: number,
   txOptions: TxOptions
 }
 

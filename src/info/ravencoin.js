@@ -28,7 +28,6 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'ravencoin',
   currencyCode: 'RVN',
   gapLimit: 10,
-  maxFee: 1000000,
   defaultFee: 1000,
   feeUpdateInterval: 60000,
   customFeeSettings: ['satPerByte'],

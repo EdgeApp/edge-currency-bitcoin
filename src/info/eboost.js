@@ -28,7 +28,6 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'eboost',
   currencyCode: 'EBST',
   gapLimit: 10,
-  maxFee: 10000000,
   defaultFee: 500000,
   feeUpdateInterval: 60000,
   infoServer: 'https://info1.edgesecure.co:8444/v1',

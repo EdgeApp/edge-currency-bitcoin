@@ -34,7 +34,6 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'bitcoinsv',
   currencyCode: 'BSV',
   gapLimit: 10,
-  maxFee: 1000000,
   defaultFee: 10000,
   feeUpdateInterval: 60000,
   customFeeSettings: ['satPerByte'],

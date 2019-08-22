@@ -85,7 +85,6 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'bitcoincash',
   currencyCode: 'BCH',
   gapLimit: 10,
-  maxFee: 1000000,
   defaultFee: 10000,
   feeUpdateInterval: 60000,
   customFeeSettings: ['satPerByte'],

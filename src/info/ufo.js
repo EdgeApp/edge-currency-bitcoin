@@ -32,7 +32,6 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'uniformfiscalobject',
   currencyCode: 'UFO',
   gapLimit: 10,
-  maxFee: 1000000,
   defaultFee: 50000,
   feeUpdateInterval: 60000,
   customFeeSettings: ['satPerByte'],

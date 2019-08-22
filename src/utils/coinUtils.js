@@ -60,7 +60,6 @@ export type TxOptions = {
 export type CreateTxOptions = {
   utxos: Array<Utxo>,
   rate: number,
-  maxFee: number,
   changeAddress: string,
   network: string,
   outputs?: Array<StandardOutput>,
@@ -149,7 +148,6 @@ export const createTX = async ({
   outputs = [],
   changeAddress,
   rate,
-  maxFee,
   height = -1,
   estimate,
   network,
@@ -225,7 +223,6 @@ export const createTX = async ({
     subtractFee,
     height,
     rate,
-    maxFee,
     estimate
   })
 

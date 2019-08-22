@@ -32,7 +32,6 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'bitcoin',
   currencyCode: 'BTC',
   gapLimit: 10,
-  maxFee: 1000000,
   defaultFee: 1000,
   feeUpdateInterval: 60000,
   feeInfoServer: 'https://Bitcoinfees.Earn.com/api/v1/fees/list',

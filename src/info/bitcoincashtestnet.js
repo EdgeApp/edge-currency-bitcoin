@@ -34,7 +34,6 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'bitcoincashtestnet',
   currencyCode: 'TBCH',
   gapLimit: 10,
-  maxFee: 1000000,
   defaultFee: 10000,
   feeUpdateInterval: 60000,
   feeInfoServer: '',

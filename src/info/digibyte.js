@@ -33,7 +33,6 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'digibyte',
   currencyCode: 'DGB',
   gapLimit: 10,
-  maxFee: 1000000,
   defaultFee: 1000,
   feeUpdateInterval: 60000,
   customFeeSettings: ['satPerByte'],

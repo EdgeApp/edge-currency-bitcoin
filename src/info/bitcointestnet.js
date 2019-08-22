@@ -41,7 +41,6 @@ const engineInfo: EngineCurrencyInfo = {
   network: 'bitcointestnet',
   currencyCode: 'TBTC',
   gapLimit: 10,
-  maxFee: 1000000,
   defaultFee: 1000,
   feeUpdateInterval: 60000,
   feeInfoServer: '',
