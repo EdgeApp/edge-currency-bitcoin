@@ -1,5 +1,11 @@
 # edge-currency-bitcoin
 
+# 4.5.2 (2019-08-22)
+
+- Clean up yarn audit dependencies
+- Remove max fee from plugins (handled in GUI instead)
+- Fix CORS issue for Blockchain.info transaction broadcasting
+
 # 4.5.1 (2019-08-02)
 
 - Ad-hoc version bump
