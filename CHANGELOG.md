@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.5.3 (2019-09-03)
+
+- Fix Dogecoin block parsing
+
 # 4.5.2 (2019-08-22)
 
 - Clean up yarn audit dependencies
