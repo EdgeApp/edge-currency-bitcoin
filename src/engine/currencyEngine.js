@@ -29,6 +29,7 @@ import {
   addressToScriptHash,
   getReceiveAddresses,
   parseJsonTransaction,
+  signBitcoinMessage,
   sumTransaction,
   sumUtxos,
   verifyTxAmount
@@ -47,11 +48,7 @@ import type { EngineStateCallbacks } from './engineState.js'
 import { KeyManager } from './keyManager'
 import type { KeyManagerCallbacks } from './keyManager'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
-import {
-  createPayment,
-  getPaymentDetails,
-  sendPayment
-} from './paymentRequest.js'
+import { createPayment, getPaymentDetails, sendPayment } from './paymentRequest.js'
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000
@@ -112,6 +109,7 @@ export class CurrencyEngine {
   feeUpdateInterval: number
   feeTimer: any
   fees: BitcoinFees
+  otherMethods: Object
 
   // ------------------------------------------------------------------------
   // Private API
@@ -143,6 +141,17 @@ export class CurrencyEngine {
     logger.info(
       `${this.prunedWalletId}: create engine type: ${this.walletInfo.type}`
     )
+
+    this.otherMethods = {
+      signMessageBase64: async (
+        message: string,
+        address: string
+      ): Promise<string> => {
+        const key = await this.keyManager.getKeyForAddress(address)
+        const signature = await signBitcoinMessage(message, key)
+        return signature
+      }
+    }
   }
 
   async load (): Promise<any> {
@@ -628,19 +637,8 @@ export class CurrencyEngine {
   }
 
   async signTx (edgeTransaction: EdgeTransaction): Promise<EdgeTransaction> {
-    const { edgeSpendInfo, txJson, signMessage } =
+    const { edgeSpendInfo, txJson } =
       edgeTransaction.otherParams || {}
-    if (signMessage) {
-      const { signature, publicKey } = await this.keyManager.signMessage(
-        signMessage
-      )
-      const signedMessage = { ...signMessage, signature, publicKey }
-      const otherParams = {
-        ...edgeTransaction.otherParams,
-        signMessage: signedMessage
-      }
-      return { ...edgeTransaction, otherParams }
-    }
     this.logEdgeTransaction(edgeTransaction, 'Signing')
     const bcoinTx = parseJsonTransaction(txJson)
     const { privateKeys = [], otherParams = {} } = edgeSpendInfo

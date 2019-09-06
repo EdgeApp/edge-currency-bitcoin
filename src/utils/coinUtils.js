@@ -17,9 +17,15 @@ import {
   toLegacyFormat,
   toNewFormat
 } from './addressFormat/addressFormatIndex.js'
-import { hash256, hash256Sync, reverseBufferToHex } from './utils.js'
+import {
+  hash256,
+  hash256Sync,
+  reverseBufferToHex,
+  secp256k1Sign
+} from './utils.js'
 
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
+const MESSAGE_HEADER = Buffer.from('\x18Bitcoin Signed Message:\n', 'utf8')
 
 export type RawTx = string
 export type BlockHeight = number
@@ -66,6 +72,31 @@ export type CreateTxOptions = {
   height?: BlockHeight,
   estimate?: Function,
   txOptions: TxOptions
+}
+
+export const createBitcoinMessageSigHash = (message: string): Buffer => {
+  const msgBuf = Buffer.from(message, 'utf8')
+  const msgBufLength = Buffer.alloc(1, msgBuf.length)
+  const payload = Buffer.concat([MESSAGE_HEADER, msgBufLength, msgBuf])
+  const sigHash = hash256Sync(hash256Sync(payload))
+  return sigHash
+}
+
+export const signBitcoinMessage = async (
+  message: Buffer,
+  key: Object
+): Promise<string> => {
+  const privateKey = key.privateKey
+  const publicKey = key.getPublicKey()
+  const sigHash = createBitcoinMessageSigHash(message)
+  const { signature, recovery } = await secp256k1Sign(sigHash, privateKey)
+  const compressed =
+    publicKey.length === 33 && (publicKey[0] === 0x02 || publicKey[0] === 0x03)
+  const recId = 27 + (compressed && 4) + recovery
+  const recIdBuff = Buffer.alloc(1, recId)
+  const signedMessage = Buffer.concat([recIdBuff, signature])
+  const signedMessage64 = signedMessage.toString('base64')
+  return signedMessage64
 }
 
 export const isCompressed = (key: any): boolean =>
