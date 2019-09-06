@@ -6,6 +6,7 @@
 import crypto from 'crypto'
 
 import { validate } from 'jsonschema'
+import secp256k1 from 'secp256k1'
 
 import { logger } from '../utils/logger.js'
 
@@ -30,6 +31,11 @@ export const hexToVarByte = (hex: string) => {
 
 export async function hash256 (hex: any) {
   return Promise.resolve(hash256Sync(hex))
+}
+
+export async function secp256k1Sign (message: Buffer, key: Buffer) {
+  const sigObj = await secp256k1.sign(message, key)
+  return sigObj
 }
 
 export function hash256Sync (hex: any) {

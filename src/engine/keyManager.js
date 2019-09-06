@@ -289,7 +289,29 @@ export class KeyManager {
     return this.fSelector.sign(tx, keyRings)
   }
 
-  async signMessage ({ message, address }: SignMessage) {
+  getSeed (): string | null {
+    if (this.seed && this.seed !== '') {
+      try {
+        return this.fSelector.parseSeed(this.seed)
+      } catch (e) {
+        logger.error(e)
+        return null
+      }
+    }
+    return null
+  }
+
+  getPublicSeed (): string | null {
+    return this.keys.master.pubKey
+      ? this.keys.master.pubKey.toBase58(this.network)
+      : null
+  }
+
+  // ////////////////////////////////////////////// //
+  // ////////////// Private API /////////////////// //
+  // ////////////////////////////////////////////// //
+
+  async getKeyForAddress (address: string): Object {
     if (!this.keys.master.privKey && this.seed === '') {
       throw new Error("Can't sign without private key")
     }
@@ -316,34 +338,8 @@ export class KeyManager {
       keyRing.privKey,
       parseInt(index)
     )
-    const signature = await key.sign(Buffer.from(message, 'hex'))
-    return {
-      signature: signature.toString('hex'),
-      publicKey: key.publicKey.toString('hex')
-    }
+    return key
   }
-
-  getSeed (): string | null {
-    if (this.seed && this.seed !== '') {
-      try {
-        return this.fSelector.parseSeed(this.seed)
-      } catch (e) {
-        logger.error(e)
-        return null
-      }
-    }
-    return null
-  }
-
-  getPublicSeed (): string | null {
-    return this.keys.master.pubKey
-      ? this.keys.master.pubKey.toBase58(this.network)
-      : null
-  }
-
-  // ////////////////////////////////////////////// //
-  // ////////////// Private API /////////////////// //
-  // ////////////////////////////////////////////// //
 
   utxoToAddress (
     prevout: any

@@ -230,28 +230,6 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     })
   })
 
-  describe(`Sign message using wallet's addresses with Wallet type ${WALLET_TYPE}`, function () {
-    const signMessage = fixture['Sign message']
-    Object.keys(signMessage).forEach(test => {
-      const { message, address, signature, publicKey } = signMessage[test]
-      it(`Sign message - ${test}`, function (done) {
-        const otherParams = {
-          signMessage: {
-            message,
-            address
-          }
-        }
-        // $FlowFixMe
-        engine.signTx({ otherParams }).then(edgeTransaction => {
-          const signedMessage = edgeTransaction.otherParams.signMessage
-          assert.equal(publicKey, signedMessage.publicKey, 'publicKey')
-          assert.equal(signature, signedMessage.signature, 'signature')
-          done()
-        })
-      })
-    })
-  })
-
   describe(`Is Address Used for Wallet type ${WALLET_TYPE} from cache`, function () {
     const testCases = fixture['Address used from cache']
     const wrongFormat = testCases.wrongFormat || []
