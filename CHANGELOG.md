@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.5.5 (2019-09-18)
+
+- Fix the message-signing feature (for real this time).
+
 # 4.5.4 (2019-09-06)
 
 - Fix the message-signing feature.
