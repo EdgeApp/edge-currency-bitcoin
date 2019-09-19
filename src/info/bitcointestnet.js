@@ -65,7 +65,7 @@ const currencyInfo: EdgeCurrencyInfo = {
     { name: 'mTBTC', multiplier: '100000', symbol: 'm₿' },
     { name: 'bits', multiplier: '100', symbol: 'ƀ' }
   ],
-  walletType: 'wallet:bitcoin-testnet',
+  walletType: 'wallet:bitcointestnet',
 
   // Configuration options:
   defaultSettings: {
