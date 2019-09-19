@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.6.0 (2019-09-19)
+
+- Enable Bitcoin testnet
+
 # 4.5.5 (2019-09-18)
 
 - Fix the message-signing feature (for real this time).
