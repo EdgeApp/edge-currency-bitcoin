@@ -2,7 +2,6 @@
 
 import { bns } from 'biggystring'
 import { type Disklet } from 'disklet'
-import { InsufficientFundsError } from 'edge-core-js'
 import {
   type EdgeCurrencyEngine,
   type EdgeCurrencyEngineCallbacks,
@@ -14,7 +13,8 @@ import {
   type EdgeSpendInfo,
   type EdgeSpendTarget,
   type EdgeTransaction,
-  type EdgeWalletInfo
+  type EdgeWalletInfo,
+  InsufficientFundsError
 } from 'edge-core-js/types'
 
 import { InfoServer } from '../info/constants'
