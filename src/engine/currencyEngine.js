@@ -2,6 +2,7 @@
 
 import { bns } from 'biggystring'
 import { type Disklet } from 'disklet'
+import { InsufficientFundsError } from 'edge-core-js'
 import {
   type EdgeCurrencyEngine,
   type EdgeCurrencyEngineCallbacks,
@@ -13,8 +14,7 @@ import {
   type EdgeSpendInfo,
   type EdgeSpendTarget,
   type EdgeTransaction,
-  type EdgeWalletInfo,
-  InsufficientFundsError
+  type EdgeWalletInfo
 } from 'edge-core-js/types'
 
 import { InfoServer } from '../info/constants'
@@ -48,7 +48,11 @@ import type { EngineStateCallbacks } from './engineState.js'
 import { KeyManager } from './keyManager'
 import type { KeyManagerCallbacks } from './keyManager'
 import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
-import { createPayment, getPaymentDetails, sendPayment } from './paymentRequest.js'
+import {
+  createPayment,
+  getPaymentDetails,
+  sendPayment
+} from './paymentRequest.js'
 
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000
@@ -637,8 +641,7 @@ export class CurrencyEngine {
   }
 
   async signTx (edgeTransaction: EdgeTransaction): Promise<EdgeTransaction> {
-    const { edgeSpendInfo, txJson } =
-      edgeTransaction.otherParams || {}
+    const { edgeSpendInfo, txJson } = edgeTransaction.otherParams || {}
     this.logEdgeTransaction(edgeTransaction, 'Signing')
     const bcoinTx = parseJsonTransaction(txJson)
     const { privateKeys = [], otherParams = {} } = edgeSpendInfo
