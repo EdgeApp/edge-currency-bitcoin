@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.6.2 (2019-09-25)
+
+- Revert modification of `InsufficientFundsError` import
+
 # 4.6.1 (2019-09-25)
 
 - Fix `InsufficientFundsError` import issue
