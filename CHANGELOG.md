@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.6.1 (2019-09-25)
+
+- Fix `InsufficientFundsError` import issue
+
 # 4.6.0 (2019-09-19)
 
 - Enable Bitcoin testnet
@@ -11,8 +15,8 @@
 # 4.5.4 (2019-09-06)
 
 - Fix the message-signing feature.
-  - Make signatures compatible with the standard p2pkh format.
-  - Move the feature to a standalone API method.
+- Make signatures compatible with the standard p2pkh format.
+- Move the feature to a standalone API method.
 
 # 4.5.3 (2019-09-03)
 
