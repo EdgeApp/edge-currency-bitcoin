@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.6.3 (2019-10-30)
+
+- Add 'sats' as denomination for BTC and TBTC
+
 # 4.6.2 (2019-09-25)
 
 - Revert modification of `InsufficientFundsError` import
