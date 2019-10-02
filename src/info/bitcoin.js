@@ -54,7 +54,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   denominations: [
     { name: 'BTC', multiplier: '100000000', symbol: '₿' },
     { name: 'mBTC', multiplier: '100000', symbol: 'm₿' },
-    { name: 'bits', multiplier: '100', symbol: 'ƀ' }
+    { name: 'bits', multiplier: '100', symbol: 'ƀ' },
+    { name: 'sats', multiplier: '1', symbol: 's' }
   ],
   walletType: 'wallet:bitcoin',
 
