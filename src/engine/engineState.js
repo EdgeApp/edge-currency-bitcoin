@@ -639,7 +639,7 @@ export class EngineState extends EventEmitter {
       })
       this.serverStates[uri] = {
         fetchingHeight: false,
-        height: void 0,
+        height: undefined,
         addresses: {},
         txids: new Set(),
         headers: new Set()
@@ -654,7 +654,7 @@ export class EngineState extends EventEmitter {
     const prefix = `${this.walletId} ${uri.replace('electrum://', '')}:`
 
     // Subscribe to height if this has never happened:
-    if (serverState.height === void 0 && !serverState.fetchingHeight) {
+    if (serverState.height === undefined && !serverState.fetchingHeight) {
       serverState.fetchingHeight = true
       const queryTime = Date.now()
       return subscribeHeight(

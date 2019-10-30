@@ -250,7 +250,7 @@ export class StratumConnection {
     const error = this.error || new Error('Socket closed')
     clearTimeout(this.timer)
     this.connected = false
-    this.socket = void 0
+    this.socket = undefined
     this.cancelConnect = false
     this.sigkill = false
     for (const id of Object.keys(this.pendingMessages)) {

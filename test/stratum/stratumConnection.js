@@ -47,7 +47,7 @@ describe.skip('StratumConnection', function() {
       onNotifyScriptHash() {},
       onOpen() {},
       onClose() {
-        done(gotReply ? void 0 : new Error('Failed to fetch version'))
+        done(gotReply ? undefined : new Error('Failed to fetch version'))
       },
       onQueueSpace() {}
     }
@@ -76,7 +76,7 @@ describe.skip('StratumConnection', function() {
       onNotifyScriptHash() {},
       onOpen() {},
       onClose() {
-        done(gotReply ? void 0 : new Error('Failed to get height'))
+        done(gotReply ? undefined : new Error('Failed to get height'))
       },
       onQueueSpace() {
         if (taskQueued) return
@@ -119,7 +119,7 @@ describe.skip('StratumConnection', function() {
       onNotifyScriptHash() {},
       onOpen() {},
       onClose() {
-        done(gotReply ? void 0 : new Error('Failed to get header'))
+        done(gotReply ? undefined : new Error('Failed to get header'))
       },
       onQueueSpace() {
         if (taskQueued) return
@@ -155,7 +155,7 @@ describe.skip('StratumConnection', function() {
       onNotifyScriptHash() {},
       onOpen() {},
       onClose() {
-        done(gotReply ? void 0 : new Error('Failed to get transaction'))
+        done(gotReply ? undefined : new Error('Failed to get transaction'))
       },
       onQueueSpace() {
         if (taskQueued) return
@@ -192,7 +192,7 @@ describe.skip('StratumConnection', function() {
       onNotifyScriptHash() {},
       onOpen() {},
       onClose() {
-        done(gotReply ? void 0 : new Error('Failed to subscribe address'))
+        done(gotReply ? undefined : new Error('Failed to subscribe address'))
       },
       onQueueSpace() {
         if (taskQueued) return
@@ -231,7 +231,7 @@ describe.skip('StratumConnection', function() {
       onNotifyScriptHash() {},
       onOpen() {},
       onClose() {
-        done(gotReply ? void 0 : new Error('Failed to get history'))
+        done(gotReply ? undefined : new Error('Failed to get history'))
       },
       onQueueSpace() {
         if (taskQueued) return
@@ -272,7 +272,7 @@ describe.skip('StratumConnection', function() {
       onNotifyScriptHash() {},
       onOpen() {},
       onClose() {
-        done(gotReply ? void 0 : new Error('Failed to get utxo'))
+        done(gotReply ? undefined : new Error('Failed to get utxo'))
       },
       onQueueSpace() {
         if (taskQueued) return

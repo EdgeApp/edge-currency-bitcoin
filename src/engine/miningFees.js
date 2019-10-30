@@ -163,7 +163,8 @@ export function calcMinerFeePerByte(
     case ES_FEE_LOW:
       satoshiPerByteFee = bitcoinFees.lowFee
       break
-    case ES_FEE_STANDARD:
+
+    case ES_FEE_STANDARD: {
       if (bns.gte(nativeAmount, bitcoinFees.standardFeeHighAmount)) {
         satoshiPerByteFee = bitcoinFees.standardFeeHigh
         break
@@ -194,9 +195,12 @@ export function calcMinerFeePerByte(
       const addFeeToLow = bns.div(temp1, lowHighAmountDiff)
       satoshiPerByteFee = bns.add(bitcoinFees.standardFeeLow, addFeeToLow)
       break
+    }
+
     case ES_FEE_HIGH:
       satoshiPerByteFee = bitcoinFees.highFee
       break
+
     default:
       throw new Error(
         `Invalid networkFeeOption: ${feeOption}, And/Or customFee: ${customFee}`
