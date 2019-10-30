@@ -1,9 +1,8 @@
 // @flow
 
-import { Buffer } from 'buffer'
-
 import { crypto, utils } from 'bcoin'
 import bs58grscheck from 'bs58grscheck'
+import { Buffer } from 'buffer'
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'

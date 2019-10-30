@@ -1,15 +1,14 @@
 // @flow
 
-import { Buffer } from 'buffer'
-
 import {
-  network as Network,
   hd,
+  network as Network,
   networks,
   primitives,
   script,
   utils
 } from 'bcoin'
+import { Buffer } from 'buffer'
 
 import { type EngineState } from '../engine/engineState.js'
 import { logger } from '../utils/logger.js'
@@ -81,8 +80,8 @@ export const createBitcoinMessageSigHash = (message: string): Buffer => {
     l < 0xfd
       ? Buffer.from([l])
       : l <= 0xffff
-        ? Buffer.from([0xfd, l, l >> 8])
-        : Buffer.from([0xfe, l, l >> 8, l >> 16, l >> 24])
+      ? Buffer.from([0xfd, l, l >> 8])
+      : Buffer.from([0xfe, l, l >> 8, l >> 16, l >> 24])
 
   const msgBuf = Buffer.from(message, 'utf8')
   const payload = Buffer.concat([MESSAGE_HEADER, msgBufLength, msgBuf])

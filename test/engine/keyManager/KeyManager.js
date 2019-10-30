@@ -3,8 +3,8 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import { KeyManager } from '../../../src/engine/keyManager.js'
 import type { KeyManagerCallbacks } from '../../../src/engine/keyManager.js'
+import { KeyManager } from '../../../src/engine/keyManager.js'
 // InfoFiles for networks
 import { bitcoin } from '../../../src/info/bitcoin.js'
 import { bitcoincash } from '../../../src/info/bitcoincash.js'
@@ -36,9 +36,9 @@ for (const fixture of fixtures) {
       logger.info(keys)
     }
   }
-  describe(`Key Manager for ${fixture.network}`, function () {
+  describe(`Key Manager for ${fixture.network}`, function() {
     let keyManager
-    it('creates new key manager', function () {
+    it('creates new key manager', function() {
       const options = { ...fixture, callbacks: keyManagerCallbacks }
       keyManager = new KeyManager(options)
       return keyManager.load().then(() => {

@@ -116,9 +116,7 @@ const makeBroadcastBlockchair = (io: PluginIo, currencyCode: string) => {
       if (out.context && out.context.error) {
         logger.info('makeBroadcastBlockchair fail with out: ', out)
         throw new Error(
-          `https://api.blockchair.com/${pluginName}/push/transaction failed with error ${
-            out.context.error
-          }`
+          `https://api.blockchair.com/${pluginName}/push/transaction failed with error ${out.context.error}`
         )
       }
       logger.info(

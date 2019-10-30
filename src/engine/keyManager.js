@@ -126,9 +126,10 @@ export class KeyManager {
     path: string,
     redeemScript?: string
   ) => mixed
+
   onNewKey: (keys: any) => mixed
 
-  constructor (opts: KeyManagerOptions) {
+  constructor(opts: KeyManagerOptions) {
     const {
       account = 0,
       bip = 'bip32',
@@ -194,29 +195,29 @@ export class KeyManager {
   // ////////////////////////////////////////////// //
   // /////////////// Public API /////////////////// //
   // ////////////////////////////////////////////// //
-  async load () {
+  async load() {
     // If we don't have a public master key we will now create it from seed
     if (!this.keys.master.pubKey) await this.initMasterKeys()
     await this.setLookAhead(true)
   }
 
-  async reload () {
+  async reload() {
     for (const branch in this.keys) {
       this.keys[branch].children = []
     }
     await this.load()
   }
 
-  getReceiveAddress (): string {
+  getReceiveAddress(): string {
     return this.getNextAvailable(this.keys.receive.children)
   }
 
-  getChangeAddress (): string {
+  getChangeAddress(): string {
     if (this.bip === 'bip32') return this.getReceiveAddress()
     return this.getNextAvailable(this.keys.change.children)
   }
 
-  async createTX (options: createTxOptions): any {
+  async createTX(options: createTxOptions): any {
     const { outputs = [], ...rest } = options
     const standardOutputs: Array<StandardOutput> = []
     const branches = this.fSelector.branches
@@ -256,7 +257,7 @@ export class KeyManager {
     })
   }
 
-  async sign (tx: any, privateKeys: Array<string> = []) {
+  async sign(tx: any, privateKeys: Array<string> = []) {
     const keyRings = await getAllKeyRings(privateKeys, this.network)
     if (!keyRings.length) {
       if (!this.keys.master.privKey && this.seed === '') {
@@ -289,7 +290,7 @@ export class KeyManager {
     return this.fSelector.sign(tx, keyRings)
   }
 
-  getSeed (): string | null {
+  getSeed(): string | null {
     if (this.seed && this.seed !== '') {
       try {
         return this.fSelector.parseSeed(this.seed)
@@ -301,7 +302,7 @@ export class KeyManager {
     return null
   }
 
-  getPublicSeed (): string | null {
+  getPublicSeed(): string | null {
     return this.keys.master.pubKey
       ? this.keys.master.pubKey.toBase58(this.network)
       : null
@@ -311,7 +312,7 @@ export class KeyManager {
   // ////////////// Private API /////////////////// //
   // ////////////////////////////////////////////// //
 
-  async getKeyForAddress (address: string): Object {
+  async getKeyForAddress(address: string): Object {
     if (!this.keys.master.privKey && this.seed === '') {
       throw new Error("Can't sign without private key")
     }
@@ -341,7 +342,7 @@ export class KeyManager {
     return key
   }
 
-  utxoToAddress (
+  utxoToAddress(
     prevout: any
   ): { branch: number, index: number, redeemScript?: string } {
     const { parsedTxs, addressInfos } = this.engineState
@@ -359,7 +360,7 @@ export class KeyManager {
     return { branch: parseInt(branch), index: parseInt(index), redeemScript }
   }
 
-  getNextAvailable (addresses: Array<Address>): string {
+  getNextAvailable(addresses: Array<Address>): string {
     const { addressInfos } = this.engineState
     let key = null
     for (let i = 0; i < addresses.length; i++) {
@@ -374,7 +375,7 @@ export class KeyManager {
       : addresses[addresses.length - 1].displayAddress
   }
 
-  async initMasterKeys () {
+  async initMasterKeys() {
     const keys = await this.fSelector.getMasterKeys(
       this.seed,
       this.masterPath,
@@ -384,7 +385,7 @@ export class KeyManager {
     this.saveKeysToCache()
   }
 
-  saveKeysToCache () {
+  saveKeysToCache() {
     try {
       const keys = {}
       for (const type in this.keys) {
@@ -402,7 +403,7 @@ export class KeyManager {
     }
   }
 
-  async setLookAhead (closeGaps: boolean = false) {
+  async setLookAhead(closeGaps: boolean = false) {
     const unlock = await this.writeLock.lock()
     try {
       for (const branchNum in this.fSelector.branches) {
@@ -418,7 +419,7 @@ export class KeyManager {
     }
   }
 
-  async deriveNewKeys (keyRing: KeyRing, branch: number, closeGaps: boolean) {
+  async deriveNewKeys(keyRing: KeyRing, branch: number, closeGaps: boolean) {
     const { children } = keyRing
     // If we never derived a public key for this branch before
     if (!keyRing.pubKey) {
@@ -468,7 +469,7 @@ export class KeyManager {
    * and adds it to the state.
    * @param keyRing The KeyRing corresponding to the selected branch.
    */
-  async deriveAddress (
+  async deriveAddress(
     keyRing: KeyRing,
     branch: number,
     index: number,

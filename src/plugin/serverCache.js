@@ -23,11 +23,11 @@ export class ServerCache {
   serverCacheDirty: boolean
   cacheLastSave_: number
 
-  constructor () {
+  constructor() {
     this.clearServerCache()
   }
 
-  dirtyServerCache (url: string) {
+  dirtyServerCache(url: string) {
     this.serverCacheDirty = true
   }
 
@@ -36,7 +36,7 @@ export class ServerCache {
    * @param oldServers: Map of ServerInfo objects by serverUrl. This should come from disk
    * @param newServers: Array<string> of new servers downloaded from the info server
    */
-  serverCacheLoad (
+  serverCacheLoad(
     oldServers: { [serverUrl: string]: ServerInfo },
     newServers: Array<string> = []
   ) {
@@ -95,14 +95,14 @@ export class ServerCache {
     }
   }
 
-  clearServerCache () {
+  clearServerCache() {
     this.servers_ = {}
     this.serverCacheDirty = false
     this.cacheLastSave_ = Date.now()
     lastScoreUpTime_ = Date.now()
   }
 
-  printServerCache () {
+  printServerCache() {
     logger.info('**** printServerCache ****')
     const serverInfos: Array<ServerInfo> = []
     for (const s in this.servers_) {
@@ -123,7 +123,7 @@ export class ServerCache {
     logger.info('**************************')
   }
 
-  serverScoreUp (
+  serverScoreUp(
     serverUrl: string,
     responseTimeMilliseconds: number,
     changeScore: number = 1
@@ -141,14 +141,12 @@ export class ServerCache {
     }
 
     logger.info(
-      `${serverUrl}: score UP to ${
-        serverInfo.serverScore
-      } ${responseTimeMilliseconds}ms`
+      `${serverUrl}: score UP to ${serverInfo.serverScore} ${responseTimeMilliseconds}ms`
     )
     this.dirtyServerCache(serverUrl)
   }
 
-  serverScoreDown (serverUrl: string, changeScore: number = 10) {
+  serverScoreDown(serverUrl: string, changeScore: number = 10) {
     const currentTime = Date.now()
     if (currentTime - lastScoreUpTime_ > 60000) {
       // It has been over 1 minute since we got an up-vote for any server.
@@ -170,7 +168,7 @@ export class ServerCache {
     this.dirtyServerCache(serverUrl)
   }
 
-  setResponseTime (serverUrl: string, responseTimeMilliseconds: number) {
+  setResponseTime(serverUrl: string, responseTimeMilliseconds: number) {
     const serverInfo: ServerInfo = this.servers_[serverUrl]
     serverInfo.numResponseTimes++
 
@@ -190,7 +188,7 @@ export class ServerCache {
     this.dirtyServerCache(serverUrl)
   }
 
-  getServers (
+  getServers(
     numServersWanted: number,
     includePatterns?: Array<string> = []
   ): Array<string> {

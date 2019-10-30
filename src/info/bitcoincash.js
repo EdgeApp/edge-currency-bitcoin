@@ -10,7 +10,7 @@ import { imageServerUrl } from './constants.js'
 
 const scriptProto = script.prototype
 const getPubkey = scriptProto.getPubkey
-scriptProto.getPubkey = function (minimal: boolean) {
+scriptProto.getPubkey = function(minimal: boolean) {
   if (this.code.length === 6) {
     const size = this.getLength(4)
 

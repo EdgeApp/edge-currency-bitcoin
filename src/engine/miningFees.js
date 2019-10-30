@@ -25,7 +25,7 @@ const MIN_STANDARD_DELAY = 1
  * @param earnComFees
  * @returns {BitcoinFees}
  */
-export function calcFeesFromEarnCom (earnComFeesJson: any): $Shape<BitcoinFees> {
+export function calcFeesFromEarnCom(earnComFeesJson: any): $Shape<BitcoinFees> {
   let highDelay = 999999
   let lowDelay = 0
   let highFee = MAX_FEE
@@ -151,7 +151,7 @@ export function calcFeesFromEarnCom (earnComFeesJson: any): $Shape<BitcoinFees> 
  * @param bitcoinFees
  * @returns {string}
  */
-export function calcMinerFeePerByte (
+export function calcMinerFeePerByte(
   nativeAmount: string,
   feeOption: string,
   bitcoinFees: BitcoinFees,

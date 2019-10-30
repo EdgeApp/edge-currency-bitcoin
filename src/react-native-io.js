@@ -15,7 +15,7 @@ import {
   makeFetchText
 } from './plugin/pluginIo.js'
 
-export default function makeCustomIo (): ExtraIo {
+export default function makeCustomIo(): ExtraIo {
   bridgifyObject(pbkdf2)
   bridgifyObject(secp256k1)
 
@@ -24,7 +24,7 @@ export default function makeCustomIo (): ExtraIo {
     fetchText: makeFetchText(window),
     pbkdf2,
     secp256k1,
-    makeSocket (opts: EdgeSocketOptions): Promise<EdgeSocket> {
+    makeSocket(opts: EdgeSocketOptions): Promise<EdgeSocket> {
       let socket: net$Socket
       if (opts.type === 'tcp') socket = new Socket()
       else if (opts.type === 'tls') throw new Error('No TLS support')
