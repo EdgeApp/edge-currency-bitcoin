@@ -1,15 +1,14 @@
 import { Buffer } from 'buffer'
-
 import { assert } from 'chai'
 import { nfkd } from 'unorm'
 
 const SEED_SALT = Buffer.from('Bitcoin seed', 'ascii')
 
-export const patchSecp256k1 = function (bcoin, secp256k1) {
+export const patchSecp256k1 = function(bcoin, secp256k1) {
   const privateKey = bcoin.hd.PrivateKey.prototype
   const publicKey = bcoin.hd.PublicKey.prototype
 
-  publicKey.derive = async function (index, hardened) {
+  publicKey.derive = async function(index, hardened) {
     assert.equal(typeof index, 'number')
 
     if (index >>> 0 !== index) {
@@ -71,7 +70,7 @@ export const patchSecp256k1 = function (bcoin, secp256k1) {
     return child
   }
 
-  privateKey.derive = async function (index, hardened) {
+  privateKey.derive = async function(index, hardened) {
     assert.equal(typeof index, 'number')
 
     if (index >>> 0 !== index) {
@@ -155,7 +154,7 @@ export const patchSecp256k1 = function (bcoin, secp256k1) {
     return child
   }
 
-  privateKey.toPublic = async function () {
+  privateKey.toPublic = async function() {
     let key = this._hdPublicKey
 
     if (!key) {
@@ -182,12 +181,12 @@ export const patchSecp256k1 = function (bcoin, secp256k1) {
     return key
   }
 
-  privateKey.xpubkey = async function () {
+  privateKey.xpubkey = async function() {
     const pubKey = await this.toPublic()
     return pubKey.xpubkey()
   }
 
-  privateKey.fromReader = function (br, network) {
+  privateKey.fromReader = function(br, network) {
     const version = br.readU32BE()
 
     this.network = bcoin.network.fromPrivate(version, network)
@@ -203,7 +202,7 @@ export const patchSecp256k1 = function (bcoin, secp256k1) {
     return this
   }
 
-  privateKey.fromSeed = async function (seed, network) {
+  privateKey.fromSeed = async function(seed, network) {
     assert(Buffer.isBuffer(seed))
 
     if (
@@ -239,7 +238,7 @@ export const patchSecp256k1 = function (bcoin, secp256k1) {
     return this
   }
 
-  privateKey.derivePath = async function (path) {
+  privateKey.derivePath = async function(path) {
     const indexes = bcoin.hd.common.parsePath(path, true)
 
     let key = this
@@ -252,9 +251,9 @@ export const patchSecp256k1 = function (bcoin, secp256k1) {
   }
 }
 
-export const patchPbkdf2 = function (bcoin, pbkdf2) {
+export const patchPbkdf2 = function(bcoin, pbkdf2) {
   const privateKey = bcoin.hd.PrivateKey.prototype
-  privateKey.fromMnemonic = async function (mnemonic, network) {
+  privateKey.fromMnemonic = async function(mnemonic, network) {
     const passphrase = mnemonic.passphrase
 
     const phrase = nfkd(mnemonic.getPhrase())

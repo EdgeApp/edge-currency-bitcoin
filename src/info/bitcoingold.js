@@ -48,7 +48,7 @@ const engineInfo: EngineCurrencyInfo = {
     standardFeeLowAmount: '17320',
     standardFeeHighAmount: '86700000'
   },
-  timestampFromHeader (header: Buffer, height: number): number {
+  timestampFromHeader(header: Buffer, height: number): number {
     if (height < 491407 || header.readUInt32LE(0) & 0x04000000) {
       if (header.length !== 80) {
         throw new Error(

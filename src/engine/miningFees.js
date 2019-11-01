@@ -25,7 +25,7 @@ const MIN_STANDARD_DELAY = 1
  * @param earnComFees
  * @returns {BitcoinFees}
  */
-export function calcFeesFromEarnCom (earnComFeesJson: any): $Shape<BitcoinFees> {
+export function calcFeesFromEarnCom(earnComFeesJson: any): $Shape<BitcoinFees> {
   let highDelay = 999999
   let lowDelay = 0
   let highFee = MAX_FEE
@@ -151,7 +151,7 @@ export function calcFeesFromEarnCom (earnComFeesJson: any): $Shape<BitcoinFees> 
  * @param bitcoinFees
  * @returns {string}
  */
-export function calcMinerFeePerByte (
+export function calcMinerFeePerByte(
   nativeAmount: string,
   feeOption: string,
   bitcoinFees: BitcoinFees,
@@ -163,7 +163,8 @@ export function calcMinerFeePerByte (
     case ES_FEE_LOW:
       satoshiPerByteFee = bitcoinFees.lowFee
       break
-    case ES_FEE_STANDARD:
+
+    case ES_FEE_STANDARD: {
       if (bns.gte(nativeAmount, bitcoinFees.standardFeeHighAmount)) {
         satoshiPerByteFee = bitcoinFees.standardFeeHigh
         break
@@ -194,9 +195,12 @@ export function calcMinerFeePerByte (
       const addFeeToLow = bns.div(temp1, lowHighAmountDiff)
       satoshiPerByteFee = bns.add(bitcoinFees.standardFeeLow, addFeeToLow)
       break
+    }
+
     case ES_FEE_HIGH:
       satoshiPerByteFee = bitcoinFees.highFee
       break
+
     default:
       throw new Error(
         `Invalid networkFeeOption: ${feeOption}, And/Or customFee: ${customFee}`

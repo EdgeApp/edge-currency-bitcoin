@@ -1,8 +1,7 @@
 // @flow
 
-import { Buffer } from 'buffer'
-
 import bcoin from 'bcoin'
+import { Buffer } from 'buffer'
 
 import { decode, encode } from './base32.js'
 import BN from './bn'
@@ -77,7 +76,7 @@ export const toCashAddress = (
   type: string,
   prefix: string
 ) => {
-  function checksumToArray (checksum) {
+  function checksumToArray(checksum) {
     const result = []
     const N31 = new BN(31)
     for (let i = 0; i < 8; ++i) {
@@ -87,7 +86,7 @@ export const toCashAddress = (
     return result.reverse()
   }
 
-  function getTypeBits (type: string) {
+  function getTypeBits(type: string) {
     switch (type) {
       case 'pubkeyhash':
         return 0
@@ -98,7 +97,7 @@ export const toCashAddress = (
     }
   }
 
-  function getHashSizeBits (hash: any) {
+  function getHashSizeBits(hash: any) {
     switch (hash.length * 8) {
       case 160:
         return 0
@@ -132,7 +131,7 @@ export const toCashAddress = (
 }
 
 export const cashAddressToHash = (address: string) => {
-  function getHashSize (versionByte) {
+  function getHashSize(versionByte) {
     switch (versionByte & 7) {
       case 0:
         return 160
@@ -155,15 +154,15 @@ export const cashAddressToHash = (address: string) => {
     }
   }
 
-  function hasSingleCase (string: string) {
+  function hasSingleCase(string: string) {
     const lowerCase = string.toLowerCase()
     const upperCase = string.toUpperCase()
     const hasSingleCase = string === lowerCase || string === upperCase
     return hasSingleCase
   }
 
-  function validChecksum (prefix: string, payload: any) {
-    function prefixToArray (prefix) {
+  function validChecksum(prefix: string, payload: any) {
+    function prefixToArray(prefix) {
       const result = []
       for (let i = 0; i < prefix.length; i++) {
         result.push(prefix.charCodeAt(i) & 31)
@@ -224,7 +223,7 @@ export const cashAddressToHash = (address: string) => {
     throw new Error(`InvalidArgument: ${address} has invalid hash size`)
   }
 
-  function getType (versionByte: number) {
+  function getType(versionByte: number) {
     switch (versionByte & 120) {
       case 0:
         return 'pubkeyhash'

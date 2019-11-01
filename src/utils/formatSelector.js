@@ -1,8 +1,7 @@
 // @flow
 
-import { Buffer } from 'buffer'
-
 import { consensus, hd, networks, primitives } from 'bcoin'
+import { Buffer } from 'buffer'
 
 import type { Script } from '../utils/coinUtils.js'
 import {
@@ -157,8 +156,8 @@ export const formatSelector = (
       bip === 32
         ? 'm/0'
         : `m/${bip}'/${
-          coinType >= 0 ? coinType : networks[network].keyPrefix.coinType
-        }'/${account}'`,
+            coinType >= 0 ? coinType : networks[network].keyPrefix.coinType
+          }'/${account}'`,
 
     deriveHdKey,
     deriveAddress: (parentKey: any, index: number): Promise<any> =>

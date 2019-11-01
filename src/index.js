@@ -1,10 +1,9 @@
 // @flow
 
-import { Socket } from 'net'
-import { TLSSocket } from 'tls'
-
 import { crypto } from 'bcoin'
 import { type EdgeIo } from 'edge-core-js/types'
+import { Socket } from 'net'
+import { TLSSocket } from 'tls'
 
 import { makeEdgeCorePlugins } from './plugin/currencyPlugin.js'
 import {
@@ -16,7 +15,7 @@ import {
   makeFetchText
 } from './plugin/pluginIo.js'
 
-export function makeNodeIo (io: EdgeIo): PluginIo {
+export function makeNodeIo(io: EdgeIo): PluginIo {
   const { secp256k1, pbkdf2 } = crypto
   return {
     ...io,
@@ -24,7 +23,7 @@ export function makeNodeIo (io: EdgeIo): PluginIo {
     fetchText: makeFetchText(io),
     pbkdf2,
     secp256k1,
-    makeSocket (opts: EdgeSocketOptions): Promise<EdgeSocket> {
+    makeSocket(opts: EdgeSocketOptions): Promise<EdgeSocket> {
       let socket: net$Socket
       if (opts.type === 'tcp') socket = new Socket()
       else if (opts.type === 'tls') socket = new TLSSocket(new Socket())

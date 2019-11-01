@@ -1,4 +1,4 @@
-export const patchTransaction = function (bcoin) {
+export const patchTransaction = function(bcoin) {
   const txProto = bcoin.primitives.TX.prototype
   const signature = txProto.signature
 
@@ -10,7 +10,7 @@ export const patchTransaction = function (bcoin) {
   //   forkId = 0x00,
   //   type = null
   // }
-  txProto.signature = function (index, prev, value, key, type, version) {
+  txProto.signature = function(index, prev, value, key, type, version) {
     if (typeof type === 'object') {
       const {
         SIGHASH_FORKID = 0x00,
@@ -25,7 +25,7 @@ export const patchTransaction = function (bcoin) {
     return signature.call(this, index, prev, value, key, type, version)
   }
 
-  txProto.signatureHashV0 = function (index, prev, type) {
+  txProto.signatureHashV0 = function(index, prev, type) {
     if ((type & 0x1f) === bcoin.script.hashType.SINGLE) {
       // Bitcoind used to return 1 as an error code:
       // it ended up being treated like a hash.
@@ -143,7 +143,7 @@ export const patchTransaction = function (bcoin) {
     return sigHash
   }
 
-  txProto.signatureHashV1 = function (index, prev, value, type) {
+  txProto.signatureHashV1 = function(index, prev, value, type) {
     const input = this.inputs[index]
     let prevouts = bcoin.utils.encoding.ZERO_HASH
     let sequences = bcoin.utils.encoding.ZERO_HASH
