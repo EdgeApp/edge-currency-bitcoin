@@ -271,11 +271,6 @@ export const createTX = async ({
     }
   }
 
-  // Check consensus rules for fees and outputs
-  if (!mtx.isSane()) {
-    throw new Error('TX failed sanity check.')
-  }
-
   // Check consensus rules for inputs
   if (height !== -1 && !mtx.verifyInputs(height)) {
     throw new Error('TX failed context check.')
