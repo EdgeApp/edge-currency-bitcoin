@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.6.4 (2019-11-04)
+
+- Fix spending from accounts with large balances (>21 million).
+
 # 4.6.3 (2019-10-30)
 
 - Add 'sats' as denomination for BTC and TBTC
