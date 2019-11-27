@@ -20,8 +20,8 @@ const bcoinInfo: BcoinCurrencyInfo = {
     coinType: 42
   },
   addressPrefix: {
-    pubkeyhash: 0x0073f, // P2PKH_VERBYTE
-    scripthash: 0x0071a, // P2SH_VERBYTES
+    pubkeyhash: 0x073f, // P2PKH_VERBYTE
+    scripthash: 0x071a, // P2SH_VERBYTES
     // witnesspubkeyhash: 0x06,
     // witnessscripthash: 0x0a,
     // bech32: 'bc'
@@ -85,4 +85,4 @@ const currencyInfo: EdgeCurrencyInfo = {
   symbolImageDarkMono: `${imageServerUrl}/decred-logo-solo-64.png`
 }
 
-export const bitcoin = { bcoinInfo, engineInfo, currencyInfo }
+export const decred = { bcoinInfo, engineInfo, currencyInfo }
