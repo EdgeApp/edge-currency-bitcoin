@@ -129,7 +129,7 @@ export const verifyWIF = (data: any, network: string) => {
   const { serializers = {} } = networks[network] || {}
   if (serializers.wif) data = serializers.wif.decode(data)
   const br = new utils.BufferReader(base58.decode(data), true)
-  const version = br.readU8()
+  const version = br.readU8() // TODO make sure it can handle different version lengths
   network = Network.fromWIF(version, network)
   br.readBytes(32)
   if (br.left() > 4 && br.readU8() !== 1) {

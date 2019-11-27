@@ -204,8 +204,8 @@ export const formatSelector = (
       for (const branchName of branchesNames) {
         const { xpub, xpriv } = rawKeys[branchName] || {}
         keyRings[branchName] = {
-          pubKey: xpub ? hd.PublicKey.fromBase58(xpub, network) : null,
-          privKey: xpriv ? hd.PrivateKey.fromBase58(xpriv, network) : null,
+          pubKey: xpub ? hd.PublicKey.fromBase58(xpub, network) : null, // TODO write own fromBase58 function
+          privKey: xpriv ? hd.PrivateKey.fromBase58(xpriv, network) : null, // TODO write own fromBase58 function
           children: []
         }
       }
