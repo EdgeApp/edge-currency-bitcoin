@@ -21,7 +21,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
   },
   addressPrefix: {
     pubkeyhash: 0x073f, // P2PKH_VERBYTE
-    scripthash: 0x071a, // P2SH_VERBYTES
+    scripthash: 0x071a // P2SH_VERBYTES
     // witnesspubkeyhash: 0x06,
     // witnessscripthash: 0x0a,
     // bech32: 'bc'
@@ -50,9 +50,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   currencyCode: 'DCR',
   displayName: 'Decred',
   pluginName: 'decred',
-  denominations: [
-    { name: 'DCR', multiplier: '100000000', symbol: 'DCR' }
-  ],
+  denominations: [{ name: 'DCR', multiplier: '100000000', symbol: 'DCR' }],
   walletType: 'wallet:decred',
 
   // Configuration options:
