@@ -27,11 +27,9 @@ const parsePathname = (pathname: string, network: string) => {
   const parsedAddress = {}
   let address = pathname
   let legacyAddress = ''
-  address = dirtyAddress(address, network)
   if (validAddress(address, network)) {
     parsedAddress.publicAddress = address
   } else {
-    address = sanitizeAddress(address, network)
     legacyAddress = address
     address = toNewFormat(address, network)
     if (!validAddress(address, network)) {
@@ -96,16 +94,16 @@ export const encodeUri = (
   { pluginName, currencyCode, denominations }: EdgeCurrencyInfo
 ): string => {
   const { legacyAddress, publicAddress } = obj
-  let address = publicAddress
+  let address
 
   if (
-    legacyAddress &&
-    validAddress(toNewFormat(legacyAddress, network), network)
+      legacyAddress &&
+      validAddress(toNewFormat(legacyAddress, network), network)
   ) {
     address = legacyAddress
-  }
-
-  if (!address || !validAddress(address, network)) {
+  } else if (publicAddress && validAddress(publicAddress, network)) {
+    address = publicAddress
+  } else {
     throw new Error('InvalidPublicAddressError')
   }
 
@@ -132,10 +130,9 @@ export const encodeUri = (
     }
   }
   queryString = queryString.substr(0, queryString.length - 1)
-
   return serialize({
     scheme: pluginName.toLowerCase(),
-    path: sanitizeAddress(address, network),
+    path: address,
     query: queryString
   })
 }
