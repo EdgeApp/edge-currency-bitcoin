@@ -6,7 +6,7 @@ import * as base32 from './base32.js'
 import { cashAddressToHash, toCashAddress } from './cashAddress'
 
 const legacyToCashAddress = (address: string, network: string) => {
-  if (validAddress(address, network)) return dirtyAddress(address, network)
+  if (validAddress(address, network)) return address
   const { cashAddress } = bcoin.networks[network].addressPrefix
   const addressObj = bcoin.primitives.Address.fromBase58(address) // TODO write own fromBase58 function
   const type = addressObj.getType()
@@ -74,16 +74,12 @@ export const toNewFormat = (address: string, network: string): string => {
 
 const cashAddressToLegacy = (address: string, network: string) => {
   const { addressPrefix = {} } = bcoin.networks[network] || {}
-  if (!address.includes(`${addressPrefix.cashAddress}`)) {
-    try {
-      bcoin.primitives.Address.fromBase58(address) // TODO write own fromBase58 function
-      return address
-    } catch (e) {
-      address = `${addressPrefix.cashAddress}:${address}`
-    }
-  }
+  try {
+    bcoin.primitives.Address.fromBase58(address) // TODO write own fromBase58 function
+    return address
+  } catch (e) {}
   // Convert the Address string into hash, network and type
-  const addressInfo = cashAddressToHash(address)
+  const addressInfo = cashAddressToHash(address, addressPrefix.cashAddress)
   const { hashBuffer, type } = addressInfo
   return bcoin.primitives.Address.fromHash(
     hashBuffer,
@@ -98,10 +94,7 @@ export const validAddress = (address: string, network: string) => {
   if (addressPrefix.cashAddress) {
     // verify address for cashAddress format
     try {
-      if (!address.includes(`${addressPrefix.cashAddress}`)) {
-        base32.decode(address)
-        address = `${addressPrefix.cashAddress}:${address}`
-      }
+      base32.decode(address)
       address = cashAddressToLegacy(address, network)
     } catch (e) {
       return false
@@ -127,26 +120,4 @@ export const validAddress = (address: string, network: string) => {
     }
   }
   return true
-}
-
-export const sanitizeAddress = (address: string, network: string) => {
-  const { addressPrefix = {} } = bcoin.networks[network] || {}
-  if (
-    addressPrefix.cashAddress &&
-    address.includes(addressPrefix.cashAddress)
-  ) {
-    return address.split(':')[1]
-  }
-  return address
-}
-
-export const dirtyAddress = (address: string, network: string) => {
-  const { addressPrefix = {} } = bcoin.networks[network] || {}
-  if (
-    addressPrefix.cashAddress &&
-    !address.includes(addressPrefix.cashAddress)
-  ) {
-    return `${addressPrefix.cashAddress}:${address}`
-  }
-  return address
 }

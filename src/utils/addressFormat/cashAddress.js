@@ -127,10 +127,11 @@ export const toCashAddress = (
   const payloadData = convertBits([versionByte].concat(arr), 8, 5)
   const checksumData = prefixData.concat(payloadData).concat(eight0)
   const payload = payloadData.concat(checksumToArray(polymod(checksumData)))
-  return prefix + ':' + encode(payload)
+  return encode(payload)
 }
 
-export const cashAddressToHash = (address: string) => {
+export const cashAddressToHash = (address: string, cashAddressPrefix: string) => {
+  address = `${cashAddressPrefix}:${address}`
   function getHashSize(versionByte) {
     switch (versionByte & 7) {
       case 0:

@@ -10,8 +10,6 @@ import { serialize } from 'uri-js'
 import parse from 'url-parse'
 
 import {
-  dirtyAddress,
-  sanitizeAddress,
   toNewFormat,
   validAddress
 } from '../utils/addressFormat/addressFormatIndex.js'
@@ -99,16 +97,18 @@ export const encodeUri = (
 ): string => {
   const { legacyAddress, publicAddress } = obj
   let address = publicAddress
+
   if (
     legacyAddress &&
     validAddress(toNewFormat(legacyAddress, network), network)
   ) {
     address = legacyAddress
-  } else if (publicAddress && validAddress(publicAddress, network)) {
-    address = dirtyAddress(publicAddress, network)
-  } else {
+  }
+
+  if (!address || !validAddress(address, network)) {
     throw new Error('InvalidPublicAddressError')
   }
+
   // $FlowFixMe
   if (!obj.nativeAmount && !obj.metadata) return address
   // $FlowFixMe
