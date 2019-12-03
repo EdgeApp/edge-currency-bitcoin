@@ -21,13 +21,6 @@ export function validateObject(object: any, schema: any) {
   return result && result.errors && result.errors.length === 0
 }
 
-export const hexToVarByte = (hex: string) => {
-  const len = hex.length / 2
-  const str = len.toString(16)
-  const hexLen = str.length % 2 === 0 ? str : `0${str}`
-  return hexLen + hex
-}
-
 export async function hash256(hex: any) {
   return Promise.resolve(hash256Sync(hex))
 }
