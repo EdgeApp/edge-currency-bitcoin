@@ -9,10 +9,7 @@ import {
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
 
-import {
-  toNewFormat,
-  validAddress
-} from '../utils/addressFormat/addressFormatIndex.js'
+import { toNewFormat, validAddress } from '../utils/addressFormat.js'
 import { verifyUriProtocol, verifyWIF } from '../utils/coinUtils.js'
 
 // import bcoin from 'bcoin'
@@ -97,8 +94,8 @@ export const encodeUri = (
   let address
 
   if (
-      legacyAddress &&
-      validAddress(toNewFormat(legacyAddress, network), network)
+    legacyAddress &&
+    validAddress(toNewFormat(legacyAddress, network), network)
   ) {
     address = legacyAddress
   } else if (publicAddress && validAddress(publicAddress, network)) {

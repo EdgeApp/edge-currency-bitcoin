@@ -1,6 +1,6 @@
 // @flow
 
-import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
+import { toNewFormat } from '../utils/addressFormat.js'
 import type {
   BlockHeight,
   Output,

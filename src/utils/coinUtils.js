@@ -12,10 +12,7 @@ import { Buffer } from 'buffer'
 
 import { type EngineState } from '../engine/engineState.js'
 import { logger } from '../utils/logger.js'
-import {
-  toLegacyFormat,
-  toNewFormat
-} from './addressFormat/addressFormatIndex.js'
+import { toLegacyFormat, toNewFormat } from './addressFormat.js'
 import {
   hash256,
   hash256Sync,

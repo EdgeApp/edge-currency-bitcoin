@@ -20,10 +20,7 @@ import {
 import { InfoServer } from '../info/constants'
 import { type PluginIo } from '../plugin/pluginIo.js'
 import { PluginState } from '../plugin/pluginState.js'
-import {
-  toLegacyFormat,
-  validAddress
-} from '../utils/addressFormat/addressFormatIndex.js'
+import { toLegacyFormat, validAddress } from '../utils/addressFormat.js'
 import type { TxOptions } from '../utils/coinUtils.js'
 import {
   addressToScriptHash,
