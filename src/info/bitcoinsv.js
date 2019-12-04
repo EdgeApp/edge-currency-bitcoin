@@ -20,8 +20,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
   },
   addressPrefix: {
     pubkeyhash: 0x00,
-    scripthash: 0x05,
-    cashAddress: 'bitcoincash'
+    scripthash: 0x05
   },
   replayProtection: {
     SIGHASH_FORKID: 0x40,
