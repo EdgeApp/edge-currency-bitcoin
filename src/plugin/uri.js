@@ -8,7 +8,7 @@ import {
 } from 'edge-core-js/types'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
-
+import { networks } from 'bcoin'
 import { toNewFormat, validAddress } from '../utils/addressFormat.js'
 import { verifyUriProtocol, verifyWIF } from '../utils/coinUtils.js'
 
@@ -91,6 +91,7 @@ export const encodeUri = (
   { pluginName, currencyCode, denominations }: EdgeCurrencyInfo
 ): string => {
   const { legacyAddress, publicAddress } = obj
+  const { uriPrefix = '' } = networks[network] || {}
   let address
 
   if (
@@ -128,7 +129,7 @@ export const encodeUri = (
   }
   queryString = queryString.substr(0, queryString.length - 1)
   return serialize({
-    scheme: pluginName.toLowerCase(),
+    scheme: uriPrefix || pluginName.toLowerCase(),
     path: address,
     query: queryString
   })

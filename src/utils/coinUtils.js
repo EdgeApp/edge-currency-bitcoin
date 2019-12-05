@@ -141,10 +141,10 @@ export const verifyUriProtocol = (
   network: string,
   pluginName: string
 ) => {
-  const { addressPrefix = {} } = networks[network] || {}
+  const { addressPrefix = {}, uriPrefix = '' } = networks[network] || {}
   if (protocol) {
     const prot = protocol.replace(':', '').toLowerCase()
-    return prot === pluginName || prot === addressPrefix.cashAddress
+    return prot === pluginName || prot === uriPrefix
   }
   return true
 }
@@ -199,7 +199,7 @@ export const createTX = async ({
   const toBcoinFormat = (address: string, network: string): string => {
     const { addressPrefix = {}, serializers = {} } = networks[network] || {}
     if (serializers.address) address = serializers.address.decode(address)
-    else if (addressPrefix.cashAddress) {
+    else if (addressPrefix.cashAddress) { // Eli: TODO
       address = toLegacyFormat(address, network)
     } else address = toNewFormat(address, network)
     return primitives.Address.fromString(address, network)

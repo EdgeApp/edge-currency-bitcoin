@@ -22,6 +22,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
     pubkeyhash: 0x00,
     scripthash: 0x05
   },
+  uriPrefix: 'bitcoin',
   replayProtection: {
     SIGHASH_FORKID: 0x40,
     forcedMinVersion: 1,

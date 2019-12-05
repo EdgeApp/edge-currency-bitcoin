@@ -59,49 +59,6 @@
         "nativeAmount": "1234567890000",
         "currencyCode": "BSV"
       }],
-      "legacy address only": ["1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu", {
-        "publicAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu",
-        "metadata": {},
-        "legacyAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu"
-      }],
-      "legacy uri address": ["bitcoinsv:1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu", {
-        "publicAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu",
-        "metadata": {},
-        "legacyAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu"
-      }],
-      "legacy uri address with amount": ["bitcoinsv:1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu?amount=12345.6789", {
-        "publicAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu",
-        "metadata": {},
-        "nativeAmount": "1234567890000",
-        "currencyCode": "BSV",
-        "legacyAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu"
-      }],
-      "legacy uri address with amount & label": ["bitcoinsv:1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu?amount=1234.56789&label=Johnny%20BitcoinSV", {
-        "publicAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu",
-        "metadata": {
-          "name": "Johnny BitcoinSV"
-        },
-        "nativeAmount": "123456789000",
-        "currencyCode": "BSV",
-        "legacyAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu"
-      }],
-      "legacy uri address with amount, label & message": ["bitcoinsv:1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu?amount=1234.56789&label=Johnny%20BitcoinSV&message=Hello%20World,%20I%20miss%20you%20!", {
-        "publicAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu",
-        "metadata": {
-          "name": "Johnny BitcoinSV",
-          "notes": "Hello World, I miss you !"
-        },
-        "nativeAmount": "123456789000",
-        "currencyCode": "BSV",
-        "legacyAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu"
-      }],
-      "legacy uri address with unsupported param": ["bitcoinsv:1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu?unsupported=helloworld&amount=12345.6789", {
-        "publicAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu",
-        "metadata": {},
-        "nativeAmount": "1234567890000",
-        "currencyCode": "BSV",
-        "legacyAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu"
-      }],
       "wif 1 - Compressed": ["L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2", {
         "metadata": {},
         "privateKeys": [ "L5FyMaAPJGqivZmCzFAEATptdvgha4UqwVWbLLZgr5iLGtQRo4x2"]
@@ -133,7 +90,7 @@
       "address & amount": [{
         "publicAddress": "16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb",
         "nativeAmount": "123456780000"
-      }, "bitcoinsv:16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb?amount=1234.5678"],
+      }, "bitcoin:16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb?amount=1234.5678"],
       "address, amount, and label": [{
         "publicAddress": "16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb",
         "nativeAmount": "123456780000",
@@ -141,7 +98,7 @@
         "metadata": {
           "name": "Johnny BitcoinSV"
         }
-      }, "bitcoinsv:16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb?amount=1234.5678&label=Johnny%20BitcoinSV"],
+      }, "bitcoin:16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb?amount=1234.5678&label=Johnny%20BitcoinSV"],
       "address, amount, label, & message": [{
         "publicAddress": "16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb",
         "nativeAmount": "123456780000",
@@ -150,7 +107,7 @@
           "name": "Johnny BitcoinSV",
           "notes": "Hello World, I miss you !"
         }
-      }, "bitcoinsv:16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb?amount=1234.5678&label=Johnny%20BitcoinSV&message=Hello%20World,%20I%20miss%20you%20!"],
+      }, "bitcoin:16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb?amount=1234.5678&label=Johnny%20BitcoinSV&message=Hello%20World,%20I%20miss%20you%20!"],
       "invalid currencyCode": [{
         "publicAddress": "16w1D5WRVKJuZUsSRzdLp9w3YGcgoxDXb",
         "nativeAmount": "123456780000",
