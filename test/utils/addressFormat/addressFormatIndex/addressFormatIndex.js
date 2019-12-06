@@ -9,7 +9,7 @@ import {
   toLegacyFormat,
   toNewFormat,
   validAddress
-} from '../../../../src/utils/addressFormat/addressFormatIndex.js'
+} from '../../../../src/utils/addressFormat.js'
 import fixtures from './fixtures.json'
 
 for (const fixture of fixtures) {

@@ -8,13 +8,8 @@ import {
 } from 'edge-core-js/types'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
-
-import {
-  dirtyAddress,
-  sanitizeAddress,
-  toNewFormat,
-  validAddress
-} from '../utils/addressFormat/addressFormatIndex.js'
+import { networks } from 'bcoin'
+import { toNewFormat, validAddress } from '../utils/addressFormat.js'
 import { verifyUriProtocol, verifyWIF } from '../utils/coinUtils.js'
 
 // import bcoin from 'bcoin'
@@ -29,11 +24,9 @@ const parsePathname = (pathname: string, network: string) => {
   const parsedAddress = {}
   let address = pathname
   let legacyAddress = ''
-  address = dirtyAddress(address, network)
   if (validAddress(address, network)) {
     parsedAddress.publicAddress = address
   } else {
-    address = sanitizeAddress(address, network)
     legacyAddress = address
     address = toNewFormat(address, network)
     if (!validAddress(address, network)) {
@@ -105,10 +98,11 @@ export const encodeUri = (
   ) {
     address = legacyAddress
   } else if (publicAddress && validAddress(publicAddress, network)) {
-    address = dirtyAddress(publicAddress, network)
+    address = publicAddress
   } else {
     throw new Error('InvalidPublicAddressError')
   }
+
   // $FlowFixMe
   if (!obj.nativeAmount && !obj.metadata) return address
   // $FlowFixMe
@@ -135,7 +129,7 @@ export const encodeUri = (
 
   return serialize({
     scheme: pluginName.toLowerCase(),
-    path: sanitizeAddress(address, network),
+    path: address,
     query: queryString
   })
 }

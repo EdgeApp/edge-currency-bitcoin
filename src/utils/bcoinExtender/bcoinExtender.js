@@ -21,13 +21,13 @@ export type BcoinCurrencyInfo = {
   addressPrefix: {
     pubkeyhash: number,
     scripthash: number,
-    cashAddress?: string,
     pubkeyhashLegacy?: number,
     scripthashLegacy?: number,
     witnesspubkeyhash?: number,
     witnessscripthash?: number,
     bech32?: string
   },
+  uriPrefix?: string,
   replayProtection?: {
     SIGHASH_FORKID: number,
     forcedMinVersion: number,
