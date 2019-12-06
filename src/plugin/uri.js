@@ -129,7 +129,7 @@ export const encodeUri = (
 
   return serialize({
     scheme: pluginName.toLowerCase(),
-    path: sanitizeAddress(address, network),
+    path: address,
     query: queryString
   })
 }
