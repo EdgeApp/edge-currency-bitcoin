@@ -91,7 +91,9 @@ export const encodeUri = (
   { pluginName, currencyCode, denominations }: EdgeCurrencyInfo
 ): string => {
   const { legacyAddress, publicAddress } = obj
-  let address = publicAddress
+  const { uriPrefix = '' } = networks[network] || {}
+  let address
+
   if (
     legacyAddress &&
     validAddress(toNewFormat(legacyAddress, network), network)
@@ -126,9 +128,8 @@ export const encodeUri = (
     }
   }
   queryString = queryString.substr(0, queryString.length - 1)
-
   return serialize({
-    scheme: pluginName.toLowerCase(),
+    scheme: uriPrefix || pluginName.toLowerCase(),
     path: address,
     query: queryString
   })
