@@ -59,24 +59,33 @@ export const scriptTemplates = {
   ) => cds(sig, msg, pubKey, hdKey).join(OP_CHECKDATASIGVERIFY)
 }
 
+const decode = (network: string) => (address: string) => {
+  address = `${network}:${address}`
+  const addressInfo = cashAddressToHash(address)
+  const { hashBuffer, type } = addressInfo
+  return primitives.Address.fromHash(
+    hashBuffer,
+    type,
+    -1,
+    network
+  ).toBase58()
+}
+
+const encode = (network: string) => (address: string) => {
+  try {
+    address = decode(network)(address)
+  } catch (e) {}
+  const splitAddress = address.split(':')
+  address = splitAddress[1] || splitAddress[0]
+  const addressObj = primitives.Address.fromBase58(address)
+  const type = addressObj.getType()
+  const newAddress = toCashAddress(addressObj.hash, type, network)
+  return newAddress.split(':')[1]
+}
+
 export const cashAddress = (network: string) => {
   return {
-    decode: (address: string) => {
-      address = `${network}:${address}`
-      const addressInfo = cashAddressToHash(address)
-      const { hashBuffer, type } = addressInfo
-      return primitives.Address.fromHash(
-        hashBuffer,
-        type,
-        -1,
-        network
-      ).toBase58()
-    },
-    encode: (address: string) => {
-      const addressObj = primitives.Address.fromBase58(address)
-      const type = addressObj.getType()
-      const newAddress = toCashAddress(addressObj.hash, type, network)
-      return newAddress.split(':')[1]
-    }
+    decode: decode(network),
+    encode: encode(network)
   }
 }
