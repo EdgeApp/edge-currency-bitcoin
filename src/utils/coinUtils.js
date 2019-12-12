@@ -197,9 +197,11 @@ export const createTX = async ({
 }: CreateTxOptions) => {
   // Convert an address to the correct format that bcoin supports
   const toBcoinFormat = (address: string, network: string): string => {
-    const { addressPrefix = {}, serializers = {} } = networks[network] || {}
-    if (serializers.address) address = serializers.address.decode(address)
-    else address = toNewFormat(address, network)
+    try {
+      const { serializers = {} } = networks[network] || {}
+      if (serializers.address) address = serializers.address.decode(address)
+      else address = toNewFormat(address, network)
+    } catch (e) {}
     return primitives.Address.fromString(address, network)
   }
 
