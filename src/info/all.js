@@ -1,5 +1,6 @@
 // @flow
 
+import { badcoin } from './badcoin.js'
 import { bitcoin } from './bitcoin.js'
 import { bitcoincash } from './bitcoincash.js'
 import { bitcoincashTestnet } from './bitcoincashtestnet.js'
@@ -22,6 +23,7 @@ import { vertcoin } from './vertcoin.js'
 import { zcoin } from './zcoin.js'
 
 export const allInfo = [
+  badcoin,
   bitcoin,
   bitcoincash,
   bitcoincashTestnet,
