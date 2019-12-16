@@ -69,8 +69,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://www.blockingbad.com/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/bad-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bad-logo-solo-64.png`
+  symbolImage: `${imageServerUrl}/eboost-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/eboost-logo-solo-64.png`
 }
 
 export const badcoin = { bcoinInfo, engineInfo, currencyInfo }
