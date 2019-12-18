@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.7.1 (2019-12-17)
+
+- Add Badcoin
+- Automatically update the cache files for backwards compatability
+
 # 4.7.0 (2019-12-11)
 
 - Change BSV address format into standard Bitcoin base58 address
