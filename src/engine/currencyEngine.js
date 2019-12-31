@@ -634,12 +634,15 @@ export class CurrencyEngine {
   }
 
   async signTx(edgeTransaction: EdgeTransaction): Promise<EdgeTransaction> {
-    const { edgeSpendInfo, txJson } = edgeTransaction.otherParams || {}
+    if (edgeTransaction.otherParams == null) edgeTransaction.otherParams = {}
+    const { otherParams } = edgeTransaction
+    const { edgeSpendInfo, txJson } = otherParams
     this.logEdgeTransaction(edgeTransaction, 'Signing')
     const bcoinTx = parseJsonTransaction(txJson)
-    const { privateKeys = [], otherParams = {} } = edgeSpendInfo
-    const { paymentProtocolInfo } = otherParams
+    const { privateKeys = [] } = edgeSpendInfo
     const { signedTx, txid } = await this.keyManager.sign(bcoinTx, privateKeys)
+
+    const { paymentProtocolInfo } = edgeSpendInfo.otherParams || {}
     if (paymentProtocolInfo) {
       const publicAddress = this.getFreshAddress().publicAddress
       const address = toLegacyFormat(publicAddress, this.network)
@@ -649,7 +652,7 @@ export class CurrencyEngine {
         signedTx,
         this.currencyCode
       )
-      Object.assign(edgeTransaction.otherParams, {
+      Object.assign(otherParams, {
         paymentProtocolInfo: { ...paymentProtocolInfo, payment }
       })
     }
@@ -664,7 +667,8 @@ export class CurrencyEngine {
   async broadcastTx(
     edgeTransaction: EdgeTransaction
   ): Promise<EdgeTransaction> {
-    const { otherParams = {}, signedTx, currencyCode } = edgeTransaction
+    if (edgeTransaction.otherParams == null) edgeTransaction.otherParams = {}
+    const { otherParams, signedTx, currencyCode } = edgeTransaction
     const { paymentProtocolInfo } = otherParams
 
     if (paymentProtocolInfo && paymentProtocolInfo.payment) {
@@ -683,7 +687,7 @@ export class CurrencyEngine {
 
     const tx = verifyTxAmount(signedTx)
     if (!tx) throw new Error('Wrong spend amount')
-    edgeTransaction.otherParams.txJson = tx.getJSON(this.network)
+    otherParams.txJson = tx.getJSON(this.network)
     this.logEdgeTransaction(edgeTransaction, 'Broadcasting')
 
     // Try APIs
