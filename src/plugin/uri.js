@@ -1,5 +1,6 @@
 // @flow
 
+import { networks } from 'bcoin'
 import { bns } from 'biggystring'
 import {
   type EdgeCurrencyInfo,
@@ -8,7 +9,7 @@ import {
 } from 'edge-core-js/types'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
-import { networks } from 'bcoin'
+
 import { toNewFormat, validAddress } from '../utils/addressFormat.js'
 import { verifyUriProtocol, verifyWIF } from '../utils/coinUtils.js'
 

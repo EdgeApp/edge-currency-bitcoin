@@ -65,12 +65,7 @@ const decode = (network: string) => (address: string) => {
   }
   const addressInfo = cashAddressToHash(address)
   const { hashBuffer, type } = addressInfo
-  return primitives.Address.fromHash(
-    hashBuffer,
-    type,
-    -1,
-    network
-  ).toBase58()
+  return primitives.Address.fromHash(hashBuffer, type, -1, network).toBase58()
 }
 
 const encode = (network: string) => (address: string) => {
