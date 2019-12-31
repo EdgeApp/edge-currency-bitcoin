@@ -298,11 +298,11 @@ export class CurrencyEngine {
     }
     try {
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        const results = await this.io.fetch(feeInfoServer)
-        if (results.status !== 200) {
-          throw new Error(results.body)
+        const response = await this.io.fetch(feeInfoServer)
+        if (!response.ok) {
+          throw new Error(`${feeInfoServer} returned status ${response.status}`)
         }
-        const feesJson: EarnComFees = await results.json()
+        const feesJson: EarnComFees = await response.json()
         if (validateObject(feesJson, EarnComFeesSchema)) {
           const newFees = calcFeesFromEarnCom(feesJson.fees)
           this.fees = { ...this.fees, ...newFees }
