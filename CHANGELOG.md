@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.7.2 (2019-12-31)
+
+- Allow parsing BCH addresses that start with `bitcoincash:`
+
 # 4.7.1 (2019-12-17)
 
 - Add Badcoin
