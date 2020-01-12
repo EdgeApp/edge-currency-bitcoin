@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.7.3 (2020-01-12)
+
+- Add BCH Xpub explorer url
+
 # 4.7.2 (2019-12-31)
 
 - Allow parsing BCH addresses that start with `bitcoincash:`
