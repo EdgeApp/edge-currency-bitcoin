@@ -107,7 +107,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   blockExplorer: 'https://blockchair.com/bitcoin-cash/block/%s',
   addressExplorer: 'https://blockchair.com/bitcoin-cash/address/%s',
   transactionExplorer: 'https://blockchair.com/bitcoin-cash/transaction/%s',
-  xpubExplorer: 'https://blockchair.com/bitcoin-cash/%s',
+  xpubExplorer: 'https://blockchair.com/bitcoin-cash/xpub/%s',
 
   // Images:
   symbolImage: `${imageServerUrl}/bitcoincash-logo-solo-64.png`,
