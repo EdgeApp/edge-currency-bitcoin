@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.7.4 (2020-01-13)
+
+- Fix BCH Xpub explorer url
+
 # 4.7.3 (2020-01-12)
 
 - Add BCH Xpub explorer url
