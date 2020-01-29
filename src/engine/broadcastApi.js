@@ -11,23 +11,26 @@ const makeBroadcastBlockchainInfo = (io: PluginIo, currencyCode: string) => {
   }
   return async (rawTx: string) => {
     try {
-      const response: string = await io.fetchText(
-        'https://blockchain.info/pushtx',
-        {
-          method: 'POST',
-          body: 'tx=' + rawTx,
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        }
-      )
-      if (response === 'Transaction Submitted') {
+      const { fetchCors = io.fetch } = io
+      const uri = 'https://blockchain.info/pushtx'
+      const response = await fetchCors(uri, {
+        method: 'POST',
+        body: 'tx=' + rawTx,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      })
+      if (!response.ok) {
+        throw new Error(`Error ${response.status} while fetching ${uri}`)
+      }
+      const responseText = await response.text()
+      if (responseText === 'Transaction Submitted') {
         logger.info(
           'SUCCESS makeBroadcastBlockchainInfo has response',
           response
         )
         return true
       } else {
-        logger.info('ERROR makeBroadcastBlockchainInfo', response)
-        throw new Error(`blockchain.info failed with status ${response}`)
+        logger.info('ERROR makeBroadcastBlockchainInfo', responseText)
+        throw new Error(`blockchain.info failed with status ${responseText}`)
       }
     } catch (e) {
       logger.info('ERROR makeBroadcastBlockchainInfo', e)
@@ -49,22 +52,20 @@ const makeBroadcastInsight = (io: PluginIo, currencyCode: string) => {
 
   return async (rawTx: string) => {
     try {
-      const response = await io.fetch(urls[currencyCode], {
+      const uri = urls[currencyCode]
+      const response = await io.fetch(uri, {
         method: 'POST',
         body: 'rawtx=' + rawTx,
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
       })
-      if (response.ok) {
-        const out = await response.json()
-        if (out.txid) {
-          logger.info('SUCCESS makeBroadcastInsight:' + JSON.stringify(out))
-          return out
-        }
+      if (!response.ok) {
+        throw new Error(`Error ${response.status} while fetching ${uri}`)
       }
-      logger.info('ERROR makeBroadcastInsight', response)
-      throw new Error(
-        `${urls[currencyCode]} failed with status ${response.status}`
-      )
+      const out = await response.json()
+      if (out.txid) {
+        logger.info('SUCCESS makeBroadcastInsight:' + JSON.stringify(out))
+        return out
+      }
     } catch (e) {
       logger.info('ERROR makeBroadcastInsight:', e)
       throw e
@@ -93,18 +94,20 @@ const makeBroadcastBlockchair = (io: PluginIo, currencyCode: string) => {
   return async (rawTx: string) => {
     try {
       const body = { data: rawTx }
-      const response = await io.fetchJson(
-        `https://api.blockchair.com/${pluginName}/push/transaction`,
-        {
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-          },
-          method: 'POST',
-          body: JSON.stringify(body)
-        }
-      )
-      const out = await response
+      const { fetchCors = io.fetch } = io
+      const uri = `https://api.blockchair.com/${pluginName}/push/transaction`
+      const response = await fetchCors(uri, {
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json'
+        },
+        method: 'POST',
+        body: JSON.stringify(body)
+      })
+      if (!response.ok) {
+        throw new Error(`Error ${response.status} while fetching ${uri}`)
+      }
+      const out = await response.json()
       logger.info(
         'makeBroadcastBlockchair fetch with body: ',
         body,

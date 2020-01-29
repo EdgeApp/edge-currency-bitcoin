@@ -10,17 +10,13 @@ import {
   type EdgeSocket,
   type EdgeSocketOptions,
   type PluginIo,
-  makeEdgeSocket,
-  makeFetchJson,
-  makeFetchText
+  makeEdgeSocket
 } from './plugin/pluginIo.js'
 
 export function makeNodeIo(io: EdgeIo): PluginIo {
   const { secp256k1, pbkdf2 } = crypto
   return {
     ...io,
-    fetchJson: makeFetchJson(io),
-    fetchText: makeFetchText(io),
     pbkdf2,
     secp256k1,
     makeSocket(opts: EdgeSocketOptions): Promise<EdgeSocket> {
