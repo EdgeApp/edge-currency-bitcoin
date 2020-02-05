@@ -72,7 +72,8 @@ export type CreateTxOptions = {
 
 export const createBitcoinMessageSigHash = (message: string): Buffer => {
   // Convert the length to a little endian varint:
-  const l = message.length
+  const messageBytes = Buffer.from(message, 'utf8')
+  const l = messageBytes.length
   const msgBufLength =
     l < 0xfd
       ? Buffer.from([l])
@@ -80,8 +81,7 @@ export const createBitcoinMessageSigHash = (message: string): Buffer => {
       ? Buffer.from([0xfd, l, l >> 8])
       : Buffer.from([0xfe, l, l >> 8, l >> 16, l >> 24])
 
-  const msgBuf = Buffer.from(message, 'utf8')
-  const payload = Buffer.concat([MESSAGE_HEADER, msgBufLength, msgBuf])
+  const payload = Buffer.concat([MESSAGE_HEADER, msgBufLength, messageBytes])
   const sigHash = hash256Sync(hash256Sync(payload))
   return sigHash
 }
