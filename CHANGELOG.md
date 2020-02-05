@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.7.5 (2020-02-04)
+
+- Fix issue when signing a message containing special characters.
+
 # 4.7.4 (2020-01-13)
 
 - Fix BCH Xpub explorer url
