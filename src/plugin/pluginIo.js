@@ -3,9 +3,6 @@
 import { type EdgeIo } from 'edge-core-js/types'
 import { type Subscriber, bridgifyObject, emit, onMethod } from 'yaob'
 
-export type FetchJson = (uri: string, opts?: Object) => Promise<Object>
-export type FetchText = (uri: string, opts?: Object) => Promise<string>
-
 export type EdgeSecp256k1 = {
   publicKeyCreate: (
     privateKey: Uint8Array,
@@ -99,34 +96,10 @@ export function makeEdgeSocket(
   return out
 }
 
-export function makeFetchJson(io: EdgeIo | typeof window): FetchJson {
-  return function fetchJson(uri, opts) {
-    return io.fetch(uri, opts).then(reply => {
-      if (!reply.ok) {
-        throw new Error(`Error ${reply.status} while fetching ${uri}`)
-      }
-      return reply.json()
-    })
-  }
-}
-
-export function makeFetchText(io: EdgeIo | typeof window): FetchText {
-  return function fetchText(uri, opts) {
-    return io.fetch(uri, opts).then(reply => {
-      if (!reply.ok) {
-        throw new Error(`Error ${reply.status} while fetching ${uri}`)
-      }
-      return reply.text()
-    })
-  }
-}
-
 /**
  * The extra things we need to add to the EdgeIo object.
  */
 export type ExtraIo = {
-  +fetchJson: FetchJson,
-  +fetchText: FetchText,
   +secp256k1?: EdgeSecp256k1,
   +pbkdf2?: EdgePbkdf2,
   makeSocket(opts: EdgeSocketOptions): Promise<EdgeSocket>
