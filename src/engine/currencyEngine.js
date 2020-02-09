@@ -408,13 +408,9 @@ export class CurrencyEngine {
     return []
   }
 
-  addCustomToken(token: any): Promise<void> {
-    return Promise.reject(new Error('This plugin has no tokens'))
-  }
+  async addCustomToken(token: any): Promise<void> {}
 
-  disableTokens(tokens: Array<string>): Promise<void> {
-    return Promise.reject(new Error('This plugin has no tokens'))
-  }
+  async disableTokens(tokens: Array<string>): Promise<void> {}
 
   getTokenStatus(token: string): boolean {
     return false
