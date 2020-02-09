@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.7.6 (2020-02-09)
+
+- Remove token throw
+
 # 4.7.5 (2020-02-04)
 
 - Fix issue when signing a message containing special characters.
