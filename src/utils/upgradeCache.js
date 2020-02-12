@@ -38,6 +38,7 @@ const version3 = async (
         const [branch, index] = parsePath(addressObj.path, masterPath)
         const pubKey = await fSelector.deriveHdKey(masterKeys.pubKey, branch)
         let tempAddress
+        // This branch number represents the replay protection branch on bitcoincash wallets
         if (branch === 146473132) {
           const { address } = await fSelector.deriveScriptAddress(
             pubKey,
@@ -53,13 +54,9 @@ const version3 = async (
       }
       const stringifiedAddresses = JSON.stringify(cacheJson)
       await localDisklet.setText('addresses.json', stringifiedAddresses)
-    } catch (e) {
-    } finally {
-      await localDisklet.setText('version.txt', `${versionNumber}`)
-    }
-  } else {
-    await localDisklet.setText('version.txt', `${versionNumber}`)
+    } catch (e) {}
   }
+  await localDisklet.setText('version.txt', `${versionNumber}`)
 }
 
 export const checkCacheVersion = async (
