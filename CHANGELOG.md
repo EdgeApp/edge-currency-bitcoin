@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.7.7 (2020-02-13)
+
+- Fixed replay-protection address cache
+
 # 4.7.6 (2020-02-09)
 
 - Remove token throw
