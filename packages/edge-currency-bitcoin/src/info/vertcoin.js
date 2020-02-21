@@ -35,9 +35,9 @@ const currencyInfo: $Shape<EdgeCurrencyInfo> = {
     ]
   },
   // Explorers:
-  blockExplorer: 'https://bitinfocharts.com/vertcoin/block/%s',
-  addressExplorer: 'https://bitinfocharts.com/vertcoin/address/%s',
-  transactionExplorer: 'https://bitinfocharts.com/vertcoin/tx/%s'
+  blockExplorer: 'https://insight.vertcoin.org/block/%s',
+  addressExplorer: 'https://insight.vertcoin.org/address/%s',
+  transactionExplorer: 'https://insight.vertcoin.org/tx/%s'
 }
 
 export const vertcoin = { engineInfo, currencyInfo }
