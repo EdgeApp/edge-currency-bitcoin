@@ -266,8 +266,6 @@ export class KeyManager extends EventEmitter {
       for (const path in this.scriptHashesMap) {
         await this.deriveNewKeys(path)
       }
-    } catch (e) {
-      console.log(e)
     } finally {
       unlock()
     }
