@@ -737,6 +737,7 @@ export class EngineState extends EventEmitter {
       const addressState = serverState.addresses[scriptHash]
       if (!addressState.subscribed && !addressState.subscribing) {
         addressState.subscribing = true
+        const queryTime = Date.now()
         return subscribeScriptHash(
           scriptHash,
           (hash: string | null) => {
@@ -745,6 +746,7 @@ export class EngineState extends EventEmitter {
                 hash ? hash.slice(0, 6) : 'null'
               }`
             )
+            this.pluginState.serverScoreUp(uri, Date.now() - queryTime, 0)
             addressState.subscribing = false
             addressState.subscribed = true
             addressState.hash = hash
