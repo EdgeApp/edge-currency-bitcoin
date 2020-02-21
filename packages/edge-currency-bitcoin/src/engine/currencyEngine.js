@@ -12,7 +12,8 @@ import {
   type EdgeSpendInfo,
   type EdgeSpendTarget,
   type EdgeTransaction,
-  type EdgeWalletInfo
+  type EdgeWalletInfo,
+  InsufficientFundsError
 } from 'edge-core-js/types'
 
 import { type TxOptions } from '../../types/bcoinUtils.js'
@@ -498,7 +499,7 @@ export class CurrencyEngine {
     const { utxos = this.engineState.getUTXOs() } = txOptions
     // Test if we have enough to spend
     if (bns.gt(totalAmountToSend, `${Tx.sumUtxos(utxos)}`)) {
-      throw new Error('InsufficientFundsError')
+      throw new InsufficientFundsError()
     }
     try {
       // Get the rate according to the latest fee

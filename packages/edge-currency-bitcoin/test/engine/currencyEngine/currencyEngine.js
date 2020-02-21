@@ -11,6 +11,7 @@ import {
   type EdgeCorePluginOptions,
   type EdgeCurrencyPlugin,
   type EdgeCurrencyTools,
+  errorNames,
   makeFakeIo
 } from 'edge-core-js'
 import { readFileSync } from 'jsonfile'
@@ -430,7 +431,7 @@ for (const dir of dirs) {
           const templateSpend = insufficientTests[test]
           return engine
             .makeSpend(templateSpend)
-            .catch(e => assert.equal(e.message, 'InsufficientFundsError'))
+            .catch(e => assert.equal(e.name, errorNames.InsufficientFundsError))
         })
       })
     })
