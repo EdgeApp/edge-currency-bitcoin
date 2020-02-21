@@ -32,9 +32,9 @@ const currencyInfo: $Shape<EdgeCurrencyInfo> = {
     ]
   },
   // Explorers:
-  addressExplorer: 'https://live.blockcypher.com/doge/address/%s',
-  blockExplorer: 'https://live.blockcypher.com/doge/block/%s',
-  transactionExplorer: 'https://live.blockcypher.com/doge/tx/%s'
+  blockExplorer: 'https://blockchair.com/dogecoin/block/%s',
+  addressExplorer: 'https://blockchair.com/dogecoin/address/%s',
+  transactionExplorer: 'https://blockchair.com/dogecoin/transaction/%s'
 }
 
 export const dogecoin = { engineInfo, currencyInfo }
