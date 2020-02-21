@@ -49,9 +49,9 @@ const currencyInfo: $Shape<EdgeCurrencyInfo> = {
     disableFetchingServers: true
   },
   // Explorers:
-  addressExplorer: 'http://groestlsight.groestlcoin.org/address/%s',
-  blockExplorer: 'http://groestlsight.groestlcoin.org',
-  transactionExplorer: 'http://groestlsight.groestlcoin.org/tx/%s'
+  blockExplorer: 'https://blockchair.com/groestlcoin/block/%s',
+  addressExplorer: 'https://blockchair.com/groestlcoin/address/%s',
+  transactionExplorer: 'https://blockchair.com/groestlcoin/transaction/%s'
 }
 
 export const groestlcoin = { engineInfo, currencyInfo }
