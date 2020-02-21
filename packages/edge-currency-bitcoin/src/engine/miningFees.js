@@ -35,12 +35,15 @@ export function calcFeesFromEarnCom (
   let standardFeeLow = MAX_FEE
   let lowFee = MAX_FEE
 
-  const valid = validateObject(earnComFeesJson, EarnComFeesSchema)
+  const earnComData = {
+    fees: earnComFeesJson
+  }
+  const valid = validateObject(earnComData, EarnComFeesSchema)
   if (!valid) {
     return bitcoinFees
   }
 
-  const earnComFees: EarnComFees = earnComFeesJson
+  const earnComFees: EarnComFees = earnComData
   for (const fee of earnComFees.fees) {
     // If this is a zero fee estimate, then skip
     if (fee.maxFee === 0 || fee.minFee === 0) {
