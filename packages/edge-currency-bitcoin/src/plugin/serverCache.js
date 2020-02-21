@@ -8,6 +8,7 @@ import { type ServerInfo } from '../../types/plugin.js'
 const RESPONSE_TIME_UNINITIALIZED = 999999999
 const MAX_SCORE = 500
 const MIN_SCORE = -100
+const DROPPED_SERVER_SCORE = -100
 
 export class ServerCache {
   servers_: { [serverUrl: string]: ServerInfo }
@@ -57,8 +58,8 @@ export class ServerCache {
 
       let serverScore = oldServer.serverScore
       if (!match) {
-        if (serverScore >= 0) {
-          serverScore = -1
+        if (serverScore > DROPPED_SERVER_SCORE) {
+          serverScore = DROPPED_SERVER_SCORE
         }
       }
 
