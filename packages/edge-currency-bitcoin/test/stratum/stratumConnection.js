@@ -25,7 +25,7 @@ const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
 // const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'
 const io = makeNodeIo(makeFakeIo())
 
-describe('StratumConnection', function () {
+describe.skip('StratumConnection', function () {
   this.timeout(10000)
   it('fetchVersion', function (done) {
     let gotReply = false

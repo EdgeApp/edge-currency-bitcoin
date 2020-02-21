@@ -313,7 +313,7 @@ for (const dir of dirs) {
     })
 
     describe('Should start engine', function () {
-      it('Get BlockHeight', function (done) {
+      it.skip('Get BlockHeight', function (done) {
         const { uri, defaultHeight } = fixture.BlockHeight
         let heightExpected = defaultHeight
         this.timeout(10000)
@@ -413,7 +413,7 @@ for (const dir of dirs) {
 
       Object.keys(spendTests).forEach(test => {
         it(`Should build transaction with ${test}`, function () {
-          this.timeout(10000)
+          this.timeout(5000)
           const templateSpend = spendTests[test]
           return engine
             .makeSpend(templateSpend)
