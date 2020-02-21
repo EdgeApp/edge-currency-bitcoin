@@ -65,7 +65,7 @@ const makeBroadcastInsight = (io: EdgeIo, currencyCode: string) => {
 }
 
 const makeBroadcastBlockcypher = (io: EdgeIo, currencyCode: string) => {
-  const supportedCodes = ['BTC', 'LTC', 'DASH']
+  const supportedCodes = ['BTC', 'LTC']
   if (!supportedCodes.find(c => c === currencyCode)) {
     return null
   }
