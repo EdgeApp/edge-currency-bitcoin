@@ -501,10 +501,6 @@ export class CurrencyEngine {
       throw new Error('InsufficientFundsError')
     }
     try {
-      // If somehow we have outdated fees, try and get new ones
-      if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        await this.updateFeeTable()
-      }
       // Get the rate according to the latest fee
       const rate = this.getRate(edgeSpendInfo)
       this.io.console.info(`spend: Using fee rate ${rate} sat/K`)
