@@ -27,9 +27,9 @@ const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Configuration options:
   defaultSettings: {
     electrumServers: [
-      'electrum://electrum-alts-wusa2-az.edge.app:50011',
+      'electrum://electrum-alts-wusa2.edge.app:50011',
       'electrum://electrum-alts-weuro-az.edge.app:50011',
-      'electrum://electrum-alts-ejapan-az.edge.app:50011'
+      'electrum://electrum-alts-neuro-az.edge.app:50011'
     ]
   },
   // Explorers:
