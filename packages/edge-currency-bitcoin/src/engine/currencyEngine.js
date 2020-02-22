@@ -494,7 +494,7 @@ export class CurrencyEngine {
     const { utxos = this.engineState.getUTXOs() } = txOptions
     // Test if we have enough to spend
     if (bns.gt(totalAmountToSend, `${Tx.sumUtxos(utxos)}`)) {
-      throw new InsufficientFundsError()
+      throw new InsufficientFundsError(this.currencyCode)
     }
     try {
       // Get the rate according to the latest fee
@@ -555,7 +555,7 @@ export class CurrencyEngine {
       }
       return edgeTransaction
     } catch (e) {
-      if (e.type === 'FundingError') throw new InsufficientFundsError()
+      if (e.type === 'FundingError') throw new InsufficientFundsError(this.currencyCode)
       throw e
     }
   }
