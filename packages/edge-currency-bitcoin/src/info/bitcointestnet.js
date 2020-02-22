@@ -25,7 +25,8 @@ const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   denominations: [
     { name: 'TBTC', multiplier: '100000000', symbol: '₿' },
     { name: 'mTBTC', multiplier: '100000', symbol: 'm₿' },
-    { name: 'bits', multiplier: '100', symbol: 'ƀ' }
+    { name: 'bits', multiplier: '100', symbol: 'ƀ' },
+    { name: 'sats', multiplier: '1', symbol: 's' }
   ],
   // Configuration options:
   defaultSettings: {
