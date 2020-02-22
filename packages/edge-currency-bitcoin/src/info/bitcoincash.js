@@ -64,7 +64,8 @@ const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Explorers:
   blockExplorer: 'https://blockchair.com/bitcoin-cash/block/%s',
   addressExplorer: 'https://blockchair.com/bitcoin-cash/address/%s',
-  transactionExplorer: 'https://blockchair.com/bitcoin-cash/transaction/%s'
+  transactionExplorer: 'https://blockchair.com/bitcoin-cash/transaction/%s',
+  xpubExplorer: 'https://blockchair.com/bitcoin-cash/%s'
 }
 
 export const bitcoincash = { engineInfo, currencyInfo }
