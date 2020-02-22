@@ -3401,10 +3401,10 @@ ecc-jsbn@~0.1.1:
     jsbn "~0.1.0"
     safer-buffer "^2.1.0"
 
-edge-core-js@0.16.17:
-  version "0.16.17"
-  resolved "https://registry.yarnpkg.com/edge-core-js/-/edge-core-js-0.16.17.tgz#88f086f6c574c2aa2396032d9532caf388c14696"
-  integrity sha512-knQje90Lnqs+fK5uKe494HkFoH0/vn4e+rASXcTEis3U6hLiPVRJh8/LLHUKlpF58YzIR8OJ6xJLLUiGILXB5A==
+edge-core-js@0.16.20:
+  version "0.16.20"
+  resolved "https://registry.yarnpkg.com/edge-core-js/-/edge-core-js-0.16.20.tgz#a109fe87d71cf112f888810b008d2431c470f1f0"
+  integrity sha512-q7yMY/285ZYavmDQ486R39VXYk3stHudzjxzA4Nzbz5ZP9xt1BWzVnR0jG/kR6Eb2tMQzYsi2YYSUiuZwyvCsQ==
   dependencies:
     aes-js "^3.1.0"
     base-x "^1.0.4"
@@ -3424,9 +3424,8 @@ edge-core-js@0.16.17:
     redux-pixies "^0.3.6"
     rfc4648 "^1.1.0"
     scrypt-js "^2.0.3"
-    utf8 "^3.0.0"
     ws "^5.1.1"
-    yaob "^0.3.5"
+    yaob "^0.3.6"
 
 electron-to-chromium@^1.3.113:
   version "1.3.113"
@@ -10147,11 +10146,6 @@ use@^3.1.0:
   resolved "https://registry.yarnpkg.com/use/-/use-3.1.1.tgz#d50c8cac79a19fbc20f2911f56eb973f4e10070f"
   integrity sha512-cwESVXlO3url9YWlFW/TA9cshCEhtu7IKJ/p5soJ/gGpj7vbvFrAY/eIioQ6Dw23KjZhYgiIo8HOs1nQ2vr/oQ==
 
-utf8@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/utf8/-/utf8-3.0.0.tgz#f052eed1364d696e769ef058b183df88c87f69d1"
-  integrity sha512-E8VjFIQ/TyQgp+TZfS6l8yp/xWppSAHzidGiRrqe4bK4XP9pTRyKFgGJpO3SN7zdX4DeomTrwaseCHovfpFcqQ==
-
 util-deprecate@~1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/util-deprecate/-/util-deprecate-1.0.2.tgz#450d4dc9fa70de732762fbd2d4a28981419a0ccf"
@@ -10497,7 +10491,7 @@ yaml@^1.7.2:
   dependencies:
     "@babel/runtime" "^7.6.3"
 
-yaob@^0.3.5:
+yaob@^0.3.6:
   version "0.3.6"
   resolved "https://registry.yarnpkg.com/yaob/-/yaob-0.3.6.tgz#84f9970d2e3629e041a791d1dea41f8a5387e91f"
   integrity sha512-MGfSGsmQsRgWM62vPn+7NjSeU70EH78aZg5uXhLGAw94C7nMDxKJaamozTTGuiF4cwp8bsoM4cOhiDogk23INg==
