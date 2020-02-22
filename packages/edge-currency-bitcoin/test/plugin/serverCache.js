@@ -76,17 +76,30 @@ describe(`ServerCache`, function() {
     cache.addServers(diskServerCache, newServers)
     const result = cache.getServers(8)
 
-    const control = [
-      'server1',
-      'server3',
-      'server4',
-      'server2',
-      'newServer1',
-      'newServer2',
-      'newServer3',
-      'server5'
-    ]
-    assert.equal(JSON.stringify(result), JSON.stringify(control))
+    const expected =
+      // v8 switched to a stable sort in this version:
+      process.version > 'v11'
+        ? [
+          'server1',
+          'server3',
+          'server4',
+          'server2',
+          'newServer1',
+          'newServer2',
+          'newServer3',
+          'server5'
+        ]
+        : [
+          'server1',
+          'server3',
+          'server4',
+          'server2',
+          'newServer2',
+          'newServer3',
+          'newServer1',
+          'server5'
+        ]
+    assert.equal(JSON.stringify(result), JSON.stringify(expected))
     // assert.equal(outBitcoinFees.highFee, '300')
   })
 
@@ -227,16 +240,29 @@ describe(`ServerCache`, function() {
     cache.addServers(diskServerCache, newServers)
     const result = cache.getServers(8)
 
-    const control = [
-      'newServer1',
-      'newServer2',
-      'newServer3',
-      'server1',
-      'server2',
-      'server3',
-      'server4',
-      'server5'
-    ]
-    assert.equal(JSON.stringify(result), JSON.stringify(control))
+    const expected =
+      // v8 switched to a stable sort in this version:
+      process.version > 'v11'
+        ? [
+          'newServer1',
+          'newServer2',
+          'newServer3',
+          'server1',
+          'server2',
+          'server3',
+          'server4',
+          'server5'
+        ]
+        : [
+          'newServer3',
+          'newServer1',
+          'newServer2',
+          'server4',
+          'server5',
+          'server2',
+          'server7',
+          'server8'
+        ]
+    assert.equal(JSON.stringify(result), JSON.stringify(expected))
   })
 })
