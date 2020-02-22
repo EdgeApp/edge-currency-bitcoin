@@ -8,6 +8,7 @@
   "scripts": {
     "build": "npm run format && npm run lint && lerna run build",
     "precommit": "lint-staged && flow",
+    "fix": "lerna run fix",
     "flow": "flow status",
     "format": "lerna run format",
     "lint": "lerna run lint",
