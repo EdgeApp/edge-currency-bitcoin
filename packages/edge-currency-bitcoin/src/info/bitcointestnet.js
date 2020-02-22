@@ -30,7 +30,10 @@ const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   ],
   // Configuration options:
   defaultSettings: {
-    electrumServers: ['electrum://testnet.qtornado.com:51001','electrum://tn.not.fyi:55001'],
+    electrumServers: [
+      'electrum://testnet.qtornado.com:51001',
+      'electrum://tn.not.fyi:55001'
+    ],
     disableFetchingServers: true
   },
   // Explorers:
