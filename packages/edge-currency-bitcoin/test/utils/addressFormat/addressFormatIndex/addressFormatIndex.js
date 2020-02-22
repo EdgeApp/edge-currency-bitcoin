@@ -14,27 +14,27 @@ import fixtures from './fixtures.json'
 for (const fixture of fixtures) {
   const { network } = fixture
 
-  describe(`Address format for ${network}`, function () {
-    fixture['valid'].forEach(address => {
-      it(`test valid for ${address}`, function () {
+  describe(`Address format for ${network}`, function() {
+    fixture.valid.forEach(address => {
+      it(`test valid for ${address}`, function() {
         assert.notEqual(getAddressPrefix(address, network), null)
       })
     })
 
-    fixture['inValid'].forEach(address => {
-      it(`test invalid for ${address}`, function () {
+    fixture.inValid.forEach(address => {
+      it(`test invalid for ${address}`, function() {
         assert.equal(getAddressPrefix(address, network), null)
       })
     })
 
-    fixture['toLegacy'].forEach(([address, expected]) => {
-      it(`get legacy format for ${address}`, function () {
+    fixture.toLegacy.forEach(([address, expected]) => {
+      it(`get legacy format for ${address}`, function() {
         assert.equal(toLegacyFormat(address, network), expected)
       })
     })
 
-    fixture['toNewFormat'].forEach(([address, expected]) => {
-      it(`get new format for ${address}`, function () {
+    fixture.toNewFormat.forEach(([address, expected]) => {
+      it(`get new format for ${address}`, function() {
         assert.equal(toNewFormat(address, network), expected)
       })
     })

@@ -1,7 +1,7 @@
 // @flow
 
 import EventEmitter from 'eventemitter3'
-import { HD, type HDKeyPair, type HDPath, Utils } from 'nidavellir'
+import { type HDKeyPair, type HDPath, HD, Utils } from 'nidavellir'
 
 import {
   type Address as AddressObj,
@@ -12,9 +12,9 @@ import {
 } from '../../types/bcoinUtils.js'
 import {
   type AddressInfos,
+  type createTxOptions,
   type KeyManagerOptions,
-  type SignMessage,
-  type createTxOptions
+  type SignMessage
 } from '../../types/engine.js'
 import { toNewFormat } from '../utils/addressFormat/addressFormatIndex.js'
 import * as Address from '../utils/bcoinUtils/address.js'
@@ -43,7 +43,7 @@ export class KeyManager extends EventEmitter {
   scriptHashesMap: ScriptHashMap
   txInfos: { [txid: string]: any }
 
-  constructor ({
+  constructor({
     account = 0,
     coinType = 0,
     masterKey,
@@ -94,7 +94,7 @@ export class KeyManager extends EventEmitter {
   // ////////////////////////////////////////////// //
   // /////////////// Public API /////////////////// //
   // ////////////////////////////////////////////// //
-  async initMasterKey (forceInit: boolean = false) {
+  async initMasterKey(forceInit: boolean = false) {
     if (!this.masterKey || !this.masterKey.privateKey || forceInit) {
       if (this.seed === '') throw new Error('Missing Master Key')
       const hexSeed = await Key.seedToHex(this.seed, this.network)
@@ -126,7 +126,7 @@ export class KeyManager extends EventEmitter {
     }
   }
 
-  async deriveKey (path: string): Promise<HDKeyPair> {
+  async deriveKey(path: string): Promise<HDKeyPair> {
     const pathArray = path.split('/')
     const index = pathArray.pop()
 
@@ -147,16 +147,16 @@ export class KeyManager extends EventEmitter {
     return hdKey
   }
 
-  async load (forceLoad: boolean = false) {
+  async load(forceLoad: boolean = false) {
     await this.initMasterKey(forceLoad)
     await this.setLookAhead()
   }
 
-  async reload () {
+  async reload() {
     await this.load(true)
   }
 
-  getReceiveAddress (): EdgeAddress {
+  getReceiveAddress(): EdgeAddress {
     const addresses = {}
     for (const hdPath of this.hdPaths) {
       const { path, chain, scriptType = 'P2PKH' } = hdPath
@@ -169,7 +169,7 @@ export class KeyManager extends EventEmitter {
     return addresses
   }
 
-  async createTX (options: createTxOptions): any {
+  async createTX(options: createTxOptions): any {
     const { outputs = [], ...rest } = options
     const standardOutputs: Array<StandardOutput> = []
     for (const output of outputs) {
@@ -192,7 +192,7 @@ export class KeyManager extends EventEmitter {
     })
   }
 
-  async sign (tx: any, privateKeys: Array<string> = []) {
+  async sign(tx: any, privateKeys: Array<string> = []) {
     const keyRings = await Key.getAllKeyRings(privateKeys, this.network)
     if (!keyRings.length) {
       await this.initMasterKey()
@@ -208,7 +208,7 @@ export class KeyManager extends EventEmitter {
     return Tx.sign(tx, keyRings, this.network)
   }
 
-  async signMessage ({ message, address }: SignMessage) {
+  async signMessage({ message, address }: SignMessage) {
     try {
       await this.initMasterKey()
       if (!address) throw new Error('Missing address to sign with')
@@ -230,7 +230,7 @@ export class KeyManager extends EventEmitter {
     }
   }
 
-  getSeed (): string | null {
+  getSeed(): string | null {
     if (this.seed && this.seed !== '') {
       try {
         return Key.parseSeed(this.seed)
@@ -241,7 +241,7 @@ export class KeyManager extends EventEmitter {
     return null
   }
 
-  getPublicSeed (): string | null {
+  getPublicSeed(): string | null {
     return this.xpub
   }
 
@@ -249,7 +249,7 @@ export class KeyManager extends EventEmitter {
   // ////////////// Private API /////////////////// //
   // ////////////////////////////////////////////// //
 
-  utxoToAddress (prevout: any): { path: string, redeemScript?: string } {
+  utxoToAddress(prevout: any): { path: string, redeemScript?: string } {
     const parsedTx = this.txInfos[prevout.rhash()]
     if (!parsedTx) throw new Error('UTXO not synced yet')
     const output = parsedTx.outputs[prevout.index]
@@ -260,7 +260,7 @@ export class KeyManager extends EventEmitter {
     return address
   }
 
-  async setLookAhead () {
+  async setLookAhead() {
     const unlock = await this.writeLock.lock()
     try {
       for (const path in this.scriptHashesMap) {
@@ -271,7 +271,7 @@ export class KeyManager extends EventEmitter {
     }
   }
 
-  async deriveNewKeys (path: string) {
+  async deriveNewKeys(path: string) {
     const hashes = this.scriptHashesMap[path]
 
     // Find the last used address:
@@ -296,7 +296,7 @@ export class KeyManager extends EventEmitter {
    * and adds it to the state.
    * @param keyRing The KeyRing corresponding to the selected branch.
    */
-  async deriveAddress (
+  async deriveAddress(
     path: string,
     scriptObj?: Script
   ): Promise<AddressObj | null> {

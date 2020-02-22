@@ -7,14 +7,14 @@ import { type EdgeSocket, type EdgeSocketOptions } from '../../types/plugin.js'
 /**
  * Wraps a Node-style socket into an EdgeSocket.
  */
-export function makeEdgeSocket (
+export function makeEdgeSocket(
   socket: net$Socket,
   opts: EdgeSocketOptions
 ): EdgeSocket {
   const out: EdgeSocket = {
     on: onMethod,
 
-    async connect (): Promise<mixed> {
+    async connect(): Promise<mixed> {
       socket.setEncoding('utf8')
       socket.on('close', (hadError: boolean) => emit(out, 'close'))
       socket.on('error', (error: Error) => emit(out, 'error', error))
@@ -23,12 +23,12 @@ export function makeEdgeSocket (
       socket.connect({ host: opts.host, port: opts.port })
     },
 
-    send (data: string) {
+    send(data: string) {
       socket.write(data, 'utf8')
       return Promise.resolve()
     },
 
-    close () {
+    close() {
       socket.destroy()
       return Promise.resolve()
     }

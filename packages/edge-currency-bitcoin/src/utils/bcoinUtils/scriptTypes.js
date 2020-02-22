@@ -1,8 +1,7 @@
 // @flow
 
-import { Buffer } from 'buffer'
-
 import bcoin from 'bcoin'
+import { Buffer } from 'buffer'
 import { type HexPair, type ScriptType, Utils } from 'nidavellir'
 
 import { type ScriptTypeSettings } from '../../../types/bcoinUtils.js'

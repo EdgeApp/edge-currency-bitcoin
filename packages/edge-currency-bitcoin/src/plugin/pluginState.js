@@ -28,18 +28,18 @@ export class PluginState extends ServerCache {
   /**
    * Begins notifying the engine of state changes. Used at connection time.
    */
-  addEngine (engineState: EngineState): void {
+  addEngine(engineState: EngineState): void {
     this.engines.push(engineState)
   }
 
   /**
    * Stops notifying the engine of state changes. Used at disconnection time.
    */
-  removeEngine (engineState: EngineState): void {
+  removeEngine(engineState: EngineState): void {
     this.engines = this.engines.filter(engine => engine !== engineState)
   }
 
-  disconnect () {
+  disconnect() {
     return Promise.all([
       // $FlowFixMe
       this.headers('stop'),
@@ -50,7 +50,7 @@ export class PluginState extends ServerCache {
     ])
   }
 
-  dumpData (): any {
+  dumpData(): any {
     return {
       'pluginState.headers': this.headers,
       'pluginState.servers': this.servers
@@ -74,7 +74,7 @@ export class PluginState extends ServerCache {
   serversFile: string
   heightFile: string
 
-  constructor ({
+  constructor({
     io,
     electrumServersUrl,
     defaultSettings,
@@ -94,7 +94,7 @@ export class PluginState extends ServerCache {
     this.pluginName = pluginName
   }
 
-  async load () {
+  async load() {
     const { headers, height, servers } = await cache(
       this.disklet,
       ['headers', 'servers', 'height'],
@@ -113,7 +113,7 @@ export class PluginState extends ServerCache {
     return this
   }
 
-  async clearCache () {
+  async clearCache() {
     // $FlowFixMe
     await this.headers({})
     // $FlowFixMe
@@ -124,7 +124,7 @@ export class PluginState extends ServerCache {
     await this.fetchStratumServers()
   }
 
-  async fetchStratumServers (): Promise<void> {
+  async fetchStratumServers(): Promise<void> {
     const { io } = this
     let serverList = this.defaultServers
     if (!this.disableFetchingServers) {
@@ -133,9 +133,7 @@ export class PluginState extends ServerCache {
         const result = await io.fetch(this.electrumServersUrl)
         if (!result.ok) {
           console.log(
-            `${this.pluginName} - Fetching ${
-              this.electrumServersUrl
-            } failed with ${result.status}`
+            `${this.pluginName} - Fetching ${this.electrumServersUrl} failed with ${result.status}`
           )
         } else {
           serverList = await result.json()
@@ -155,7 +153,7 @@ export class PluginState extends ServerCache {
     }
   }
 
-  updateHeight (height: number) {
+  updateHeight(height: number) {
     if (this.height.latest < height) {
       this.height.latest = height
 
@@ -166,7 +164,7 @@ export class PluginState extends ServerCache {
     }
   }
 
-  async updateServers (settings: Object) {
+  async updateServers(settings: Object) {
     const { electrumServers, disableFetchingServers } = settings || {}
     if (typeof disableFetchingServers === 'boolean') {
       this.disableFetchingServers = disableFetchingServers

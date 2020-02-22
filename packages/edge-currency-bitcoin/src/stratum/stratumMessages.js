@@ -20,14 +20,14 @@ import { validateObject } from '../utils/utils.js'
 /**
  * Creates a server ping message.
  */
-export function fetchPing (
+export function fetchPing(
   onDone: (requestMs: number) => void,
   onFail: OnFailHandler
 ): StratumTask {
   return {
     method: 'server.ping',
     params: [],
-    onDone (reply: any, requestMs: number) {
+    onDone(reply: any, requestMs: number) {
       return onDone(requestMs)
     },
     onFail
@@ -37,14 +37,14 @@ export function fetchPing (
 /**
  * Creates a server version query message.
  */
-export function fetchVersion (
+export function fetchVersion(
   onDone: (version: string, requestMs: number) => void,
   onFail: OnFailHandler
 ): StratumTask {
   return {
     method: 'server.version',
     params: ['Edge wallet', ['1.1', '1.3']],
-    onDone (reply: any, requestMs: number) {
+    onDone(reply: any, requestMs: number) {
       if (
         Array.isArray(reply) &&
         (typeof reply[1] === 'string' || typeof reply[1] === 'number')
@@ -66,14 +66,14 @@ export function fetchVersion (
  * @param {*} onDone Called for every height update.
  * @param {*} onFail Called if the subscription fails.
  */
-export function subscribeHeight (
+export function subscribeHeight(
   onDone: (height: number) => void,
   onFail: OnFailHandler
 ): StratumTask {
   return {
     method: 'blockchain.headers.subscribe',
     params: [],
-    onDone (reply: any) {
+    onDone(reply: any) {
       if (validateObject(reply, electrumSubscribeHeadersSchema)) {
         return onDone(reply.params[0].block_height)
       }
@@ -95,7 +95,7 @@ export function subscribeHeight (
  * @param {*} onDone Called when block header data is available.
  * @param {*} onFail Called if the request fails.
  */
-export function fetchBlockHeader (
+export function fetchBlockHeader(
   blockNumber: number,
   onDone: (header: StratumBlockHeader) => void,
   onFail: OnFailHandler
@@ -103,7 +103,7 @@ export function fetchBlockHeader (
   return {
     method: 'blockchain.block.get_header',
     params: [blockNumber],
-    onDone (reply: any) {
+    onDone(reply: any) {
       if (validateObject(reply, electrumFetchHeaderSchema)) {
         return onDone(reply)
       }
@@ -119,7 +119,7 @@ export function fetchBlockHeader (
  * @param {*} onDone Called when block header data is available.
  * @param {*} onFail Called if the request fails.
  */
-export function fetchTransaction (
+export function fetchTransaction(
   txid: string,
   onDone: (txData: string) => void,
   onFail: OnFailHandler
@@ -127,7 +127,7 @@ export function fetchTransaction (
   return {
     method: 'blockchain.transaction.get',
     params: [txid],
-    onDone (reply: any) {
+    onDone(reply: any) {
       if (typeof reply === 'string') {
         return onDone(reply)
       }
@@ -145,7 +145,7 @@ export function fetchTransaction (
  * @param {*} onDone Called each time the script hash's hash changes.
  * @param {*} onFail Called if the request fails.
  */
-export function subscribeScriptHash (
+export function subscribeScriptHash(
   scriptHash: string,
   onDone: (hash: string | null) => void,
   onFail: OnFailHandler
@@ -153,7 +153,7 @@ export function subscribeScriptHash (
   return {
     method: 'blockchain.scripthash.subscribe',
     params: [scriptHash],
-    onDone (reply: any) {
+    onDone(reply: any) {
       if (reply === null) {
         return onDone(reply)
       }
@@ -177,7 +177,7 @@ export function subscribeScriptHash (
  * @param {*} onDone Called when block header data is available.
  * @param {*} onFail Called if the request fails.
  */
-export function fetchScriptHashHistory (
+export function fetchScriptHashHistory(
   scriptHash: string,
   onDone: (arrayTx: Array<StratumHistoryRow>) => void,
   onFail: OnFailHandler
@@ -185,7 +185,7 @@ export function fetchScriptHashHistory (
   return {
     method: 'blockchain.scripthash.get_history',
     params: [scriptHash],
-    onDone (reply: any) {
+    onDone(reply: any) {
       if (reply === null) {
         return onDone(reply)
       }
@@ -206,7 +206,7 @@ export function fetchScriptHashHistory (
  * @param {*} onDone Called when block header data is available.
  * @param {*} onFail Called if the request fails.
  */
-export function fetchScriptHashUtxo (
+export function fetchScriptHashUtxo(
   scriptHash: string,
   onDone: (arrayTx: Array<StratumUtxo>) => void,
   onFail: OnFailHandler
@@ -214,7 +214,7 @@ export function fetchScriptHashUtxo (
   return {
     method: 'blockchain.scripthash.listunspent',
     params: [scriptHash],
-    onDone (reply: any) {
+    onDone(reply: any) {
       if (validateObject(reply, electrumFetchUtxoSchema)) {
         return onDone(reply)
       }
@@ -226,7 +226,7 @@ export function fetchScriptHashUtxo (
   }
 }
 
-export function broadcastTx (
+export function broadcastTx(
   rawTx: string,
   onDone: (txid: string) => void,
   onFail: OnFailHandler
@@ -234,7 +234,7 @@ export function broadcastTx (
   return {
     method: 'blockchain.transaction.broadcast',
     params: [rawTx],
-    onDone (reply: any) {
+    onDone(reply: any) {
       if (typeof reply === 'string') {
         return onDone(reply)
       }
@@ -246,7 +246,7 @@ export function broadcastTx (
   }
 }
 
-export function fetchEstimateFee (
+export function fetchEstimateFee(
   blocksToBeIncludedIn: string,
   onDone: (fee: number) => void,
   onFail: OnFailHandler
@@ -254,7 +254,7 @@ export function fetchEstimateFee (
   return {
     method: 'blockchain.estimatefee',
     params: [blocksToBeIncludedIn],
-    onDone (reply: any) {
+    onDone(reply: any) {
       if (reply != null) {
         return onDone(parseInt(reply))
       }

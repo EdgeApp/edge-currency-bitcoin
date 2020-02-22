@@ -27,7 +27,7 @@ export const envSettings = {
 
 export const base64regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/
 
-export function validateObject (object: any, schema: any) {
+export function validateObject(object: any, schema: any) {
   let result = null
   try {
     result = validate(object, schema)
@@ -53,11 +53,14 @@ export const reverseHexString = (hexString: string) =>
  * Waits for the first successful promise.
  * If no promise succeeds, returns the last failure.
  */
-export function promiseAny (promises: Array<Promise<any>>): Promise<any> {
+export function promiseAny(promises: Array<Promise<any>>): Promise<any> {
   return new Promise((resolve: Function, reject: Function) => {
     let pending = promises.length
     for (const promise of promises) {
-      promise.then(value => resolve(value), error => --pending || reject(error))
+      promise.then(
+        value => resolve(value),
+        error => --pending || reject(error)
+      )
     }
   })
 }

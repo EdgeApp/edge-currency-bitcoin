@@ -25,30 +25,30 @@ const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
 // const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'
 const io = makeNodeIo(makeFakeIo())
 
-describe.skip('StratumConnection', function () {
+describe.skip('StratumConnection', function() {
   this.timeout(10000)
-  it('fetchVersion', function (done) {
+  it('fetchVersion', function(done) {
     let gotReply = false
     const callbacks: StratumCallbacks = {
-      onTimer () {},
-      onVersion (version) {
+      onTimer() {},
+      onVersion(version) {
         connection.disconnect()
         expect(parseFloat(version)).to.be.at.least(1.1)
         gotReply = true
       },
-      onNotifyHeader () {},
-      onNotifyScriptHash () {},
-      onOpen () {},
-      onClose () {
-        done(gotReply ? void 0 : new Error('Failed to fetch version'))
+      onNotifyHeader() {},
+      onNotifyScriptHash() {},
+      onOpen() {},
+      onClose() {
+        done(gotReply ? undefined : new Error('Failed to fetch version'))
       },
-      onQueueSpace () {}
+      onQueueSpace() {}
     }
     const connection = new StratumConnection(ELECTRUM_SERVER, { callbacks, io })
     connection.open()
   })
 
-  it('subscribeHeight', function (done) {
+  it('subscribeHeight', function(done) {
     let gotReply = false
     const task = subscribeHeight(
       data => {
@@ -63,15 +63,15 @@ describe.skip('StratumConnection', function () {
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
-      onTimer () {},
-      onVersion (version) {},
-      onNotifyHeader () {},
-      onNotifyScriptHash () {},
-      onOpen () {},
-      onClose () {
-        done(gotReply ? void 0 : new Error('Failed to get height'))
+      onTimer() {},
+      onVersion(version) {},
+      onNotifyHeader() {},
+      onNotifyScriptHash() {},
+      onOpen() {},
+      onClose() {
+        done(gotReply ? undefined : new Error('Failed to get height'))
       },
-      onQueueSpace () {
+      onQueueSpace() {
         if (taskQueued) return
         taskQueued = true
         return task
@@ -81,7 +81,7 @@ describe.skip('StratumConnection', function () {
     connection.open()
   })
 
-  it('fetchBlockHeader', function (done) {
+  it('fetchBlockHeader', function(done) {
     let gotReply = false
     const task = fetchBlockHeader(
       400000,
@@ -101,15 +101,15 @@ describe.skip('StratumConnection', function () {
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
-      onTimer () {},
-      onVersion (version) {},
-      onNotifyHeader () {},
-      onNotifyScriptHash () {},
-      onOpen () {},
-      onClose () {
-        done(gotReply ? void 0 : new Error('Failed to get header'))
+      onTimer() {},
+      onVersion(version) {},
+      onNotifyHeader() {},
+      onNotifyScriptHash() {},
+      onOpen() {},
+      onClose() {
+        done(gotReply ? undefined : new Error('Failed to get header'))
       },
-      onQueueSpace () {
+      onQueueSpace() {
         if (taskQueued) return
         taskQueued = true
         return task
@@ -119,7 +119,7 @@ describe.skip('StratumConnection', function () {
     connection.open()
   })
 
-  it('fetchTransaction', function (done) {
+  it('fetchTransaction', function(done) {
     let gotReply = false
     const task = fetchTransaction(
       '0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098',
@@ -137,15 +137,15 @@ describe.skip('StratumConnection', function () {
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
-      onTimer () {},
-      onVersion (version) {},
-      onNotifyHeader () {},
-      onNotifyScriptHash () {},
-      onOpen () {},
-      onClose () {
-        done(gotReply ? void 0 : new Error('Failed to get transaction'))
+      onTimer() {},
+      onVersion(version) {},
+      onNotifyHeader() {},
+      onNotifyScriptHash() {},
+      onOpen() {},
+      onClose() {
+        done(gotReply ? undefined : new Error('Failed to get transaction'))
       },
-      onQueueSpace () {
+      onQueueSpace() {
         if (taskQueued) return
         taskQueued = true
         return task
@@ -155,7 +155,7 @@ describe.skip('StratumConnection', function () {
     connection.open()
   })
 
-  it('subscribeScriptHash', function (done) {
+  it('subscribeScriptHash', function(done) {
     let gotReply = false
     const task = subscribeScriptHash(
       '187b07664e7f1c6a26911530652b24376c1a8d1ae734d7c9fa925e7f117b077d',
@@ -174,15 +174,15 @@ describe.skip('StratumConnection', function () {
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
-      onTimer () {},
-      onVersion (version) {},
-      onNotifyHeader () {},
-      onNotifyScriptHash () {},
-      onOpen () {},
-      onClose () {
-        done(gotReply ? void 0 : new Error('Failed to subscribe address'))
+      onTimer() {},
+      onVersion(version) {},
+      onNotifyHeader() {},
+      onNotifyScriptHash() {},
+      onOpen() {},
+      onClose() {
+        done(gotReply ? undefined : new Error('Failed to subscribe address'))
       },
-      onQueueSpace () {
+      onQueueSpace() {
         if (taskQueued) return
         taskQueued = true
         return task
@@ -192,7 +192,7 @@ describe.skip('StratumConnection', function () {
     connection.open()
   })
 
-  it('fetchScriptHashHistory', function (done) {
+  it('fetchScriptHashHistory', function(done) {
     let gotReply = false
     const task = fetchScriptHashHistory(
       '187b07664e7f1c6a26911530652b24376c1a8d1ae734d7c9fa925e7f117b077d',
@@ -213,15 +213,15 @@ describe.skip('StratumConnection', function () {
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
-      onTimer () {},
-      onVersion (version) {},
-      onNotifyHeader () {},
-      onNotifyScriptHash () {},
-      onOpen () {},
-      onClose () {
-        done(gotReply ? void 0 : new Error('Failed to get history'))
+      onTimer() {},
+      onVersion(version) {},
+      onNotifyHeader() {},
+      onNotifyScriptHash() {},
+      onOpen() {},
+      onClose() {
+        done(gotReply ? undefined : new Error('Failed to get history'))
       },
-      onQueueSpace () {
+      onQueueSpace() {
         if (taskQueued) return
         taskQueued = true
         return task
@@ -231,7 +231,7 @@ describe.skip('StratumConnection', function () {
     connection.open()
   })
 
-  it('fetchScriptHashUtxo', function (done) {
+  it('fetchScriptHashUtxo', function(done) {
     let gotReply = false
     const task = fetchScriptHashUtxo(
       '187b07664e7f1c6a26911530652b24376c1a8d1ae734d7c9fa925e7f117b077d',
@@ -254,15 +254,15 @@ describe.skip('StratumConnection', function () {
     )
     let taskQueued = false
     const callbacks: StratumCallbacks = {
-      onTimer () {},
-      onVersion () {},
-      onNotifyHeader () {},
-      onNotifyScriptHash () {},
-      onOpen () {},
-      onClose () {
-        done(gotReply ? void 0 : new Error('Failed to get utxo'))
+      onTimer() {},
+      onVersion() {},
+      onNotifyHeader() {},
+      onNotifyScriptHash() {},
+      onOpen() {},
+      onClose() {
+        done(gotReply ? undefined : new Error('Failed to get utxo'))
       },
-      onQueueSpace () {
+      onQueueSpace() {
         if (taskQueued) return
         taskQueued = true
         return task

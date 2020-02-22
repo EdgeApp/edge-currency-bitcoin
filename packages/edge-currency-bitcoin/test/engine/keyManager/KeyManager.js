@@ -10,9 +10,9 @@ import fixtures from './fixtures.json'
 
 // Add network to bcoin
 for (const fixture of fixtures) {
-  describe(`Key Manager for ${fixture.network}`, function () {
+  describe(`Key Manager for ${fixture.network}`, function() {
     let keyManager
-    it('creates new key manager', function () {
+    it('creates new key manager', function() {
       const options = { ...fixture }
       keyManager = new KeyManager(options)
       keyManager.on('newKey', (keys: any) => {

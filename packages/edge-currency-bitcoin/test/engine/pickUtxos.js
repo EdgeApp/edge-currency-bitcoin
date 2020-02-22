@@ -18,8 +18,8 @@ const addressObj: AddressInfo = {
   path: 'somepath' // TODO: Define the contents of this member.
 }
 
-describe(`Pick UTXOs`, function () {
-  it('Exact fit 1 utxo', function () {
+describe(`Pick UTXOs`, function() {
+  it('Exact fit 1 utxo', function() {
     const addressInfos: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
@@ -43,7 +43,7 @@ describe(`Pick UTXOs`, function () {
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
 
-  it('Exact fit 2 utxos', function () {
+  it('Exact fit 2 utxos', function() {
     const addressInfos: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
@@ -70,7 +70,7 @@ describe(`Pick UTXOs`, function () {
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
 
-  it('Exact fit 3 utxos', function () {
+  it('Exact fit 3 utxos', function() {
     const addressInfos: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
@@ -97,7 +97,7 @@ describe(`Pick UTXOs`, function () {
     const pickedUtxos = pickUtxos(addressInfos, 1300, false)
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
-  it('Non-exact fit 1 utxo', function () {
+  it('Non-exact fit 1 utxo', function() {
     const addressInfos: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],
@@ -121,7 +121,7 @@ describe(`Pick UTXOs`, function () {
     assert.equal(JSON.stringify(pickedUtxos), JSON.stringify(control))
   })
 
-  it('Non-exact fit 2 utxo', function () {
+  it('Non-exact fit 2 utxo', function() {
     const addressInfos: AddressInfos = {
       address1: Object.assign({}, addressObj, {
         txids: ['txid1'],

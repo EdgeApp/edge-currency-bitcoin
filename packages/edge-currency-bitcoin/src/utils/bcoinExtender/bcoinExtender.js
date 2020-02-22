@@ -14,7 +14,7 @@ export const addNetwork = (network: string) => {
   if (!loadedUnsafe) {
     const scriptProto = bcoin.script.prototype
     const getPubkey = scriptProto.getPubkey
-    scriptProto.getPubkey = function (minimal) {
+    scriptProto.getPubkey = function(minimal) {
       if (this.code.length === 6) {
         const size = this.getLength(4)
 

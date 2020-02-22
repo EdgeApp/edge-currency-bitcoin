@@ -8,8 +8,8 @@ import { describe, it } from 'mocha'
 
 import { ServerCache } from '../../src/plugin/serverCache.js'
 
-describe(`ServerCache`, function () {
-  it('Score only', function () {
+describe(`ServerCache`, function() {
+  it('Score only', function() {
     const diskServerCache = {
       server1: {
         serverUrl: 'server1',
@@ -90,7 +90,7 @@ describe(`ServerCache`, function () {
     // assert.equal(outBitcoinFees.highFee, '300')
   })
 
-  it('Bump score', function () {
+  it('Bump score', function() {
     const diskServerCache = {
       server1: {
         serverUrl: 'server1',
@@ -169,7 +169,7 @@ describe(`ServerCache`, function () {
     assert.equal(JSON.stringify(result), JSON.stringify(control))
   })
 
-  it('No old servers', function () {
+  it('No old servers', function() {
     const diskServerCache = {
       server1: {
         serverUrl: 'server1',

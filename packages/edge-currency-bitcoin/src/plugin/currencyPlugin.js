@@ -1,7 +1,6 @@
 // @flow
 
 import { Buffer } from 'buffer'
-
 import {
   type EdgeCorePluginOptions,
   type EdgeCorePlugins,
@@ -43,7 +42,7 @@ export class CurrencyTools {
   // ------------------------------------------------------------------------
   // Private API
   // ------------------------------------------------------------------------
-  constructor (
+  constructor(
     io: PluginIo,
     { currencyInfo, engineInfo }: CurrencyPluginSettings
   ) {
@@ -72,7 +71,7 @@ export class CurrencyTools {
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
-  async createPrivateKey (
+  async createPrivateKey(
     walletType: string,
     opts?: EdgeCreatePrivateKeyOptions
   ) {
@@ -80,11 +79,11 @@ export class CurrencyTools {
     return keysFromEntropy(randomBuffer, this.network, opts)
   }
 
-  async derivePublicKey (walletInfo: EdgeWalletInfo) {
+  async derivePublicKey(walletInfo: EdgeWalletInfo) {
     return {}
   }
 
-  async internalDerivePublicKey (walletInfo: EdgeWalletInfo) {
+  async internalDerivePublicKey(walletInfo: EdgeWalletInfo) {
     if (!walletInfo.keys) throw new Error('InvalidKeyName')
     const network = this.network
     const seed = walletInfo.keys[`${network}Key`] || ''
@@ -96,15 +95,15 @@ export class CurrencyTools {
     return { ...walletInfo.keys, [`${network}Xpub`]: xpub }
   }
 
-  parseUri (uri: string): Promise<EdgeParsedUri> {
+  parseUri(uri: string): Promise<EdgeParsedUri> {
     return Promise.resolve(parseUri(uri, this.network, this.currencyInfo))
   }
 
-  encodeUri (obj: EdgeEncodeUri): Promise<string> {
+  encodeUri(obj: EdgeEncodeUri): Promise<string> {
     return Promise.resolve(encodeUri(obj, this.network, this.currencyInfo))
   }
 
-  getSplittableTypes (walletInfo: EdgeWalletInfo): Array<string> {
+  getSplittableTypes(walletInfo: EdgeWalletInfo): Array<string> {
     const { keys: { format = 'bip32' } = {} } = walletInfo
     const { forks } = Core.Networks[this.network]
     const bip = parseInt(format.replace('bip', ''))
@@ -121,7 +120,7 @@ const makeCurrencyPluginFactory = (
   { currencyInfo, engineInfo }: CurrencyPluginSettings,
   makeIo: (opts: EdgeCorePluginOptions) => PluginIo
 ) =>
-  function makePlugin (options: EdgeCorePluginOptions): EdgeCurrencyPlugin {
+  function makePlugin(options: EdgeCorePluginOptions): EdgeCurrencyPlugin {
     const io = makeIo(options)
 
     // Extend bcoin to support this plugin currency info
@@ -133,7 +132,7 @@ const makeCurrencyPluginFactory = (
     return {
       currencyInfo,
 
-      async makeCurrencyEngine (
+      async makeCurrencyEngine(
         walletInfo: EdgeWalletInfo,
         options: EdgeCurrencyEngineOptions
       ): Promise<EdgeCurrencyEngine> {
@@ -149,7 +148,7 @@ const makeCurrencyPluginFactory = (
         return engine
       },
 
-      makeCurrencyTools (): Promise<EdgeCurrencyTools> {
+      makeCurrencyTools(): Promise<EdgeCurrencyTools> {
         if (toolsPromise != null) return toolsPromise
         const tools = new CurrencyTools(io, { currencyInfo, engineInfo })
         toolsPromise = tools.state.load().then(() => tools)
@@ -158,7 +157,7 @@ const makeCurrencyPluginFactory = (
     }
   }
 
-export function makeEdgeCorePlugins (
+export function makeEdgeCorePlugins(
   makeIo: (opts: EdgeCorePluginOptions) => PluginIo
 ): EdgeCorePlugins {
   const out: EdgeCorePlugins = {}

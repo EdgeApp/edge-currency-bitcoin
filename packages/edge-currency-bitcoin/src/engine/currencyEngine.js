@@ -46,7 +46,7 @@ import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
 const BYTES_TO_KB = 1000
 const MILLI_TO_SEC = 1000
 
-export function snooze (ms: number): Promise<void> {
+export function snooze(ms: number): Promise<void> {
   return new Promise((resolve: any) => setTimeout(resolve, ms))
 }
 
@@ -76,7 +76,7 @@ export class CurrencyEngine {
   // ------------------------------------------------------------------------
   // Private API
   // ------------------------------------------------------------------------
-  constructor ({
+  constructor({
     walletInfo,
     engineInfo,
     pluginState,
@@ -142,13 +142,11 @@ export class CurrencyEngine {
     })
 
     console.log(
-      `${this.walletId} - Created Wallet for Currency Plugin ${
-        this.pluginState.pluginName
-      }`
+      `${this.walletId} - Created Wallet for Currency Plugin ${this.pluginState.pluginName}`
     )
   }
 
-  async load (): Promise<any> {
+  async load(): Promise<any> {
     await this.engineState.load()
 
     this.keyManager.on(
@@ -168,12 +166,12 @@ export class CurrencyEngine {
     await this.keyManager.load()
   }
 
-  async getTransaction (txid: string): Promise<EdgeTransaction> {
+  async getTransaction(txid: string): Promise<EdgeTransaction> {
     await snooze(3) // Give up a tick so some GUI rendering can happen
     return this.getTransactionSync(txid)
   }
 
-  getTransactionSync (txid: string): EdgeTransaction {
+  getTransactionSync(txid: string): EdgeTransaction {
     const { height = -1, firstSeen = Date.now() / 1000 } =
       this.engineState.txHeights[txid] || {}
     let date = firstSeen
@@ -210,7 +208,7 @@ export class CurrencyEngine {
     return edgeTransaction
   }
 
-  async updateFeeTable () {
+  async updateFeeTable() {
     try {
       await this.fetchFee()
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
@@ -229,7 +227,7 @@ export class CurrencyEngine {
     }
   }
 
-  async fetchFee () {
+  async fetchFee() {
     const { feeInfoServer } = this.engineInfo
     if (!feeInfoServer || feeInfoServer === '') {
       clearTimeout(this.feeTimer)
@@ -255,7 +253,7 @@ export class CurrencyEngine {
     this.feeTimer = setTimeout(() => this.fetchFee(), this.feeUpdateInterval)
   }
 
-  getRate ({
+  getRate({
     spendTargets,
     networkFeeOption = 'standard',
     customNetworkFee = {},
@@ -290,7 +288,7 @@ export class CurrencyEngine {
     }
   }
 
-  logEdgeTransaction (edgeTransaction: EdgeTransaction, action: string) {
+  logEdgeTransaction(edgeTransaction: EdgeTransaction, action: string) {
     let log = `------------------ ${action} Transaction ------------------\n`
     log += `Transaction id: ${edgeTransaction.txid}\n`
     log += `Our Receiving addresses are: ${edgeTransaction.ourReceiveAddresses.toString()}\n`
@@ -301,25 +299,26 @@ export class CurrencyEngine {
     log += '------------------------------------------------------------------'
     console.log(`${this.prunedWalletId}: ${log}`)
   }
+
   // ------------------------------------------------------------------------
   // Public API
   // ------------------------------------------------------------------------
-  async changeUserSettings (userSettings: Object): Promise<mixed> {
+  async changeUserSettings(userSettings: Object): Promise<mixed> {
     await this.pluginState.updateServers(userSettings)
   }
 
-  async startEngine (): Promise<void> {
+  async startEngine(): Promise<void> {
     this.callbacks.onBalanceChanged(this.currencyCode, this.getBalance())
     this.updateFeeTable()
     return this.engineState.connect()
   }
 
-  async killEngine (): Promise<void> {
+  async killEngine(): Promise<void> {
     clearTimeout(this.feeTimer)
     return this.engineState.disconnect()
   }
 
-  async resyncBlockchain (): Promise<void> {
+  async resyncBlockchain(): Promise<void> {
     await this.killEngine()
     await this.engineState.clearCache()
     await this.pluginState.clearCache()
@@ -327,37 +326,37 @@ export class CurrencyEngine {
     await this.startEngine()
   }
 
-  getBlockHeight (): number {
+  getBlockHeight(): number {
     return this.pluginState.height.latest
   }
 
-  async enableTokens (tokens: Array<string>): Promise<void> {}
+  async enableTokens(tokens: Array<string>): Promise<void> {}
 
-  async getEnabledTokens (): Promise<Array<string>> {
+  async getEnabledTokens(): Promise<Array<string>> {
     return []
   }
 
-  addCustomToken (token: any): Promise<void> {
+  addCustomToken(token: any): Promise<void> {
     return Promise.reject(new Error('This plugin has no tokens'))
   }
 
-  disableTokens (tokens: Array<string>): Promise<void> {
+  disableTokens(tokens: Array<string>): Promise<void> {
     return Promise.reject(new Error('This plugin has no tokens'))
   }
 
-  getTokenStatus (token: string): boolean {
+  getTokenStatus(token: string): boolean {
     return false
   }
 
-  getBalance (options: any): string {
+  getBalance(options: any): string {
     return this.engineState.getBalance()
   }
 
-  getNumTransactions (options: any): number {
+  getNumTransactions(options: any): number {
     return this.engineState.getNumTransactions(options)
   }
 
-  async getTransactions (
+  async getTransactions(
     options: EdgeGetTransactionsOptions
   ): Promise<Array<EdgeTransaction>> {
     const rawTxs = this.engineState.txs
@@ -376,7 +375,7 @@ export class CurrencyEngine {
     return edgeTransactions.slice(startIndex, endIndex)
   }
 
-  getFreshAddress (options: any): EdgeFreshAddress {
+  getFreshAddress(options: any): EdgeFreshAddress {
     const addresses = scriptTypesToEdgeTypes(
       this.keyManager.getReceiveAddress()
     )
@@ -384,7 +383,7 @@ export class CurrencyEngine {
     return { ...addresses, legacyAddress }
   }
 
-  addGapLimitAddresses (addresses: Array<string>, options: any): void {
+  addGapLimitAddresses(addresses: Array<string>, options: any): void {
     const scriptHashPromises = addresses.map(address => {
       const scriptHash = this.engineState.scriptHashes[address]
       if (typeof scriptHash === 'string') return Promise.resolve(scriptHash)
@@ -401,7 +400,7 @@ export class CurrencyEngine {
       .catch(e => console.log(`${this.prunedWalletId}: ${e.toString()}`))
   }
 
-  isAddressUsed (address: string, options: any): boolean {
+  isAddressUsed(address: string, options: any): boolean {
     if (!getAddressPrefix(address, this.network)) {
       throw new Error('Wrong formatted address')
     }
@@ -415,7 +414,7 @@ export class CurrencyEngine {
     return false
   }
 
-  async sweepPrivateKeys (
+  async sweepPrivateKeys(
     edgeSpendInfo: EdgeSpendInfo,
     options?: any = {}
   ): Promise<EdgeTransaction> {
@@ -465,7 +464,7 @@ export class CurrencyEngine {
     return end
   }
 
-  async getPaymentProtocolInfo (
+  async getPaymentProtocolInfo(
     paymentProtocolURL: string
   ): Promise<EdgePaymentProtocolInfo> {
     try {
@@ -481,7 +480,7 @@ export class CurrencyEngine {
     }
   }
 
-  async makeSpend (
+  async makeSpend(
     edgeSpendInfo: EdgeSpendInfo,
     txOptions?: TxOptions = {}
   ): Promise<EdgeTransaction> {
@@ -565,7 +564,7 @@ export class CurrencyEngine {
     }
   }
 
-  async signTx (edgeTransaction: EdgeTransaction): Promise<EdgeTransaction> {
+  async signTx(edgeTransaction: EdgeTransaction): Promise<EdgeTransaction> {
     const { edgeSpendInfo, txJson, signMessage } =
       edgeTransaction.otherParams || {}
     if (signMessage) {
@@ -605,7 +604,7 @@ export class CurrencyEngine {
     }
   }
 
-  async broadcastTx (
+  async broadcastTx(
     edgeTransaction: EdgeTransaction
   ): Promise<EdgeTransaction> {
     const { otherParams = {}, signedTx, currencyCode } = edgeTransaction
@@ -644,21 +643,21 @@ export class CurrencyEngine {
     return edgeTransaction
   }
 
-  saveTx (edgeTransaction: EdgeTransaction): Promise<void> {
+  saveTx(edgeTransaction: EdgeTransaction): Promise<void> {
     this.logEdgeTransaction(edgeTransaction, 'Saving')
     this.engineState.saveTx(edgeTransaction.txid, edgeTransaction.signedTx)
     return Promise.resolve()
   }
 
-  getDisplayPrivateSeed (): string | null {
+  getDisplayPrivateSeed(): string | null {
     return this.keyManager ? this.keyManager.getSeed() : null
   }
 
-  getDisplayPublicSeed (): string | null {
+  getDisplayPublicSeed(): string | null {
     return this.keyManager ? this.keyManager.getPublicSeed() : null
   }
 
-  dumpData (): EdgeDataDump {
+  dumpData(): EdgeDataDump {
     return {
       walletId: this.walletId.split(' - ')[0],
       walletType: this.walletInfo.type,

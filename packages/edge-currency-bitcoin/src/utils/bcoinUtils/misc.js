@@ -11,8 +11,8 @@ const { Lock } = bcoin.utils
 export const scriptTypesToEdgeTypes = (
   addresses: EdgeAddress
 ): EdgeFreshAddress => ({
-  publicAddress: addresses['P2WPKH-P2SH'] || addresses['P2PKH'],
-  segwitAddress: addresses['P2WPKH']
+  publicAddress: addresses['P2WPKH-P2SH'] || addresses.P2PKH,
+  segwitAddress: addresses.P2WPKH
 })
 
 export const formatToBips = (

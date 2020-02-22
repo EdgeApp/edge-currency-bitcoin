@@ -26,7 +26,7 @@ export class StratumConnection {
   connected: boolean
   version: string | void
 
-  constructor (uri: string, options: StratumOptions) {
+  constructor(uri: string, options: StratumOptions) {
     const {
       callbacks,
       io,
@@ -65,7 +65,7 @@ export class StratumConnection {
   /**
    * Activates the underlying TCP connection.
    */
-  open () {
+  open() {
     const parsed = parse(this.uri)
     if (
       (parsed.scheme !== 'electrum' && parsed.scheme !== 'electrums') ||
@@ -99,7 +99,7 @@ export class StratumConnection {
       })
   }
 
-  wakeUp () {
+  wakeUp() {
     pushUpdate({
       id: this.walletId + '==' + this.uri,
       updateFunc: () => {
@@ -111,7 +111,7 @@ export class StratumConnection {
   /**
    * Re-triggers the `onQueueSpace` callback if there is space in the queue.
    */
-  doWakeUp () {
+  doWakeUp() {
     if (this.connected) {
       while (Object.keys(this.pendingMessages).length < this.queueSize) {
         const task = this.callbacks.onQueueSpace()
@@ -126,7 +126,7 @@ export class StratumConnection {
    * ignoring the queue checks. This should *only* be used for spends.
    * This will fail if the connection is not connected.
    */
-  submitTask (task: StratumTask) {
+  submitTask(task: StratumTask) {
     // Add the message to the queue:
     const id = ++this.nextId
     const message = { task, startTime: Date.now() }
@@ -139,7 +139,7 @@ export class StratumConnection {
   /**
    * Closes the connection in response to an error.
    */
-  handleError (e: Error) {
+  handleError(e: Error) {
     if (!this.error) this.error = e
     if (this.connected && this.socket) this.disconnect()
     else this.cancelConnect = true
@@ -148,7 +148,7 @@ export class StratumConnection {
   /**
    * Closes the connection on engine shutdown.
    */
-  disconnect () {
+  disconnect() {
     clearTimeout(this.timer)
     this.sigkill = true
     this.connected = false
@@ -183,11 +183,11 @@ export class StratumConnection {
   /**
    * Called when the socket disconnects for any reason.
    */
-  onSocketClose () {
+  onSocketClose() {
     const error = this.error || new Error('Socket closed')
     clearTimeout(this.timer)
     this.connected = false
-    this.socket = void 0
+    this.socket = undefined
     this.cancelConnect = false
     this.sigkill = false
     for (const id of Object.keys(this.pendingMessages)) {
@@ -209,7 +209,7 @@ export class StratumConnection {
   /**
    * Called when the socket completes its connection.
    */
-  onSocketConnect () {
+  onSocketConnect() {
     if (this.cancelConnect) {
       if (this.socket) this.socket.close()
       return
@@ -237,7 +237,7 @@ export class StratumConnection {
   /**
    * Called when the socket receives data.
    */
-  onSocketData (data: string) {
+  onSocketData(data: string) {
     const buffer = this.partialMessage + data
     const parts = buffer.split('\n')
     for (let i = 0; i + 1 < parts.length; ++i) {
@@ -249,7 +249,7 @@ export class StratumConnection {
   /**
    * Called when the socket receives a complete message.
    */
-  onMessage (messageJson: string) {
+  onMessage(messageJson: string) {
     try {
       const now = Date.now()
       const json = JSON.parse(messageJson)
@@ -302,24 +302,24 @@ export class StratumConnection {
   /**
    * Called when the timer expires.
    */
-  onTimer () {
+  onTimer() {
     const now = Date.now() - TIMER_SLACK
 
     if (this.lastKeepAlive + KEEP_ALIVE_MS < now) {
       this.submitTask(
         this.version === '1.1'
           ? fetchVersion(
-            (version: string) => {
-              this.callbacks.onTimer(now)
-            },
-            (e: Error) => this.handleError(e)
-          )
+              (version: string) => {
+                this.callbacks.onTimer(now)
+              },
+              (e: Error) => this.handleError(e)
+            )
           : fetchPing(
-            () => {
-              this.callbacks.onTimer(now)
-            },
-            (e: Error) => this.handleError(e)
-          )
+              () => {
+                this.callbacks.onTimer(now)
+              },
+              (e: Error) => this.handleError(e)
+            )
       )
     }
 
@@ -337,11 +337,11 @@ export class StratumConnection {
     this.setupTimer()
   }
 
-  logError (e: Error) {
+  logError(e: Error) {
     console.log(`${this.walletId} - ${e.toString()}`)
   }
 
-  setupTimer () {
+  setupTimer() {
     // Find the next time something needs to happen:
     let nextWakeUp = this.lastKeepAlive + KEEP_ALIVE_MS
 
@@ -356,7 +356,7 @@ export class StratumConnection {
     this.timer = setTimeout(() => this.onTimer(), delay)
   }
 
-  transmitMessage (id: number, pending: PendingMessage) {
+  transmitMessage(id: number, pending: PendingMessage) {
     const now = Date.now()
     if (this.socket && this.connected && !this.cancelConnect) {
       pending.startTime = now

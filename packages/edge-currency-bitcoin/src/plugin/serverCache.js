@@ -15,7 +15,7 @@ let lastScoreUpTime_: number = Date.now()
 export class ServerCache {
   servers_: { [serverUrl: string]: ServerInfo }
 
-  constructor () {
+  constructor() {
     this.servers_ = {}
   }
 
@@ -24,7 +24,7 @@ export class ServerCache {
    * @param oldServers: Map of ServerInfo objects by serverUrl. This should come from disk
    * @param newServers: Array<string> of new servers downloaded from the info server
    */
-  addServers (
+  addServers(
     oldServers: { [serverUrl: string]: ServerInfo },
     newServers: Array<string> = []
   ) {
@@ -73,12 +73,12 @@ export class ServerCache {
     }
   }
 
-  clearServerCache () {
+  clearServerCache() {
     this.servers_ = {}
     lastScoreUpTime_ = Date.now()
   }
 
-  printServerCache () {
+  printServerCache() {
     console.log('**** printServerCache ****')
     const serverInfos: Array<ServerInfo> = []
     for (const s in this.servers_) {
@@ -99,7 +99,7 @@ export class ServerCache {
     console.log('**************************')
   }
 
-  serverScoreUp (
+  serverScoreUp(
     serverUrl: string,
     responseTimeMilliseconds: number,
     changeScore: number = 1
@@ -117,13 +117,11 @@ export class ServerCache {
     }
 
     console.log(
-      `${serverUrl}: score UP to ${
-        serverInfo.serverScore
-      } ${responseTimeMilliseconds}ms`
+      `${serverUrl}: score UP to ${serverInfo.serverScore} ${responseTimeMilliseconds}ms`
     )
   }
 
-  serverScoreDown (serverUrl: string, changeScore: number = 10) {
+  serverScoreDown(serverUrl: string, changeScore: number = 10) {
     const currentTime = Date.now()
     if (currentTime - lastScoreUpTime_ > 60000) {
       // It has been over 1 minute since we got an up-vote for any server.
@@ -143,7 +141,7 @@ export class ServerCache {
     console.log(`${serverUrl}: score DOWN to ${serverInfo.serverScore}`)
   }
 
-  setResponseTime (serverUrl: string, responseTimeMilliseconds: number) {
+  setResponseTime(serverUrl: string, responseTimeMilliseconds: number) {
     const serverInfo: ServerInfo = this.servers_[serverUrl]
     serverInfo.numResponseTimes++
 
@@ -162,7 +160,7 @@ export class ServerCache {
     serverInfo.responseTime = newTime
   }
 
-  getServers (
+  getServers(
     numServersWanted: number,
     ignorePatterns?: Array<string> = []
   ): Array<string> {

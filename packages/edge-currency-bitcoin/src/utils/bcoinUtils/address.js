@@ -1,9 +1,8 @@
 // @flow
 
-import { Buffer } from 'buffer'
-
 import bcoin from 'bcoin'
-import { Core, type HexPair, type ScriptType, Utils } from 'nidavellir'
+import { Buffer } from 'buffer'
+import { type HexPair, type ScriptType, Core, Utils } from 'nidavellir'
 
 import { type Address, type RawAddress } from '../../../types/bcoinUtils.js'
 import { dirtyAddress } from '../addressFormat/addressFormatIndex.js'

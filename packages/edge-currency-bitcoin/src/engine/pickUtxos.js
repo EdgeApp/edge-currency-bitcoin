@@ -17,7 +17,7 @@ interface BjsUtxo {
   value: number;
 }
 
-export function pickUtxos (
+export function pickUtxos(
   addressInfos: AddressInfos,
   // headerCache: HeaderCache,
   amountSatoshi: number,
@@ -28,7 +28,7 @@ export function pickUtxos (
   const utxosAll: Array<BjsUtxo> = []
   // Loop over all addresses
   for (const scriptHash in addressInfos) {
-    if (addressInfos.hasOwnProperty(scriptHash)) {
+    if (Object.prototype.hasOwnProperty.call(addressInfos, scriptHash)) {
       // Loop over all utxos in an address
       const addressObj: AddressInfo = addressInfos[scriptHash]
       for (const utxo: UtxoInfo of addressObj.utxos) {
@@ -64,7 +64,7 @@ export function pickUtxos (
   return out
 }
 
-function arrayUtxoBjsToEdge (bjsUtxos: Array<BjsUtxo>): Array<UtxoInfo> {
+function arrayUtxoBjsToEdge(bjsUtxos: Array<BjsUtxo>): Array<UtxoInfo> {
   const utxos: Array<UtxoInfo> = []
   for (const bjsUtxo of bjsUtxos) {
     utxos.push(utxoBjsToEdge(bjsUtxo))
@@ -72,7 +72,7 @@ function arrayUtxoBjsToEdge (bjsUtxos: Array<BjsUtxo>): Array<UtxoInfo> {
   return utxos
 }
 
-function utxoBjsToEdge (bjsUtxo: BjsUtxo) {
+function utxoBjsToEdge(bjsUtxo: BjsUtxo) {
   const utxoObj: UtxoInfo = {
     txid: bjsUtxo.txId,
     index: bjsUtxo.vout,
@@ -81,7 +81,7 @@ function utxoBjsToEdge (bjsUtxo: BjsUtxo) {
   return utxoObj
 }
 
-function utxoEdgeToBjs (utxo: UtxoInfo): BjsUtxo {
+function utxoEdgeToBjs(utxo: UtxoInfo): BjsUtxo {
   const bjsUtxo: BjsUtxo = {
     txId: utxo.txid,
     vout: utxo.index,
