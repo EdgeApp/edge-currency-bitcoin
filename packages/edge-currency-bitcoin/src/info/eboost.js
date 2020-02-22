@@ -30,9 +30,6 @@ const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Configuration options:
   defaultSettings: {
     electrumServers: [
-      'electrums://electrum1.eboost.fun:50002',
-      'electrums://electrum2.eboost.fun:50002',
-      'electrums://electrum3.eboost.fun:50002',
       'electrum://electrum1.eboost.fun:50001',
       'electrum://electrum2.eboost.fun:50001',
       'electrum://electrum3.eboost.fun:50001'
