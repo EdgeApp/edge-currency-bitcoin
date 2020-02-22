@@ -10,7 +10,7 @@ const MAX_SCORE = 500
 const MIN_SCORE = -100
 const DROPPED_SERVER_SCORE = -100
 const RE_ADDED_SERVER_SCORE = -10
-let lastScoreUpTime_: number
+let lastScoreUpTime_: number = Date.now()
 
 export class ServerCache {
   servers_: { [serverUrl: string]: ServerInfo }
