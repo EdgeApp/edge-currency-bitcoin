@@ -2,6 +2,8 @@
 
 import { type EdgeIo } from 'edge-core-js/types'
 
+import { allInfo } from '../info/all.js'
+
 const makeBroadcastBlockchainInfo = (io: EdgeIo, currencyCode: string) => {
   const supportedCodes = ['BTC']
   if (!supportedCodes.find(c => c === currencyCode)) {
@@ -29,7 +31,7 @@ const makeBroadcastBlockchainInfo = (io: EdgeIo, currencyCode: string) => {
 }
 
 const makeBroadcastInsight = (io: EdgeIo, currencyCode: string) => {
-  const supportedCodes = ['BCH']
+  const supportedCodes = []
   if (!supportedCodes.find(c => c === currencyCode)) {
     return null
   }
@@ -64,17 +66,27 @@ const makeBroadcastInsight = (io: EdgeIo, currencyCode: string) => {
   }
 }
 
-const makeBroadcastBlockcypher = (io: EdgeIo, currencyCode: string) => {
-  const supportedCodes = []
+const makeBroadcastBlockchair = (io: EdgeIo, currencyCode: string) => {
+  const supportedCodes = ['DOGE']
   if (!supportedCodes.find(c => c === currencyCode)) {
     return null
   }
   currencyCode = currencyCode.toLowerCase()
+  const info = allInfo.find(currency => {
+    return currency.currencyInfo.currencyCode === currencyCode.toUpperCase()
+  })
+  let pluginName
+  if (info && info.currencyInfo) {
+    pluginName = info.currencyInfo.pluginName
+  } else {
+    return null
+  }
+
   return async (rawTx: string) => {
     try {
-      const body = { tx: rawTx }
+      const body = { data: rawTx }
       const response = await io.fetch(
-        `https://api.blockcypher.com/v1/${currencyCode}/main/txs/push`,
+        `https://api.blockchair.com/${pluginName}/push/transaction`,
         {
           headers: {
             Accept: 'application/json',
@@ -86,9 +98,21 @@ const makeBroadcastBlockcypher = (io: EdgeIo, currencyCode: string) => {
       )
       const out = await response.json()
       io.console.info('SUCCESS makeBroadcastBlockcypher: ', out)
-      return out.hash
+      if (out.context && out.context.error) {
+        io.console.info('makeBroadcastBlockchair fail with out: ', out)
+        throw new Error(
+          `https://api.blockchair.com/${pluginName}/push/transaction failed with error ${
+            out.context.error
+          }`
+        )
+      }
+      io.console.info(
+        'makeBroadcastBlockchair executed successfully with hash: ',
+        out.data.transaction_hash
+      )
+      return out.data.transaction_hash
     } catch (e) {
-      io.console.info('ERROR makeBroadcastBlockcypher: ', e)
+      io.console.info('ERROR makeBroadcastBlockchair: ', e)
       throw e
     }
   }
@@ -97,7 +121,7 @@ const makeBroadcastBlockcypher = (io: EdgeIo, currencyCode: string) => {
 const broadcastFactories = [
   makeBroadcastBlockchainInfo,
   makeBroadcastInsight,
-  makeBroadcastBlockcypher
+  makeBroadcastBlockchair
 ]
 
 export { broadcastFactories }
