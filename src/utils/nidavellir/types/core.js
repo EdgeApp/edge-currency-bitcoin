@@ -1,13 +1,13 @@
 // @flow
 
-import { type BaseDecoder, type HashFunction } from "./utils.js";
+import { type BaseDecoder, type HashFunction } from './utils.js'
 
-export type PublicKeyType<T> = { publicKey: T };
-export type PrivateKeyType<T> = { privateKey: T, publicKey?: T };
-export type KeyPairType<T> = { privateKey?: T, publicKey?: T };
-export type HexPair = KeyPairType<string>;
+export type PublicKeyType<T> = { publicKey: T }
+export type PrivateKeyType<T> = { privateKey: T, publicKey?: T }
+export type KeyPairType<T> = { privateKey?: T, publicKey?: T }
+export type HexPair = KeyPairType<string>
 
-export type MasterKeyPair<T> = { privateKey: T, publicKey: T };
+export type MasterKeyPair<T> = { privateKey: T, publicKey: T }
 
 export type Serializers = {
   address: BaseDecoder,
@@ -15,13 +15,13 @@ export type Serializers = {
   xkey: BaseDecoder,
   txHash: HashFunction<string>,
   sigHash: HashFunction<Buffer>
-};
+}
 
 export type ReplayProtection = {
   forkSighash?: number,
   forcedMinVersion?: number,
   forkId?: number
-};
+}
 export type KeyPrefix = {
   privkey: number,
   xpubkey: number,
@@ -29,7 +29,7 @@ export type KeyPrefix = {
   xpubkey58: string,
   xprivkey58: string,
   coinType: number
-};
+}
 
 export type AddressPrefix = {
   pubkeyhash?: number,
@@ -38,7 +38,7 @@ export type AddressPrefix = {
   witnesspubkeyhash?: number,
   witnessscripthash?: number,
   bech32?: string
-};
+}
 
 export type NetworkInfo = {
   magic: number,
@@ -49,7 +49,7 @@ export type NetworkInfo = {
   forks: Array<string>,
   replayProtection: ReplayProtection,
   serializers: Serializers
-};
+}
 
 export type PartialInfo = {
   magic?: number,
@@ -60,7 +60,7 @@ export type PartialInfo = {
   forks?: Array<string>,
   replayProtection?: ReplayProtection,
   serializers?: Serializers
-};
+}
 
-export type NetworkInfos = { [network: string]: NetworkInfo };
-export type NewNetworks = { [network: string]: PartialInfo };
+export type NetworkInfos = { [network: string]: NetworkInfo }
+export type NewNetworks = { [network: string]: PartialInfo }

@@ -6,7 +6,7 @@ export const main = {
     coinType: 145
   },
   addressPrefix: {
-    cashAddress: "bitcoincash"
+    cashAddress: 'bitcoincash'
   },
   legacyAddressPrefix: {
     pubkeyhash: 0x00,
@@ -16,4 +16,4 @@ export const main = {
     forkSighash: 0x40,
     forcedMinVersion: 1
   }
-};
+}

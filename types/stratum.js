@@ -1,6 +1,6 @@
 // @flow
 
-import { type PluginIo } from "./plugin.js";
+import { type PluginIo } from './plugin.js'
 
 export type StratumBlockHeader = {
   block_height: number,
@@ -10,22 +10,22 @@ export type StratumBlockHeader = {
   timestamp: number,
   bits: number,
   nonce: number
-};
+}
 
 export type StratumHistoryRow = {
   tx_hash: string,
   height: number,
   fee?: number
-};
+}
 
 export type StratumUtxo = {
   tx_hash: string,
   tx_pos: number,
   value: number,
   height: number
-};
+}
 
-export type OnFailHandler = (error: Error) => void;
+export type OnFailHandler = (error: Error) => void
 
 /**
  * This is a private type used by the Stratum connection.
@@ -59,4 +59,4 @@ export interface StratumOptions {
 export type PendingMessage = {
   startTime: number,
   task: StratumTask
-};
+}

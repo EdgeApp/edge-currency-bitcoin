@@ -1,49 +1,49 @@
 // @flow
 
-import { type CurrencyPluginSettings } from "../../types/plugin.js";
-import { addNetwork } from "../utils/bcoinExtender/bcoinExtender.js";
-import { envSettings } from "../utils/utils.js";
+import { type CurrencyPluginSettings } from '../../types/plugin.js'
+import { addNetwork } from '../utils/bcoinExtender/bcoinExtender.js'
+import { envSettings } from '../utils/utils.js'
 
 const DEFAULT_CURRENCY_INFO = {
   metaTokens: [],
   defaultSettings: {
-    customFeeSettings: ["satPerByte"],
+    customFeeSettings: ['satPerByte'],
     disableFetchingServers: false
   }
-};
+}
 
 const DEFAULT_ENGINE_INFO = {
   gapLimit: 10,
-  customFeeSettings: ["satPerByte"],
-  feeInfoServer: "",
+  customFeeSettings: ['satPerByte'],
+  feeInfoServer: '',
   feeUpdateInterval: 60000
-};
+}
 
 export const mergeParams = (info: Object, defaults: Object) => {
   for (const key in defaults) {
-    const defaultSetting = defaults[key];
-    const currencySetting = info[key];
+    const defaultSetting = defaults[key]
+    const currencySetting = info[key]
     if (Array.isArray(defaultSetting)) {
-      info[key] = [...(currencySetting || []), ...defaultSetting];
-    } else if (typeof defaultSetting === "object") {
-      if (!info[key]) info[key] = {};
-      mergeParams(info[key], defaultSetting);
+      info[key] = [...(currencySetting || []), ...defaultSetting]
+    } else if (typeof defaultSetting === 'object') {
+      if (!info[key]) info[key] = {}
+      mergeParams(info[key], defaultSetting)
     } else {
-      info[key] = currencySetting || defaultSetting;
+      info[key] = currencySetting || defaultSetting
     }
   }
-};
+}
 
 export const FixCurrencyCode = (currencyCode: string): string => {
   switch (currencyCode) {
-    case "BTC":
-      return "BC1";
-    case "DGB":
-      return "DGB1";
+    case 'BTC':
+      return 'BC1'
+    case 'DGB':
+      return 'DGB1'
     default:
-      return currencyCode;
+      return currencyCode
   }
-};
+}
 
 export const setDefaultInfo = ({
   engineInfo,
@@ -56,38 +56,38 @@ export const setDefaultInfo = ({
     symbolImage,
     symbolImageDarkMono,
     walletType
-  } = currencyInfo;
+  } = currencyInfo
 
-  const { imageServer, infoServer } = envSettings;
+  const { imageServer, infoServer } = envSettings
   // Set the currency image Url's
-  const colorImage = symbolImage || `${pluginName}-logo-solo-64.png`;
-  const monoImage = symbolImageDarkMono || `${pluginName}-logo-solo-64.png`;
-  currencyInfo.symbolImage = `${imageServer}/${colorImage}`;
-  currencyInfo.symbolImageDarkMono = `${imageServer}/${monoImage}`;
+  const colorImage = symbolImage || `${pluginName}-logo-solo-64.png`
+  const monoImage = symbolImageDarkMono || `${pluginName}-logo-solo-64.png`
+  currencyInfo.symbolImage = `${imageServer}/${colorImage}`
+  currencyInfo.symbolImageDarkMono = `${imageServer}/${monoImage}`
 
   // Set the walletType
-  const fixedPluginName = pluginName.replace("testnet", "-testnet");
-  currencyInfo.walletType = walletType || `wallet:${fixedPluginName}`;
+  const fixedPluginName = pluginName.replace('testnet', '-testnet')
+  currencyInfo.walletType = walletType || `wallet:${fixedPluginName}`
 
   // Set the Default Settings
-  mergeParams(currencyInfo, DEFAULT_CURRENCY_INFO);
+  mergeParams(currencyInfo, DEFAULT_CURRENCY_INFO)
 
   // ////// Setup the Engine Info Object ////// //
-  if (!engineInfo.currencyCode) engineInfo.currencyCode = currencyCode;
-  if (!engineInfo.network) engineInfo.network = pluginName;
+  if (!engineInfo.currencyCode) engineInfo.currencyCode = currencyCode
+  if (!engineInfo.network) engineInfo.network = pluginName
 
-  const { network } = engineInfo;
+  const { network } = engineInfo
 
   // Inject the new network info into bcoin
-  addNetwork(network);
+  addNetwork(network)
 
   // Set the info server Url's for the currency
-  const fixedCode = FixCurrencyCode(currencyCode);
-  engineInfo.electrumServersUrl = `${infoServer}/electrumServers/${fixedCode}`;
-  engineInfo.networkFeesUrl = `${infoServer}/networkFees/${currencyCode}`;
+  const fixedCode = FixCurrencyCode(currencyCode)
+  engineInfo.electrumServersUrl = `${infoServer}/electrumServers/${fixedCode}`
+  engineInfo.networkFeesUrl = `${infoServer}/networkFees/${currencyCode}`
 
   // Set the rest of the Default Engine Info
-  mergeParams(engineInfo, DEFAULT_ENGINE_INFO);
+  mergeParams(engineInfo, DEFAULT_ENGINE_INFO)
 
-  return { engineInfo, currencyInfo };
-};
+  return { engineInfo, currencyInfo }
+}

@@ -31,7 +31,7 @@
     "fix": "npm run lint -- --fix",
     "flow": "flow",
     "format": "import-sort -l --write $PWD/'*.js' $PWD/'src/**/*.js' $PWD/'test/**/*.js' $PWD/'types/**/*.js'; prettier-eslint --write $PWD/'*.js' $PWD/'src/**/*.js' $PWD/'test/**/*.js' $PWD/'types/**/*.js'",
-    "lint": "eslint",
+    "lint": "eslint .",
     "precommit": "lint-staged && flow && npm test && npm run build",
     "prepare": "npm run build",
     "security": "yarn audit",

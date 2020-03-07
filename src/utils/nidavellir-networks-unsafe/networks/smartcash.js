@@ -1,16 +1,16 @@
-import bcoin from "bcoin";
+import bcoin from 'bcoin'
 // @flow
-import bs58sc from "bs58smartcheck";
+import bs58sc from 'bs58smartcheck'
 
 const base58 = {
-  decode: (address: string) => bs58sc.decode(address).toString("hex"),
-  encode: (data: Buffer) => bs58sc.encode(Buffer.from(data, "hex"))
-};
+  decode: (address: string) => bs58sc.decode(address).toString('hex'),
+  encode: (data: Buffer) => bs58sc.encode(Buffer.from(data, 'hex'))
+}
 
 const sha256 = (rawTx: string) => {
-  const buf = Buffer.from(rawTx, "hex");
-  return bcoin.crypto.digest.sha256(buf);
-};
+  const buf = Buffer.from(rawTx, 'hex')
+  return bcoin.crypto.digest.sha256(buf)
+}
 
 export const main = {
   magic: 0x5ca1ab1e,
@@ -18,8 +18,8 @@ export const main = {
     privkey: 0xbf,
     xpubkey: 0x0488b21e,
     xprivkey: 0x0488ade4,
-    xpubkey58: "xpub",
-    xprivkey58: "xprv",
+    xpubkey58: 'xpub',
+    xprivkey58: 'xprv',
     coinType: 224
   },
   addressPrefix: {
@@ -29,7 +29,7 @@ export const main = {
   serializers: {
     address: base58,
     wif: base58,
-    txHash: rawTx => sha256(rawTx).toString("hex"),
+    txHash: rawTx => sha256(rawTx).toString('hex'),
     signatureHash: sha256
   }
-};
+}

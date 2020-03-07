@@ -1,61 +1,61 @@
 // @flow
 
-import { HARDENED } from "../bip32/derive.js";
-import * as ExtendedKey from "../bip32/extendedKey.js";
+import { HARDENED } from '../bip32/derive.js'
+import * as ExtendedKey from '../bip32/extendedKey.js'
 import {
   type ExtendedKeyPair,
   type HDKeyPair,
   type HDPath,
   type Index,
   type Path
-} from "../types/bip32.js";
+} from '../types/bip32.js'
 
 export const fromSeed = async (
   seed: string,
   network?: string
 ): Promise<HDKeyPair> => {
-  const masterKeyPair = await ExtendedKey.fromSeed(seed, network);
+  const masterKeyPair = await ExtendedKey.fromSeed(seed, network)
   return {
     ...masterKeyPair,
     hardened: false,
-    path: ["m"],
+    path: ['m'],
     children: {}
-  };
-};
+  }
+}
 
 export const fromExtendedKey = (
   keyPair: ExtendedKeyPair,
   hdPath?: HDPath
 ): HDKeyPair => {
-  const hardened = keyPair.childIndex >= HARDENED;
-  const { path: parentPath = [] } = hdPath || {};
-  let indexStr = "m";
+  const hardened = keyPair.childIndex >= HARDENED
+  const { path: parentPath = [] } = hdPath || {}
+  let indexStr = 'm'
 
-  const path = [...parentPath];
+  const path = [...parentPath]
   if (keyPair.depth) {
-    const index = keyPair.childIndex;
-    const adjIndex = hardened ? index - HARDENED : index;
-    indexStr = `${adjIndex}${hardened ? "'" : ""}`;
+    const index = keyPair.childIndex
+    const adjIndex = hardened ? index - HARDENED : index
+    indexStr = `${adjIndex}${hardened ? "'" : ''}`
   }
 
-  if (path[0] !== "m") path.unshift("m");
+  if (path[0] !== 'm') path.unshift('m')
   if (path.length === keyPair.depth) {
-    path.push(indexStr);
+    path.push(indexStr)
   }
   if (path.length !== keyPair.depth + 1) {
-    throw new Error("Wrong path depth for key");
+    throw new Error('Wrong path depth for key')
   }
   if (path[path.length - 1] !== indexStr) {
-    throw new Error("Wrong index for key");
+    throw new Error('Wrong index for key')
   }
 
-  const hdKey: HDKeyPair = { ...keyPair, path, hardened, children: {} };
-  const { scriptType, chain } = hdPath || {};
-  if (scriptType) hdKey.scriptType = scriptType;
-  if (chain) hdKey.chain = chain;
+  const hdKey: HDKeyPair = { ...keyPair, path, hardened, children: {} }
+  const { scriptType, chain } = hdPath || {}
+  if (scriptType) hdKey.scriptType = scriptType
+  if (chain) hdKey.chain = chain
 
-  return hdKey;
-};
+  return hdKey
+}
 
 export const fromIndex = async (
   parentKey: HDKeyPair,
@@ -63,14 +63,14 @@ export const fromIndex = async (
   network?: string
 ): Promise<HDKeyPair> => {
   // Derive an ExtendedKey key from the current parentKey and index
-  const childKey = await ExtendedKey.fromIndex(parentKey, index, network);
+  const childKey = await ExtendedKey.fromIndex(parentKey, index, network)
   const childHDPath = {
     ...parentKey,
     path: [...parentKey.path, index]
-  };
+  }
   // Create an HD key from the ExtendedKey
-  return fromExtendedKey(childKey, childHDPath);
-};
+  return fromExtendedKey(childKey, childHDPath)
+}
 
 export const fromPath = async (
   parentKeys: HDKeyPair,
@@ -78,26 +78,26 @@ export const fromPath = async (
   network?: string
 ): Promise<HDKeyPair> => {
   // Get the deepest possible parent for this key
-  const parent = getParentKey(parentKeys, hdPath.path);
+  const parent = getParentKey(parentKeys, hdPath.path)
   // Set the starting derivation key to be the parent key from before
-  let childHDKey = parent.key;
+  let childHDKey = parent.key
 
   while (parent.path.length) {
     // Get next child key
-    const index = parent.path.shift();
-    const childKey = await fromIndex(childHDKey, index, network);
+    const index = parent.path.shift()
+    const childKey = await fromIndex(childHDKey, index, network)
 
     // Add the new key to the current parent key and change the pointer
-    childHDKey.children[index] = childKey;
-    childHDKey = childKey;
+    childHDKey.children[index] = childKey
+    childHDKey = childKey
   }
 
   // Set the scriptType and chain for the deepest path
-  childHDKey.scriptType = hdPath.scriptType || "P2PKH";
-  childHDKey.chain = hdPath.chain || "external";
+  childHDKey.scriptType = hdPath.scriptType || 'P2PKH'
+  childHDKey.chain = hdPath.chain || 'external'
 
-  return parentKeys;
-};
+  return parentKeys
+}
 
 export const fromPaths = async (
   parentKey: HDKeyPair | string,
@@ -105,60 +105,60 @@ export const fromPaths = async (
   network?: string
 ): Promise<HDKeyPair> => {
   // If we get a seed create a master hd key from it
-  if (typeof parentKey === "string") {
-    parentKey = await fromSeed(parentKey, network);
+  if (typeof parentKey === 'string') {
+    parentKey = await fromSeed(parentKey, network)
   }
 
   // Create All missing key paths
   for (const hdPath of hdPaths) {
-    parentKey = await fromPath(parentKey, hdPath);
+    parentKey = await fromPath(parentKey, hdPath)
   }
 
-  return parentKey;
-};
+  return parentKey
+}
 
 export const fromString = (
   extendedKey: string,
   hdPath?: HDPath,
   network?: string
 ): HDKeyPair => {
-  const keyPair: ExtendedKeyPair = ExtendedKey.fromString(extendedKey, network);
-  return fromExtendedKey(keyPair, hdPath);
-};
+  const keyPair: ExtendedKeyPair = ExtendedKey.fromString(extendedKey, network)
+  return fromExtendedKey(keyPair, hdPath)
+}
 
 export const getParentKey = (
   parentKey: HDKeyPair,
   path: Path
 ): { key: HDKeyPair, path: Path } => {
-  const tempPath = [...path];
-  tempPath.shift();
+  const tempPath = [...path]
+  tempPath.shift()
   while (parentKey.children[tempPath[0]] && tempPath.length) {
-    parentKey = parentKey.children[tempPath.shift()];
+    parentKey = parentKey.children[tempPath.shift()]
   }
-  return { key: parentKey, path: tempPath };
-};
+  return { key: parentKey, path: tempPath }
+}
 
 export const getKey = (parentKey: HDKeyPair, path: Path): HDKeyPair | null => {
-  const tempPath = [...path];
-  tempPath.shift();
+  const tempPath = [...path]
+  tempPath.shift()
   while (parentKey && tempPath.length) {
-    parentKey = parentKey.children[tempPath.shift()];
+    parentKey = parentKey.children[tempPath.shift()]
   }
-  return parentKey;
-};
+  return parentKey
+}
 
 export const createPath = (
   account: number = 0,
-  parent: HDPath = { path: ["m"] },
+  parent: HDPath = { path: ['m'] },
   hardened?: boolean
 ): HDPath => {
-  const { chain = "external", scriptType = "P2PKH" } = parent;
+  const { chain = 'external', scriptType = 'P2PKH' } = parent
 
-  const accountStr = `${account}${hardened ? "'" : ""}`;
-  const index = chain === "external" ? "0" : "1";
-  const path = [...parent.path, accountStr, index];
+  const accountStr = `${account}${hardened ? "'" : ''}`
+  const index = chain === 'external' ? '0' : '1'
+  const path = [...parent.path, accountStr, index]
 
-  return { path, chain, scriptType };
-};
+  return { path, chain, scriptType }
+}
 
-export const toString = ExtendedKey.toString;
+export const toString = ExtendedKey.toString

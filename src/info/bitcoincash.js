@@ -1,70 +1,70 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from "edge-core-js/types";
+import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
-import { type EngineCurrencyInfo } from "../../types/engine.js";
+import { type EngineCurrencyInfo } from '../../types/engine.js'
 
 const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 10000,
 
   simpleFeeSettings: {
-    highFee: "20",
-    lowFee: "3",
-    standardFeeLow: "5",
-    standardFeeHigh: "10",
-    standardFeeLowAmount: "1000000",
-    standardFeeHighAmount: "65000000"
+    highFee: '20',
+    lowFee: '3',
+    standardFeeLow: '5',
+    standardFeeHigh: '10',
+    standardFeeLowAmount: '1000000',
+    standardFeeHighAmount: '65000000'
   }
-};
+}
 
 const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
-  currencyCode: "BCH",
-  displayName: "Bitcoin Cash",
-  pluginName: "bitcoincash",
+  currencyCode: 'BCH',
+  displayName: 'Bitcoin Cash',
+  pluginName: 'bitcoincash',
   denominations: [
-    { name: "BCH", multiplier: "100000000", symbol: "₿" },
-    { name: "mBCH", multiplier: "100000", symbol: "m₿" },
-    { name: "cash", multiplier: "100", symbol: "ƀ" }
+    { name: 'BCH', multiplier: '100000000', symbol: '₿' },
+    { name: 'mBCH', multiplier: '100000', symbol: 'm₿' },
+    { name: 'cash', multiplier: '100', symbol: 'ƀ' }
   ],
   // Configuration options:
   defaultSettings: {
     electrumServers: [
-      "electrum://abc1.hsmiths.com:60001",
-      "electrums://electroncash.bitcoinplug.com:50002",
-      "electrum://electroncash.bitcoinplug.com:50001",
-      "electrums://bch.tedy.pw:50002",
-      "electrum://bch.tedy.pw:50001",
-      "electrums://electroncash.cascharia.com:50002",
-      "electrums://14.3.38.179:50002",
-      "electrum://14.3.38.179:50001",
-      "electrums://bch.arihanc.com:52002",
-      "electrum://bch.arihanc.com:52001",
-      "electrums://electron-cash.dragon.zone:50002",
-      "electrum://electron-cash.dragon.zone:50001",
-      "electrum://bch.stitthappens.com:50001",
-      "electrum://abc.vom-stausee.de:52001",
-      "electrums://electron.coinucopia.io:50002",
-      "electrum://electron.coinucopia.io:50001",
-      "electrums://elecash.bcc.nummi.it:50012",
-      "electrum://electron.jns.im:50001",
-      "electrums://electrum.leblancnet.us:50012",
-      "electrum://electrum.leblancnet.us:50011",
-      "electrums://bch.curalle.ovh:50002",
-      "electrums://electron.jns.im:50002",
-      "electrums://abc.vom-stausee.de:52002",
-      "electrums://abc1.hsmiths.com:60002",
-      "electrum://electrumx-cash.itmettke.de:50001",
-      "electrums://electrumx-cash.itmettke.de:50002",
-      "electrums://electrumx-bch.adminsehow.com:50012",
-      "electrum://electrumx-bch.adminsehow.com:50011"
+      'electrum://abc1.hsmiths.com:60001',
+      'electrums://electroncash.bitcoinplug.com:50002',
+      'electrum://electroncash.bitcoinplug.com:50001',
+      'electrums://bch.tedy.pw:50002',
+      'electrum://bch.tedy.pw:50001',
+      'electrums://electroncash.cascharia.com:50002',
+      'electrums://14.3.38.179:50002',
+      'electrum://14.3.38.179:50001',
+      'electrums://bch.arihanc.com:52002',
+      'electrum://bch.arihanc.com:52001',
+      'electrums://electron-cash.dragon.zone:50002',
+      'electrum://electron-cash.dragon.zone:50001',
+      'electrum://bch.stitthappens.com:50001',
+      'electrum://abc.vom-stausee.de:52001',
+      'electrums://electron.coinucopia.io:50002',
+      'electrum://electron.coinucopia.io:50001',
+      'electrums://elecash.bcc.nummi.it:50012',
+      'electrum://electron.jns.im:50001',
+      'electrums://electrum.leblancnet.us:50012',
+      'electrum://electrum.leblancnet.us:50011',
+      'electrums://bch.curalle.ovh:50002',
+      'electrums://electron.jns.im:50002',
+      'electrums://abc.vom-stausee.de:52002',
+      'electrums://abc1.hsmiths.com:60002',
+      'electrum://electrumx-cash.itmettke.de:50001',
+      'electrums://electrumx-cash.itmettke.de:50002',
+      'electrums://electrumx-bch.adminsehow.com:50012',
+      'electrum://electrumx-bch.adminsehow.com:50011'
     ]
   },
   // Explorers:
-  blockExplorer: "https://blockchair.com/bitcoin-cash/block/%s",
-  addressExplorer: "https://blockchair.com/bitcoin-cash/address/%s",
-  transactionExplorer: "https://blockchair.com/bitcoin-cash/transaction/%s"
-};
+  blockExplorer: 'https://blockchair.com/bitcoin-cash/block/%s',
+  addressExplorer: 'https://blockchair.com/bitcoin-cash/address/%s',
+  transactionExplorer: 'https://blockchair.com/bitcoin-cash/transaction/%s'
+}
 
-export const bitcoincash = { engineInfo, currencyInfo };
+export const bitcoincash = { engineInfo, currencyInfo }

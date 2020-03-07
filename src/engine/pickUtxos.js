@@ -3,13 +3,13 @@
  * @flow
  */
 
-import coinselect from "coinselect";
+import coinselect from 'coinselect'
 
 import {
   type AddressInfo,
   type AddressInfos,
   type UtxoInfo
-} from "../../types/engine.js";
+} from '../../types/engine.js'
 
 interface BjsUtxo {
   txId: string;
@@ -24,20 +24,20 @@ export function pickUtxos(
   useOnlyConfirmed: boolean = true
 ) {
   // Build single list of utxos into an array
-  const utxosConfirmed: Array<BjsUtxo> = [];
-  const utxosAll: Array<BjsUtxo> = [];
+  const utxosConfirmed: Array<BjsUtxo> = []
+  const utxosAll: Array<BjsUtxo> = []
   // Loop over all addresses
   for (const scriptHash in addressInfos) {
     if (addressInfos.hasOwnProperty(scriptHash)) {
       // Loop over all utxos in an address
-      const addressObj: AddressInfo = addressInfos[scriptHash];
+      const addressObj: AddressInfo = addressInfos[scriptHash]
       for (const utxo: UtxoInfo of addressObj.utxos) {
         // TODO: Need to actually find out if this is confirmed
-        const confirmed: boolean = true;
-        const bjsUtxo: BjsUtxo = utxoEdgeToBjs(utxo);
-        utxosAll.push(bjsUtxo);
+        const confirmed: boolean = true
+        const bjsUtxo: BjsUtxo = utxoEdgeToBjs(utxo)
+        utxosAll.push(bjsUtxo)
         if (confirmed) {
-          utxosConfirmed.push(bjsUtxo);
+          utxosConfirmed.push(bjsUtxo)
         }
       }
     }
@@ -45,31 +45,31 @@ export function pickUtxos(
 
   const targets = [
     {
-      address: "1EHNa6Q4Jz2uvNExL497mE43ikXhwF6kZm", // Fake address
+      address: '1EHNa6Q4Jz2uvNExL497mE43ikXhwF6kZm', // Fake address
       value: amountSatoshi
     }
-  ];
-  let out: Array<UtxoInfo> = [];
+  ]
+  let out: Array<UtxoInfo> = []
 
   // Try unconfirmed funds first
-  let selectObj = coinselect(utxosConfirmed, targets, 0);
+  let selectObj = coinselect(utxosConfirmed, targets, 0)
   if (selectObj.inputs && selectObj.outputs) {
-    out = arrayUtxoBjsToEdge(selectObj.inputs);
+    out = arrayUtxoBjsToEdge(selectObj.inputs)
   } else if (!useOnlyConfirmed) {
-    selectObj = coinselect(utxosAll, targets, 0);
+    selectObj = coinselect(utxosAll, targets, 0)
     if (selectObj.inputs && selectObj.outputs) {
-      out = arrayUtxoBjsToEdge(selectObj.inputs);
+      out = arrayUtxoBjsToEdge(selectObj.inputs)
     }
   }
-  return out;
+  return out
 }
 
 function arrayUtxoBjsToEdge(bjsUtxos: Array<BjsUtxo>): Array<UtxoInfo> {
-  const utxos: Array<UtxoInfo> = [];
+  const utxos: Array<UtxoInfo> = []
   for (const bjsUtxo of bjsUtxos) {
-    utxos.push(utxoBjsToEdge(bjsUtxo));
+    utxos.push(utxoBjsToEdge(bjsUtxo))
   }
-  return utxos;
+  return utxos
 }
 
 function utxoBjsToEdge(bjsUtxo: BjsUtxo) {
@@ -77,8 +77,8 @@ function utxoBjsToEdge(bjsUtxo: BjsUtxo) {
     txid: bjsUtxo.txId,
     index: bjsUtxo.vout,
     value: bjsUtxo.value
-  };
-  return utxoObj;
+  }
+  return utxoObj
 }
 
 function utxoEdgeToBjs(utxo: UtxoInfo): BjsUtxo {
@@ -86,6 +86,6 @@ function utxoEdgeToBjs(utxo: UtxoInfo): BjsUtxo {
     txId: utxo.txid,
     vout: utxo.index,
     value: utxo.value
-  };
-  return bjsUtxo;
+  }
+  return bjsUtxo
 }
