@@ -4,145 +4,145 @@
  */
 
 export const InfoServerFeesSchema = {
-  type: 'object',
+  type: "object",
   properties: {
-    lowFee: { type: 'string' },
-    standardFeeLow: { type: 'string' },
-    standardFeeHigh: { type: 'string' },
-    standardFeeLowAmount: { type: 'string' },
-    standardFeeHighAmount: { type: 'string' },
-    highFee: { type: 'string' }
+    lowFee: { type: "string" },
+    standardFeeLow: { type: "string" },
+    standardFeeHigh: { type: "string" },
+    standardFeeLowAmount: { type: "string" },
+    standardFeeHighAmount: { type: "string" },
+    highFee: { type: "string" }
   },
   required: [
-    'lowFee',
-    'standardFeeLow',
-    'standardFeeHigh',
-    'standardFeeLowAmount',
-    'standardFeeHighAmount',
-    'highFee'
+    "lowFee",
+    "standardFeeLow",
+    "standardFeeHigh",
+    "standardFeeLowAmount",
+    "standardFeeHighAmount",
+    "highFee"
   ]
-}
+};
 
 export const EarnComFeesSchema = {
-  type: 'object',
+  type: "object",
   properties: {
     fees: {
-      type: 'array',
+      type: "array",
       items: {
-        type: 'object',
+        type: "object",
         properties: {
-          minFee: { type: 'number' },
-          maxFee: { type: 'number' },
-          dayCount: { type: 'number' },
-          memCount: { type: 'number' },
-          minDelay: { type: 'number' },
-          maxDelay: { type: 'number' },
-          minMinutes: { type: 'number' },
-          maxMinutes: { type: 'number' }
+          minFee: { type: "number" },
+          maxFee: { type: "number" },
+          dayCount: { type: "number" },
+          memCount: { type: "number" },
+          minDelay: { type: "number" },
+          maxDelay: { type: "number" },
+          minMinutes: { type: "number" },
+          maxMinutes: { type: "number" }
         },
         required: [
-          'minFee',
-          'maxFee',
-          'dayCount',
-          'memCount',
-          'minDelay',
-          'maxDelay',
-          'minMinutes',
-          'maxMinutes'
+          "minFee",
+          "maxFee",
+          "dayCount",
+          "memCount",
+          "minDelay",
+          "maxDelay",
+          "minMinutes",
+          "maxMinutes"
         ]
       }
     }
   },
-  required: ['fees']
-}
+  required: ["fees"]
+};
 
 export const electrumHeaderSchema = {
-  type: 'object',
+  type: "object",
   properties: {
-    block_height: { type: 'number' },
-    version: { type: 'number' },
-    prev_block_hash: { type: 'string' },
-    merkle_root: { type: 'string' },
-    timestamp: { type: 'number' },
-    bits: { type: 'number' },
-    nonce: { type: ['number', 'string'] }
+    block_height: { type: "number" },
+    version: { type: "number" },
+    prev_block_hash: { type: "string" },
+    merkle_root: { type: "string" },
+    timestamp: { type: "number" },
+    bits: { type: "number" },
+    nonce: { type: ["number", "string"] }
   },
-  required: ['block_height', 'timestamp']
-}
+  required: ["block_height", "timestamp"]
+};
 
 export const electrumSubscribeHeadersSchema = {
-  type: 'object',
+  type: "object",
   properties: {
-    method: { type: 'string' },
+    method: { type: "string" },
     params: {
-      type: 'array',
+      type: "array",
       items: electrumHeaderSchema,
       minItems: 1,
       maxItems: 1
     }
   },
-  required: ['method', 'params']
-}
+  required: ["method", "params"]
+};
 
 export const electrumSubscribeScriptHashSchema = {
-  type: 'object',
+  type: "object",
   properties: {
     method: {
-      const: 'blockchain.scripthash.subscribe'
+      const: "blockchain.scripthash.subscribe"
     },
     params: {
-      type: 'array',
-      items: { type: 'string' }
+      type: "array",
+      items: { type: "string" }
     }
   },
-  required: ['method', 'params']
-}
+  required: ["method", "params"]
+};
 
 export const electrumFetchHeaderSchema = {
-  type: 'object',
+  type: "object",
   properties: {
-    block_height: { type: 'number' },
-    version: { type: 'number' },
-    prev_block_hash: { type: 'string' },
-    merkle_root: { type: 'string' },
-    timestamp: { type: 'number' },
-    bits: { type: 'number' },
-    nonce: { type: ['number', 'string'] }
+    block_height: { type: "number" },
+    version: { type: "number" },
+    prev_block_hash: { type: "string" },
+    merkle_root: { type: "string" },
+    timestamp: { type: "number" },
+    bits: { type: "number" },
+    nonce: { type: ["number", "string"] }
   },
   required: [
-    'block_height',
-    'version',
-    'prev_block_hash',
-    'merkle_root',
-    'timestamp',
-    'bits',
-    'nonce'
+    "block_height",
+    "version",
+    "prev_block_hash",
+    "merkle_root",
+    "timestamp",
+    "bits",
+    "nonce"
   ]
-}
+};
 
 export const electrumFetchHistorySchema = {
-  type: 'array',
+  type: "array",
   items: {
-    type: 'object',
+    type: "object",
     properties: {
-      tx_hash: { type: 'string' },
-      height: { type: 'number' },
-      fee: { type: 'number' }
+      tx_hash: { type: "string" },
+      height: { type: "number" },
+      fee: { type: "number" }
     },
-    required: ['height', 'tx_hash']
+    required: ["height", "tx_hash"]
   }
-}
+};
 
 export const electrumFetchUtxoSchema = {
-  type: 'array',
+  type: "array",
   items: {
-    type: 'object',
+    type: "object",
     properties: {
-      tx_hash: { type: 'string' },
-      tx_pos: { type: 'number' },
-      height: { type: 'number' },
-      value: { type: 'number' }
+      tx_hash: { type: "string" },
+      tx_pos: { type: "number" },
+      height: { type: "number" },
+      value: { type: "number" }
     },
-    required: ['height', 'tx_hash', 'tx_pos', 'value']
+    required: ["height", "tx_hash", "tx_pos", "value"]
   }
-}
+};

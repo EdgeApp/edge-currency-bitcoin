@@ -2,15 +2,15 @@
 
 export const main = {
   bips: [84, 49],
-  forks: ['bitcoincash', 'bitcoingold', 'bitcoindiamond'],
+  forks: ["bitcoincash", "bitcoingold", "bitcoindiamond"],
   addressPrefix: {
     pubkeyhash: 0x00,
     scripthash: 0x05,
     witnesspubkeyhash: 0x06,
     witnessscripthash: 0x0a,
-    bech32: 'bc'
+    bech32: "bc"
   }
-}
+};
 
 export const testnet = {
   ...main,
@@ -19,8 +19,8 @@ export const testnet = {
     privkey: 0xef,
     xpubkey: 0x043587cf,
     xprivkey: 0x04358394,
-    xpubkey58: 'tpub',
-    xprivkey58: 'tprv',
+    xpubkey58: "tpub",
+    xprivkey58: "tprv",
     coinType: 1
   },
   addressPrefix: {
@@ -28,6 +28,6 @@ export const testnet = {
     scripthash: 0xc4,
     witnesspubkeyhash: 0x03,
     witnessscripthash: 0x28,
-    bech32: 'tb'
+    bech32: "tb"
   }
-}
+};

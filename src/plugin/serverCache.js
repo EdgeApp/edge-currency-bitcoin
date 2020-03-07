@@ -3,18 +3,18 @@
  * @flow
  */
 
-import { type ServerInfo } from '../../types/plugin.js'
+import { type ServerInfo } from "../../types/plugin.js";
 
-const RESPONSE_TIME_UNINITIALIZED = 999999999
-const MAX_SCORE = 500
-const MIN_SCORE = -100
+const RESPONSE_TIME_UNINITIALIZED = 999999999;
+const MAX_SCORE = 500;
+const MIN_SCORE = -100;
 
 export class ServerCache {
-  servers_: { [serverUrl: string]: ServerInfo }
-  lastScoreUpTime_: number
+  servers_: { [serverUrl: string]: ServerInfo };
+  lastScoreUpTime_: number;
 
-  constructor () {
-    this.servers_ = {}
+  constructor() {
+    this.servers_ = {};
   }
 
   /**
@@ -22,7 +22,7 @@ export class ServerCache {
    * @param oldServers: Map of ServerInfo objects by serverUrl. This should come from disk
    * @param newServers: Array<string> of new servers downloaded from the info server
    */
-  addServers (
+  addServers(
     oldServers: { [serverUrl: string]: ServerInfo },
     newServers: Array<string> = []
   ) {
@@ -36,8 +36,8 @@ export class ServerCache {
           serverScore: 0,
           responseTime: RESPONSE_TIME_UNINITIALIZED,
           numResponseTimes: 0
-        }
-        oldServers[newServer] = serverScoreObj
+        };
+        oldServers[newServer] = serverScoreObj;
       }
     }
 
@@ -46,156 +46,154 @@ export class ServerCache {
     // to reduce chances of using it.
     //
     for (const serverUrl in oldServers) {
-      const oldServer = oldServers[serverUrl]
-      let match = false
+      const oldServer = oldServers[serverUrl];
+      let match = false;
       for (const newServerUrl of newServers) {
         if (newServerUrl === serverUrl) {
-          match = true
-          break
+          match = true;
+          break;
         }
       }
 
-      let serverScore = oldServer.serverScore
+      let serverScore = oldServer.serverScore;
       if (!match) {
         if (serverScore >= 0) {
-          serverScore = -1
+          serverScore = -1;
         }
       }
 
-      oldServer.serverScore = serverScore
-      this.servers_[serverUrl] = oldServer
+      oldServer.serverScore = serverScore;
+      this.servers_[serverUrl] = oldServer;
     }
   }
 
-  clearServerCache () {
-    this.servers_ = {}
-    this.lastScoreUpTime_ = Date.now()
+  clearServerCache() {
+    this.servers_ = {};
+    this.lastScoreUpTime_ = Date.now();
   }
 
-  printServerCache () {
-    console.log('**** printServerCache ****')
-    const serverInfos: Array<ServerInfo> = []
+  printServerCache() {
+    console.log("**** printServerCache ****");
+    const serverInfos: Array<ServerInfo> = [];
     for (const s in this.servers_) {
-      serverInfos.push(this.servers_[s])
+      serverInfos.push(this.servers_[s]);
     }
     // Sort by score
     serverInfos.sort((a: ServerInfo, b: ServerInfo) => {
-      return b.serverScore - a.serverScore
-    })
+      return b.serverScore - a.serverScore;
+    });
 
     for (const s of serverInfos) {
-      const score = s.serverScore.toString()
-      const response = s.responseTime.toString()
-      const numResponse = s.numResponseTimes.toString()
-      const url = s.serverUrl
-      console.log(`ServerCache ${score} ${response}ms ${numResponse} ${url}`)
+      const score = s.serverScore.toString();
+      const response = s.responseTime.toString();
+      const numResponse = s.numResponseTimes.toString();
+      const url = s.serverUrl;
+      console.log(`ServerCache ${score} ${response}ms ${numResponse} ${url}`);
     }
-    console.log('**************************')
+    console.log("**************************");
   }
 
-  serverScoreUp (
+  serverScoreUp(
     serverUrl: string,
     responseTimeMilliseconds: number,
     changeScore: number = 1
   ) {
-    const serverInfo: ServerInfo = this.servers_[serverUrl]
+    const serverInfo: ServerInfo = this.servers_[serverUrl];
 
-    serverInfo.serverScore += changeScore
+    serverInfo.serverScore += changeScore;
     if (serverInfo.serverScore > MAX_SCORE) {
-      serverInfo.serverScore = MAX_SCORE
+      serverInfo.serverScore = MAX_SCORE;
     }
-    this.lastScoreUpTime_ = Date.now()
+    this.lastScoreUpTime_ = Date.now();
 
     if (responseTimeMilliseconds !== 0) {
-      this.setResponseTime(serverUrl, responseTimeMilliseconds)
+      this.setResponseTime(serverUrl, responseTimeMilliseconds);
     }
 
     console.log(
-      `${serverUrl}: score UP to ${
-        serverInfo.serverScore
-      } ${responseTimeMilliseconds}ms`
-    )
+      `${serverUrl}: score UP to ${serverInfo.serverScore} ${responseTimeMilliseconds}ms`
+    );
   }
 
-  serverScoreDown (serverUrl: string, changeScore: number = 10) {
-    const currentTime = Date.now()
+  serverScoreDown(serverUrl: string, changeScore: number = 10) {
+    const currentTime = Date.now();
     if (currentTime - this.lastScoreUpTime_ > 60000) {
       // It has been over 1 minute since we got an up-vote for any server.
       // Assume the network is down and don't penalize anyone for now
-      return
+      return;
     }
-    const serverInfo: ServerInfo = this.servers_[serverUrl]
-    serverInfo.serverScore -= changeScore
+    const serverInfo: ServerInfo = this.servers_[serverUrl];
+    serverInfo.serverScore -= changeScore;
     if (serverInfo.serverScore < MIN_SCORE) {
-      serverInfo.serverScore = MIN_SCORE
+      serverInfo.serverScore = MIN_SCORE;
     }
 
     if (serverInfo.numResponseTimes === 0) {
-      this.setResponseTime(serverUrl, 9999)
+      this.setResponseTime(serverUrl, 9999);
     }
 
-    console.log(`${serverUrl}: score DOWN to ${serverInfo.serverScore}`)
+    console.log(`${serverUrl}: score DOWN to ${serverInfo.serverScore}`);
   }
 
-  setResponseTime (serverUrl: string, responseTimeMilliseconds: number) {
-    const serverInfo: ServerInfo = this.servers_[serverUrl]
-    serverInfo.numResponseTimes++
+  setResponseTime(serverUrl: string, responseTimeMilliseconds: number) {
+    const serverInfo: ServerInfo = this.servers_[serverUrl];
+    serverInfo.numResponseTimes++;
 
-    const oldTime = serverInfo.responseTime
-    let newTime = 0
+    const oldTime = serverInfo.responseTime;
+    let newTime = 0;
     if (RESPONSE_TIME_UNINITIALIZED === oldTime) {
-      newTime = responseTimeMilliseconds
+      newTime = responseTimeMilliseconds;
     } else {
       // Every 10th setting of response time, decrease effect of prior values by 5x
       if (serverInfo.numResponseTimes % 10 === 0) {
-        newTime = (oldTime + responseTimeMilliseconds * 4) / 5
+        newTime = (oldTime + responseTimeMilliseconds * 4) / 5;
       } else {
-        newTime = (oldTime + responseTimeMilliseconds) / 2
+        newTime = (oldTime + responseTimeMilliseconds) / 2;
       }
     }
-    serverInfo.responseTime = newTime
+    serverInfo.responseTime = newTime;
   }
 
-  getServers (
+  getServers(
     numServersWanted: number,
     ignorePatterns?: Array<string> = []
   ): Array<string> {
     if (!this.servers_ || this.servers_.length === 0) {
-      return []
+      return [];
     }
 
-    let serverInfos: Array<ServerInfo> = []
-    let newServerInfos: Array<ServerInfo> = []
+    let serverInfos: Array<ServerInfo> = [];
+    let newServerInfos: Array<ServerInfo> = [];
     //
     // Find new servers and cache them away
     //
     for (const s in this.servers_) {
-      const server = this.servers_[s]
-      serverInfos.push(server)
+      const server = this.servers_[s];
+      serverInfos.push(server);
       if (
         server.responseTime === RESPONSE_TIME_UNINITIALIZED &&
         server.serverScore === 0
       ) {
-        newServerInfos.push(server)
+        newServerInfos.push(server);
       }
     }
     if (serverInfos.length === 0) {
-      return []
+      return [];
     }
     if (ignorePatterns.length) {
       const filter = (server: ServerInfo) => {
         for (const pattern of ignorePatterns) {
-          if (server.serverUrl.includes(pattern)) return false
+          if (server.serverUrl.includes(pattern)) return false;
         }
-        return true
-      }
-      serverInfos = serverInfos.filter(filter)
-      newServerInfos = newServerInfos.filter(filter)
+        return true;
+      };
+      serverInfos = serverInfos.filter(filter);
+      newServerInfos = newServerInfos.filter(filter);
     }
     // Sort by score
     serverInfos.sort((a: ServerInfo, b: ServerInfo) => {
-      return b.serverScore - a.serverScore
-    })
+      return b.serverScore - a.serverScore;
+    });
 
     //
     // Take the top 50% of servers that have
@@ -206,56 +204,56 @@ export class ServerCache {
     // Then sort those top servers by response time from lowest to highest
     //
 
-    const startServerInfo = serverInfos[0]
-    let numServerPass = 0
-    let serverEnd = 0
+    const startServerInfo = serverInfos[0];
+    let numServerPass = 0;
+    let serverEnd = 0;
     for (let i = 0; i < serverInfos.length; i++) {
-      const serverInfo = serverInfos[i]
+      const serverInfo = serverInfos[i];
       if (serverInfo.serverScore < startServerInfo.serverScore - 100) {
-        continue
+        continue;
       }
       if (serverInfo.serverScore < 5) {
-        continue
+        continue;
       }
       if (serverInfo.responseTime >= RESPONSE_TIME_UNINITIALIZED) {
-        continue
+        continue;
       }
-      numServerPass++
+      numServerPass++;
       if (numServerPass < numServersWanted) {
-        continue
+        continue;
       }
       if (numServerPass >= serverInfos.length / 2) {
-        continue
+        continue;
       }
-      serverEnd = i
+      serverEnd = i;
     }
 
-    let topServerInfos = serverInfos.slice(0, serverEnd)
+    let topServerInfos = serverInfos.slice(0, serverEnd);
     topServerInfos.sort((a: ServerInfo, b: ServerInfo) => {
-      return a.responseTime - b.responseTime
-    })
-    topServerInfos = topServerInfos.concat(serverInfos.slice(serverEnd))
+      return a.responseTime - b.responseTime;
+    });
+    topServerInfos = topServerInfos.concat(serverInfos.slice(serverEnd));
 
-    const servers = []
-    let numServers = 0
-    let numNewServers = 0
+    const servers = [];
+    let numServers = 0;
+    let numNewServers = 0;
     for (const serverInfo of topServerInfos) {
-      numServers++
-      servers.push(serverInfo.serverUrl)
+      numServers++;
+      servers.push(serverInfo.serverUrl);
       if (
         serverInfo.responseTime === RESPONSE_TIME_UNINITIALIZED &&
         serverInfo.serverScore === 0
       ) {
-        numNewServers++
+        numNewServers++;
       }
 
       if (numServers >= numServersWanted) {
-        break
+        break;
       }
 
       if (numServers >= numServersWanted / 2 && numNewServers === 0) {
         if (newServerInfos.length >= numServersWanted - numServers) {
-          break
+          break;
         }
       }
     }
@@ -264,14 +262,14 @@ export class ServerCache {
     // servers a try.
     if (numNewServers === 0) {
       for (const serverInfo of newServerInfos) {
-        servers.unshift(serverInfo.serverUrl)
-        numServers++
+        servers.unshift(serverInfo.serverUrl);
+        numServers++;
         if (numServers >= numServersWanted) {
-          break
+          break;
         }
       }
     }
 
-    return servers
+    return servers;
   }
 }

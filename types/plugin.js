@@ -1,9 +1,9 @@
 // @flow
 
-import { type EdgeCurrencyInfo, type EdgeIo } from 'edge-core-js/types'
-import { type Subscriber } from 'yaob'
+import { type EdgeCurrencyInfo, type EdgeIo } from "edge-core-js/types";
+import { type Subscriber } from "yaob";
 
-import { type EngineCurrencyInfo } from './engine.js'
+import { type EngineCurrencyInfo } from "./engine.js";
 
 export type EdgeSecp256k1 = {
   publicKeyCreate: (
@@ -19,7 +19,7 @@ export type EdgeSecp256k1 = {
     tweak: Uint8Array,
     compressed: boolean
   ) => Promise<Uint8Array>
-}
+};
 
 export type EdgePbkdf2 = {
   deriveAsync: (
@@ -29,7 +29,7 @@ export type EdgePbkdf2 = {
     len: number,
     algo: string
   ) => Promise<Uint8Array>
-}
+};
 
 /**
  * Wrapper for TCP sockets with event & method names based on WebSocket.
@@ -57,13 +57,13 @@ export type EdgeSocket = {
    * Shuts down the socket. No other methods are callable after this.
    */
   close(): Promise<mixed>
-}
+};
 
 export type EdgeSocketOptions = {
   host: string,
   port?: number,
-  type: 'tcp' | 'tls'
-}
+  type: "tcp" | "tls"
+};
 
 /**
  * The extra things we need to add to the EdgeIo object.
@@ -72,18 +72,18 @@ export type ExtraIo = {
   +secp256k1?: EdgeSecp256k1,
   +pbkdf2?: EdgePbkdf2,
   makeSocket(opts: EdgeSocketOptions): Promise<EdgeSocket>
-}
+};
 
 /**
  * The IO object this plugin uses internally.
  */
-export type PluginIo = EdgeIo & ExtraIo
+export type PluginIo = EdgeIo & ExtraIo;
 
 export type CurrencySettings = {
   customFeeSettings: Array<string>,
   electrumServers: Array<string>,
   disableFetchingServers?: boolean
-}
+};
 
 /**
  * This object holds the plugin-wide per-currency caches.
@@ -95,16 +95,16 @@ export type PluginStateSettings = {
   defaultSettings: CurrencySettings,
   currencyCode: string,
   pluginName: string
-}
+};
 
 export type ServerInfo = {
   serverUrl: string,
   serverScore: number,
   responseTime: number,
   numResponseTimes: number
-}
+};
 
 export type CurrencyPluginSettings = {
   currencyInfo: EdgeCurrencyInfo,
   engineInfo: EngineCurrencyInfo
-}
+};

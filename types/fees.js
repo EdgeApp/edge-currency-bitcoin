@@ -14,7 +14,7 @@ export type BitcoinFees = {
 
   // The last time the fees were updated
   timestamp: number
-}
+};
 
 export type EarnComFee = {
   minFee: number,
@@ -25,8 +25,8 @@ export type EarnComFee = {
   maxDelay: number,
   minMinutes: number,
   maxMinutes: number
-}
+};
 
 export type EarnComFees = {
   fees: Array<EarnComFee>
-}
+};

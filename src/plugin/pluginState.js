@@ -1,193 +1,191 @@
 // @flow
 
-import { type Disklet, navigateDisklet } from 'disklet'
-import { type EdgeIo } from 'edge-core-js/types'
+import { type Disklet, navigateDisklet } from "disklet";
+import { type EdgeIo } from "edge-core-js/types";
 
-import { type PluginStateSettings } from '../../types/plugin.js'
-import { type EngineState } from '../engine/engineState.js'
-import { cache } from '../utils/utils.js'
-import { ServerCache } from './serverCache.js'
+import { type PluginStateSettings } from "../../types/plugin.js";
+import { type EngineState } from "../engine/engineState.js";
+import { cache } from "../utils/utils.js";
+import { ServerCache } from "./serverCache.js";
 
 export class PluginState extends ServerCache {
   // On-disk header information:
-  height: { latest: number }
+  height: { latest: number };
   headers: {
     [height: string]: {
       timestamp: number
     }
-  }
+  };
 
   // True if somebody is currently fetching a header:
   headerStates: {
     [height: number]: { fetching: boolean }
-  }
+  };
 
   // On-disk server information:
-  servers: ServerCache
+  servers: ServerCache;
 
   /**
    * Begins notifying the engine of state changes. Used at connection time.
    */
-  addEngine (engineState: EngineState): void {
-    this.engines.push(engineState)
+  addEngine(engineState: EngineState): void {
+    this.engines.push(engineState);
   }
 
   /**
    * Stops notifying the engine of state changes. Used at disconnection time.
    */
-  removeEngine (engineState: EngineState): void {
-    this.engines = this.engines.filter(engine => engine !== engineState)
+  removeEngine(engineState: EngineState): void {
+    this.engines = this.engines.filter(engine => engine !== engineState);
   }
 
-  disconnect () {
+  disconnect() {
     return Promise.all([
       // $FlowFixMe
-      this.headers('stop'),
+      this.headers("stop"),
       // $FlowFixMe
-      this.height('stop'),
+      this.height("stop"),
       // $FlowFixMe
-      this.servers('stop')
-    ])
+      this.servers("stop")
+    ]);
   }
 
-  dumpData (): any {
+  dumpData(): any {
     return {
-      'pluginState.headers': this.headers,
-      'pluginState.servers': this.servers
-    }
+      "pluginState.headers": this.headers,
+      "pluginState.servers": this.servers
+    };
   }
 
   // ------------------------------------------------------------------------
   // Private stuff
   // ------------------------------------------------------------------------
-  io: EdgeIo
-  disableFetchingServers: boolean
-  defaultServers: Array<string>
-  electrumServersUrl: string
+  io: EdgeIo;
+  disableFetchingServers: boolean;
+  defaultServers: Array<string>;
+  electrumServersUrl: string;
 
-  engines: Array<EngineState>
-  disklet: Disklet
+  engines: Array<EngineState>;
+  disklet: Disklet;
 
-  headersDirty: boolean
-  pluginName: string
-  headersFile: string
-  serversFile: string
-  heightFile: string
+  headersDirty: boolean;
+  pluginName: string;
+  headersFile: string;
+  serversFile: string;
+  heightFile: string;
 
-  constructor ({
+  constructor({
     io,
     electrumServersUrl,
     defaultSettings,
     currencyCode,
     pluginName
   }: PluginStateSettings) {
-    super()
-    this.io = io
+    super();
+    this.io = io;
 
-    this.defaultServers = defaultSettings.electrumServers
-    this.disableFetchingServers = !!defaultSettings.disableFetchingServers
+    this.defaultServers = defaultSettings.electrumServers;
+    this.disableFetchingServers = !!defaultSettings.disableFetchingServers;
     // Rename the bitcoin currencyCode to get the new version of the server list
-    this.electrumServersUrl = electrumServersUrl
+    this.electrumServersUrl = electrumServersUrl;
 
-    this.engines = []
-    this.disklet = navigateDisklet(io.disklet, 'plugins/' + pluginName)
-    this.pluginName = pluginName
+    this.engines = [];
+    this.disklet = navigateDisklet(io.disklet, "plugins/" + pluginName);
+    this.pluginName = pluginName;
   }
 
-  async load () {
+  async load() {
     const { headers, height, servers } = await cache(
       this.disklet,
-      ['headers', 'servers', 'height'],
+      ["headers", "servers", "height"],
       this.pluginName
-    )
+    );
 
-    this.headers = headers
-    this.height = height
-    this.servers = servers
+    this.headers = headers;
+    this.height = height;
+    this.servers = servers;
 
-    if (!this.height.latest) this.height.latest = 0
+    if (!this.height.latest) this.height.latest = 0;
 
     // Fetch stratum servers in the background:
-    this.fetchStratumServers()
+    this.fetchStratumServers();
 
-    return this
+    return this;
   }
 
-  async clearCache () {
+  async clearCache() {
     // $FlowFixMe
-    await this.headers({})
+    await this.headers({});
     // $FlowFixMe
-    await this.height({})
-    this.clearServerCache()
+    await this.height({});
+    this.clearServerCache();
     // $FlowFixMe
-    await this.servers({})
-    await this.fetchStratumServers()
+    await this.servers({});
+    await this.fetchStratumServers();
   }
 
-  async fetchStratumServers (): Promise<void> {
-    const { io } = this
-    let serverList = this.defaultServers
+  async fetchStratumServers(): Promise<void> {
+    const { io } = this;
+    let serverList = this.defaultServers;
     if (!this.disableFetchingServers) {
       try {
-        console.log(`${this.pluginName} - GET ${this.electrumServersUrl}`)
-        const result = await io.fetch(this.electrumServersUrl)
+        console.log(`${this.pluginName} - GET ${this.electrumServersUrl}`);
+        const result = await io.fetch(this.electrumServersUrl);
         if (!result.ok) {
           console.log(
-            `${this.pluginName} - Fetching ${
-              this.electrumServersUrl
-            } failed with ${result.status}`
-          )
+            `${this.pluginName} - Fetching ${this.electrumServersUrl} failed with ${result.status}`
+          );
         } else {
-          serverList = await result.json()
+          serverList = await result.json();
         }
       } catch (e) {
-        console.log(e)
+        console.log(e);
       }
     }
     if (!Array.isArray(serverList)) {
-      serverList = this.defaultServers
+      serverList = this.defaultServers;
     }
-    this.addServers(this.servers, serverList)
+    this.addServers(this.servers, serverList);
 
     // Tell the engines about the new servers:
     for (const engine of this.engines) {
-      engine.refillServers()
+      engine.refillServers();
     }
   }
 
-  updateHeight (height: number) {
+  updateHeight(height: number) {
     if (this.height.latest < height) {
-      this.height.latest = height
+      this.height.latest = height;
 
       // Tell the engines about our new height:
       for (const engine of this.engines) {
-        engine.onHeightUpdated(height)
+        engine.onHeightUpdated(height);
       }
     }
   }
 
-  async updateServers (settings: Object) {
-    const { electrumServers, disableFetchingServers } = settings || {}
-    if (typeof disableFetchingServers === 'boolean') {
-      this.disableFetchingServers = disableFetchingServers
+  async updateServers(settings: Object) {
+    const { electrumServers, disableFetchingServers } = settings || {};
+    if (typeof disableFetchingServers === "boolean") {
+      this.disableFetchingServers = disableFetchingServers;
     }
     if (Array.isArray(electrumServers)) {
-      this.defaultServers = electrumServers
+      this.defaultServers = electrumServers;
     }
-    const engines = []
-    const disconnects = []
+    const engines = [];
+    const disconnects = [];
     for (const engine of this.engines) {
-      engines.push(engine)
-      engine.serverList = []
-      disconnects.push(engine.disconnect())
+      engines.push(engine);
+      engine.serverList = [];
+      disconnects.push(engine.disconnect());
     }
-    await Promise.all(disconnects)
-    this.clearServerCache()
+    await Promise.all(disconnects);
+    this.clearServerCache();
     // $FlowFixMe
-    await this.servers({})
-    await this.fetchStratumServers()
+    await this.servers({});
+    await this.fetchStratumServers();
     for (const engine of engines) {
-      engine.connect()
+      engine.connect();
     }
   }
 }

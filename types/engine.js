@@ -1,20 +1,20 @@
 // @flow
 
-import { type Disklet } from 'disklet'
+import { type Disklet } from "disklet";
 import {
   type EdgeCurrencyEngineOptions,
   type EdgeWalletInfo
-} from 'edge-core-js/types'
+} from "edge-core-js/types";
 
-import { type PluginState } from '../src/plugin/pluginState.js'
-import { type HDKeyPair } from '../src/utils/nidavellir'
+import { type PluginState } from "../src/plugin/pluginState.js";
+import { type HDKeyPair } from "../src/utils/nidavellir";
 import {
   type Output,
   type ScriptHashMap,
   type TxOptions,
   type Utxo
-} from './bcoinUtils.js'
-import { type PluginIo } from './plugin.js'
+} from "./bcoinUtils.js";
+import { type PluginIo } from "./plugin.js";
 
 export type EngineCurrencyInfo = {
   // Required Settings
@@ -38,7 +38,7 @@ export type EngineCurrencyInfo = {
   // Optional Settings
   forks?: Array<string>,
   feeInfoServer?: string
-}
+};
 
 export type CurrencyEngineSettings = {
   walletInfo: EdgeWalletInfo,
@@ -46,13 +46,13 @@ export type CurrencyEngineSettings = {
   pluginState: PluginState,
   options: EdgeCurrencyEngineOptions,
   io: PluginIo
-}
+};
 
 export type UtxoInfo = {
   txid: string, // tx_hash from Stratum
   index: number, // tx_pos from Stratum
   value: number // Satoshis fit in a number
-}
+};
 
 export type AddressInfo = {
   txids: Array<string>,
@@ -62,11 +62,11 @@ export type AddressInfo = {
   path: string, // TODO: Define the contents of this member.
   balance: number,
   redeemScript?: string
-}
+};
 
 export type AddressInfos = {
   [scriptHash: string]: AddressInfo
-}
+};
 
 export type AddressState = {
   subscribed: boolean,
@@ -81,7 +81,7 @@ export type AddressState = {
   fetchingUtxos: boolean,
   fetchingTxids: boolean,
   subscribing: boolean
-}
+};
 
 export interface EngineStateCallbacks {
   // Changes to an address UTXO set:
@@ -116,12 +116,12 @@ export type createTxOptions = {
   rate: number,
   maxFee: number,
   txOptions: TxOptions
-}
+};
 
 export type SignMessage = {
   message: string,
   address: string
-}
+};
 
 export type KeyManagerOptions = {
   account?: number,
@@ -136,4 +136,4 @@ export type KeyManagerOptions = {
   scriptHashesMap?: ScriptHashMap,
   txInfos?: { [txid: string]: any },
   bips?: Array<number>
-}
+};

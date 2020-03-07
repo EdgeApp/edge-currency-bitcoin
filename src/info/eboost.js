@@ -1,48 +1,48 @@
 // @flow
 
-import { type EdgeCurrencyInfo } from 'edge-core-js/types'
+import { type EdgeCurrencyInfo } from "edge-core-js/types";
 
-import { type EngineCurrencyInfo } from '../../types/engine.js'
+import { type EngineCurrencyInfo } from "../../types/engine.js";
 
 const engineInfo: $Shape<EngineCurrencyInfo> = {
   maxFee: 1000000,
   defaultFee: 50000,
 
   simpleFeeSettings: {
-    highFee: '300',
-    lowFee: '100',
-    standardFeeLow: '150',
-    standardFeeHigh: '200',
-    standardFeeLowAmount: '20000000',
-    standardFeeHighAmount: '981000000'
+    highFee: "300",
+    lowFee: "100",
+    standardFeeLow: "150",
+    standardFeeHigh: "200",
+    standardFeeLowAmount: "20000000",
+    standardFeeHighAmount: "981000000"
   }
-}
+};
 
 const currencyInfo: $Shape<EdgeCurrencyInfo> = {
   // Basic currency information:
-  currencyCode: 'EBST',
-  displayName: 'eBoost',
-  pluginName: 'eboost',
+  currencyCode: "EBST",
+  displayName: "eBoost",
+  pluginName: "eboost",
   denominations: [
-    { name: 'EBST', multiplier: '100000000', symbol: 'EBST' },
-    { name: 'mEBST', multiplier: '100000', symbol: 'mEBST' }
+    { name: "EBST", multiplier: "100000000", symbol: "EBST" },
+    { name: "mEBST", multiplier: "100000", symbol: "mEBST" }
   ],
   // Configuration options:
   defaultSettings: {
     electrumServers: [
-      'electrums://electrum1.eboost.fun:50002',
-      'electrums://electrum2.eboost.fun:50002',
-      'electrums://electrum3.eboost.fun:50002',
-      'electrum://electrum1.eboost.fun:50001',
-      'electrum://electrum2.eboost.fun:50001',
-      'electrum://electrum3.eboost.fun:50001'
+      "electrums://electrum1.eboost.fun:50002",
+      "electrums://electrum2.eboost.fun:50002",
+      "electrums://electrum3.eboost.fun:50002",
+      "electrum://electrum1.eboost.fun:50001",
+      "electrum://electrum2.eboost.fun:50001",
+      "electrum://electrum3.eboost.fun:50001"
     ],
     disableFetchingServers: true
   },
   // Explorers:
-  addressExplorer: 'https://www.blockexperts.com/ebst/address/%s',
-  blockExplorer: 'https://www.blockexperts.com/ebst/hash/%s',
-  transactionExplorer: 'https://www.blockexperts.com/ebst/tx/%s'
-}
+  addressExplorer: "https://www.blockexperts.com/ebst/address/%s",
+  blockExplorer: "https://www.blockexperts.com/ebst/hash/%s",
+  transactionExplorer: "https://www.blockexperts.com/ebst/tx/%s"
+};
 
-export const eboost = { engineInfo, currencyInfo }
+export const eboost = { engineInfo, currencyInfo };

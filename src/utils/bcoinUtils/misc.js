@@ -1,48 +1,48 @@
 // @flow
 
-import bcoin from 'bcoin'
-import { type EdgeFreshAddress } from 'edge-core-js'
+import bcoin from "bcoin";
+import { type EdgeFreshAddress } from "edge-core-js";
 
-import { type EdgeAddress } from '../../../types/bcoinUtils.js'
-import { Core } from '../nidavellir'
+import { type EdgeAddress } from "../../../types/bcoinUtils.js";
+import { Core } from "../nidavellir";
 
-const { Lock } = bcoin.utils
+const { Lock } = bcoin.utils;
 
 export const scriptTypesToEdgeTypes = (
   addresses: EdgeAddress
 ): EdgeFreshAddress => ({
-  publicAddress: addresses['P2WPKH-P2SH'] || addresses['P2PKH'],
-  segwitAddress: addresses['P2WPKH']
-})
+  publicAddress: addresses["P2WPKH-P2SH"] || addresses["P2PKH"],
+  segwitAddress: addresses["P2WPKH"]
+});
 
 export const formatToBips = (
   network: string,
   format?: string
 ): Array<number> => {
-  const { bips } = Core.Networks[network]
+  const { bips } = Core.Networks[network];
   if (!format) {
-    if (bips.includes(49)) return [49]
-    return [44]
+    if (bips.includes(49)) return [49];
+    return [44];
   }
-  const bip = parseInt(format.replace('bip', ''))
+  const bip = parseInt(format.replace("bip", ""));
 
   if (!bips.includes(bip)) {
-    throw new Error('InvalidWalletType')
+    throw new Error("InvalidWalletType");
   }
-  return [bip]
-}
+  return [bip];
+};
 
 export const verifyUriProtocol = (
   protocol: string | null,
   network: string,
   pluginName: string
 ) => {
-  const { addressPrefix } = Core.Networks[network]
+  const { addressPrefix } = Core.Networks[network];
   if (protocol) {
-    const prot = protocol.replace(':', '').toLowerCase()
-    return prot === pluginName || prot === addressPrefix.cashAddress
+    const prot = protocol.replace(":", "").toLowerCase();
+    return prot === pluginName || prot === addressPrefix.cashAddress;
   }
-  return true
-}
+  return true;
+};
 
-export const getLock = () => new Lock()
+export const getLock = () => new Lock();

@@ -1,17 +1,17 @@
 // @flow
 
-export type Alphabet = [string, string] | string
+export type Alphabet = [string, string] | string;
 export type BaseDecoder = {
   encode: (hexStr: string) => string,
   decode: (baseStr: string) => string
-}
-export type BaseCheck = BaseDecoder & { check: BaseDecoder }
-export type Bases = { [baseName: string]: BaseCheck }
+};
+export type BaseCheck = BaseDecoder & { check: BaseDecoder };
+export type Bases = { [baseName: string]: BaseCheck };
 
 export type Encoder<T> = {
   input: (data: T) => any,
   output: (rest: any) => T
-}
+};
 
 export type FunctionFormatterOptions = {
   numParams?: number,
@@ -21,9 +21,9 @@ export type FunctionFormatterOptions = {
   // If empty array, hex the result.
   // If not empty array, assume the result is an object and hex the values for the array keys
   results?: Array<string> | null
-}
+};
 
-export type HashFunction<T> = (payload: T) => T
+export type HashFunction<T> = (payload: T) => T;
 
 export type Hashes<T> = {
   sha512Hmac: HashFunction<T>,
@@ -34,7 +34,7 @@ export type Hashes<T> = {
   hash160: HashFunction<T>,
   hmac: (HashFunction<T>, key: T) => any,
   formatEncoder?: Encoder<T>
-}
+};
 
 export type Secp256k1<T> = {
   privateKeyTweakAdd: (privateKey: T, tweak: T) => Promise<Buffer>,
@@ -63,12 +63,12 @@ export type Secp256k1<T> = {
   verify: (message: T, signature: T, publicKey: T) => Promise<boolean>,
 
   formatEncoder?: Encoder<T>
-}
+};
 
-export type SaveFunc = (obj: Object) => void | Promise<void>
-export type LoadFunc = () => Object | Promise<Object>
+export type SaveFunc = (obj: Object) => void | Promise<void>;
+export type LoadFunc = () => Object | Promise<Object>;
 export type PersistStatus = {
   loaded?: boolean,
   changed?: boolean,
   saving?: TimeoutID | null
-}
+};

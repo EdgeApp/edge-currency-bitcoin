@@ -7,8 +7,8 @@ export const main = {
     privkey: 0xb0,
     xpubkey: 0x0488b21e,
     xprivkey: 0x0488ade4,
-    xpubkey58: 'xpub',
-    xprivkey58: 'xprv',
+    xpubkey58: "xpub",
+    xprivkey58: "xprv",
     coinType: 2
   },
   addressPrefix: {
@@ -16,9 +16,9 @@ export const main = {
     scripthash: 0x0a,
     witnesspubkeyhash: 0x06,
     witnessscripthash: 0x0a,
-    bech32: 'ebst'
+    bech32: "ebst"
   },
   legacyAddressPrefix: {
     scripthash: 0x05
   }
-}
+};
