@@ -3,7 +3,7 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import { fromWif } from '../../src/core/keyPair.js'
+import { fromWif } from '../../../../src/utils/nidavellir/core/keyPair.js'
 import fixtures from './fixtures.json'
 
 const KeyPairFixtures = fixtures.keyPair

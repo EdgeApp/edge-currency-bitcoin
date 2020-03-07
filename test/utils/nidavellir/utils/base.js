@@ -3,8 +3,8 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import { base } from '../../src/utils/base.js'
-import { sha512Hmac } from '../../src/utils/hash.js'
+import { base } from '../../../../src/utils/nidavellir/utils/base.js'
+import { sha512Hmac } from '../../../../src/utils/nidavellir/utils/hash.js'
 import fixtures from './fixtures.json'
 
 const key =

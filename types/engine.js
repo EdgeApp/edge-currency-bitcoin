@@ -1,11 +1,20 @@
 // @flow
 
-import { type HDKeyPair } from 'nidavellir'
-import { type PluginIo } from './plugin.js'
-import { type PluginState } from '../src/plugin/pluginState.js'
 import { type Disklet } from 'disklet'
-import { type ScriptHashMap, type Output, type TxOptions, type Utxo } from './bcoinUtils.js'
-import { type EdgeCurrencyEngineOptions, type EdgeWalletInfo } from 'edge-core-js/types'
+import {
+  type EdgeCurrencyEngineOptions,
+  type EdgeWalletInfo
+} from 'edge-core-js/types'
+
+import { type PluginState } from '../src/plugin/pluginState.js'
+import { type HDKeyPair } from '../src/utils/nidavellir'
+import {
+  type Output,
+  type ScriptHashMap,
+  type TxOptions,
+  type Utxo
+} from './bcoinUtils.js'
+import { type PluginIo } from './plugin.js'
 
 export type EngineCurrencyInfo = {
   // Required Settings

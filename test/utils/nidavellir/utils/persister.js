@@ -3,7 +3,7 @@
 import { assert } from 'chai'
 import { after, before, describe, it } from 'mocha'
 
-import { persist } from '../../src/utils/persister.js'
+import { persist } from '../../../../src/utils/nidavellir/utils/persister.js'
 import fixtures from './fixtures.json'
 
 const createSave = (expected: any, delay: number, cbs: any) => {

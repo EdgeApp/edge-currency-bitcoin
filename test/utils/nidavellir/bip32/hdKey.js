@@ -3,7 +3,7 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import * as HDKey from '../../src/bip32/hdKey.js'
+import * as HDKey from '../../../../src/utils/nidavellir/bip32/hdKey.js'
 import fixtures from './fixtures.json'
 
 const HDKeyFixtures = fixtures.hdKey

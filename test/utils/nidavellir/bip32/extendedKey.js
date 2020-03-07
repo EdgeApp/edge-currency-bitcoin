@@ -3,7 +3,7 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import * as ExtendedKey from '../../src/bip32/extendedKey.js'
+import * as ExtendedKey from '../../../../src/utils/nidavellir/bip32/extendedKey.js'
 import fixtures from './fixtures.json'
 
 const XKeyFixtures = fixtures.extendedKey

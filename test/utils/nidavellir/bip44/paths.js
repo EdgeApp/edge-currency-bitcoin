@@ -3,8 +3,8 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import * as HDKey from '../../src/bip32/hdKey.js'
-import { createPaths } from '../../src/bip44/paths.js'
+import * as HDKey from '../../../../src/utils/nidavellir/bip32/hdKey.js'
+import { createPaths } from '../../../../src/utils/nidavellir/bip44/paths.js'
 import fixtures from './fixtures.json'
 
 const network = 'main'

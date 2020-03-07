@@ -3,7 +3,7 @@
 import { assert } from 'chai'
 import { describe, it } from 'mocha'
 
-import * as Derive from '../../src/bip32/derive.js'
+import * as Derive from '../../../../src/utils/nidavellir/bip32/derive.js'
 import fixtures from './fixtures.json'
 
 const deriveFixtures = fixtures.derive

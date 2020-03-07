@@ -2,7 +2,6 @@
 
 import { type Disklet } from 'disklet'
 import EventEmitter from 'eventemitter3'
-import { type HDKeyPair } from 'nidavellir'
 import { parse } from 'uri-js'
 
 import {
@@ -31,6 +30,7 @@ import {
   subscribeScriptHash
 } from '../stratum/stratumMessages.js'
 import { parseTransaction } from '../utils/bcoinUtils/tx.js'
+import { type HDKeyPair } from '../utils/nidavellir'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 import { cache } from '../utils/utils.js'
 
