@@ -1,0 +1,145 @@
+// @flow
+
+import {
+  type HDPathSetting,
+  type NetworkInfo,
+  type NetworkInfos,
+  type NewNetworks,
+  type PartialInfo
+} from '../../types/core.js'
+import { main } from '../networks/baseInfo.js'
+import * as Networks from '../networks/networks.js'
+
+export const createInfo = (info: PartialInfo): NetworkInfo => {
+  const newNetwork: NetworkInfo = ({}: any)
+
+  for (const set in main) {
+    const mainSet = main[set]
+    const infoSet = info[set]
+
+    if (Array.isArray(mainSet)) {
+      newNetwork[set] = (infoSet || [])
+        .concat(mainSet)
+        .filter((v, i, s) => s.indexOf(v) === i)
+    } else if (typeof mainSet === 'object') {
+      newNetwork[set] = { ...mainSet, ...(infoSet || {}) }
+    } else if (typeof infoSet !== 'undefined') {
+      newNetwork[set] = infoSet
+    } else newNetwork[set] = mainSet
+  }
+
+  return newNetwork
+}
+
+export const createNetworks = (newInfos: NewNetworks) => {
+  const networks = { main }
+  for (const network in newInfos) {
+    const infos = newInfos[network]
+    for (const networkType in infos) {
+      const partialInfo = infos[networkType]
+      let name = network
+      if (networkType !== 'main') name += networkType.toLowerCase()
+      networks[name] = createInfo(partialInfo)
+    }
+  }
+  return networks
+}
+
+export const networks: NetworkInfos = createNetworks(Networks)
+
+export const addNetworks = (newInfos: NewNetworks) =>
+  Object.assign(networks, createNetworks(newInfos))
+
+export const getExtendedKeyVersion = (
+  hdKey: { privateKey?: any, publicKey?: any },
+  network: string = 'main'
+) => {
+  const { keyPrefix = {} } = networks[network]
+  if (hdKey.privateKey) return keyPrefix.xprivkey
+  if (hdKey.publicKey) return keyPrefix.xpubkey
+  throw new Error("Can't get version without a key")
+}
+
+export const getNetworkForVersion = (version: number): string => {
+  for (const network in networks) {
+    try {
+      checkVersion(version, network)
+      return network
+    } catch (e) {}
+  }
+  throw new Error('Unknown network version')
+}
+
+export const checkVersion = (version: number, network: string = 'main') => {
+  const { keyPrefix = {} } = networks[network]
+  if (version) {
+    for (const prefix in keyPrefix) {
+      if (keyPrefix[prefix] === version) return version
+    }
+    throw new Error('Wrong key prefix for network')
+  }
+}
+
+export const getPrefixType = (prefixNum: number, network: string = 'main') => {
+  const getPrefix = addressPrefix => {
+    for (const prefixType in addressPrefix) {
+      if (addressPrefix[prefixType] === prefixNum) {
+        return prefixType
+      }
+    }
+    return null
+  }
+  const { addressPrefix, legacyAddressPrefix } = networks[network]
+  const type = getPrefix(addressPrefix) || getPrefix(legacyAddressPrefix)
+
+  if (!type) {
+    throw new Error(`Unknown prefix ${prefixNum} for network ${network}`)
+  }
+  return type
+}
+
+export const getPrefixNum = (type: string, network: string = 'main') => {
+  const { addressPrefix, legacyAddressPrefix } = networks[network]
+  const cashAddress = addressPrefix.cashAddress
+  return !cashAddress ? addressPrefix[type] : legacyAddressPrefix[type]
+}
+
+export const getHDSetting = (network: string, value: any): HDPathSetting => {
+  const { supportedHDPaths } = networks[network]
+  console.log('getHDSetting network:', network,' supportedHDPaths:',supportedHDPaths)
+  for (const hdSetting of supportedHDPaths) {
+    for (const key in hdSetting) {
+      console.log('getHDSetting purpose:', hdSetting.purpose,' key:', key)
+      const setting = hdSetting[key]
+      // checking if address that has legacy
+      if (Array.isArray(setting)) {
+        return setting.find(
+          ({ prefix, stringPrefix }) =>
+            prefix === value || stringPrefix === value
+        )
+      }
+
+      // checking if xpub, xpriv, or address
+      if (
+        typeof setting === 'object' &&
+        (setting.prefix === value || setting.stringPrefix === value)
+      ) {
+        return hdSetting
+      }
+
+      // if scriptType or purpose
+      if (setting === value) return hdSetting
+    }
+  }
+  throw new Error(`Wrong value: ${value} for network: ${network}`)
+}
+
+export const getScriptType = (prefixNum: number, network: string = 'main') => {
+  const setting = getHDSetting(network, prefixNum)
+  if (!setting) {
+    throw new Error(
+      `Unknown address prefix ${prefixNum} for network ${network}`
+    )
+  }
+  return setting.scriptType
+}

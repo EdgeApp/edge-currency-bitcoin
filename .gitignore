@@ -1,15 +1,8 @@
-# Settings
-**/.idea/
-**/.vscode/settings.json
-**/.DS_Store
-**/.favorites.json
-# Build
-**/.nyc_output
-**/build
-**/coverage
-**/lib
-**/libtest
-**/node_modules
-**/lerna-debug.log
-**/npm-debug.log
-**/yarn-error.log
+.idea/
+.vscode/settings.json
+.nyc_output
+/coverage
+/lib
+/libtest
+/node_modules
+.favorites.json
