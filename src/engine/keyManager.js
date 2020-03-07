@@ -1,7 +1,6 @@
 // @flow
 
 import EventEmitter from 'eventemitter3'
-import { HD, type HDKeyPair, type HDPath, Utils } from '../utils/nidavellir'
 
 import {
   type Address as AddressObj,
@@ -21,6 +20,7 @@ import * as Address from '../utils/bcoinUtils/address.js'
 import * as Key from '../utils/bcoinUtils/key.js'
 import * as Misc from '../utils/bcoinUtils/misc.js'
 import * as Tx from '../utils/bcoinUtils/tx.js'
+import { HD, type HDKeyPair, type HDPath, Utils } from '../utils/nidavellir'
 
 const { ExtendedKey, HDKey } = HD
 

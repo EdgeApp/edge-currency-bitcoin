@@ -1,5 +1,7 @@
 // @flow
 
+import { HARDENED } from '../bip32/derive.js'
+import * as ExtendedKey from '../bip32/extendedKey.js'
 import {
   type ExtendedKeyPair,
   type HDKeyPair,
@@ -7,8 +9,6 @@ import {
   type Index,
   type Path
 } from '../types/bip32.js'
-import { HARDENED } from '../bip32/derive.js'
-import * as ExtendedKey from '../bip32/extendedKey.js'
 
 export const fromSeed = async (
   seed: string,

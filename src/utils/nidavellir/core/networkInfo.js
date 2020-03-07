@@ -1,13 +1,13 @@
 // @flow
 
+import { main } from '../networks/baseInfo.js'
+import * as Networks from '../networks/networks.js'
 import {
   type NetworkInfo,
   type NetworkInfos,
   type NewNetworks,
   type PartialInfo
 } from '../types/core.js'
-import { main } from '../networks/baseInfo.js'
-import * as Networks from '../networks/networks.js'
 
 export const createInfo = (info: PartialInfo): NetworkInfo => {
   const newNetwork: NetworkInfo = ({}: any)

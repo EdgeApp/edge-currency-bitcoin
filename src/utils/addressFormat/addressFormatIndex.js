@@ -1,9 +1,9 @@
 // @flow
 
 import bcoin from 'bcoin'
-import { type AddressPrefix, Core } from '../nidavellir'
 
 import { fromBaseString, toBaseString } from '../bcoinUtils/address.js'
+import { type AddressPrefix, Core } from '../nidavellir'
 import { cashAddressToHash, toCashAddress } from './cashAddress'
 
 const networks = Core.Networks
@@ -27,7 +27,9 @@ export const changeFormat = (
 export const toBitcoinFormat = (address: string, network: string): string => {
   const { addressPrefix, serializers } = networks[network]
   const bitcoinSerializers = networks['bitcoin'].serializers
-  address = bitcoinSerializers.address.encode(serializers.address.decode(address))
+  address = bitcoinSerializers.address.encode(
+    serializers.address.decode(address)
+  )
   if (!isLegacy(address, network) && addressPrefix.cashAddress) {
     address = cashAddressToLegacy(address, network)
   }

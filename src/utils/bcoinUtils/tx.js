@@ -1,7 +1,6 @@
 // @flow
 
 import bcoin from 'bcoin'
-import { Core, Utils } from '../nidavellir'
 
 import {
   type CreateTxOptions,
@@ -12,6 +11,7 @@ import {
   toBitcoinFormat,
   toNewFormat
 } from '../addressFormat/addressFormatIndex.js'
+import { Core, Utils } from '../nidavellir'
 import { reverseHexString } from '../utils.js'
 import { fromBaseString, toScript } from './address.js'
 

@@ -1,11 +1,5 @@
 // @flow
 
-import {
-  type DerivedKey,
-  type ExtendedKeyPair,
-  type ExtendedMasterKeys
-} from '../types/bip32.js'
-import { type HexPair } from '../types/core.js'
 import * as KeyPair from '../core/keyPair.js'
 import {
   checkVersion,
@@ -13,6 +7,12 @@ import {
   getNetworkForVersion,
   networks
 } from '../core/networkInfo.js'
+import {
+  type DerivedKey,
+  type ExtendedKeyPair,
+  type ExtendedMasterKeys
+} from '../types/bip32.js'
+import { type HexPair } from '../types/core.js'
 import { hash160 } from '../utils/hash.js'
 import { publicKeyCreate } from '../utils/secp256k1.js'
 import { deriveKeyPair, deriveMasterKeyPair } from './derive.js'

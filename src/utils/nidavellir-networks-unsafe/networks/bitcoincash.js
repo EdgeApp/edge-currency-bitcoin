@@ -1,6 +1,6 @@
 import bcoin from 'bcoin'
 
-const toVarByteString = (hex) => {
+const toVarByteString = hex => {
   const len = hex.length / 2
   const str = len.toString(16)
   const hexLen = str.length % 2 === 0 ? str : `0${str}`
@@ -36,9 +36,9 @@ const cds = (sig, msg, pubKey, hdKey) => {
   const cdsSuffix = `${toVarByteString(
     hdKey ? hdKey.publicKey.toString('hex') : ''
   )}${OP_CHECKSIG}`
-  const cdsPrefix = `0x${toVarByteString(sig)}${toVarByteString(msg)}${toVarByteString(
-    pubKey
-  )}`
+  const cdsPrefix = `0x${toVarByteString(sig)}${toVarByteString(
+    msg
+  )}${toVarByteString(pubKey)}`
   return [cdsPrefix, cdsSuffix]
 }
 
@@ -59,11 +59,11 @@ export const main = {
     forcedMinVersion: 1
   },
   scriptTemplates: {
-    replayProtection: (hdKey) =>
+    replayProtection: hdKey =>
       cds(SIGNATURE, MESSAGE, PUBKEY, hdKey).join(OP_CHECKDATASIGVERIFY),
-    checkdatasig: (hdKey) => (sig = '', msg = '', pubKey = '') =>
+    checkdatasig: hdKey => (sig = '', msg = '', pubKey = '') =>
       cds(sig, msg, pubKey, hdKey).join(OP_CHECKDATASIG),
-    checkdatasigverify: (hdKey) => (sig = '', msg = '', pubKey = '') =>
+    checkdatasigverify: hdKey => (sig = '', msg = '', pubKey = '') =>
       cds(sig, msg, pubKey, hdKey).join(OP_CHECKDATASIGVERIFY)
   }
 }

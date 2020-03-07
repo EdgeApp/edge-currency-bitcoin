@@ -43,4 +43,5 @@ export type HDPath = {
 export type HDKeyPair = {
   hardened: boolean,
   children: { [index: Index]: HDKeyPair }
-} & HDPath & ExtendedKey<string>
+} & HDPath &
+  ExtendedKey<string>

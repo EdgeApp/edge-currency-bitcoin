@@ -6,7 +6,6 @@ import {
   type EdgeEncodeUri,
   type EdgeParsedUri
 } from 'edge-core-js/types'
-import { Core } from '../utils/nidavellir'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
 
@@ -18,6 +17,7 @@ import {
   toNewFormat
 } from '../utils/addressFormat/addressFormatIndex.js'
 import { verifyUriProtocol } from '../utils/bcoinUtils/misc.js'
+import { Core } from '../utils/nidavellir'
 
 const parsePathname = (pathname: string, network: string) => {
   try {

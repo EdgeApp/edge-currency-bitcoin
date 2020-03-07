@@ -3,9 +3,9 @@
 import { Buffer } from 'buffer'
 
 import bcoin from 'bcoin'
-import { type HexPair, type ScriptType, Utils } from '../nidavellir'
 
 import { type ScriptTypeSettings } from '../../../types/bcoinUtils.js'
+import { type HexPair, type ScriptType, Utils } from '../nidavellir'
 
 const { hash160, sha256 } = Utils.Hash
 const { fromString, fromProgram } = bcoin.script

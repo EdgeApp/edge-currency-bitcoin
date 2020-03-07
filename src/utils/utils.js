@@ -5,24 +5,25 @@
 
 import { type Disklet } from 'disklet'
 import { validate } from 'jsonschema'
+
 import { Utils } from './nidavellir'
 
 const SAVE_DATASTORE_MILLISECONDS = 10000
 
 export const envSettings = {
-  'fileVersion': 1,
-  'fileNames': {
-    'txs': 'txs.json',
-    'txHeights': 'txHeights.json',
-    'addresses': 'addresses.json',
-    'keys': 'hdKey.json',
-    'headers': 'headers.json',
-    'servers': 'servers.json',
-    'height': 'height.json'
+  fileVersion: 1,
+  fileNames: {
+    txs: 'txs.json',
+    txHeights: 'txHeights.json',
+    addresses: 'addresses.json',
+    keys: 'hdKey.json',
+    headers: 'headers.json',
+    servers: 'servers.json',
+    height: 'height.json'
   },
-  'gapLimit': 10,
-  'imageServer': 'https://developer.airbitz.co/content',
-  'infoServer': 'https://info1.edgesecure.co:8444/v1'
+  gapLimit: 10,
+  imageServer: 'https://developer.airbitz.co/content',
+  infoServer: 'https://info1.edgesecure.co:8444/v1'
 }
 
 export const base64regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/

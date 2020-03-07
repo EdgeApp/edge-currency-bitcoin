@@ -15,7 +15,6 @@ import {
   type EdgeParsedUri,
   type EdgeWalletInfo
 } from 'edge-core-js/types'
-import { Core, HD } from '../utils/nidavellir'
 
 import {
   type CurrencyPluginSettings,
@@ -25,6 +24,7 @@ import { CurrencyEngine } from '../engine/currencyEngine.js'
 import { allInfo } from '../info/all.js'
 import { patchCrypto } from '../utils/bcoinExtender/patchCrypto.js'
 import { keysFromEntropy, seedToHex } from '../utils/bcoinUtils/key.js'
+import { Core, HD } from '../utils/nidavellir'
 import { PluginState } from './pluginState.js'
 import { encodeUri, parseUri } from './uri.js'
 

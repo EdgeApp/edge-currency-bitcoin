@@ -1,6 +1,6 @@
+import bcoin from 'bcoin'
 // @flow
 import bs58sc from 'bs58smartcheck'
-import bcoin from 'bcoin'
 
 const base58 = {
   decode: (address: string) => bs58sc.decode(address).toString('hex'),
@@ -29,7 +29,7 @@ export const main = {
   serializers: {
     address: base58,
     wif: base58,
-    txHash: (rawTx) => sha256(rawTx).toString('hex'),
+    txHash: rawTx => sha256(rawTx).toString('hex'),
     signatureHash: sha256
   }
 }

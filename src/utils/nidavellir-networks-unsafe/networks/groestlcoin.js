@@ -47,7 +47,7 @@ export const main = {
   serializers: {
     address: base58,
     wif: base58,
-    txHash: (rawTx) => sha256(rawTx).toString('hex'),
+    txHash: rawTx => sha256(rawTx).toString('hex'),
     signatureHash: sha256
   }
 }
