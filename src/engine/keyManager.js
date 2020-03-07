@@ -1,7 +1,7 @@
 // @flow
 
 import EventEmitter from 'eventemitter3'
-import { HD, type HDKeyPair, type HDPath, Utils } from 'nidavellir'
+import { HD, type HDKeyPair, type HDPath, Utils } from '../utils/nidavellir'
 
 import {
   type Address as AddressObj,

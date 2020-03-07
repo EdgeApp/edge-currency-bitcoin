@@ -3,7 +3,7 @@
 import { Buffer } from 'buffer'
 
 import bcoin from 'bcoin'
-import { Core, type HexPair, type ScriptType, Utils } from 'nidavellir'
+import { Core, type HexPair, type ScriptType, Utils } from '../nidavellir'
 
 import { type Address, type RawAddress } from '../../../types/bcoinUtils.js'
 import { dirtyAddress } from '../addressFormat/addressFormatIndex.js'

@@ -4,7 +4,7 @@ import {
   type LoadFunc,
   type PersistStatus,
   type SaveFunc
-} from '../../types/utils.js'
+} from '../types/utils.js'
 
 export const persist = (
   save: SaveFunc,

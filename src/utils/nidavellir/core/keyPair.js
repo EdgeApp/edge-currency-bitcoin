@@ -1,6 +1,6 @@
 // @flow
 
-import { type HexPair } from '../../types/core.js'
+import { type HexPair } from '../types/core.js'
 import {
   sign as Sign,
   verify as Verify,

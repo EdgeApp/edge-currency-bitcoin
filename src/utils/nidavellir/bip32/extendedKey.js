@@ -4,8 +4,8 @@ import {
   type DerivedKey,
   type ExtendedKeyPair,
   type ExtendedMasterKeys
-} from '../../types/bip32.js'
-import { type HexPair } from '../../types/core.js'
+} from '../types/bip32.js'
+import { type HexPair } from '../types/core.js'
 import * as KeyPair from '../core/keyPair.js'
 import {
   checkVersion,

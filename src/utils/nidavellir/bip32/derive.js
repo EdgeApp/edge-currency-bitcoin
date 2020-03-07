@@ -5,8 +5,8 @@ import {
   type DerivedMasterKeys,
   type DerivedPoint,
   type KeyHmac
-} from '../../types/bip32.js'
-import { type HexPair } from '../../types/core.js'
+} from '../types/bip32.js'
+import { type HexPair } from '../types/core.js'
 import { sha512Hmac } from '../utils/hash.js'
 import * as Secp256k1 from '../utils/secp256k1'
 

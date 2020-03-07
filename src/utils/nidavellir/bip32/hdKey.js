@@ -6,7 +6,7 @@ import {
   type HDPath,
   type Index,
   type Path
-} from '../../types/bip32.js'
+} from '../types/bip32.js'
 import { HARDENED } from '../bip32/derive.js'
 import * as ExtendedKey from '../bip32/extendedKey.js'
 

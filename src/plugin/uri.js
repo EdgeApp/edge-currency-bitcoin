@@ -6,7 +6,7 @@ import {
   type EdgeEncodeUri,
   type EdgeParsedUri
 } from 'edge-core-js/types'
-import { Core } from 'nidavellir'
+import { Core } from '../utils/nidavellir'
 import { serialize } from 'uri-js'
 import parse from 'url-parse'
 

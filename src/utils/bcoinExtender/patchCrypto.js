@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer'
 
 import bcoin from 'bcoin'
-import { Utils } from 'nidavellir'
+import { Utils } from '../nidavellir'
 import { nfkd } from 'unorm'
 
 const patched = {}

@@ -15,7 +15,7 @@ import {
   type EdgeParsedUri,
   type EdgeWalletInfo
 } from 'edge-core-js/types'
-import { Core, HD } from 'nidavellir'
+import { Core, HD } from '../utils/nidavellir'
 
 import {
   type CurrencyPluginSettings,

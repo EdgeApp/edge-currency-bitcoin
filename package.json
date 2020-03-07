@@ -50,7 +50,6 @@
     ]
   },
   "dependencies": {
-    "@nidavellir/networks-unsafe": "^4.1.0-alpha.3",
     "base-x": "^3.0.5",
     "bcoin": "git+https://github.com/Airbitz/bcoin.git#primitiveBuild",
     "biggystring": "3.0.2",
@@ -63,7 +62,6 @@
     "eventemitter3": "^3.1.0",
     "js-sha3": "^0.6.1",
     "jsonschema": "^1.2.4",
-    "nidavellir": "^4.1.0-alpha.5",
     "unorm": "^1.4.1",
     "uri-js": "^4.2.2",
     "url-parse": "^1.4.3"

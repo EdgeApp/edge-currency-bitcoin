@@ -10,7 +10,7 @@ import {
   type BaseDecoder,
   type Bases,
   type HashFunction
-} from '../../types/utils.js'
+} from '../types/utils.js'
 import { hash256 } from './hash.js'
 
 // The default ALPHABETS, the name of the base codec will be the alphabet's length

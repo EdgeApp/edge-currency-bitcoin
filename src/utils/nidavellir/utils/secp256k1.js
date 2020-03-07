@@ -1,6 +1,6 @@
 // @flow
 
-import { type Secp256k1 } from '../../types/utils.js'
+import { type Secp256k1 } from '../types/utils.js'
 import { formatFunction } from './formatter.js'
 import { lazify } from './require.js'
 

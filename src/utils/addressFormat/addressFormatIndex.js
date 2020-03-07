@@ -1,7 +1,7 @@
 // @flow
 
 import bcoin from 'bcoin'
-import { type AddressPrefix, Core } from 'nidavellir'
+import { type AddressPrefix, Core } from '../nidavellir'
 
 import { fromBaseString, toBaseString } from '../bcoinUtils/address.js'
 import { cashAddressToHash, toCashAddress } from './cashAddress'

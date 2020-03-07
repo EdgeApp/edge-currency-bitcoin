@@ -1,6 +1,6 @@
 // @flow
 
-import { type FunctionFormatterOptions } from '../../types/utils.js'
+import { type FunctionFormatterOptions } from '../types/utils.js'
 import { fromUint8Array, toUint8Array } from './uintArray.js'
 
 export const formatFunction = (

@@ -1,7 +1,7 @@
 // @flow
 
 import bcoin from 'bcoin'
-import { Core, Utils } from 'nidavellir'
+import { Core, Utils } from '../nidavellir'
 
 import {
   type CreateTxOptions,

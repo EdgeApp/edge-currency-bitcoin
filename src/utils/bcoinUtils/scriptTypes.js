@@ -3,7 +3,7 @@
 import { Buffer } from 'buffer'
 
 import bcoin from 'bcoin'
-import { type HexPair, type ScriptType, Utils } from 'nidavellir'
+import { type HexPair, type ScriptType, Utils } from '../nidavellir'
 
 import { type ScriptTypeSettings } from '../../../types/bcoinUtils.js'
 

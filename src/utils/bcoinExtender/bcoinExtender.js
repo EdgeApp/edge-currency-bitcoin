@@ -1,9 +1,9 @@
 // @flow
 
 // $FlowFixMe
-import * as UnsafeNetworks from '@nidavellir/networks-unsafe'
+import * as UnsafeNetworks from '../nidavellir-networks-unsafe'
 import bcoin from 'bcoin'
-import { Core } from 'nidavellir'
+import { Core } from '../nidavellir'
 
 import { patchTransaction } from './replayProtection.js'
 
