@@ -1,0 +1,49 @@
+// @flow
+
+import { type NetworkInfo, type HDPathsSetting } from '../../types/core'
+import { base } from '../utils/base.js'
+import { hash256 } from '../utils/hash.js'
+
+// TODO - Actually get bech32
+const bech32 = base['58'].check
+const base58 = base['58'].check
+
+const HDPaths: HDPathsSetting = {
+  '32': {
+    scriptType: 'P2PKH',
+    xpriv: { prefix: 0x0488ade4, stringPrefix: 'xprv', decoder: { ...base58, base: 'xprv' } },
+    xpub: { prefix: 0x0488b21e, stringPrefix: 'xpub', decoder: { ...base58, base: 'xpub' } },
+    address: { prefix: 0x80, stringPrefix: '1', decoder: { ...base58, base: '1' } }
+  },
+  '44': {
+    scriptType: 'P2PKH',
+    xpriv: { prefix: 0x0488ade4, stringPrefix: 'xprv', decoder: { ...base58, base: 'xprv' } },
+    xpub: { prefix: 0x0488b21e, stringPrefix: 'xpub', decoder: { ...base58, base: 'xpub' } },
+    address: { prefix: 0x80, stringPrefix: '1', decoder: { ...base58, base: '1' } }
+  },
+  '49': {
+    scriptType: 'P2WPKH-P2SH',
+    xpriv: { prefix: 0x049d7878, stringPrefix: 'yprv', decoder: base58 },
+    xpub: { prefix: 0x049d7cb2, stringPrefix: 'ypub', decoder: base58 },
+    address: { prefix: 0x05, stringPrefix: '3', decoder: base58 }
+  },
+  '84': {
+    scriptType: 'P2WPKH',
+    xpriv: { prefix: 0x04b2430c, stringPrefix: 'zprv', decoder: base58 },
+    xpub: { prefix: 0x04b24746, stringPrefix: 'zpub', decoder: base58 },
+    address: { prefix: -1, stringPrefix: 'bc', decoder: bech32 }
+  }
+}
+
+export const main: NetworkInfo = {
+  coinType: 0,
+  wif: {
+    prefix: 0x80,
+    stringPrefix: '1',
+    decoder: base['58'].check
+  },
+  HDPaths,
+  DefaultHDPath: 44,
+  txHash: hash256,
+  sigHash: (str: Buffer) => Buffer.from(hash256(str.toString('hex')), 'hex')
+}

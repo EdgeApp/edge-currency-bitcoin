@@ -1,0 +1,121 @@
+// @flow
+
+import { getHDSetting, getDecoder } from '../core/networkInfo.js'
+import {
+  type HDPath,
+  type ExtendedPrivateKey,
+  type ExtendedPublicKey
+} from '../../types/hd.js'
+import { dataFromHex, dataToHex, XKEY_DEFAULTS, HARDENED, SEED, MAX_INDEX, MAX_DEPTH, TWEAK_OUT_OF_RANGE_ERROR } from './common.js'
+import { sha512Hmac, hash160 } from '../utils/hash.js'
+import * as Path from './path.js'
+import { toPublic as toPublicKey } from '../core/privateKey.js'
+import { privateKeyTweakAdd } from '../utils/secp256k1.js'
+
+export const fromPrivate = (key: $Shape<ExtendedPrivateKey>, network?: string): ExtendedPrivateKey => {
+  const { privateKey, chainCode } = key
+  if (!privateKey) throw new Error('Missing private key')
+  if (!chainCode) return fromSeed(privateKey)
+  const fullKey = { ...XKEY_DEFAULTS, ...key }
+  if (typeof fullKey.version !== 'number') {
+    const { xpriv: { prefix } } = getHDSetting('xprv', network)
+    fullKey.version = prefix
+  }
+  return fullKey
+}
+
+export const fromSeed = (
+  seed: string,
+  network?: string,
+  version: string = 'xprv'
+): ExtendedPrivateKey => {
+  const hash = sha512Hmac(SEED, seed)
+  const { xpriv: { prefix } } = getHDSetting(version, network)
+  if (typeof prefix !== 'number') throw new Error('')
+  return fromPrivate({
+    privateKey: hash.slice(0, 64),
+    chainCode: hash.slice(64, 128),
+    version: prefix
+  }, network)
+}
+
+export const fromHex = (keyHex: string, network?: string): ExtendedPrivateKey => {
+  // Get the byte which tells us what type of key we're expecting
+  const headerByte = parseInt(keyHex.slice(90, 92), 16)
+  if (headerByte !== 0) throw new Error('Wrong private key header')
+
+  return {
+    privateKey: keyHex.slice(92, 156),
+    ...dataFromHex(keyHex, network)
+  }
+}
+
+export const fromString = (
+  xKey: string,
+  network: string = 'main'
+): ExtendedPrivateKey => {
+  const keyHex = getDecoder(network, xKey.slice(0, 4)).decode(xKey)
+  return fromHex(keyHex, network)
+}
+
+export const fromIndex = async (
+  key: ExtendedPrivateKey,
+  index: number,
+  publicKey?: string,
+  hardended: boolean = false
+): Promise<ExtendedPrivateKey> => {
+  try {
+    const { depth, version, privateKey, chainCode } = key
+    if (index > MAX_INDEX) throw new Error('Index out of range.')
+    if (depth >= MAX_DEPTH) throw new Error('Depth too high.')
+    publicKey = publicKey || await toPublicKey(privateKey, true)
+
+    // If the index is non-hardended, set 'tweakKey' to be the publicKey, otherwise the privateKey
+    let tweakKey = index < HARDENED || hardended ? publicKey : `00${privateKey}`
+    tweakKey += index.toString(16).padStart(8, '0')
+    const hash = sha512Hmac(chainCode, tweakKey)
+
+    const childKey = await privateKeyTweakAdd(privateKey, hash.slice(0, 64))
+    const parentFingerPrint = publicKey ? hash160(publicKey).slice(0, 8) : 0
+
+    return {
+      privateKey: childKey,
+      childNumber: index,
+      chainCode: hash.slice(64, 128),
+      depth: depth + 1,
+      parentFingerPrint: parseInt(parentFingerPrint, 16),
+      version
+    }
+  } catch (e) {
+    if (!e.message.includes(TWEAK_OUT_OF_RANGE_ERROR)) throw e
+    return fromIndex(key, index + 1, publicKey)
+  }
+}
+
+export const fromPath = async (key: ExtendedPrivateKey, path: HDPath | string, publicKey?: string) => {
+  if (typeof path === 'string') path = Path.fromString(path)
+  publicKey = publicKey || await toPublicKey(key.privateKey, true)
+  for (const index of path) {
+    key = await fromIndex(key, index, publicKey)
+    publicKey = await toPublicKey(key.privateKey, true)
+  }
+  return key
+}
+
+export const toHex = (key: ExtendedPrivateKey): string => {
+  const { privateKey, ...rest } = key
+  if (privateKey.length !== 64) throw new Error('Wrong private key length')
+  return dataToHex(rest) + `00${privateKey}`
+}
+
+export const toString = (
+  hdKey: ExtendedPrivateKey,
+  network: string = 'main'
+): string => getDecoder(network, hdKey.version).encode(toHex(hdKey))
+
+export const toPublic = async (hdKey: ExtendedPrivateKey, network?: string): Promise<ExtendedPublicKey> => {
+  const { privateKey, version, ...rest } = hdKey
+  const { xpub: { prefix } } = getHDSetting(hdKey.version, network)
+  const publicKey = await toPublicKey(privateKey, true)
+  return { publicKey, version: prefix, ...rest }
+}

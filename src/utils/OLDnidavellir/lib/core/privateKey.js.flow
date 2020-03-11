@@ -1,0 +1,64 @@
+// @flow
+
+import { networks } from './networkInfo.js'
+import {
+  publicKeyCreate,
+  sign as Sign,
+  verify as Verify
+} from '../../src/utils/secp256k1.js'
+
+export const fromWIF = (
+  wif: string,
+  network: string = 'main'
+): { privateKey: string, compress: boolean } => {
+  const { prefix, decoder } = networks[network].wif
+  const keyHex = decoder.decode(wif)
+  if (parseInt(keyHex.slice(0, 2), 16) !== prefix) {
+    throw new Error(
+      `Unknown key prefix ${keyHex.slice(0, 2)} for network ${network}`
+    )
+  }
+  const privateKey = keyHex.slice(2, 66)
+  let compress = false
+  if (keyHex.length >= 68) {
+    if (parseInt(keyHex.slice(66, 68), 16) !== 1) {
+      throw new Error(`Unknown compression flag ${keyHex.slice(66, 68)}`)
+    }
+    compress = true
+  }
+  return { privateKey, compress }
+}
+
+export const toWIF = (
+  privateKey: string,
+  network: string = 'main',
+  compress: boolean = true
+): string => {
+  if (privateKey.length !== 64) throw new Error(`Wrong key length`)
+  const { prefix, decoder } = networks[network].wif
+  const prefixStr = prefix.toString(16)
+  const compressFlag = compress ? '01' : ''
+  const hexKey = `${prefixStr}${privateKey}${compressFlag}`
+  return decoder.encode(hexKey)
+}
+
+export const toPublic = async (
+  privateKey: string,
+  compress: boolean = true
+): Promise<string> => publicKeyCreate(privateKey, compress)
+
+export const toSignature = async (privateKey: string, msg: string): Promise<string> => Sign(msg, privateKey)
+
+export const verify = async (
+  msg: string,
+  signature: string,
+  publicKey?: string,
+  privateKey?: string
+): Promise<Boolean> => {
+  if (!publicKey) {
+    if (!privateKey) throw new Error('Cannot verify without keys.')
+    publicKey = await publicKeyCreate(privateKey, true)
+  }
+  const verified = await Verify(msg, signature, publicKey)
+  return verified
+}

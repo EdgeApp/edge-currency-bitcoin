@@ -1,0 +1,179 @@
+// // @flow
+
+// import {
+//   type ExtendedKey,
+//   type HDKey
+// } from '../../types/hd.js'
+
+// import * as Private from './private.js'
+// import * as Public from './public.js'
+// import { fromNumber, toNumber } from './path.js'
+
+// // export const fromExtendedKey
+// // export const fromSeed
+// // export const fromHex
+// // export const fromString
+// // export const fromIndex
+// // export const fromPath
+// // export const toHex
+// // export const toString
+// // export const toPublic
+
+// export const fromHDKey = (hdKey: $Shape<HDKey>, network?: string): HDKey => {
+//   const { path: parentPath = [] } = hdPath || {}
+//   let indexStr = 'm'
+
+//   const path = [...parentPath]
+//   if (keyPair.depth) {
+//     indexStr = fromNumber(keyPair.childNumber)
+//   }
+
+//   if (path[0] !== 'm') path.unshift('m')
+//   if (path.length === keyPair.depth) {
+//     path.push(indexStr)
+//   }
+//   if (path.length !== keyPair.depth + 1) {
+//     throw new Error('Wrong path depth for key')
+//   }
+//   if (path[path.length - 1] !== indexStr) {
+//     throw new Error('Wrong index for key')
+//   }
+
+//   const hdKey: HDKey = { ...keyPair, path, children: {} }
+
+//   return hdKey
+// }
+
+// export const fromExtendedKey = (
+//   keyPair: ExtendedKey,
+//   hdPath?: HDPath
+// ): HDKey => {
+//   const { path: parentPath = [] } = hdPath || {}
+//   let indexStr = 'm'
+
+//   const path = [...parentPath]
+//   if (keyPair.depth) {
+//     indexStr = fromNumber(keyPair.childNumber)
+//   }
+
+//   if (path[0] !== 'm') path.unshift('m')
+//   if (path.length === keyPair.depth) {
+//     path.push(indexStr)
+//   }
+//   if (path.length !== keyPair.depth + 1) {
+//     throw new Error('Wrong path depth for key')
+//   }
+//   if (path[path.length - 1] !== indexStr) {
+//     throw new Error('Wrong index for key')
+//   }
+
+//   const hdKey: HDKey = { ...keyPair, path, children: {} }
+
+//   return hdKey
+// }
+
+// export const fromSeed = async (
+//   seed: string,
+//   network?: string
+// ): Promise<HDKey> => {
+//   const privateKey = Private.fromSeed(seed)
+//   const { publicKey } = await Private.toPublic(privateKey, network)
+//   return { ...privateKey, publicKey, children: {} }
+// }
+
+// export const fromParent = async (
+//   parentKey: HDKey,
+//   index: Index,
+//   network?: string
+// ): Promise<HDKey> => {
+//   let child
+//   const indexNum = toNumber(index)
+//   if (parentKey.privateKey) {
+//     child = await Private.toChild({ ...parentKey }, indexNum)
+//   } else {
+//     child = await Public.toChild({ ...parentKey }, indexNum)
+//   }
+
+//   const childHDPath = {
+//     ...parentKey,
+//     path: [...parentKey.path, index]
+//   }
+//   // Create an HD key from the ExtendedKey
+//   return fromExtendedKey(child, childHDPath)
+// }
+
+// export const fromPath = async (
+//   parentKeys: HDKey,
+//   hdPath: HDPath,
+//   network?: string
+// ): Promise<HDKey> => {
+//   // Get the deepest possible parent for this key
+//   const parent = getParentKey(parentKeys, hdPath.path)
+//   // Set the starting derivation key to be the parent key from before
+//   let childHDKey = parent.key
+
+//   while (parent.path.length) {
+//     // Get next child key
+//     const index = parent.path.shift()
+//     const childKey = await fromParent(childHDKey, index, network)
+
+//     // Add the new key to the current parent key and change the pointer
+//     childHDKey.children[index] = childKey
+//     childHDKey = childKey
+//   }
+
+//   return parentKeys
+// }
+
+// export const fromPaths = async (
+//   parentKey: HDKey | string,
+//   hdPaths: Array<HDPath>,
+//   network?: string
+// ): Promise<HDKey> => {
+//   // If we get a seed create a master hd key from it
+//   if (typeof parentKey === 'string') {
+//     parentKey = await fromSeed(parentKey, network)
+//   }
+
+//   // Create All missing key paths
+//   for (const hdPath of hdPaths) {
+//     parentKey = await fromPath(parentKey, hdPath)
+//   }
+
+//   return parentKey
+// }
+
+// export const fromString = (
+//   extendedKey: string,
+//   hdPath?: HDPath,
+//   network?: string
+// ): HDKey => {
+//   let xKey
+//   try {
+//     xKey = Private.fromString(extendedKey, network)
+//   } catch (e) {
+//     xKey = Public.fromString(extendedKey, network)
+//   }
+//   return fromExtendedKey(xKey, hdPath)
+// }
+
+// export const getParentKey = (
+//   parentKey: HDKey,
+//   path: Path
+// ): { key: HDKey, path: Path } => {
+//   const tempPath = [...path]
+//   tempPath.shift()
+//   while (parentKey.children[tempPath[0]] && tempPath.length) {
+//     parentKey = parentKey.children[tempPath.shift()]
+//   }
+//   return { key: parentKey, path: tempPath }
+// }
+
+// export const getKey = (parentKey: HDKey, path: Path): HDKey | null => {
+//   const tempPath = [...path]
+//   tempPath.shift()
+//   while (parentKey && tempPath.length) {
+//     parentKey = parentKey.children[tempPath.shift()]
+//   }
+//   return parentKey
+// }

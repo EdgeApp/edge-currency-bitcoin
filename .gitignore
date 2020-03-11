@@ -6,3 +6,5 @@
 /libtest
 /node_modules
 .favorites.json
+build
+yarn-error.log
