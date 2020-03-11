@@ -12,10 +12,18 @@ const babelOptions = {
 
 export default {
   external: config.external,
-  input: './test/**/*.js',
+  input: './src/utils/nidavellir/test/**/*.js',
   output: [
-    { file: 'build/tests.cjs.js', format: 'cjs', sourcemap: true },
-    { file: 'build/tests.js', format: 'es', sourcemap: true }
+    {
+      file: './src/utils/nidavellir/build/tests.cjs.js',
+      format: 'cjs',
+      sourcemap: true
+    },
+    {
+      file: './src/utils/nidavellir/build/tests.js',
+      format: 'es',
+      sourcemap: true
+    }
   ],
   plugins: [multiEntry(), json(), babel(babelOptions)]
 }
