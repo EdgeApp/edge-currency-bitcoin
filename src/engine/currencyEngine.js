@@ -624,7 +624,8 @@ export class CurrencyEngine {
       }
       return edgeTransaction
     } catch (e) {
-      if (e.type === 'FundingError') throw new InsufficientFundsError(this.currencyCode)
+      if (e.type === 'FundingError')
+        throw new InsufficientFundsError(this.currencyCode)
       throw e
     }
   }
