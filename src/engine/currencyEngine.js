@@ -77,7 +77,7 @@ export type EngineCurrencyInfo = {
 
   // Optional Settings
   forks?: Array<string>,
-  feeInfoServer?: string,
+  earnComFeeInfoServer?: string,
   timestampFromHeader?: (header: Buffer, height: number) => number
 }
 
@@ -291,16 +291,18 @@ export class CurrencyEngine {
   }
 
   async updateFeeFromVendor() {
-    const { feeInfoServer } = this.engineInfo
-    if (!feeInfoServer || feeInfoServer === '') {
+    const { earnComFeeInfoServer } = this.engineInfo
+    if (!earnComFeeInfoServer || earnComFeeInfoServer === '') {
       clearTimeout(this.feeTimer)
       return
     }
     try {
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        const response = await this.io.fetch(feeInfoServer)
+        const response = await this.io.fetch(earnComFeeInfoServer)
         if (!response.ok) {
-          throw new Error(`${feeInfoServer} returned status ${response.status}`)
+          throw new Error(
+            `${earnComFeeInfoServer} returned status ${response.status}`
+          )
         }
         const feesJson: EarnComFees = await response.json()
         if (validateObject(feesJson, EarnComFeesSchema)) {

@@ -34,7 +34,7 @@ const engineInfo: EngineCurrencyInfo = {
   gapLimit: 10,
   defaultFee: 1000,
   feeUpdateInterval: 60000,
-  feeInfoServer: 'https://Bitcoinfees.Earn.com/api/v1/fees/list',
+  earnComFeeInfoServer: 'https://Bitcoinfees.Earn.com/api/v1/fees/list',
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '150',

@@ -28,13 +28,13 @@ This plugin exposes the following `otherSettings` which can be set using abcAcco
 {
   enableOverrideServers: boolean,
   electrumServers: Array<Array[String, String]>,
-  feeInfoServer: String
+  earnComFeeInfoServer: String
 }
 ```
 
 `enableOverrideServers` = `true` will force the plugin to ONLY use the electrum servers specified in `electrumServers`.
 `electrumServers` should be in the format [`[DNS name]`, `[port]`]. ie [`h.1209k.com`, `50001`].
-`feeInfoServer` should be the fee server, should have the same API as `https://bitcoinfees.21.co/api/v1/fees/list`.
+`earnComFeeInfoServer` should be the fee server, should have the same API as `https://bitcoinfees.21.co/api/v1/fees/list`.
 
 [npm-image]: https://badge.fury.io/js/edge-currency-bitcoin.svg
 [npm-url]: https://npmjs.org/package/edge-currency-bitcoin

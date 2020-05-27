@@ -43,7 +43,7 @@ const engineInfo: EngineCurrencyInfo = {
   gapLimit: 10,
   defaultFee: 1000,
   feeUpdateInterval: 60000,
-  feeInfoServer: '',
+  earnComFeeInfoServer: '',
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '30',
