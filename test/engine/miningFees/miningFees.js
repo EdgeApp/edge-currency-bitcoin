@@ -28,10 +28,10 @@ describe(`Mining Fees`, function() {
     const outBitcoinFees: BitcoinFees = { ...inBitcoinFees, ...edgeBitcoinFees }
     assert.equal(outBitcoinFees.standardFeeLowAmount, '100000')
     assert.equal(outBitcoinFees.standardFeeHighAmount, '10000000')
-    assert.equal(outBitcoinFees.lowFee, '10')
-    assert.equal(outBitcoinFees.standardFeeLow, '221')
-    assert.equal(outBitcoinFees.standardFeeHigh, '290')
-    assert.equal(outBitcoinFees.highFee, '291')
+    assert.equal(outBitcoinFees.lowFee, '20')
+    assert.equal(outBitcoinFees.standardFeeLow, '71')
+    assert.equal(outBitcoinFees.standardFeeHigh, '200')
+    assert.equal(outBitcoinFees.highFee, '221')
   })
   it('calcFeesFromEarnCom blank array', function() {
     const inBitcoinFees = {
