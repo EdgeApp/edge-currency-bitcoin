@@ -4,6 +4,7 @@
  */
 
 import { bns } from 'biggystring'
+import { asNumber, asObject } from 'cleaners'
 
 import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
 import { EarnComFeesSchema } from '../utils/jsonSchemas.js'
@@ -15,9 +16,40 @@ export const ES_FEE_STANDARD = 'standard'
 export const ES_FEE_HIGH = 'high'
 export const ES_FEE_CUSTOM = 'custom'
 
+export const asMempoolSpaceResult = asObject({
+  fastestFee: asNumber,
+  halfHourFee: asNumber,
+  hourFee: asNumber
+})
+
+type MempoolSpaceResult = $Call<typeof asMempoolSpaceResult>
+
 const MAX_FEE = 999999999.0
-const MAX_STANDARD_DELAY = 3
-const MIN_STANDARD_DELAY = 1
+const LOW_FEE = 2
+const MAX_HIGH_DELAY = 200
+const MAX_STANDARD_DELAY = 30
+const MIN_STANDARD_DELAY = 5
+const MIN_LOW_DELAY = 3
+
+/**
+ * Calculate the BitcoinFees object given a MempoolSpaceResult object
+ * @param MempoolspaceResult
+ * @returns {BitcoinFees}
+ */
+export function calcFeesFromMempoolSpace(
+  mempoolSpaceFeesJson: MempoolSpaceResult
+): $Shape<BitcoinFees> {
+  let lowFee = mempoolSpaceFeesJson.hourFee / 2
+  lowFee = lowFee < LOW_FEE ? LOW_FEE : lowFee
+
+  const out: $Shape<BitcoinFees> = {
+    lowFee: lowFee.toString(),
+    standardFeeLow: mempoolSpaceFeesJson.hourFee.toString(),
+    standardFeeHigh: mempoolSpaceFeesJson.halfHourFee.toString(),
+    highFee: mempoolSpaceFeesJson.fastestFee.toString()
+  }
+  return out
+}
 
 /**
  * Calculate the BitcoinFees object given a default BitcoinFees object and EarnComFees
@@ -45,13 +77,12 @@ export function calcFeesFromEarnCom(earnComFeesJson: any): $Shape<BitcoinFees> {
   const earnComFees: EarnComFees = earnComData
   for (const fee of earnComFees.fees) {
     // If this is a zero fee estimate, then skip
-    if (fee.maxFee === 0 || fee.minFee === 0) {
+    if (fee.maxFee < LOW_FEE || fee.minFee < LOW_FEE) {
       continue
     }
 
-    // Set the lowFee if the delay in blocks and minutes is less that 10000.
-    // 21.co uses 10000 to mean infinite
-    if (fee.maxDelay < 10000 && fee.maxMinutes < 10000) {
+    // Set the lowFee if the delay in blocks is less than MAX_HIGH_DELAY.
+    if (fee.maxDelay < MAX_HIGH_DELAY) {
       if (fee.maxFee < lowFee) {
         // Set the low fee if the current fee estimate is lower than the previously set low fee
         lowDelay = fee.maxDelay
@@ -59,8 +90,8 @@ export function calcFeesFromEarnCom(earnComFeesJson: any): $Shape<BitcoinFees> {
       }
     }
 
-    // Set the high fee only if the delay is 0
-    if (fee.maxDelay === 0) {
+    // Set the high fee only if the delay is MIN_LOW_DELAY
+    if (fee.maxDelay <= MIN_LOW_DELAY) {
       if (fee.maxFee < highFee) {
         // Set the low fee if the current fee estimate is lower than the previously set high fee
         highFee = fee.minFee

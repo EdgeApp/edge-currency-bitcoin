@@ -44,7 +44,12 @@ import type { EngineStateCallbacks } from './engineState.js'
 import { EngineState } from './engineState.js'
 import type { KeyManagerCallbacks } from './keyManager'
 import { KeyManager } from './keyManager'
-import { calcFeesFromEarnCom, calcMinerFeePerByte } from './miningFees.js'
+import {
+  asMempoolSpaceResult,
+  calcFeesFromEarnCom,
+  calcFeesFromMempoolSpace,
+  calcMinerFeePerByte
+} from './miningFees.js'
 import {
   createPayment,
   getPaymentDetails,
@@ -77,7 +82,8 @@ export type EngineCurrencyInfo = {
 
   // Optional Settings
   forks?: Array<string>,
-  feeInfoServer?: string,
+  earnComFeeInfoServer?: string,
+  mempoolSpaceFeeInfoServer?: string,
   timestampFromHeader?: (header: Buffer, height: number) => number
 }
 
@@ -291,24 +297,47 @@ export class CurrencyEngine {
   }
 
   async updateFeeFromVendor() {
-    const { feeInfoServer } = this.engineInfo
-    if (!feeInfoServer || feeInfoServer === '') {
+    const { earnComFeeInfoServer, mempoolSpaceFeeInfoServer } = this.engineInfo
+    let success = false
+    if (!earnComFeeInfoServer && !mempoolSpaceFeeInfoServer) {
       clearTimeout(this.feeTimer)
       return
     }
     try {
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        const response = await this.io.fetch(feeInfoServer)
-        if (!response.ok) {
-          throw new Error(`${feeInfoServer} returned status ${response.status}`)
+        // try mempoolspace first
+        if (!success && mempoolSpaceFeeInfoServer) {
+          try {
+            const response = await this.io.fetch(mempoolSpaceFeeInfoServer)
+            if (response.ok) {
+              const feesJson = await response.json()
+              asMempoolSpaceResult(feesJson)
+              const newFees = calcFeesFromMempoolSpace(feesJson)
+              this.fees = { ...this.fees, ...newFees }
+              this.fees.timestamp = Date.now()
+              success = true
+            }
+          } catch (e) {
+            logger.info('mempool.space error', e)
+          }
         }
-        const feesJson: EarnComFees = await response.json()
-        if (validateObject(feesJson, EarnComFeesSchema)) {
-          const newFees = calcFeesFromEarnCom(feesJson.fees)
-          this.fees = { ...this.fees, ...newFees }
-          this.fees.timestamp = Date.now()
-        } else {
-          throw new Error('Fetched invalid networkFees')
+
+        if (!success && earnComFeeInfoServer) {
+          const response = await this.io.fetch(earnComFeeInfoServer)
+          // try earn.com
+          if (!response.ok) {
+            throw new Error(
+              `${earnComFeeInfoServer} returned status ${response.status}`
+            )
+          }
+          const feesJson: EarnComFees = await response.json()
+          if (validateObject(feesJson, EarnComFeesSchema)) {
+            const newFees = calcFeesFromEarnCom(feesJson.fees)
+            this.fees = { ...this.fees, ...newFees }
+            this.fees.timestamp = Date.now()
+          } else {
+            throw new Error('Fetched invalid networkFees')
+          }
         }
       }
     } catch (e) {
@@ -624,7 +653,8 @@ export class CurrencyEngine {
       }
       return edgeTransaction
     } catch (e) {
-      if (e.type === 'FundingError') throw new InsufficientFundsError(this.currencyCode)
+      if (e.type === 'FundingError')
+        throw new InsufficientFundsError(this.currencyCode)
       throw e
     }
   }
