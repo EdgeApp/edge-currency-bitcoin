@@ -4,6 +4,7 @@
  */
 
 import { bns } from 'biggystring'
+import { asNumber, asObject } from 'cleaners'
 
 import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
 import { EarnComFeesSchema } from '../utils/jsonSchemas.js'
@@ -15,9 +16,38 @@ export const ES_FEE_STANDARD = 'standard'
 export const ES_FEE_HIGH = 'high'
 export const ES_FEE_CUSTOM = 'custom'
 
+export const asMempoolSpaceResult = asObject({
+  fastestFee: asNumber,
+  halfHourFee: asNumber,
+  hourFee: asNumber
+})
+
+type MempoolSpaceResult = $Call<typeof asMempoolSpaceResult>
+
 const MAX_FEE = 999999999.0
+const LOW_FEE = 2
 const MAX_STANDARD_DELAY = 3
 const MIN_STANDARD_DELAY = 1
+
+/**
+ * Calculate the BitcoinFees object given a MempoolSpaceResult object
+ * @param MempoolspaceResult
+ * @returns {BitcoinFees}
+ */
+export function calcFeesFromMempoolSpace(
+  mempoolSpaceFeesJson: MempoolSpaceResult
+): $Shape<BitcoinFees> {
+  let lowFee = mempoolSpaceFeesJson.hourFee / 2
+  lowFee = lowFee < LOW_FEE ? LOW_FEE : lowFee
+
+  const out: $Shape<BitcoinFees> = {
+    lowFee: lowFee.toString(),
+    standardFeeLow: mempoolSpaceFeesJson.hourFee.toString(),
+    standardFeeHigh: mempoolSpaceFeesJson.halfHourFee.toString(),
+    highFee: mempoolSpaceFeesJson.fastestFee.toString()
+  }
+  return out
+}
 
 /**
  * Calculate the BitcoinFees object given a default BitcoinFees object and EarnComFees
