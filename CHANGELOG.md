@@ -1,5 +1,11 @@
 # edge-currency-bitcoin
 
+# 4.8.0 (2020-05-28)
+
+- Add mempool.space recommended bitcoin fee API
+- Increased target block delays for earn.com fee estimator
+- Increased bitcoin gap limit to 25
+
 # 4.7.7 (2020-02-13)
 
 - Fixed replay-protection address cache
