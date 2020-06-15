@@ -39,14 +39,21 @@ const MIN_LOW_DELAY = 3
 export function calcFeesFromMempoolSpace(
   mempoolSpaceFeesJson: MempoolSpaceResult
 ): $Shape<BitcoinFees> {
+  // Set minimum of LOW_FEE on all fee levels
   let lowFee = mempoolSpaceFeesJson.hourFee / 2
   lowFee = lowFee < LOW_FEE ? LOW_FEE : lowFee
+  let standardFeeLow = mempoolSpaceFeesJson.hourFee
+  standardFeeLow = standardFeeLow < LOW_FEE ? LOW_FEE : standardFeeLow
+  let standardFeeHigh = mempoolSpaceFeesJson.halfHourFee
+  standardFeeHigh = standardFeeHigh < LOW_FEE ? LOW_FEE : standardFeeHigh
+  let highFee = mempoolSpaceFeesJson.fastestFee
+  highFee = highFee < LOW_FEE ? LOW_FEE : highFee
 
   const out: $Shape<BitcoinFees> = {
     lowFee: lowFee.toString(),
-    standardFeeLow: mempoolSpaceFeesJson.hourFee.toString(),
-    standardFeeHigh: mempoolSpaceFeesJson.halfHourFee.toString(),
-    highFee: mempoolSpaceFeesJson.fastestFee.toString()
+    standardFeeLow: standardFeeLow.toString(),
+    standardFeeHigh: standardFeeHigh.toString(),
+    highFee: highFee.toString()
   }
   return out
 }
