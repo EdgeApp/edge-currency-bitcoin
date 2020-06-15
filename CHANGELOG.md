@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.8.1 (2020-06-15)
+
+- Make sure minimum LOW_FEE is enforced on all fee levels
+
 # 4.8.0 (2020-05-28)
 
 - Add mempool.space recommended bitcoin fee API
