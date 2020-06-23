@@ -41,7 +41,7 @@ import { logger } from '../utils/logger.js'
 import { promiseAny, validateObject } from '../utils/utils.js'
 import { broadcastFactories } from './broadcastApi.js'
 import type { EngineStateCallbacks } from './engineState.js'
-import { EngineState } from './engineState.js'
+import { type EngineStateOptions, EngineState } from './engineState.js'
 import type { KeyManagerCallbacks } from './keyManager'
 import { KeyManager } from './keyManager'
 import {
@@ -161,6 +161,10 @@ export class CurrencyEngine {
     }
   }
 
+  createEngineState(options: EngineStateOptions): EngineState {
+    return new EngineState(options)
+  }
+
   async load(): Promise<any> {
     const engineStateCallbacks: EngineStateCallbacks = {
       onHeightUpdated: this.callbacks.onBlockHeightChanged,
@@ -171,7 +175,7 @@ export class CurrencyEngine {
       onAddressesChecked: this.callbacks.onAddressesChecked
     }
 
-    this.engineState = new EngineState({
+    this.engineState = this.createEngineState({
       files: { txs: 'txs.json', addresses: 'addresses.json' },
       callbacks: engineStateCallbacks,
       io: this.io,
@@ -537,7 +541,7 @@ export class CurrencyEngine {
       }
     }
 
-    const engineState = new EngineState({
+    const engineState = this.createEngineState({
       files: { txs: '', addresses: '' },
       callbacks: engineStateCallbacks,
       io: this.io,

@@ -16,10 +16,12 @@ import {
 } from 'edge-core-js/types'
 
 import {
+  type CurrencyEngineSettings,
   type EngineCurrencyInfo,
   CurrencyEngine
 } from '../engine/currencyEngine.js'
 import { allInfo } from '../info/all.js'
+import { allCurrencyEngine } from '../info/engines/all.js'
 import {
   type BcoinCurrencyInfo,
   addNetwork,
@@ -132,6 +134,17 @@ export class CurrencyTools {
   }
 }
 
+const makeCurrencyEngineFactory = (
+  pluginName: string,
+  settings: CurrencyEngineSettings
+): CurrencyEngine => {
+  const pluginEngine = allCurrencyEngine[pluginName]
+  if (pluginEngine) {
+    return pluginEngine.make(settings)
+  }
+  return new CurrencyEngine(settings)
+}
+
 const makeCurrencyPluginFactory = (
   { currencyInfo, engineInfo, bcoinInfo }: CurrencyPluginFactorySettings,
   makeIo: (opts: EdgeCorePluginOptions) => PluginIo
@@ -157,7 +170,7 @@ const makeCurrencyPluginFactory = (
         options: EdgeCurrencyEngineOptions
       ): Promise<EdgeCurrencyEngine> {
         const tools = await this.makeCurrencyTools()
-        const engine = new CurrencyEngine({
+        const engine = makeCurrencyEngineFactory(currencyInfo.pluginName, {
           walletInfo,
           engineInfo,
           pluginState: tools.state,
