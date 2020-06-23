@@ -27,9 +27,9 @@ type MempoolSpaceResult = $Call<typeof asMempoolSpaceResult>
 const MAX_FEE = 999999999.0
 const LOW_FEE = 2
 const MAX_HIGH_DELAY = 200
-const MAX_STANDARD_DELAY = 30
-const MIN_STANDARD_DELAY = 5
-const MIN_LOW_DELAY = 3
+const MAX_STANDARD_DELAY = 6
+const MIN_STANDARD_DELAY = 2
+const MIN_LOW_DELAY = 1
 
 /**
  * Calculate the BitcoinFees object given a MempoolSpaceResult object
