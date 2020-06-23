@@ -305,23 +305,7 @@ export class CurrencyEngine {
     }
     try {
       if (Date.now() - this.fees.timestamp > this.feeUpdateInterval) {
-        // try mempoolspace first
-        if (!success && mempoolSpaceFeeInfoServer) {
-          try {
-            const response = await this.io.fetch(mempoolSpaceFeeInfoServer)
-            if (response.ok) {
-              const feesJson = await response.json()
-              asMempoolSpaceResult(feesJson)
-              const newFees = calcFeesFromMempoolSpace(feesJson)
-              this.fees = { ...this.fees, ...newFees }
-              this.fees.timestamp = Date.now()
-              success = true
-            }
-          } catch (e) {
-            logger.info('mempool.space error', e)
-          }
-        }
-
+        // try earn.com first
         if (!success && earnComFeeInfoServer) {
           const response = await this.io.fetch(earnComFeeInfoServer)
           // try earn.com
@@ -337,6 +321,23 @@ export class CurrencyEngine {
             this.fees.timestamp = Date.now()
           } else {
             throw new Error('Fetched invalid networkFees')
+          }
+        }
+
+        // if necessary, try mempool.space
+        if (!success && mempoolSpaceFeeInfoServer) {
+          try {
+            const response = await this.io.fetch(mempoolSpaceFeeInfoServer)
+            if (response.ok) {
+              const feesJson = await response.json()
+              asMempoolSpaceResult(feesJson)
+              const newFees = calcFeesFromMempoolSpace(feesJson)
+              this.fees = { ...this.fees, ...newFees }
+              this.fees.timestamp = Date.now()
+              success = true
+            }
+          } catch (e) {
+            logger.info('mempool.space error', e)
           }
         }
       }
