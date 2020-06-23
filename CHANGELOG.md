@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.8.2 (2020-06-22)
+
+- Prioritize Earn.com fee estimation
+- Decrease fee level block targets
+
 # 4.8.1 (2020-06-15)
 
 - Make sure minimum LOW_FEE is enforced on all fee levels
