@@ -2,7 +2,7 @@
  * Created by Paul Puey on 2017/11/09
  * @flow
  */
-import { logger } from '../utils/logger.js'
+import { type EdgeLog } from 'edge-core-js/types'
 
 export type ServerInfo = {
   serverUrl: string,
@@ -22,8 +22,10 @@ export class ServerCache {
   servers_: { [serverUrl: string]: ServerInfo }
   serverCacheDirty: boolean
   cacheLastSave_: number
+  log: EdgeLog
 
-  constructor() {
+  constructor(log: EdgeLog) {
+    this.log = log
     this.clearServerCache()
   }
 
@@ -103,7 +105,7 @@ export class ServerCache {
   }
 
   printServerCache() {
-    logger.info('**** printServerCache ****')
+    this.log('**** printServerCache ****')
     const serverInfos: Array<ServerInfo> = []
     for (const s in this.servers_) {
       serverInfos.push(this.servers_[s])
@@ -118,9 +120,9 @@ export class ServerCache {
       const response = s.responseTime.toString()
       const numResponse = s.numResponseTimes.toString()
       const url = s.serverUrl
-      logger.info(`ServerCache ${score} ${response}ms ${numResponse} ${url}`)
+      this.log(`ServerCache ${score} ${response}ms ${numResponse} ${url}`)
     }
-    logger.info('**************************')
+    this.log('**************************')
   }
 
   serverScoreUp(
@@ -140,7 +142,7 @@ export class ServerCache {
       this.setResponseTime(serverUrl, responseTimeMilliseconds)
     }
 
-    logger.info(
+    this.log(
       `${serverUrl}: score UP to ${serverInfo.serverScore} ${responseTimeMilliseconds}ms`
     )
     this.dirtyServerCache(serverUrl)
@@ -151,7 +153,7 @@ export class ServerCache {
     if (currentTime - lastScoreUpTime_ > 60000) {
       // It has been over 1 minute since we got an up-vote for any server.
       // Assume the network is down and don't penalize anyone for now
-      logger.info(`${serverUrl}: score DOWN cancelled`)
+      this.log(`${serverUrl}: score DOWN cancelled`)
       return
     }
     const serverInfo: ServerInfo = this.servers_[serverUrl]
@@ -164,7 +166,7 @@ export class ServerCache {
       this.setResponseTime(serverUrl, 9999)
     }
 
-    logger.info(`${serverUrl}: score DOWN to ${serverInfo.serverScore}`)
+    this.log(`${serverUrl}: score DOWN to ${serverInfo.serverScore}`)
     this.dirtyServerCache(serverUrl)
   }
 

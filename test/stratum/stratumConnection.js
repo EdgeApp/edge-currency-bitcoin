@@ -28,6 +28,10 @@ const fakeLogger = {
   error: () => {}
 }
 
+const fakeLog = console.log
+fakeLog.warn = console.warn
+fakeLog.error = console.error
+
 // const ELECTRUM_SERVER = 'electrum://electrum.villocq.com:50001'
 const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'
 const io = Object.assign({}, makeNodeIo(makeFakeIo()), { console: fakeLogger })
@@ -51,7 +55,15 @@ describe.skip('StratumConnection', function() {
       },
       onQueueSpace() {}
     }
-    const connection = new StratumConnection(ELECTRUM_SERVER, { callbacks, io })
+    const connection = new StratumConnection(
+      ELECTRUM_SERVER,
+      {
+        callbacks,
+        io
+      },
+      // $FlowFixMe
+      fakeLog
+    )
     connection.open()
   })
 
@@ -84,7 +96,12 @@ describe.skip('StratumConnection', function() {
         return task
       }
     }
-    const connection = new StratumConnection(ELECTRUM_SERVER, { callbacks, io })
+    const connection = new StratumConnection(
+      ELECTRUM_SERVER,
+      { callbacks, io },
+      // $FlowFixMe
+      fakeLog
+    )
     connection.open()
   })
 
@@ -127,7 +144,12 @@ describe.skip('StratumConnection', function() {
         return task
       }
     }
-    const connection = new StratumConnection(ELECTRUM_SERVER, { callbacks, io })
+    const connection = new StratumConnection(
+      ELECTRUM_SERVER,
+      { callbacks, io },
+      // $FlowFixMe
+      fakeLog
+    )
     connection.open()
   })
 
@@ -163,7 +185,12 @@ describe.skip('StratumConnection', function() {
         return task
       }
     }
-    const connection = new StratumConnection(ELECTRUM_SERVER, { callbacks, io })
+    const connection = new StratumConnection(
+      ELECTRUM_SERVER,
+      { callbacks, io },
+      // $FlowFixMe
+      fakeLog
+    )
     connection.open()
   })
 
@@ -200,7 +227,12 @@ describe.skip('StratumConnection', function() {
         return task
       }
     }
-    const connection = new StratumConnection(ELECTRUM_SERVER, { callbacks, io })
+    const connection = new StratumConnection(
+      ELECTRUM_SERVER,
+      { callbacks, io },
+      // $FlowFixMe
+      fakeLog
+    )
     connection.open()
   })
 
@@ -239,7 +271,12 @@ describe.skip('StratumConnection', function() {
         return task
       }
     }
-    const connection = new StratumConnection(ELECTRUM_SERVER, { callbacks, io })
+    const connection = new StratumConnection(
+      ELECTRUM_SERVER,
+      { callbacks, io },
+      // $FlowFixMe
+      fakeLog
+    )
     connection.open()
   })
 
@@ -280,7 +317,12 @@ describe.skip('StratumConnection', function() {
         return task
       }
     }
-    const connection = new StratumConnection(ELECTRUM_SERVER, { callbacks, io })
+    const connection = new StratumConnection(
+      ELECTRUM_SERVER,
+      { callbacks, io },
+      // $FlowFixMe
+      fakeLog
+    )
     connection.open()
   })
 })

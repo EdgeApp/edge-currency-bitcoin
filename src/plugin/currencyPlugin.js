@@ -11,6 +11,7 @@ import {
   type EdgeCurrencyPlugin,
   type EdgeCurrencyTools,
   type EdgeEncodeUri,
+  type EdgeLog,
   type EdgeParsedUri,
   type EdgeWalletInfo
 } from 'edge-core-js/types'
@@ -45,7 +46,8 @@ export type CurrencyPluginFactorySettings = {
 
 export type CurrencyPluginSettings = {
   currencyInfo: EdgeCurrencyInfo,
-  engineInfo: EngineCurrencyInfo
+  engineInfo: EngineCurrencyInfo,
+  log: EdgeLog
 }
 
 /**
@@ -65,7 +67,7 @@ export class CurrencyTools {
   // ------------------------------------------------------------------------
   constructor(
     io: PluginIo,
-    { currencyInfo, engineInfo }: CurrencyPluginSettings
+    { currencyInfo, engineInfo, log }: CurrencyPluginSettings
   ) {
     // Validate that we are a valid EdgeCurrencyTools:
     // eslint-disable-next-line no-unused-vars
@@ -83,7 +85,8 @@ export class CurrencyTools {
       io,
       defaultSettings,
       currencyCode,
-      pluginName
+      pluginName,
+      log
     })
   }
 
@@ -171,7 +174,11 @@ const makeCurrencyPluginFactory = (
 
       makeCurrencyTools(): Promise<EdgeCurrencyTools> {
         if (toolsPromise != null) return toolsPromise
-        const tools = new CurrencyTools(io, { currencyInfo, engineInfo })
+        const tools = new CurrencyTools(io, {
+          currencyInfo,
+          engineInfo,
+          log: options.log
+        })
         toolsPromise = tools.state.load().then(() => tools)
         return toolsPromise
       }

@@ -8,6 +8,10 @@ import { describe, it } from 'mocha'
 
 import { ServerCache } from '../../src/plugin/serverCache.js'
 
+const fakeLog = console.log
+fakeLog.warn = console.warn
+fakeLog.error = console.error
+
 describe(`ServerCache`, function() {
   it('Score only', function() {
     const diskServerCache = {
@@ -71,7 +75,8 @@ describe(`ServerCache`, function() {
       'server5'
     ]
 
-    const cache = new ServerCache()
+    // $FlowFixMe
+    const cache = new ServerCache(fakeLog)
 
     cache.serverCacheLoad(diskServerCache, newServers)
     const result = cache.getServers(8)
@@ -164,7 +169,8 @@ describe(`ServerCache`, function() {
       'server7'
     ]
 
-    const cache = new ServerCache()
+    // $FlowFixMe
+    const cache = new ServerCache(fakeLog)
 
     cache.serverCacheLoad(diskServerCache, newServers)
     cache.serverScoreUp('server8', 0, 405)
@@ -235,7 +241,8 @@ describe(`ServerCache`, function() {
     }
     const newServers = ['newServer1', 'newServer2', 'newServer3']
 
-    const cache = new ServerCache()
+    // $FlowFixMe
+    const cache = new ServerCache(fakeLog)
 
     cache.serverCacheLoad(diskServerCache, newServers)
     const result = cache.getServers(8)

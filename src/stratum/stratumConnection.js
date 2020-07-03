@@ -1,10 +1,10 @@
 // @flow
 /* global WebSocket */
 
+import { type EdgeLog } from 'edge-core-js/types'
 import { parse } from 'uri-js'
 
 import { type EdgeSocket, type PluginIo } from '../plugin/pluginIo.js'
-import { logger } from '../utils/logger.js'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
 import { fetchPing, fetchVersion } from './stratumMessages.js'
 
@@ -57,8 +57,9 @@ export class StratumConnection {
   uri: string
   connected: boolean
   version: string | void
+  log: EdgeLog
 
-  constructor(uri: string, options: StratumOptions) {
+  constructor(uri: string, options: StratumOptions, log: EdgeLog) {
     const {
       callbacks,
       io,
@@ -73,6 +74,7 @@ export class StratumConnection {
     this.timeout = 1000 * timeout
     this.uri = uri
     this.sigkill = false
+    this.log = log
 
     // Message queue:
     this.nextId = 0
@@ -86,7 +88,7 @@ export class StratumConnection {
           this.callbacks.onVersion(version, requestMs)
         },
         (error: Error) => {
-          logger.info(`${this.walletId} Failed initial ping ${this.uri}`)
+          this.log.error(`Failed initial ping ${this.uri}`)
           this.handleError(error)
         }
       )
@@ -410,7 +412,7 @@ export class StratumConnection {
   }
 
   logError(e: Error) {
-    logger.info(`${this.walletId} - ${e.toString()}`)
+    this.log.error(`${e.toString()}`)
   }
 
   setupTimer() {
