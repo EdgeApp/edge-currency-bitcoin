@@ -1,7 +1,7 @@
 // @flow
 
 import { type Disklet, navigateDisklet } from 'disklet'
-import { type EdgeIo } from 'edge-core-js/types'
+import { type EdgeIo, type EdgeLog } from 'edge-core-js/types'
 
 import type { EngineState } from '../engine/engineState.js'
 import { FixCurrencyCode, InfoServer } from '../info/constants'
@@ -22,7 +22,8 @@ export type PluginStateSettings = {
   io: EdgeIo,
   defaultSettings: CurrencySettings,
   currencyCode: string,
-  pluginName: string
+  pluginName: string,
+  log: EdgeLog
 }
 export class PluginState extends ServerCache {
   // On-disk header information:
@@ -58,7 +59,6 @@ export class PluginState extends ServerCache {
   dumpData(): any {
     return {
       'pluginState.headerCache': this.headerCache,
-      'pluginState.serverCache': this.serverCache,
       'pluginState.servers_': this.servers_
     }
   }
@@ -82,9 +82,10 @@ export class PluginState extends ServerCache {
     io,
     defaultSettings,
     currencyCode,
-    pluginName
+    pluginName,
+    log
   }: PluginStateSettings) {
-    super()
+    super(log)
     this.height = 0
     this.headerCache = {}
     this.io = io

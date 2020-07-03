@@ -9,6 +9,7 @@ import {
   type EdgeDataDump,
   type EdgeFreshAddress,
   type EdgeGetTransactionsOptions,
+  type EdgeLog,
   type EdgePaymentProtocolInfo,
   type EdgeSpendInfo,
   type EdgeSpendTarget,
@@ -113,6 +114,7 @@ export class CurrencyEngine {
   walletLocalDisklet: Disklet
   walletLocalEncryptedDisklet: Disklet
   io: PluginIo
+  log: EdgeLog
   feeUpdateInterval: number
   feeTimer: any
   fees: BitcoinFees
@@ -139,6 +141,7 @@ export class CurrencyEngine {
     this.walletLocalDisklet = options.walletLocalDisklet
     this.walletLocalEncryptedDisklet = options.walletLocalEncryptedDisklet
     this.io = io
+    this.log = options.log
     this.engineInfo = engineInfo
     this.feeUpdateInterval = this.engineInfo.feeUpdateInterval
     this.currencyCode = this.engineInfo.currencyCode
@@ -175,6 +178,7 @@ export class CurrencyEngine {
       files: { txs: 'txs.json', addresses: 'addresses.json' },
       callbacks: engineStateCallbacks,
       io: this.io,
+      log: this.log,
       localDisklet: this.walletLocalDisklet,
       encryptedLocalDisklet: this.walletLocalEncryptedDisklet,
       pluginState: this.pluginState,
@@ -546,7 +550,8 @@ export class CurrencyEngine {
       encryptedLocalDisklet: this.walletLocalEncryptedDisklet,
       pluginState: this.pluginState,
       walletId: this.prunedWalletId,
-      engineInfo: this.engineInfo
+      engineInfo: this.engineInfo,
+      log: this.log
     })
 
     await engineState.load()
