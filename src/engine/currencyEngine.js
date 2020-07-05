@@ -215,7 +215,7 @@ export class CurrencyEngine {
     const rawKeys = { ...otherKeys, master: { xpub, ...master } }
 
     logger.info(
-      `${this.walletId} - Created Wallet Type ${format} for Currency Plugin ${this.pluginState.pluginName}`
+      `${this.walletId} - Created Wallet Type ${format} for Currency Plugin ${this.pluginState.pluginId}`
     )
 
     this.keyManager = new KeyManager({
@@ -755,7 +755,7 @@ export class CurrencyEngine {
       walletId: this.walletId.split(' - ')[0],
       walletType: this.walletInfo.type,
       walletFormat: this.walletInfo.keys && this.walletInfo.keys.format,
-      pluginType: this.pluginState.pluginName,
+      pluginType: this.pluginState.pluginId,
       fees: this.fees,
       data: {
         ...this.pluginState.dumpData(),

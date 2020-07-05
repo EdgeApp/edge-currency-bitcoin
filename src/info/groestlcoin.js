@@ -85,7 +85,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'GRS',
   displayName: 'Groestlcoin',
-  pluginName: 'groestlcoin',
+  pluginId: 'groestlcoin',
   denominations: [
     { name: 'GRS', multiplier: '100000000', symbol: 'G' },
     { name: 'mGRS', multiplier: '100000', symbol: 'mG' }

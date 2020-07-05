@@ -49,7 +49,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'LTC',
   displayName: 'Litecoin',
-  pluginName: 'litecoin',
+  pluginId: 'litecoin',
   denominations: [
     { name: 'LTC', multiplier: '100000000', symbol: 'Ł' },
     { name: 'mLTC', multiplier: '100000', symbol: 'mŁ' }

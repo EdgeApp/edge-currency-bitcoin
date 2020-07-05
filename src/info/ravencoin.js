@@ -45,7 +45,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'RVN',
   displayName: 'Ravencoin',
-  pluginName: 'ravencoin',
+  pluginId: 'ravencoin',
   denominations: [{ name: 'RVN', multiplier: '100000000', symbol: 'R' }],
   walletType: 'wallet:ravencoin',
 

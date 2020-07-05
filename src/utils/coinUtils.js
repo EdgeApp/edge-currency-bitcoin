@@ -139,12 +139,12 @@ export const verifyWIF = (data: any, network: string) => {
 export const verifyUriProtocol = (
   protocol: string | null,
   network: string,
-  pluginName: string
+  pluginId: string
 ) => {
   const { uriPrefix = '' } = networks[network] || {}
   if (protocol) {
     const prot = protocol.replace(':', '').toLowerCase()
-    return prot === pluginName || prot === uriPrefix
+    return prot === pluginId || prot === uriPrefix
   }
   return true
 }

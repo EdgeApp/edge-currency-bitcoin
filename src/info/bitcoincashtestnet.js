@@ -51,7 +51,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'TBCH',
   displayName: 'Bitcoin Cash Testnet',
-  pluginName: 'bitcoincashtestnet',
+  pluginId: 'bitcoincashtestnet',
   denominations: [
     { name: 'TBCH', multiplier: '100000000', symbol: '₿' },
     { name: 'mTBCH', multiplier: '100000', symbol: 'm₿' },

@@ -48,7 +48,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'FTC',
   displayName: 'Feathercoin',
-  pluginName: 'feathercoin',
+  pluginId: 'feathercoin',
   denominations: [
     { name: 'FTC', multiplier: '100000000', symbol: 'F' },
     { name: 'mFTC', multiplier: '100000', symbol: 'mF' }

@@ -42,13 +42,12 @@ const parsePathname = (pathname: string, network: string) => {
 export const parseUri = (
   uri: string,
   network: string,
-  { pluginName, currencyCode, denominations }: EdgeCurrencyInfo
+  { pluginId, currencyCode, denominations }: EdgeCurrencyInfo
 ): EdgeParsedUri => {
-  pluginName = pluginName.toLowerCase()
   const uriObj = parse(uri, {}, true)
   const { protocol, pathname, query } = uriObj
   // If the currency URI belongs to the wrong network then error
-  if (!verifyUriProtocol(protocol, network, pluginName)) {
+  if (!verifyUriProtocol(protocol, network, pluginId)) {
     throw new Error('InvalidUriError')
   }
   // Get all posible query params
@@ -89,7 +88,7 @@ export const parseUri = (
 export const encodeUri = (
   obj: EdgeEncodeUri,
   network: string,
-  { pluginName, currencyCode, denominations }: EdgeCurrencyInfo
+  { pluginId, currencyCode, denominations }: EdgeCurrencyInfo
 ): string => {
   const { legacyAddress, publicAddress } = obj
   const { uriPrefix = '' } = networks[network] || {}
@@ -130,7 +129,7 @@ export const encodeUri = (
   }
   queryString = queryString.substr(0, queryString.length - 1)
   return serialize({
-    scheme: uriPrefix || pluginName.toLowerCase(),
+    scheme: uriPrefix || pluginId,
     path: address,
     query: queryString
   })
