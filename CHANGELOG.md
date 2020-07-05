@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.8.3 (2020-07-05)
+
+- Send additional logging to core
+
 # 4.8.2 (2020-06-22)
 
 - Prioritize Earn.com fee estimation
