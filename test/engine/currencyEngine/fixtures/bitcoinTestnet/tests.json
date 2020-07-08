@@ -1,5 +1,5 @@
 {
-  "pluginName": "bitcointestnet",
+  "pluginId": "bitcointestnet",
   "WALLET_TYPE": "wallet:bitcoin-testnet",
   "WALLET_FORMAT": "bip49",
   "TX_AMOUNT": 6,

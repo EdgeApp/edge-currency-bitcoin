@@ -51,7 +51,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'DOGE',
   displayName: 'Dogecoin',
-  pluginName: 'dogecoin',
+  pluginId: 'dogecoin',
   denominations: [{ name: 'DOGE', multiplier: '100000000', symbol: 'Ð' }],
   walletType: 'wallet:dogecoin',
 

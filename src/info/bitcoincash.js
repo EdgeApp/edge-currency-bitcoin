@@ -58,7 +58,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BCH',
   displayName: 'Bitcoin Cash',
-  pluginName: 'bitcoincash',
+  pluginId: 'bitcoincash',
   denominations: [
     { name: 'BCH', multiplier: '100000000', symbol: '₿' },
     { name: 'mBCH', multiplier: '100000', symbol: 'm₿' },

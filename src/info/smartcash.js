@@ -73,7 +73,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'SMART',
   displayName: 'SmartCash',
-  pluginName: 'smartcash',
+  pluginId: 'smartcash',
   denominations: [
     { name: 'SMART', multiplier: '100000000', symbol: 'S' },
     { name: 'mSMART', multiplier: '100000', symbol: 'mS' }

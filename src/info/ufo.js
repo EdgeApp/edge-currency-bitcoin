@@ -49,7 +49,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'UFO',
   displayName: 'UFO',
-  pluginName: 'ufo',
+  pluginId: 'ufo',
   denominations: [
     { name: 'UFO', multiplier: '100000000', symbol: 'Ʉ' },
     { name: 'kUFO', multiplier: '100000000000', symbol: 'kɄ' }

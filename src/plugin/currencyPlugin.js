@@ -58,7 +58,7 @@ export type CurrencyPluginSettings = {
 export class CurrencyTools {
   currencyInfo: EdgeCurrencyInfo
   network: string
-  pluginName: string
+  pluginId: string
   io: PluginIo
   state: PluginState
 
@@ -75,17 +75,17 @@ export class CurrencyTools {
 
     // Public API:
     this.currencyInfo = currencyInfo
-    this.pluginName = currencyInfo.pluginName
+    this.pluginId = currencyInfo.pluginId
     // Private API:
     this.io = io
-    logger.info(`Creating Currency Plugin for ${this.pluginName}`)
+    logger.info(`Creating Currency Plugin for ${this.pluginId}`)
     this.network = engineInfo.network
-    const { defaultSettings, pluginName, currencyCode } = this.currencyInfo
+    const { defaultSettings, pluginId, currencyCode } = this.currencyInfo
     this.state = new PluginState({
       io,
       defaultSettings,
       currencyCode,
-      pluginName,
+      pluginId,
       log
     })
   }
@@ -191,8 +191,8 @@ export function makeEdgeCorePlugins(
 ): EdgeCorePlugins {
   const out: EdgeCorePlugins = {}
   for (const info of allInfo) {
-    const pluginName = info.currencyInfo.pluginName
-    out[pluginName] = makeCurrencyPluginFactory(info, makeIo)
+    const pluginId = info.currencyInfo.pluginId
+    out[pluginId] = makeCurrencyPluginFactory(info, makeIo)
   }
   return out
 }

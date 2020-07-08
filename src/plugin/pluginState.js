@@ -22,7 +22,7 @@ export type PluginStateSettings = {
   io: EdgeIo,
   defaultSettings: CurrencySettings,
   currencyCode: string,
-  pluginName: string,
+  pluginId: string,
   log: EdgeLog
 }
 export class PluginState extends ServerCache {
@@ -76,13 +76,13 @@ export class PluginState extends ServerCache {
 
   headerCacheDirty: boolean
   serverCacheJson: Object
-  pluginName: string
+  pluginId: string
 
   constructor({
     io,
     defaultSettings,
     currencyCode,
-    pluginName,
+    pluginId,
     log
   }: PluginStateSettings) {
     super(log)
@@ -95,9 +95,9 @@ export class PluginState extends ServerCache {
     const fixedCode = FixCurrencyCode(currencyCode)
     this.infoServerUris = `${InfoServer}/electrumServers/${fixedCode}`
     this.engines = []
-    this.disklet = navigateDisklet(io.disklet, 'plugins/' + pluginName)
+    this.disklet = navigateDisklet(io.disklet, 'plugins/' + pluginId)
 
-    this.pluginName = pluginName
+    this.pluginId = pluginId
     this.headerCacheDirty = false
     this.serverCacheJson = {}
   }
@@ -112,7 +112,7 @@ export class PluginState extends ServerCache {
       this.headerCache = headerCacheJson.headers
     } catch (e) {
       this.headerCache = {}
-      logger.info(`${this.pluginName}: Failed to load header cache: ${e}`)
+      logger.info(`${this.pluginId}: Failed to load header cache: ${e}`)
     }
 
     try {
@@ -122,7 +122,7 @@ export class PluginState extends ServerCache {
 
       this.serverCacheJson = serverCacheJson
     } catch (e) {
-      logger.info(`${this.pluginName}: Failed to load server cache: ${e}`)
+      logger.info(`${this.pluginId}: Failed to load server cache: ${e}`)
     }
 
     // Fetch stratum servers in the background:
@@ -152,10 +152,10 @@ export class PluginState extends ServerCache {
           })
         )
         .then(() => {
-          logger.info(`${this.pluginName} - Saved header cache`)
+          logger.info(`${this.pluginId} - Saved header cache`)
           this.headerCacheDirty = false
         })
-        .catch(e => logger.info(`${this.pluginName} - ${e.toString()}`))
+        .catch(e => logger.info(`${this.pluginId} - ${e.toString()}`))
     }
     return Promise.resolve()
   }
@@ -170,9 +170,9 @@ export class PluginState extends ServerCache {
         )
         this.serverCacheDirty = false
         this.cacheLastSave_ = Date.now()
-        logger.info(`${this.pluginName} - Saved server cache`)
+        logger.info(`${this.pluginId} - Saved server cache`)
       } catch (e) {
-        logger.info(`${this.pluginName} - ${e.toString()}`)
+        logger.info(`${this.pluginId} - ${e.toString()}`)
       }
     }
   }
@@ -206,11 +206,11 @@ export class PluginState extends ServerCache {
     let serverList = this.defaultServers
     if (!this.disableFetchingServers) {
       try {
-        logger.info(`${this.pluginName} - GET ${this.infoServerUris}`)
+        logger.info(`${this.pluginId} - GET ${this.infoServerUris}`)
         const result = await io.fetch(this.infoServerUris)
         if (!result.ok) {
           logger.info(
-            `${this.pluginName} - Fetching ${this.infoServerUris} failed with ${result.status}`
+            `${this.pluginId} - Fetching ${this.infoServerUris} failed with ${result.status}`
           )
         } else {
           serverList = await result.json()

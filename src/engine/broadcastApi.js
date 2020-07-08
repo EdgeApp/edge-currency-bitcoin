@@ -82,11 +82,11 @@ const makeBroadcastBlockchair = (io: PluginIo, currencyCode: string) => {
   const info = allInfo.find(currency => {
     return currency.currencyInfo.currencyCode === currencyCode.toUpperCase()
   })
-  let pluginName
+  let pluginId
   if (info && info.currencyInfo) {
-    pluginName = info.currencyInfo.pluginName
-    if (pluginName === 'bitcoinsv') pluginName = 'bitcoin-sv' // special case (hyphen)
-    if (pluginName === 'bitcoincash') pluginName = 'bitcoin-cash' // special case (hyphen)
+    pluginId = info.currencyInfo.pluginId
+    if (pluginId === 'bitcoinsv') pluginId = 'bitcoin-sv' // special case (hyphen)
+    if (pluginId === 'bitcoincash') pluginId = 'bitcoin-cash' // special case (hyphen)
   } else {
     return null
   }
@@ -95,7 +95,7 @@ const makeBroadcastBlockchair = (io: PluginIo, currencyCode: string) => {
     try {
       const body = { data: rawTx }
       const { fetchCors = io.fetch } = io
-      const uri = `https://api.blockchair.com/${pluginName}/push/transaction`
+      const uri = `https://api.blockchair.com/${pluginId}/push/transaction`
       const response = await fetchCors(uri, {
         headers: {
           Accept: 'application/json',
@@ -119,7 +119,7 @@ const makeBroadcastBlockchair = (io: PluginIo, currencyCode: string) => {
       if (out.context && out.context.error) {
         logger.info('makeBroadcastBlockchair fail with out: ', out)
         throw new Error(
-          `https://api.blockchair.com/${pluginName}/push/transaction failed with error ${out.context.error}`
+          `https://api.blockchair.com/${pluginId}/push/transaction failed with error ${out.context.error}`
         )
       }
       logger.info(
