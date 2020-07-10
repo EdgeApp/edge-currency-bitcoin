@@ -655,6 +655,9 @@ export class CurrencyEngine {
         blockHeight: 0,
         nativeAmount: `${sumOfTx - parseInt(bcoinTx.getFee())}`,
         networkFee: `${bcoinTx.getFee()}`,
+        feeRateUsed: {
+          satPerVByte: rate / 1000
+        },
         signedTx: ''
       }
       return edgeTransaction
