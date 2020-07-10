@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.8.4 (2020-07-09)
+
+- Upgrade edge-core-js to v0.17.8
+- Add feeRateUsed to edgeTransaction
+
 # 4.8.3 (2020-07-05)
 
 - Send additional logging to core
