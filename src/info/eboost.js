@@ -46,7 +46,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'EBST',
   displayName: 'eBoost',
-  pluginName: 'eboost',
+  pluginId: 'eboost',
   denominations: [
     { name: 'EBST', multiplier: '100000000', symbol: 'EBST' },
     { name: 'mEBST', multiplier: '100000', symbol: 'mEBST' }

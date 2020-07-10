@@ -50,7 +50,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'DGB',
   displayName: 'DigiByte',
-  pluginName: 'digibyte',
+  pluginId: 'digibyte',
   denominations: [
     { name: 'DGB', multiplier: '100000000', symbol: 'Ɗ' },
     { name: 'mDGB', multiplier: '100000', symbol: 'mƊ' }

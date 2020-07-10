@@ -51,7 +51,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BSV',
   displayName: 'Bitcoin SV',
-  pluginName: 'bitcoinsv',
+  pluginId: 'bitcoinsv',
   denominations: [
     { name: 'BSV', multiplier: '100000000', symbol: '₿' },
     { name: 'mBSV', multiplier: '100000', symbol: 'm₿' },

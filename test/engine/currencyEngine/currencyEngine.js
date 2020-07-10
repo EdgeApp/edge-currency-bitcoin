@@ -76,7 +76,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     nativeIo: {},
     pluginDisklet: fakeIo.disklet
   }
-  const factory = edgeCorePlugins[fixture.pluginName]
+  const factory = edgeCorePlugins[fixture.pluginId]
   if (typeof factory !== 'function') throw new TypeError('Bad plugin')
   const corePlugin: EdgeCorePlugin = factory(pluginOpts)
   const plugin: EdgeCurrencyPlugin = (corePlugin: any)

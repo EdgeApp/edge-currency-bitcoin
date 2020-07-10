@@ -45,7 +45,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'DASH',
   displayName: 'Dash',
-  pluginName: 'dash',
+  pluginId: 'dash',
   denominations: [
     { name: 'DASH', multiplier: '100000000', symbol: 'Ð' },
     { name: 'mDASH', multiplier: '100000', symbol: 'mÐ' }

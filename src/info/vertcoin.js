@@ -49,7 +49,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'VTC',
   displayName: 'Vertcoin',
-  pluginName: 'vertcoin',
+  pluginId: 'vertcoin',
   denominations: [
     { name: 'VTC', multiplier: '100000000', symbol: 'V' },
     { name: 'mVTC', multiplier: '100000', symbol: 'mV' }

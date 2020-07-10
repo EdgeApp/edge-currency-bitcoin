@@ -1,6 +1,6 @@
 [
   {
-    "pluginName": "bitcoin",
+    "pluginId": "bitcoin",
     "WALLET_TYPE": "wallet:bitcoin",
     "WALLET_FORMAT": "bip32",
     "Test Currency code": "BTC",
@@ -145,7 +145,7 @@
     }
   },
   {
-    "pluginName": "litecoin",
+    "pluginId": "litecoin",
     "WALLET_TYPE": "wallet:litecoin",
     "WALLET_FORMAT": "bip44",
     "Test Currency code": "LTC",
@@ -324,7 +324,7 @@
     }
   },
   {
-    "pluginName": "bitcoincash",
+    "pluginId": "bitcoincash",
     "WALLET_TYPE": "wallet:bitcoincash",
     "WALLET_FORMAT": "bip44",
     "Test Currency code": "BCH",
@@ -487,7 +487,7 @@
     }
   },
   {
-    "pluginName": "bitcoinsv",
+    "pluginId": "bitcoinsv",
     "WALLET_TYPE": "wallet:bitcoinsv",
     "WALLET_FORMAT": "bip44",
     "Test Currency code": "BSV",
@@ -607,7 +607,7 @@
     }
   },
   {
-    "pluginName": "zcoin",
+    "pluginId": "zcoin",
     "WALLET_TYPE": "wallet:zcoin",
     "WALLET_FORMAT": "bip44",
     "Test Currency code": "XZC",
@@ -730,7 +730,7 @@
     }
   },
   {
-    "pluginName": "feathercoin",
+    "pluginId": "feathercoin",
     "WALLET_TYPE": "wallet:feathercoin",
     "WALLET_FORMAT": "bip44",
     "Test Currency code": "FTC",
@@ -852,7 +852,7 @@
     }
   },
   {
-    "pluginName": "smartcash",
+    "pluginId": "smartcash",
     "WALLET_TYPE": "wallet:smartcash",
     "Test Currency code": "SMART",
     "WALLET_FORMAT": "bip44",
@@ -962,7 +962,7 @@
     }
   },
   {
-    "pluginName": "groestlcoin",
+    "pluginId": "groestlcoin",
     "WALLET_TYPE": "wallet:groestlcoin",
     "Test Currency code": "GRS",
     "WALLET_FORMAT": "bip49",

@@ -72,7 +72,7 @@ const currencyInfo: EdgeCurrencyInfo = {
 
   currencyCode: 'BTG',
   displayName: 'Bitcoin Gold',
-  pluginName: 'bitcoingold',
+  pluginId: 'bitcoingold',
   denominations: [
     { name: 'BTG', multiplier: '100000000', symbol: '₿' },
     { name: 'mBTG', multiplier: '100000', symbol: 'm₿' },

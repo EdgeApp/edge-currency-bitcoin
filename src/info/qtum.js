@@ -51,7 +51,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'QTUM',
   displayName: 'Qtum',
-  pluginName: 'qtum',
+  pluginId: 'qtum',
   denominations: [{ name: 'QTUM', multiplier: '100000000', symbol: 'Q' }],
   walletType: 'wallet:qtum',
 

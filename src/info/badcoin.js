@@ -46,7 +46,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
   currencyCode: 'BAD',
   displayName: 'Badcoin',
-  pluginName: 'badcoin',
+  pluginId: 'badcoin',
   denominations: [
     { name: 'BAD', multiplier: '100000000', symbol: 'BAD' },
     { name: 'mBAD', multiplier: '100000', symbol: 'mBAD' }
