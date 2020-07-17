@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.8.5 (2020-07-17)
+
+- Support for Ravencoin's new blockheader length in latest hardfork
+
 # 4.8.4 (2020-07-09)
 
 - Upgrade edge-core-js to v0.17.8
