@@ -10,6 +10,9 @@ import {
   type EdgeSocket,
   type EdgeSocketOptions,
   type PluginIo,
+  type SigmaMint,
+  type SigmaMintOptions,
+  type SigmaSpendOptions,
   makeEdgeSocket
 } from './plugin/pluginIo.js'
 
@@ -26,6 +29,15 @@ export function makeNodeIo(io: EdgeIo): PluginIo {
       else throw new Error('Unsupported socket type')
 
       return Promise.resolve(makeEdgeSocket(socket, opts))
+    },
+    sigmaMint(opts: SigmaMintOptions): Promise<SigmaMint> {
+      return Promise.resolve({
+        commitment: 'commitment',
+        serialNumber: 'serialNumber'
+      })
+    },
+    sigmaSpend(opts: SigmaSpendOptions): Promise<string> {
+      return Promise.resolve('proof')
     }
   }
 }

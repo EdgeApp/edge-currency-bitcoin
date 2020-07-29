@@ -7,3 +7,7 @@ declare module 'react-native-fast-crypto' {
 declare module 'react-native-tcp' {
   declare module.exports: any
 }
+
+declare module 'react-native-zcoin-sigma' {
+  declare module.exports: any
+}

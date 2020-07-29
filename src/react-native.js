@@ -13,7 +13,24 @@ window.addEdgeCorePlugins(
       throw new Error('React Native Bitcoin IO object not loaded')
     }
 
-    const { fetchJson, fetchText, pbkdf2, secp256k1, makeSocket } = nativeIo
-    return { ...opts.io, fetchJson, fetchText, pbkdf2, secp256k1, makeSocket }
+    const {
+      fetchJson,
+      fetchText,
+      pbkdf2,
+      secp256k1,
+      makeSocket,
+      sigmaMint,
+      sigmaSpend
+    } = nativeIo
+    return {
+      ...opts.io,
+      fetchJson,
+      fetchText,
+      pbkdf2,
+      secp256k1,
+      makeSocket,
+      sigmaMint,
+      sigmaSpend
+    }
   })
 )
