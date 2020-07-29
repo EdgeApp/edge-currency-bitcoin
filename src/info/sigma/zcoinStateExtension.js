@@ -71,6 +71,11 @@ export class ZcoinStateExtension implements EngineStateExtension {
     }
   }
 
+  getBalance(options: any): string {
+    const totalMinted = this.mintsTotalAmount()
+    return totalMinted.toString()
+  }
+
   async load(engineState: EngineState) {
     this.engineState = engineState
     this.encryptedLocalDisklet = this.engineState.encryptedLocalDisklet
@@ -320,6 +325,15 @@ export class ZcoinStateExtension implements EngineStateExtension {
       }
       checkResponse()
     })
+  }
+
+  mintsTotalAmount() {
+    return this.mintedCoins.reduce((total, coin) => {
+      if (coin.groupId !== -1 && !coin.isSpend) {
+        total += coin.value
+      }
+      return total
+    }, 0)
   }
 
   getLastPrivateCoinIndex() {
