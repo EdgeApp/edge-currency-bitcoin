@@ -86,7 +86,7 @@ export class ServerCache {
         serverScore = Math.min(serverScore, MAX_SCORE - 100)
       }
 
-      if (serverUrl.startsWith('electrumwss')) {
+      if (serverUrl.startsWith('electrumwss') && serverScore > 0) {
         serverScore = 0
         oldServer.responseTime = RESPONSE_TIME_UNINITIALIZED
       }
