@@ -63,6 +63,7 @@ export class ZcoinStateExtension implements EngineStateExtension {
 
   constructor() {
     this.missingTxsVerbose = {}
+    this.mintedCoins = []
   }
 
   handleNewTxid(txid: string, verbose: boolean) {
@@ -87,6 +88,12 @@ export class ZcoinStateExtension implements EngineStateExtension {
         this.handleNewTxid(item.spendTxId, true)
       }
     })
+  }
+
+  dumpData(): any {
+    return {
+      'engineState.missingTxsVerbose': this.missingTxsVerbose
+    }
   }
 
   pickNextTask(uri: string, stratumVersion: string): StratumTask | void {
