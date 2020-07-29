@@ -5,9 +5,11 @@ import type { Disklet } from 'disklet'
 import { CurrencyEngine } from '../../engine/currencyEngine'
 import { CurrencyEngineExtension } from '../../engine/currencyEngineExtension'
 import { EngineState } from '../../engine/engineState'
+import { EngineStateExtension } from '../../engine/engineStateExtension'
 import { KeyManager } from '../../engine/keyManager'
 import type { PluginIo } from '../../plugin/pluginIo'
 import { logger } from '../../utils/logger'
+import { ZcoinStateExtension } from './zcoinStateExtension'
 
 export class ZcoinEngineExtension implements CurrencyEngineExtension {
   currencyEngine: CurrencyEngine
@@ -16,8 +18,16 @@ export class ZcoinEngineExtension implements CurrencyEngineExtension {
   keyManager: KeyManager
   io: PluginIo
 
+  engineStateExtensions: EngineStateExtension
+  zcoinStateExtensions: ZcoinStateExtension
+
   canRunLoop: boolean
   looperMethods: any
+
+  constructor() {
+    this.zcoinStateExtensions = new ZcoinStateExtension()
+    this.engineStateExtensions = this.zcoinStateExtensions
+  }
 
   async load(currencyEngine: CurrencyEngine) {
     this.currencyEngine = currencyEngine
