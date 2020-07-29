@@ -7,6 +7,12 @@ import { EngineStateExtension } from '../../engine/engineStateExtension'
 import type { StratumTask } from '../../stratum/stratumConnection'
 import { logger } from '../../utils/logger'
 import {
+  type PrivateCoin,
+  asPrivateCoinArray,
+  SIGMA_ENCRYPTED_FILE
+} from '../zcoins'
+import { type SpendCoin } from './coinUtils'
+import {
   fetchTransactionVerbose,
   getAnonymitySet,
   getLatestCoinIds,
@@ -41,6 +47,7 @@ export class ZcoinStateExtension implements EngineStateExtension {
 
   // Transactions that are relevant to our addresses, but missing locally and must retrieved with details:
   missingTxsVerbose: { [txid: string]: true }
+  mintedCoins: PrivateCoin[]
 
   mintsToRetrieve: ?({ denom: number, pubcoin: string }[])
   retrievedMints: ?(MintMetadata[])
@@ -67,6 +74,14 @@ export class ZcoinStateExtension implements EngineStateExtension {
   async load(engineState: EngineState) {
     this.engineState = engineState
     this.encryptedLocalDisklet = this.engineState.encryptedLocalDisklet
+
+    // update the spend transactions
+    this.mintedCoins = await this.loadMintedCoins()
+    this.mintedCoins.forEach(item => {
+      if (item.spendTxId) {
+        this.handleNewTxid(item.spendTxId, true)
+      }
+    })
   }
 
   pickNextTask(uri: string, stratumVersion: string): StratumTask | void {
@@ -305,6 +320,61 @@ export class ZcoinStateExtension implements EngineStateExtension {
       }
       checkResponse()
     })
+  }
+
+  getLastPrivateCoinIndex() {
+    return this.mintedCoins.reduce((acc, coin) => {
+      return Math.max(coin.index, acc)
+    }, 0)
+  }
+
+  // TODO: change json struct
+  async loadMintedCoins(): Promise<PrivateCoin[]> {
+    let mints: PrivateCoin[] = []
+    try {
+      const jsonString = await this.encryptedLocalDisklet.getText(
+        SIGMA_ENCRYPTED_FILE
+      )
+      mints = asPrivateCoinArray(JSON.parse(jsonString))
+    } catch (e) {
+      logger.error('loadMintedCoins', e)
+    }
+
+    this.mintedCoins = mints
+    return mints
+  }
+
+  // TODO: change json struct
+  async writeMintedCoins(mints: PrivateCoin[]) {
+    const json = JSON.stringify(mints)
+    await this.encryptedLocalDisklet.setText(SIGMA_ENCRYPTED_FILE, json)
+    this.mintedCoins = mints
+
+    return this.mintedCoins
+  }
+
+  async appendMintedCoins(coins: PrivateCoin[]): Promise<PrivateCoin[]> {
+    const newMintedCoins = [...this.mintedCoins, ...coins]
+
+    const wroteCoins = await this.writeMintedCoins(newMintedCoins)
+    return wroteCoins
+  }
+
+  async updateSpendCoins(coins: SpendCoin[], txid: string) {
+    const mints = this.mintedCoins
+    coins.forEach(coin => {
+      for (let i = 0; i < mints.length; ++i) {
+        const mint = mints[i]
+        if (mint.index === coin.index) {
+          mint.isSpend = true
+          mint.spendTxId = txid
+          mint.groupId = coin.groupId
+          break
+        }
+      }
+    })
+
+    this.writeMintedCoins(mints)
   }
 
   wakeUpConnections() {
