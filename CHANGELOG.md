@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.8.6 (2020-07-29)
+
+- Fix server scoring bug where low scoring electrumwss servers would reset to default score
+
 # 4.8.5 (2020-07-17)
 
 - Support for Ravencoin's new blockheader length in latest hardfork
