@@ -29,9 +29,13 @@ const getSpendTargets = (
 const getBitPayPayment = async (
   paymentProtocolURL: string,
   network: string,
+  currencyCode: string,
   fetch: any
 ): Promise<EdgePaymentProtocolInfo> => {
-  const headers = { Accept: 'application/payment-request' }
+  const headers = {
+    Accept: 'application/payment-request',
+    'x-currency': currencyCode
+  }
   const result = await fetch(paymentProtocolURL, { headers })
   if (parseInt(result.status) !== 200) {
     const error = await result.text()
@@ -78,7 +82,7 @@ export async function getPaymentDetails(
   currencyCode: string,
   fetch: any
 ): Promise<EdgePaymentProtocolInfo> {
-  return getBitPayPayment(paymentProtocolURL, network, fetch)
+  return getBitPayPayment(paymentProtocolURL, network, currencyCode, fetch)
 }
 
 export function createPayment(
