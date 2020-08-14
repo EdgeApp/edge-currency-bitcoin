@@ -37,6 +37,7 @@ const engineInfo: EngineCurrencyInfo = {
   earnComFeeInfoServer: 'https://Bitcoinfees.Earn.com/api/v1/fees/list',
   mempoolSpaceFeeInfoServer: 'https://mempool.space/api/v1/fees/recommended',
   customFeeSettings: ['satPerByte'],
+  minRelayFee: '1',
   simpleFeeSettings: {
     highFee: '150',
     lowFee: '20',

@@ -80,6 +80,7 @@ export type EngineCurrencyInfo = {
     standardFeeLowAmount: string,
     standardFeeHighAmount: string
   },
+  minRelayFee: string,
 
   // Optional Settings
   forks?: Array<string>,

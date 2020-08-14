@@ -35,6 +35,7 @@ const engineInfo: EngineCurrencyInfo = {
   defaultFee: 50000,
   feeUpdateInterval: 60000,
   customFeeSettings: ['satPerByte'],
+  minRelayFee: '10',
   simpleFeeSettings: {
     highFee: '300',
     lowFee: '100',
