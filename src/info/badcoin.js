@@ -9,7 +9,7 @@ import { imageServerUrl } from './constants.js'
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'badcoin',
   magic: 0x33c3ffaa,
-  formats: ['bip44', 'bip32'],
+  formats: ['bip49', 'bip44', 'bip32'],
   keyPrefix: {
     privkey: 0xb0,
     xpubkey: 0x06c4abc8,
@@ -20,7 +20,10 @@ const bcoinInfo: BcoinCurrencyInfo = {
   },
   addressPrefix: {
     pubkeyhash: 0x1c,
-    scripthash: 0x19
+    scripthash: 0x19,
+    scripthashLegacy: 0x05,
+    witnesspubkeyhash: 0x06,
+    witnessscripthash: 0x0a
   }
 }
 
@@ -30,7 +33,6 @@ const engineInfo: EngineCurrencyInfo = {
   gapLimit: 10,
   defaultFee: 500000,
   feeUpdateInterval: 60000,
-  infoServer: 'https://info1.edgesecure.co:8444/v1',
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
     highFee: '300',
