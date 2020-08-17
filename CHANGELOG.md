@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.0 (2020-08-17)
+
+- Add support for Anypay payment protocol
+
 # 4.8.6 (2020-07-29)
 
 - Fix server scoring bug where low scoring electrumwss servers would reset to default score
