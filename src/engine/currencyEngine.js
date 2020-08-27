@@ -588,6 +588,7 @@ export class CurrencyEngine {
     const { spendTargets } = edgeSpendInfo
     // Can't spend without outputs
     if (!txOptions.CPFP && (!spendTargets || spendTargets.length < 1)) {
+      this.log('Need to provide Spend Targets')
       throw new Error('Need to provide Spend Targets')
     }
     // Calculate the total amount to send
@@ -599,6 +600,7 @@ export class CurrencyEngine {
     const { utxos = this.engineState.getUTXOs() } = txOptions
     // Test if we have enough to spend
     if (bns.gt(totalAmountToSend, `${sumUtxos(utxos)}`)) {
+      this.log(`InsufficientFundError ${this.currencyCode}`)
       throw new InsufficientFundsError(this.currencyCode)
     }
     try {
@@ -662,6 +664,7 @@ export class CurrencyEngine {
       }
       return edgeTransaction
     } catch (e) {
+      this.log(`makeSpend error ${JSON.stringify(e)}`)
       if (e.type === 'FundingError')
         throw new InsufficientFundsError(this.currencyCode)
       throw e
