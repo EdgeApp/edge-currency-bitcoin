@@ -1,10 +1,15 @@
 // @flow
 
+import { type EdgeLog } from 'edge-core-js'
+
 import { allInfo } from '../info/all.js'
 import { type PluginIo } from '../plugin/pluginIo.js'
-import { logger } from '../utils/logger.js'
 
-const makeBroadcastBlockchainInfo = (io: PluginIo, currencyCode: string) => {
+const makeBroadcastBlockchainInfo = (
+  io: PluginIo,
+  currencyCode: string,
+  log: EdgeLog
+) => {
   const supportedCodes = ['BTC']
   if (!supportedCodes.find(c => c === currencyCode)) {
     return null
@@ -23,23 +28,24 @@ const makeBroadcastBlockchainInfo = (io: PluginIo, currencyCode: string) => {
       }
       const responseText = await response.text()
       if (responseText === 'Transaction Submitted') {
-        logger.info(
-          'SUCCESS makeBroadcastBlockchainInfo has response',
-          response
-        )
+        log('SUCCESS makeBroadcastBlockchainInfo has response', response)
         return true
       } else {
-        logger.info('ERROR makeBroadcastBlockchainInfo', responseText)
+        log('ERROR makeBroadcastBlockchainInfo', responseText)
         throw new Error(`blockchain.info failed with status ${responseText}`)
       }
     } catch (e) {
-      logger.info('ERROR makeBroadcastBlockchainInfo', e)
+      log('ERROR makeBroadcastBlockchainInfo', e)
       throw e
     }
   }
 }
 
-const makeBroadcastInsight = (io: PluginIo, currencyCode: string) => {
+const makeBroadcastInsight = (
+  io: PluginIo,
+  currencyCode: string,
+  log: EdgeLog
+) => {
   const supportedCodes = []
   if (!supportedCodes.find(c => c === currencyCode)) {
     return null
@@ -63,17 +69,21 @@ const makeBroadcastInsight = (io: PluginIo, currencyCode: string) => {
       }
       const out = await response.json()
       if (out.txid) {
-        logger.info('SUCCESS makeBroadcastInsight:' + JSON.stringify(out))
+        log('SUCCESS makeBroadcastInsight:' + JSON.stringify(out))
         return out
       }
     } catch (e) {
-      logger.info('ERROR makeBroadcastInsight:', e)
+      log('ERROR makeBroadcastInsight:', e)
       throw e
     }
   }
 }
 
-const makeBroadcastBlockchair = (io: PluginIo, currencyCode: string) => {
+const makeBroadcastBlockchair = (
+  io: PluginIo,
+  currencyCode: string,
+  log: EdgeLog
+) => {
   const supportedCodes = ['DOGE', 'BTC', 'BCH', 'LTC', 'BSV', 'DASH', 'GRS'] // does seem to appear for GRS?
   if (!supportedCodes.find(c => c === currencyCode)) {
     return null
@@ -108,7 +118,7 @@ const makeBroadcastBlockchair = (io: PluginIo, currencyCode: string) => {
         throw new Error(`Error ${response.status} while fetching ${uri}`)
       }
       const out = await response.json()
-      logger.info(
+      log(
         'makeBroadcastBlockchair fetch with body: ',
         body,
         ', response: ',
@@ -117,18 +127,18 @@ const makeBroadcastBlockchair = (io: PluginIo, currencyCode: string) => {
         out
       )
       if (out.context && out.context.error) {
-        logger.info('makeBroadcastBlockchair fail with out: ', out)
+        log('makeBroadcastBlockchair fail with out: ', out)
         throw new Error(
           `https://api.blockchair.com/${pluginId}/push/transaction failed with error ${out.context.error}`
         )
       }
-      logger.info(
+      log(
         'makeBroadcastBlockchair executed successfully with hash: ',
         out.data.transaction_hash
       )
       return out.data.transaction_hash
     } catch (e) {
-      logger.info('ERROR makeBroadcastBlockchair: ', e)
+      log('ERROR makeBroadcastBlockchair: ', e)
       throw e
     }
   }

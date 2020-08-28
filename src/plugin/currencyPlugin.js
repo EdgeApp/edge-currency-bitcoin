@@ -32,7 +32,6 @@ import {
   keysFromEntropy
 } from '../utils/coinUtils.js'
 import { getXPubFromSeed } from '../utils/formatSelector.js'
-import { logger, setLogger } from '../utils/logger.js'
 import { checkCacheVersion } from '../utils/upgradeCache.js'
 import { type PluginIo } from './pluginIo.js'
 import { PluginState } from './pluginState.js'
@@ -78,7 +77,7 @@ export class CurrencyTools {
     this.pluginId = currencyInfo.pluginId
     // Private API:
     this.io = io
-    logger.info(`Creating Currency Plugin for ${this.pluginId}`)
+    log(`Creating Currency Plugin for ${this.pluginId}`)
     this.network = engineInfo.network
     const { defaultSettings, pluginId, currencyCode } = this.currencyInfo
     this.state = new PluginState({
@@ -145,7 +144,6 @@ const makeCurrencyPluginFactory = (
     options: EdgeCorePluginOptions
   ): EdgeCurrencyPlugin {
     const io = makeIo(options)
-    setLogger(io.console)
     // Extend bcoin to support this plugin currency info
     // and faster crypto if possible
     const { secp256k1, pbkdf2 } = io

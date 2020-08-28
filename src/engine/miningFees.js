@@ -5,10 +5,10 @@
 
 import { bns } from 'biggystring'
 import { asNumber, asObject } from 'cleaners'
+import { type EdgeLog } from 'edge-core-js/types'
 
 import type { BitcoinFees, EarnComFees } from '../utils/flowTypes.js'
 import { EarnComFeesSchema } from '../utils/jsonSchemas.js'
-import { logger } from '../utils/logger.js'
 import { validateObject } from '../utils/utils.js'
 
 export const ES_FEE_LOW = 'low'
@@ -64,7 +64,10 @@ export function calcFeesFromMempoolSpace(
  * @param earnComFees
  * @returns {BitcoinFees}
  */
-export function calcFeesFromEarnCom(earnComFeesJson: any): $Shape<BitcoinFees> {
+export function calcFeesFromEarnCom(
+  earnComFeesJson: any,
+  log: EdgeLog
+): $Shape<BitcoinFees> {
   let highDelay = 999999
   let lowDelay = 0
   let highFee = MAX_FEE
@@ -77,7 +80,7 @@ export function calcFeesFromEarnCom(earnComFeesJson: any): $Shape<BitcoinFees> {
   }
   const valid = validateObject(earnComData, EarnComFeesSchema)
   if (!valid) {
-    logger.info('Not valid fee data structure from vendor')
+    log('Not valid fee data structure from vendor')
     return {}
   }
 

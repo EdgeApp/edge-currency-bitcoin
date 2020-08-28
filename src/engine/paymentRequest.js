@@ -1,11 +1,10 @@
 // @flow
 
 import { primitives } from 'bcoin'
-import { type EdgePaymentProtocolInfo } from 'edge-core-js/types'
+import { type EdgeLog, type EdgePaymentProtocolInfo } from 'edge-core-js/types'
 import parse from 'url-parse'
 
 import { toLegacyFormat, toNewFormat } from '../utils/addressFormat.js'
-import { logger } from '../utils/logger.js'
 
 const getSpendTargets = (
   outputs: Array<any>,
@@ -98,7 +97,8 @@ export async function sendPayment(
   fetch: any,
   network: string,
   paymentUrl: string,
-  payment: any
+  payment: any,
+  log: EdgeLog
 ): Promise<any> {
   const headers = { 'Content-Type': 'application/payment' }
   if (global.androidFetch) {
@@ -111,7 +111,7 @@ export async function sendPayment(
       const paymentACK = JSON.parse(result)
       return paymentACK
     } catch (e) {
-      logger.error(e)
+      log(e)
       throw e
     }
   }
