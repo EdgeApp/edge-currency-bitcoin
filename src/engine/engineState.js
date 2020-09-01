@@ -610,9 +610,10 @@ export class EngineState extends EventEmitter {
           }
           return task
         },
-        onTimer: (queryTime: number) => {
+        onTimer: (queryDate: number) => {
+          const queryTime = Date.now() - queryDate
           this.log(`${prefix} returned version in ${queryTime}ms`)
-          this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
+          this.pluginState.serverScoreUp(uri, queryTime)
         },
         onVersion: (version: string, requestMs) => {
           this.log(`${prefix} received version ${version}`)
