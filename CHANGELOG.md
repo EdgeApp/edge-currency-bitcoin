@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.1 (2020-08-31)
+
+- Replace logger with EdgeLog
+
 # 4.9.0 (2020-08-17)
 
 - Add support for Anypay payment protocol
