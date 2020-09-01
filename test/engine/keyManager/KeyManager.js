@@ -11,7 +11,6 @@ import { bitcoincash } from '../../../src/info/bitcoincash.js'
 import { dogecoin } from '../../../src/info/dogecoin.js'
 // Bcoin extender function
 import { addNetwork } from '../../../src/utils/bcoinExtender/bcoinExtender.js'
-import { logger, setLogger } from '../../../src/utils/logger.js'
 import fixtures from './fixtures.json'
 
 // Add network to bcoin
@@ -20,20 +19,18 @@ addNetwork(bitcoincash.bcoinInfo)
 addNetwork(dogecoin.bcoinInfo)
 
 const fakeLogger = {
-  info: () => {},
-  warn: () => {},
-  error: () => {}
+  info: (...args) => {},
+  warn: (...args) => {},
+  error: (...args) => {}
 }
-
-setLogger(fakeLogger)
 
 for (const fixture of fixtures) {
   const keyManagerCallbacks: KeyManagerCallbacks = {
     onNewAddress: (scriptHash: string, address: string, path: string) => {
-      logger.info(scriptHash, address, path)
+      fakeLogger.info(scriptHash, address, path)
     },
     onNewKey: (keys: any) => {
-      logger.info(keys)
+      fakeLogger.info(keys)
     }
   }
   describe(`Key Manager for ${fixture.network}`, function() {

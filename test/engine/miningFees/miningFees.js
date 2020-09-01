@@ -13,6 +13,8 @@ import {
 import type { BitcoinFees } from '../../../src/utils/flowTypes.js'
 import earnComTestFees from './earnComTestFees.json'
 
+const log = Object.assign(() => {}, { error() {}, warn() {} })
+
 describe(`Mining Fees`, function() {
   it('calcFeesFromEarnCom from earn.com', function() {
     const inBitcoinFees = {
@@ -24,7 +26,10 @@ describe(`Mining Fees`, function() {
       standardFeeHighAmount: '10000000',
       timestamp: 0
     }
-    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom(earnComTestFees)
+    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom(
+      earnComTestFees,
+      log
+    )
     const outBitcoinFees: BitcoinFees = { ...inBitcoinFees, ...edgeBitcoinFees }
     assert.equal(outBitcoinFees.standardFeeLowAmount, '100000')
     assert.equal(outBitcoinFees.standardFeeHighAmount, '10000000')
@@ -43,7 +48,7 @@ describe(`Mining Fees`, function() {
       standardFeeHighAmount: '22222222',
       timestamp: 0
     }
-    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom([])
+    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom([], log)
     const outBitcoinFees: BitcoinFees = { ...inBitcoinFees, ...edgeBitcoinFees }
     assert.equal(outBitcoinFees.standardFeeLowAmount, '1111111')
     assert.equal(outBitcoinFees.standardFeeHighAmount, '22222222')
@@ -62,7 +67,7 @@ describe(`Mining Fees`, function() {
       standardFeeHighAmount: '22222222',
       timestamp: 0
     }
-    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom(null)
+    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom(null, log)
     const outBitcoinFees: BitcoinFees = { ...inBitcoinFees, ...edgeBitcoinFees }
     assert.equal(outBitcoinFees.standardFeeLowAmount, '1111111')
     assert.equal(outBitcoinFees.standardFeeHighAmount, '22222222')
@@ -81,7 +86,7 @@ describe(`Mining Fees`, function() {
       standardFeeHighAmount: '22222222',
       timestamp: 0
     }
-    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom([])
+    const edgeBitcoinFees: BitcoinFees = calcFeesFromEarnCom([], log)
     const outBitcoinFees: BitcoinFees = { ...inBitcoinFees, ...edgeBitcoinFees }
     assert.equal(outBitcoinFees.standardFeeLowAmount, '1111111')
     assert.equal(outBitcoinFees.standardFeeHighAmount, '22222222')

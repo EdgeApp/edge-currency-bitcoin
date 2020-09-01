@@ -21,12 +21,11 @@ import { join } from 'path'
 import request from 'request'
 
 import edgeCorePlugins from '../../../src/index.js'
-import { logger } from '../../../src/utils/logger.js'
 
 const fakeLogger = {
-  info: () => {},
-  warn: () => {},
-  error: () => {}
+  info: (...args) => {},
+  warn: (...args) => {},
+  error: (...args) => {}
 }
 const log = Object.assign(() => {}, { error() {}, warn() {} })
 
@@ -84,19 +83,19 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   const emitter = new EventEmitter()
   const callbacks = {
     onAddressesChecked(progressRatio) {
-      logger.info('onAddressesCheck', progressRatio)
+      fakeLogger.info('onAddressesCheck', progressRatio)
       emitter.emit('onAddressesCheck', progressRatio)
     },
     onBalanceChanged(currencyCode, balance) {
-      logger.info('onBalanceChange:', currencyCode, balance)
+      fakeLogger.info('onBalanceChange:', currencyCode, balance)
       emitter.emit('onBalanceChange', currencyCode, balance)
     },
     onBlockHeightChanged(height) {
-      logger.info('onBlockHeightChange:', height)
+      fakeLogger.info('onBlockHeightChange:', height)
       emitter.emit('onBlockHeightChange', height)
     },
     onTransactionsChanged(transactionList) {
-      logger.info('onTransactionsChanged:', transactionList)
+      fakeLogger.info('onTransactionsChanged:', transactionList)
       emitter.emit('onTransactionsChanged', transactionList)
     },
     onTxidsChanged() {}
@@ -340,7 +339,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
           }
         })
         engine.startEngine().catch(e => {
-          logger.info('startEngine error', e, e.message)
+          fakeLogger.info('startEngine error', e, e.message)
         })
       }
       let heightExpected = defaultHeight
@@ -426,7 +425,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
             return engine.signTx(a)
           })
           .then(a => {
-            logger.info('sign', a)
+            fakeLogger.info('sign', a)
           })
       })
     })
@@ -479,7 +478,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
     })
 
     it('Stop the engine', function(done) {
-      logger.info('kill engine')
+      fakeLogger.info('kill engine')
       engine.killEngine().then(done)
     })
   })

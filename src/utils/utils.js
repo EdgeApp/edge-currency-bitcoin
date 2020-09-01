@@ -7,14 +7,11 @@ import crypto from 'crypto'
 import { validate } from 'jsonschema'
 import secp256k1 from 'secp256k1'
 
-import { logger } from '../utils/logger.js'
-
 export function validateObject(object: any, schema: any) {
   let result = null
   try {
     result = validate(object, schema)
   } catch (e) {
-    logger.error(e)
     return false
   }
 

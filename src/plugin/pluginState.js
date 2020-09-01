@@ -5,7 +5,6 @@ import { type EdgeIo, type EdgeLog } from 'edge-core-js/types'
 
 import type { EngineState } from '../engine/engineState.js'
 import { FixCurrencyCode, InfoServer } from '../info/constants'
-import { logger } from '../utils/logger.js'
 import { ServerCache } from './serverCache.js'
 
 export type CurrencySettings = {
@@ -112,7 +111,7 @@ export class PluginState extends ServerCache {
       this.headerCache = headerCacheJson.headers
     } catch (e) {
       this.headerCache = {}
-      logger.info(`${this.pluginId}: Failed to load header cache: ${e}`)
+      this.log(`${this.pluginId}: Failed to load header cache: ${e}`)
     }
 
     try {
@@ -122,7 +121,7 @@ export class PluginState extends ServerCache {
 
       this.serverCacheJson = serverCacheJson
     } catch (e) {
-      logger.info(`${this.pluginId}: Failed to load server cache: ${e}`)
+      this.log(`${this.pluginId}: Failed to load server cache: ${e}`)
     }
 
     // Fetch stratum servers in the background:
@@ -152,10 +151,10 @@ export class PluginState extends ServerCache {
           })
         )
         .then(() => {
-          logger.info(`${this.pluginId} - Saved header cache`)
+          this.log(`${this.pluginId} - Saved header cache`)
           this.headerCacheDirty = false
         })
-        .catch(e => logger.info(`${this.pluginId} - ${e.toString()}`))
+        .catch(e => this.log(`${this.pluginId} - ${e.toString()}`))
     }
     return Promise.resolve()
   }
@@ -170,9 +169,9 @@ export class PluginState extends ServerCache {
         )
         this.serverCacheDirty = false
         this.cacheLastSave_ = Date.now()
-        logger.info(`${this.pluginId} - Saved server cache`)
+        this.log(`${this.pluginId} - Saved server cache`)
       } catch (e) {
-        logger.info(`${this.pluginId} - ${e.toString()}`)
+        this.log(`${this.pluginId} - ${e.toString()}`)
       }
     }
   }
@@ -206,17 +205,17 @@ export class PluginState extends ServerCache {
     let serverList = this.defaultServers
     if (!this.disableFetchingServers) {
       try {
-        logger.info(`${this.pluginId} - GET ${this.infoServerUris}`)
+        this.log(`${this.pluginId} - GET ${this.infoServerUris}`)
         const result = await io.fetch(this.infoServerUris)
         if (!result.ok) {
-          logger.info(
+          this.log(
             `${this.pluginId} - Fetching ${this.infoServerUris} failed with ${result.status}`
           )
         } else {
           serverList = await result.json()
         }
       } catch (e) {
-        logger.info(e)
+        this.log(e)
       }
     }
     if (!Array.isArray(serverList)) {
