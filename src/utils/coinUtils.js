@@ -142,7 +142,10 @@ export const verifyUriProtocol = (
 ) => {
   const { uriPrefix = '' } = networks[network] || {}
   if (protocol) {
-    const prot = protocol.replace(':', '').toLowerCase()
+    const prot = protocol
+      .replace(':', '')
+      .replace('-', '')
+      .toLowerCase()
     if (prot === 'pay') return true
     return prot === pluginId || prot === uriPrefix
   }
