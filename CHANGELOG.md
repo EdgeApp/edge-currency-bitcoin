@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.2 (2020-09-30)
+
+- Add 'bitcoin-sv:' URI support
+
 # 4.9.1 (2020-08-31)
 
 - Replace logger with EdgeLog
