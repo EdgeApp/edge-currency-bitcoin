@@ -82,6 +82,7 @@ export type EngineCurrencyInfo = {
 
   // Optional Settings
   forks?: Array<string>,
+  hardFee?: number,
   earnComFeeInfoServer?: string,
   mempoolSpaceFeeInfoServer?: string,
   timestampFromHeader?: (header: Buffer, height: number) => number
@@ -608,8 +609,14 @@ export class CurrencyEngine {
       // Get the rate according to the latest fee
       const rate = this.getRate(edgeSpendInfo)
       this.log(`spend: Using fee rate ${rate} sat/K`)
-      // Create outputs from spendTargets
 
+      // Use fixed fee unless user enters custom fee. This overrides 'rate'.
+      const hardFee =
+        edgeSpendInfo.networkFeeOption !== 'custom'
+          ? this.engineInfo.hardFee
+          : null
+
+      // Create outputs from spendTargets
       const outputs = []
       for (const spendTarget of spendTargets) {
         const {
@@ -626,6 +633,7 @@ export class CurrencyEngine {
         outputs,
         utxos,
         rate,
+        hardFee,
         txOptions,
         height: this.getBlockHeight()
       })
@@ -645,6 +653,8 @@ export class CurrencyEngine {
         address => scriptHashes[address]
       )
 
+      const networkFee = bcoinTx.getFee()
+
       const edgeTransaction: EdgeTransaction = {
         ourReceiveAddresses,
         otherParams: {
@@ -656,10 +666,10 @@ export class CurrencyEngine {
         txid: '',
         date: 0,
         blockHeight: 0,
-        nativeAmount: `${sumOfTx - parseInt(bcoinTx.getFee())}`,
-        networkFee: `${bcoinTx.getFee()}`,
+        nativeAmount: `${sumOfTx - parseInt(networkFee)}`,
+        networkFee: `${networkFee}`,
         feeRateUsed: {
-          satPerVByte: rate / 1000
+          satPerVByte: hardFee ? networkFee / 1000 : rate / 1000
         },
         signedTx: ''
       }
