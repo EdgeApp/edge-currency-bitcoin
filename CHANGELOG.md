@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.3 (2020-11-19)
+
+- Set `hardFee` for DOGE to meet minumum network transaction fee
+
 # 4.9.2 (2020-09-30)
 
 - Add 'bitcoin-sv:' URI support
