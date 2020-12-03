@@ -26,7 +26,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'zcoin',
-  currencyCode: 'XZC',
+  currencyCode: 'FIRO',
   gapLimit: 10,
   defaultFee: 1000,
   feeUpdateInterval: 60000,
@@ -49,12 +49,12 @@ const engineInfo: EngineCurrencyInfo = {
 
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
-  currencyCode: 'XZC',
-  displayName: 'Zcoin',
+  currencyCode: 'FIRO',
+  displayName: 'Firo',
   pluginId: 'zcoin',
   denominations: [
-    { name: 'XZC', multiplier: '100000000', symbol: 'Ƶ' },
-    { name: 'mXZC', multiplier: '100000', symbol: 'mƵ' }
+    { name: 'FIRO', multiplier: '100000000', symbol: 'ƒ' },
+    { name: 'mFIRO', multiplier: '100000', symbol: 'mƒ' }
   ],
   walletType: 'wallet:zcoin',
 
