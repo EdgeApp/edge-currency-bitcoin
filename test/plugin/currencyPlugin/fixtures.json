@@ -643,7 +643,7 @@
         "nativeAmount": "1234567890000",
         "currencyCode": "FIRO"
       }],
-      "uri address with amount & label": ["zcoin:aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty?amount=1234.56789&label=Johnny%20Zcoin", {
+      "uri address with amount & label": ["firo:aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty?amount=1234.56789&label=Johnny%20Zcoin", {
         "publicAddress": "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty",
         "metadata": {
           "name": "Johnny Zcoin"
@@ -651,7 +651,7 @@
         "nativeAmount": "123456789000",
         "currencyCode": "FIRO"
       }],
-      "uri address with amount, label & message": ["zcoin:aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty?amount=1234.56789&label=Johnny%20Zcoin&message=Hello%20World,%20I%20miss%20you%20!", {
+      "uri address with amount, label & message": ["firo:aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty?amount=1234.56789&label=Johnny%20Zcoin&message=Hello%20World,%20I%20miss%20you%20!", {
         "publicAddress": "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty",
         "metadata": {
           "name": "Johnny Zcoin",
@@ -700,7 +700,7 @@
       "address & amount": [{
         "publicAddress": "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty",
         "nativeAmount": "123456780000"
-      }, "zcoin:aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty?amount=1234.5678"],
+      }, "firo:aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty?amount=1234.5678"],
       "address, amount, and label": [{
         "publicAddress": "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty",
         "nativeAmount": "123456780000",
@@ -708,7 +708,7 @@
         "metadata": {
           "name": "Johnny Zcoin"
         }
-      }, "zcoin:aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty?amount=1234.5678&label=Johnny%20Zcoin"],
+      }, "firo:aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty?amount=1234.5678&label=Johnny%20Zcoin"],
       "address, amount, label, & message": [{
         "publicAddress": "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty",
         "nativeAmount": "123456780000",
@@ -717,7 +717,7 @@
           "name": "Johnny Zcoin",
           "notes": "Hello World, I miss you !"
         }
-      }, "zcoin:aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty?amount=1234.5678&label=Johnny%20Zcoin&message=Hello%20World,%20I%20miss%20you%20!"],
+      }, "firo:aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty?amount=1234.5678&label=Johnny%20Zcoin&message=Hello%20World,%20I%20miss%20you%20!"],
       "invalid currencyCode": [{
         "publicAddress": "aL1aoLHKm8LiDT7vYRRnNgY5EhnapiJaty",
         "nativeAmount": "123456780000",

@@ -18,6 +18,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
     xprivkey58: 'xprv',
     coinType: 136
   },
+  uriPrefix: 'firo',
   addressPrefix: {
     pubkeyhash: 0x52,
     scripthash: 0x7
@@ -79,8 +80,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://insight.zcoin.io/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/zcoin-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/zcoin-logo-solo-64.png`
+  symbolImage: `${imageServerUrl}/firo-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/firo-logo-solo-64.png`
 }
 
 export const zcoin = { bcoinInfo, engineInfo, currencyInfo }
