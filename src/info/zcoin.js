@@ -18,6 +18,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
     xprivkey58: 'xprv',
     coinType: 136
   },
+  uriPrefix: 'firo',
   addressPrefix: {
     pubkeyhash: 0x52,
     scripthash: 0x7
@@ -26,7 +27,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
 
 const engineInfo: EngineCurrencyInfo = {
   network: 'zcoin',
-  currencyCode: 'XZC',
+  currencyCode: 'FIRO',
   gapLimit: 10,
   defaultFee: 1000,
   feeUpdateInterval: 60000,
@@ -49,12 +50,12 @@ const engineInfo: EngineCurrencyInfo = {
 
 const currencyInfo: EdgeCurrencyInfo = {
   // Basic currency information:
-  currencyCode: 'XZC',
-  displayName: 'Zcoin',
+  currencyCode: 'FIRO',
+  displayName: 'Firo',
   pluginId: 'zcoin',
   denominations: [
-    { name: 'XZC', multiplier: '100000000', symbol: 'Ƶ' },
-    { name: 'mXZC', multiplier: '100000', symbol: 'mƵ' }
+    { name: 'FIRO', multiplier: '100000000', symbol: 'ƒ' },
+    { name: 'mFIRO', multiplier: '100000', symbol: 'mƒ' }
   ],
   walletType: 'wallet:zcoin',
 
@@ -79,8 +80,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   transactionExplorer: 'https://insight.zcoin.io/tx/%s',
 
   // Images:
-  symbolImage: `${imageServerUrl}/zcoin-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/zcoin-logo-solo-64.png`
+  symbolImage: `${imageServerUrl}/firo-logo-solo-64.png`,
+  symbolImageDarkMono: `${imageServerUrl}/firo-logo-solo-64.png`
 }
 
 export const zcoin = { bcoinInfo, engineInfo, currencyInfo }
