@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.9.4 (2020-12-04)
+
+- Change Zcoin to Firo
+- Update InfoServer constant
+
 # 4.9.3 (2020-11-19)
 
 - Set `hardFee` for DOGE to meet minumum network transaction fee
