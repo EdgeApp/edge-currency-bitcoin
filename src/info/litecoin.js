@@ -96,9 +96,10 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  blockExplorer: 'https://blockchair.com/litecoin/block/%s',
-  addressExplorer: 'https://blockchair.com/litecoin/address/%s',
-  transactionExplorer: 'https://blockchair.com/litecoin/transaction/%s',
+  blockExplorer: 'https://blockchair.com/litecoin/block/%s?from=edgeapp',
+  addressExplorer: 'https://blockchair.com/litecoin/address/%s?from=edgeapp',
+  transactionExplorer:
+    'https://blockchair.com/litecoin/transaction/%s?from=edgeapp',
 
   // Images:
   symbolImage: `${imageServerUrl}/litecoin-logo-solo-64.png`,

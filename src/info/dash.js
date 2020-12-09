@@ -71,9 +71,10 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  blockExplorer: 'https://blockchair.com/dash/block/%s',
-  addressExplorer: 'https://blockchair.com/dash/address/%s',
-  transactionExplorer: 'https://blockchair.com/dash/transaction/%s',
+  blockExplorer: 'https://blockchair.com/dash/block/%s?from=edgeapp',
+  addressExplorer: 'https://blockchair.com/dash/address/%s?from=edgeapp',
+  transactionExplorer:
+    'https://blockchair.com/dash/transaction/%s?from=edgeapp',
 
   // Images:
   symbolImage: `${imageServerUrl}/dash-logo-solo-64.png`,

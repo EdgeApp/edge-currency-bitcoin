@@ -117,9 +117,11 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  blockExplorer: 'https://blockchair.com/groestlcoin/block/%s',
-  addressExplorer: 'https://blockchair.com/groestlcoin/address/%s',
-  transactionExplorer: 'https://blockchair.com/groestlcoin/transaction/%s',
+  blockExplorer: 'https://blockchair.com/groestlcoin/block/%s?from=edgeapp',
+  addressExplorer:
+    'https://blockchair.com/groestlcoin/address/%s?from=edgeapp?from=edgeapp',
+  transactionExplorer:
+    'https://blockchair.com/groestlcoin/transaction/%s?from=edgeapp',
 
   // Images:
   symbolImage: `${imageServerUrl}/groestlcoin-logo-solo-64.png`,

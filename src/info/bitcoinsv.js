@@ -78,9 +78,10 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  blockExplorer: 'https://blockchair.com/bitcoin-sv/block/%s',
-  addressExplorer: 'https://blockchair.com/bitcoin-sv/address/%s',
-  transactionExplorer: 'https://blockchair.com/bitcoin-sv/transaction/%s',
+  blockExplorer: 'https://blockchair.com/bitcoin-sv/block/%s?from=edgeapp',
+  addressExplorer: 'https://blockchair.com/bitcoin-sv/address/%s?from=edgeapp',
+  transactionExplorer:
+    'https://blockchair.com/bitcoin-sv/transaction/%s?from=edgeapp',
 
   // Images:
   symbolImage: `${imageServerUrl}/bitcoinsv-logo-solo-64.png`,
