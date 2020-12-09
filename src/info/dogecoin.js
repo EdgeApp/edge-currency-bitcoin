@@ -68,9 +68,10 @@ const currencyInfo: EdgeCurrencyInfo = {
   metaTokens: [],
 
   // Explorers:
-  blockExplorer: 'https://blockchair.com/dogecoin/block/%s',
-  addressExplorer: 'https://blockchair.com/dogecoin/address/%s',
-  transactionExplorer: 'https://blockchair.com/dogecoin/transaction/%s',
+  blockExplorer: 'https://blockchair.com/dogecoin/block/%s?from=edgeapp',
+  addressExplorer: 'https://blockchair.com/dogecoin/address/%s?from=edgeapp',
+  transactionExplorer:
+    'https://blockchair.com/dogecoin/transaction/%s?from=edgeapp',
 
   // Images:
   symbolImage: `${imageServerUrl}/dogecoin-logo-solo-64.png`,
