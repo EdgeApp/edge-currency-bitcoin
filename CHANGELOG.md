@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.5 (2020-12-08)
+
+- Update Blockchair explorer URLs to include partner ID
+
 # 4.9.4 (2020-12-04)
 
 - Change Zcoin to Firo
