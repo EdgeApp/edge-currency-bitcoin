@@ -9,6 +9,8 @@ export const FixCurrencyCode = (currencyCode: string): string => {
       return 'BC1'
     case 'DGB':
       return 'DGB1'
+    case 'FIRO':
+      return 'XZC'
     default:
       return currencyCode
   }
