@@ -630,6 +630,10 @@ export class EngineState extends EventEmitter {
           const addressState = this.serverStates[uri].addresses[scriptHash]
           addressState.hash = hash
           addressState.lastUpdate = Date.now()
+        },
+        onSpamServerError: (uri: string, score?: number) => {
+          this.log(`${prefix} returned spam response`)
+          this.pluginState.serverScoreDown(uri, score)
         }
       }
 

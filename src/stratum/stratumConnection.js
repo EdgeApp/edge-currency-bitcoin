@@ -33,6 +33,7 @@ export interface StratumCallbacks {
   +onNotifyScriptHash: (scriptHash: string, hash: string) => void;
   +onTimer: (queryTime: number) => void;
   +onVersion: (version: string, requestMs: number) => void;
+  +onSpamServerError: (server: string, score: number | void) => void;
 }
 
 export interface StratumOptions {
@@ -330,9 +331,15 @@ export class StratumConnection {
         const { error } = json
         try {
           if (error) {
-            const errorMessage = error.message
+            let errorMessage = error.message
               ? error.message.split('\n')[0]
               : error.code
+            // Check for common words found in spam server transaction broadcast responses
+            const spamCheck = new RegExp(/(security|upgrade|image)/i)
+            if (spamCheck.test(error.message)) {
+              this.callbacks.onSpamServerError(this.uri, 100)
+              errorMessage = 'A connection error occurred. Try sending again'
+            }
             throw new Error(errorMessage)
           }
           message.task.onDone(json.result, now - message.startTime)
