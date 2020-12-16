@@ -53,7 +53,8 @@ describe.skip('StratumConnection', function() {
       onClose() {
         done(gotReply ? undefined : new Error('Failed to fetch version'))
       },
-      onQueueSpace() {}
+      onQueueSpace() {},
+      onSpamServerError() {}
     }
     const connection = new StratumConnection(
       ELECTRUM_SERVER,
@@ -94,7 +95,8 @@ describe.skip('StratumConnection', function() {
         if (taskQueued) return
         taskQueued = true
         return task
-      }
+      },
+      onSpamServerError() {}
     }
     const connection = new StratumConnection(
       ELECTRUM_SERVER,
@@ -142,7 +144,8 @@ describe.skip('StratumConnection', function() {
         if (taskQueued) return
         taskQueued = true
         return task
-      }
+      },
+      onSpamServerError() {}
     }
     const connection = new StratumConnection(
       ELECTRUM_SERVER,
@@ -183,7 +186,8 @@ describe.skip('StratumConnection', function() {
         if (taskQueued) return
         taskQueued = true
         return task
-      }
+      },
+      onSpamServerError() {}
     }
     const connection = new StratumConnection(
       ELECTRUM_SERVER,
@@ -225,7 +229,8 @@ describe.skip('StratumConnection', function() {
         if (taskQueued) return
         taskQueued = true
         return task
-      }
+      },
+      onSpamServerError() {}
     }
     const connection = new StratumConnection(
       ELECTRUM_SERVER,
@@ -269,7 +274,8 @@ describe.skip('StratumConnection', function() {
         if (taskQueued) return
         taskQueued = true
         return task
-      }
+      },
+      onSpamServerError() {}
     }
     const connection = new StratumConnection(
       ELECTRUM_SERVER,
@@ -315,7 +321,8 @@ describe.skip('StratumConnection', function() {
         if (taskQueued) return
         taskQueued = true
         return task
-      }
+      },
+      onSpamServerError() {}
     }
     const connection = new StratumConnection(
       ELECTRUM_SERVER,
