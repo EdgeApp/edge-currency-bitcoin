@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.9.6 (2020-12-15)
+
+- Suppress electrum spam server messages
+- Use XZC code when querying info1 for FIRO electrum servers
+
 # 4.9.5 (2020-12-08)
 
 - Update Blockchair explorer URLs to include partner ID
