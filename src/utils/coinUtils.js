@@ -67,6 +67,7 @@ export type CreateTxOptions = {
   height?: BlockHeight,
   estimate?: Function,
   hardFee?: number,
+  minRelay?: number,
   txOptions: TxOptions
 }
 
@@ -191,6 +192,7 @@ export const createTX = async ({
   estimate,
   network,
   hardFee,
+  minRelay,
   txOptions: {
     selection = 'value',
     RBFraw = '',
@@ -264,7 +266,8 @@ export const createTX = async ({
     height,
     rate,
     estimate,
-    hardFee
+    hardFee,
+    minRelay
   })
 
   // If TX is RBF mark is by changing the Inputs sequences

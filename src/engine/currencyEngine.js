@@ -83,6 +83,7 @@ export type EngineCurrencyInfo = {
   // Optional Settings
   forks?: Array<string>,
   hardFee?: number,
+  minRelay?: number,
   earnComFeeInfoServer?: string,
   mempoolSpaceFeeInfoServer?: string,
   timestampFromHeader?: (header: Buffer, height: number) => number
@@ -610,6 +611,8 @@ export class CurrencyEngine {
       const rate = this.getRate(edgeSpendInfo)
       this.log(`spend: Using fee rate ${rate} sat/K`)
 
+      const minRelay = this.engineInfo.minRelay
+
       // Use fixed fee unless user enters custom fee. This overrides 'rate'.
       const hardFee =
         edgeSpendInfo.networkFeeOption !== 'custom'
@@ -634,6 +637,7 @@ export class CurrencyEngine {
         utxos,
         rate,
         hardFee,
+        minRelay,
         txOptions,
         height: this.getBlockHeight()
       })
