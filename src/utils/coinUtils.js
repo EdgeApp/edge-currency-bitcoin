@@ -66,7 +66,6 @@ export type CreateTxOptions = {
   outputs?: Array<StandardOutput>,
   height?: BlockHeight,
   estimate?: Function,
-  hardFee?: number,
   minRelay?: number,
   txOptions: TxOptions
 }
@@ -191,7 +190,6 @@ export const createTX = async ({
   height = -1,
   estimate,
   network,
-  hardFee,
   minRelay,
   txOptions: {
     selection = 'value',
@@ -266,7 +264,6 @@ export const createTX = async ({
     height,
     rate,
     estimate,
-    hardFee,
     minRelay
   })
 

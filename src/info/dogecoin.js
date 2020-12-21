@@ -32,14 +32,13 @@ const engineInfo: EngineCurrencyInfo = {
   feeUpdateInterval: 10000,
   customFeeSettings: ['satPerByte'],
   simpleFeeSettings: {
-    highFee: '1000',
-    lowFee: '100',
-    standardFeeLow: '500',
-    standardFeeHigh: '750',
+    highFee: '526316',
+    lowFee: '526316',
+    standardFeeLow: '526316',
+    standardFeeHigh: '526316',
     standardFeeLowAmount: '2000000000',
     standardFeeHighAmount: '98100000000'
   },
-  hardFee: 100000000,
   minRelay: 100000000,
   timestampFromHeader(header: Buffer): number {
     if (header.length < 80) {
