@@ -1261,9 +1261,9 @@ base@^0.11.1:
     mixin-deep "^1.2.0"
     pascalcase "^0.1.1"
 
-"bcoin@git+https://github.com/Airbitz/bcoin.git#3acf17650640dc88873ed0e7ea9bfad5493e6da3":
+"bcoin@git+https://github.com/Airbitz/bcoin.git#primitiveBuild":
   version "1.0.0-beta.15"
-  resolved "git+https://github.com/Airbitz/bcoin.git#3acf17650640dc88873ed0e7ea9bfad5493e6da3"
+  resolved "git+https://github.com/Airbitz/bcoin.git#67ced95be8eb4ee3938079de5532823f540dc637"
   dependencies:
     bn.js "4.11.8"
     elliptic "6.4.0"
