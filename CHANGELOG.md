@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.9.7 (2020-12-22)
+
+- DOGE: Remove `hardFee` in favor of setting default sat/byte fee to meet network minimum
+- Add `minRelay` parameter to bcoin to allow custom dust threshold
+
 # 4.9.6 (2020-12-15)
 
 - Suppress electrum spam server messages
