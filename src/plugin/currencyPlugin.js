@@ -13,6 +13,7 @@ import {
   type EdgeEncodeUri,
   type EdgeLog,
   type EdgeParsedUri,
+  type EdgeParseUriOptions,
   type EdgeWalletInfo
 } from 'edge-core-js/types'
 
@@ -117,7 +118,15 @@ export class CurrencyTools {
     return { ...walletInfo.keys, [`${network}Xpub`]: xpub }
   }
 
-  parseUri(uri: string): Promise<EdgeParsedUri> {
+  parseUri(uri: string, currencyOptions?: EdgeParseUriOptions): Promise<EdgeParsedUri> {
+    if (
+      typeof currencyOptions === 'object' &&
+      currencyOptions !== null &&
+      currencyOptions.fromFio &&
+      uri.indexOf('bitcoin') !== 0
+    ) {
+      uri = `bitcoin:${uri}`
+    }
     return Promise.resolve(parseUri(uri, this.network, this.currencyInfo))
   }
 
