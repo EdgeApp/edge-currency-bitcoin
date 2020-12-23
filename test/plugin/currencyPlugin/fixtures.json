@@ -41,6 +41,12 @@
         "nativeAmount": "1234567890000",
         "currencyCode": "BTC"
       }],
+      "uri address with amount and without prefix": ["1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=12345.6789", {
+        "publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX",
+        "metadata": {},
+        "nativeAmount": "1234567890000",
+        "currencyCode": "BTC"
+      }],
       "uri address with amount & label": ["bitcoin:1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.56789&label=Johnny%20Bitcoin", {
         "publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX",
         "metadata": {
