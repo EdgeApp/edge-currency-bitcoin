@@ -105,7 +105,7 @@ export class ServerCache {
   }
 
   printServerCache() {
-    this.log('**** printServerCache ****')
+    this.log.warn('**** printServerCache ****')
     const serverInfos: Array<ServerInfo> = []
     for (const s in this.servers_) {
       serverInfos.push(this.servers_[s])
@@ -120,9 +120,9 @@ export class ServerCache {
       const response = s.responseTime.toString()
       const numResponse = s.numResponseTimes.toString()
       const url = s.serverUrl
-      this.log(`ServerCache ${score} ${response}ms ${numResponse} ${url}`)
+      this.log.warn(`ServerCache ${score} ${response}ms ${numResponse} ${url}`)
     }
-    this.log('**************************')
+    this.log.warn('**************************')
   }
 
   serverScoreUp(

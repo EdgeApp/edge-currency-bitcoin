@@ -28,14 +28,14 @@ const makeBroadcastBlockchainInfo = (
       }
       const responseText = await response.text()
       if (responseText === 'Transaction Submitted') {
-        log('SUCCESS makeBroadcastBlockchainInfo has response', response)
+        log.warn('SUCCESS makeBroadcastBlockchainInfo has response', response)
         return true
       } else {
-        log('ERROR makeBroadcastBlockchainInfo', responseText)
+        log.error('ERROR makeBroadcastBlockchainInfo', responseText)
         throw new Error(`blockchain.info failed with status ${responseText}`)
       }
     } catch (e) {
-      log('ERROR makeBroadcastBlockchainInfo', e)
+      log.error('ERROR makeBroadcastBlockchainInfo', e)
       throw e
     }
   }
@@ -69,11 +69,11 @@ const makeBroadcastInsight = (
       }
       const out = await response.json()
       if (out.txid) {
-        log('SUCCESS makeBroadcastInsight:' + JSON.stringify(out))
+        log.warn('SUCCESS makeBroadcastInsight:' + JSON.stringify(out))
         return out
       }
     } catch (e) {
-      log('ERROR makeBroadcastInsight:', e)
+      log.error('ERROR makeBroadcastInsight:', e)
       throw e
     }
   }
@@ -118,7 +118,7 @@ const makeBroadcastBlockchair = (
         throw new Error(`Error ${response.status} while fetching ${uri}`)
       }
       const out = await response.json()
-      log(
+      log.warn(
         'makeBroadcastBlockchair fetch with body: ',
         body,
         ', response: ',
@@ -127,18 +127,18 @@ const makeBroadcastBlockchair = (
         out
       )
       if (out.context && out.context.error) {
-        log('makeBroadcastBlockchair fail with out: ', out)
+        log.error('makeBroadcastBlockchair fail with out: ', out)
         throw new Error(
           `https://api.blockchair.com/${pluginId}/push/transaction failed with error ${out.context.error}`
         )
       }
-      log(
+      log.warn(
         'makeBroadcastBlockchair executed successfully with hash: ',
         out.data.transaction_hash
       )
       return out.data.transaction_hash
     } catch (e) {
-      log('ERROR makeBroadcastBlockchair: ', e)
+      log.error('ERROR makeBroadcastBlockchair: ', e)
       throw e
     }
   }

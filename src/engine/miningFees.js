@@ -80,7 +80,7 @@ export function calcFeesFromEarnCom(
   }
   const valid = validateObject(earnComData, EarnComFeesSchema)
   if (!valid) {
-    log('Not valid fee data structure from vendor')
+    log.error('Not valid fee data structure from vendor')
     return {}
   }
 

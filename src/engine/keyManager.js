@@ -302,7 +302,7 @@ export class KeyManager {
       try {
         return this.fSelector.parseSeed(this.seed)
       } catch (e) {
-        this.log(e)
+        this.log.error(e)
         return null
       }
     }
@@ -406,7 +406,7 @@ export class KeyManager {
       }
       this.onNewKey(keys)
     } catch (e) {
-      this.log(e)
+      this.log.error(e)
     }
   }
 
