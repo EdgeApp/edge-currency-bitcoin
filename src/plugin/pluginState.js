@@ -111,7 +111,7 @@ export class PluginState extends ServerCache {
       this.headerCache = headerCacheJson.headers
     } catch (e) {
       this.headerCache = {}
-      this.log(`${this.pluginId}: Failed to load header cache: ${e}`)
+      this.log.error(`${this.pluginId}: Failed to load header cache: ${e}`)
     }
 
     try {
@@ -121,7 +121,7 @@ export class PluginState extends ServerCache {
 
       this.serverCacheJson = serverCacheJson
     } catch (e) {
-      this.log(`${this.pluginId}: Failed to load server cache: ${e}`)
+      this.log.error(`${this.pluginId}: Failed to load server cache: ${e}`)
     }
 
     // Fetch stratum servers in the background:
@@ -154,7 +154,7 @@ export class PluginState extends ServerCache {
           this.log(`${this.pluginId} - Saved header cache`)
           this.headerCacheDirty = false
         })
-        .catch(e => this.log(`${this.pluginId} - ${e.toString()}`))
+        .catch(e => this.log.error(`${this.pluginId} - ${e.toString()}`))
     }
     return Promise.resolve()
   }
@@ -171,7 +171,7 @@ export class PluginState extends ServerCache {
         this.cacheLastSave_ = Date.now()
         this.log(`${this.pluginId} - Saved server cache`)
       } catch (e) {
-        this.log(`${this.pluginId} - ${e.toString()}`)
+        this.log.error(`${this.pluginId} - ${e.toString()}`)
       }
     }
   }
@@ -208,14 +208,14 @@ export class PluginState extends ServerCache {
         this.log(`${this.pluginId} - GET ${this.infoServerUris}`)
         const result = await io.fetch(this.infoServerUris)
         if (!result.ok) {
-          this.log(
+          this.log.error(
             `${this.pluginId} - Fetching ${this.infoServerUris} failed with ${result.status}`
           )
         } else {
           serverList = await result.json()
         }
       } catch (e) {
-        this.log(e)
+        this.log.error(e)
       }
     }
     if (!Array.isArray(serverList)) {

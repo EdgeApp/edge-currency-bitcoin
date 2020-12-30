@@ -243,7 +243,7 @@ export class EngineState extends EventEmitter {
       await this.encryptedLocalDisklet.setText('keys.json', json)
       this.log(`Saved keys cache`)
     } catch (e) {
-      this.log(`${e.toString()}`)
+      this.log.error(`${e.toString()}`)
     }
   }
 
@@ -256,7 +256,7 @@ export class EngineState extends EventEmitter {
       // TODO: Validate JSON
       return keysCacheJson.keys
     } catch (e) {
-      this.log(`Failed to load key cache: ${e}`)
+      this.log.error(`Failed to load key cache: ${e}`)
       return {}
     }
   }
@@ -278,7 +278,7 @@ export class EngineState extends EventEmitter {
       const task = broadcastTx(
         rawTx,
         (txid: string) => {
-          this.log(`broadcastTx success: ${txid}`)
+          this.log.warn(`broadcastTx success: ${txid}`)
           // We resolve if any server succeeds:
           if (!resolved) {
             resolved = true
@@ -289,7 +289,7 @@ export class EngineState extends EventEmitter {
           // We fail if every server failed:
           if (++bad === uris.length) {
             const msg = e ? `With error ${e.toString()}` : ''
-            this.log(`broadcastTx fail: ${rawTx}\n${msg}}`)
+            this.log.error(`broadcastTx fail: ${rawTx}\n${msg}}`)
             reject(e)
           }
         }
@@ -587,8 +587,12 @@ export class EngineState extends EventEmitter {
         },
         onClose: (error?: Error) => {
           delete this.connections[uri]
-          const msg = error ? ` !! Connection ERROR !! ${error.message}` : ''
-          this.log(`${prefix} onClose ${msg}`)
+          error
+            ? this.log.error(
+                `${prefix} onClose  !! Connection ERROR !! ${error.message ||
+                  ''}`
+              )
+            : this.log(`${prefix} onClose`)
           this.emit('connectionClose', uri)
           if (error != null) {
             if (/Bad Stratum version/.test(error.message)) {
@@ -632,7 +636,7 @@ export class EngineState extends EventEmitter {
           addressState.lastUpdate = Date.now()
         },
         onSpamServerError: (uri: string, score?: number) => {
-          this.log(`${prefix} returned spam response`)
+          this.log.error(`${prefix} returned spam response`)
           this.pluginState.serverScoreDown(uri, score)
         }
       }
@@ -878,7 +882,7 @@ export class EngineState extends EventEmitter {
       this.txCache = txs
       this.parsedTxs = parsedTxs
     } catch (e) {
-      this.log(`Failed to load transaction cache: ${e}`)
+      this.log.error(`Failed to load transaction cache: ${e}`)
     }
 
     // Load the address and height caches.
@@ -918,7 +922,7 @@ export class EngineState extends EventEmitter {
       this.addressCache = {}
       this.addressInfos = {}
       this.txHeightCache = {}
-      this.log(`Failed to load address cache: ${e}`)
+      this.log.error(`Failed to load address cache: ${e}`)
     }
 
     return this
@@ -958,7 +962,7 @@ export class EngineState extends EventEmitter {
         this.log(`- Saved address cache`)
         this.addressCacheDirty = false
       } catch (e) {
-        this.log(`- saveAddressCache - ${e.toString()}`)
+        this.log.error(`- saveAddressCache - ${e.toString()}`)
       }
     }
   }
@@ -974,7 +978,7 @@ export class EngineState extends EventEmitter {
         this.log(`Saved txCache`)
         this.txCacheDirty = false
       } catch (e) {
-        this.log(`Error saving txCache: ${e.toString()}`)
+        this.log.error(`Error saving txCache: ${e.toString()}`)
       }
     }
   }
@@ -1268,7 +1272,7 @@ export class EngineState extends EventEmitter {
 
   handleMessageError(uri: string, task: string, e: Error) {
     const msg = `connection closed ERROR: ${e.message}`
-    this.log(`${uri.replace('electrum://', '')}: ${msg}: task: ${task}`)
+    this.log.error(`${uri.replace('electrum://', '')}: ${msg}: task: ${task}`)
     if (this.connections[uri]) {
       this.connections[uri].handleError(e)
     }

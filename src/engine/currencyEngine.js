@@ -297,7 +297,7 @@ export class CurrencyEngine {
         throw new Error('Fetched invalid networkFees')
       }
     } catch (err) {
-      this.log(`${this.prunedWalletId} - ${err.toString()}`)
+      this.log.error(`${this.prunedWalletId} - ${err.toString()}`)
     }
   }
 
@@ -325,7 +325,7 @@ export class CurrencyEngine {
             this.fees = { ...this.fees, ...newFees }
             this.fees.timestamp = Date.now()
           } else {
-            this.log('Fetched invalid earn.com networkFees')
+            this.log.error('Fetched invalid earn.com networkFees')
             throw new Error('Fetched invalid networkFees')
           }
         }
@@ -343,12 +343,12 @@ export class CurrencyEngine {
               success = true
             }
           } catch (e) {
-            this.log(`mempool.space error ${JSON.stringify(e)}`)
+            this.log.error(`mempool.space error ${JSON.stringify(e)}`)
           }
         }
       }
     } catch (e) {
-      this.log(
+      this.log.error(
         `${
           this.prunedWalletId
         } - Error while trying to update fee table ${e.toString()}`
@@ -404,7 +404,7 @@ export class CurrencyEngine {
       log += JSON.stringify(edgeTransaction.otherParams.txJson, null, 2) + '\n'
     }
     log += '------------------------------------------------------------------'
-    this.log(`${this.prunedWalletId}: ${log}`)
+    this.log.warn(`${this.prunedWalletId}: ${log}`)
   }
 
   // ------------------------------------------------------------------------
@@ -496,7 +496,7 @@ export class CurrencyEngine {
         this.engineState.markAddressesUsed(scriptHashs)
         if (this.keyManager) this.keyManager.setLookAhead()
       })
-      .catch(e => this.log(`${this.prunedWalletId}: ${e.toString()}`))
+      .catch(e => this.log.error(`${this.prunedWalletId}: ${e.toString()}`))
   }
 
   isAddressUsed(address: string, options: any): boolean {
@@ -578,7 +578,7 @@ export class CurrencyEngine {
         this.io.fetch
       )
     } catch (err) {
-      this.log(`${this.prunedWalletId} - ${err.toString()}`)
+      this.log.error(`${this.prunedWalletId} - ${err.toString()}`)
       throw err
     }
   }
@@ -590,7 +590,7 @@ export class CurrencyEngine {
     const { spendTargets } = edgeSpendInfo
     // Can't spend without outputs
     if (!txOptions.CPFP && (!spendTargets || spendTargets.length < 1)) {
-      this.log('Need to provide Spend Targets')
+      this.log.error('Need to provide Spend Targets')
       throw new Error('Need to provide Spend Targets')
     }
     // Calculate the total amount to send
@@ -602,13 +602,13 @@ export class CurrencyEngine {
     const { utxos = this.engineState.getUTXOs() } = txOptions
     // Test if we have enough to spend
     if (bns.gt(totalAmountToSend, `${sumUtxos(utxos)}`)) {
-      this.log(`InsufficientFundError ${this.currencyCode}`)
+      this.log.error(`InsufficientFundError ${this.currencyCode}`)
       throw new InsufficientFundsError(this.currencyCode)
     }
     try {
       // Get the rate according to the latest fee
       const rate = this.getRate(edgeSpendInfo)
-      this.log(`spend: Using fee rate ${rate} sat/K`)
+      this.log.warn(`spend: Using fee rate ${rate} sat/K`)
 
       const minRelay = this.engineInfo.minRelay
 
@@ -671,7 +671,7 @@ export class CurrencyEngine {
       }
       return edgeTransaction
     } catch (e) {
-      this.log(`makeSpend error ${JSON.stringify(e)}`)
+      this.log.error(`makeSpend error ${JSON.stringify(e)}`)
       if (e.type === 'FundingError')
         throw new InsufficientFundsError(this.currencyCode)
       throw e

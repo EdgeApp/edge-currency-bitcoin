@@ -399,7 +399,7 @@ export const sumTransaction = (
         ? serializers.address.encode(address)
         : address
     } catch (e) {
-      engineState.log(e)
+      engineState.log.error(e)
       if (value <= 0) {
         continue
       } else {

@@ -111,7 +111,7 @@ export async function sendPayment(
       const paymentACK = JSON.parse(result)
       return paymentACK
     } catch (e) {
-      log(e)
+      log.error(e)
       throw e
     }
   }
