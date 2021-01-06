@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.9.8 (2021-01-05)
+
+- Adjust log levels
+- Add parseUri tests
+
 # 4.9.7 (2020-12-22)
 
 - DOGE: Remove `hardFee` in favor of setting default sat/byte fee to meet network minimum
