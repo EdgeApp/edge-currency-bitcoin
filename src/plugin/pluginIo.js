@@ -63,6 +63,27 @@ export type EdgeSocketOptions = {
   type: 'tcp' | 'tls'
 }
 
+export type SigmaMintOptions = {
+  denomination: number,
+  privateKey: string,
+  index: number
+}
+
+export type SigmaMint = {
+  commitment: string,
+  serialNumber: string
+}
+
+export type SigmaSpendOptions = {
+  denomination: number,
+  privateKey: string,
+  index: number,
+  anonymitySet: string[],
+  groupId: number,
+  blockHash: string,
+  txHash: string
+}
+
 /**
  * Wraps a Node-style socket into an EdgeSocket.
  */
@@ -102,6 +123,8 @@ export function makeEdgeSocket(
 export type ExtraIo = {
   +secp256k1?: EdgeSecp256k1,
   +pbkdf2?: EdgePbkdf2,
+  sigmaMint(opts: SigmaMintOptions): Promise<SigmaMint>,
+  sigmaSpend(opts: SigmaSpendOptions): Promise<string>,
   makeSocket(opts: EdgeSocketOptions): Promise<EdgeSocket>
 }
 

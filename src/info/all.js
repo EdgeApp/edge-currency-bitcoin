@@ -21,6 +21,7 @@ import { smartcash } from './smartcash.js'
 import { ufo } from './ufo.js'
 import { vertcoin } from './vertcoin.js'
 import { zcoin } from './zcoin.js'
+import { zcoins } from './zcoins.js'
 
 export const allInfo = [
   badcoin,
@@ -43,5 +44,6 @@ export const allInfo = [
   smartcash,
   ufo,
   vertcoin,
-  zcoin
+  zcoin,
+  zcoins
 ]

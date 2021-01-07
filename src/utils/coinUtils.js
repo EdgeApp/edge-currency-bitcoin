@@ -182,6 +182,16 @@ export const setKeyType = async (
   return keyRing
 }
 
+// Convert an address to the correct format that bcoin supports
+export const toBcoinFormat = (address: string, network: string): string => {
+  try {
+    const { serializers = {} } = networks[network] || {}
+    if (serializers.address) address = serializers.address.decode(address)
+    else address = toNewFormat(address, network)
+  } catch (e) {}
+  return primitives.Address.fromString(address, network)
+}
+
 export const createTX = async ({
   utxos,
   outputs = [],
@@ -200,16 +210,6 @@ export const createTX = async ({
     setRBF = false
   }
 }: CreateTxOptions) => {
-  // Convert an address to the correct format that bcoin supports
-  const toBcoinFormat = (address: string, network: string): string => {
-    try {
-      const { serializers = {} } = networks[network] || {}
-      if (serializers.address) address = serializers.address.decode(address)
-      else address = toNewFormat(address, network)
-    } catch (e) {}
-    return primitives.Address.fromString(address, network)
-  }
-
   // Create the Mutable Transaction
   const mtx = new primitives.MTX()
 

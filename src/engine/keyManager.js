@@ -224,8 +224,7 @@ export class KeyManager {
     return this.getNextAvailable(this.keys.change.children)
   }
 
-  async createTX(options: createTxOptions): any {
-    const { outputs = [], ...rest } = options
+  async convertToStandardOutputs(outputs: Output[]): any {
     const standardOutputs: Array<StandardOutput> = []
     const branches = this.fSelector.branches
     for (const output of outputs) {
@@ -255,9 +254,15 @@ export class KeyManager {
       }
       if (address) standardOutputs.push({ address, value: output.value })
     }
+
+    return standardOutputs
+  }
+
+  async createTX(options: createTxOptions): any {
+    const { outputs = [], ...rest } = options
     return createTX({
       ...rest,
-      outputs: standardOutputs,
+      outputs: await this.convertToStandardOutputs(outputs),
       changeAddress: this.getChangeAddress(),
       estimate: prev => this.fSelector.estimateSize(prev),
       network: this.network
