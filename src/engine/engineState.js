@@ -42,8 +42,8 @@ export type UtxoInfo = {
 }
 
 export type AddressInfo = {
-  txids: Array<string>,
-  utxos: Array<UtxoInfo>,
+  txids: string[],
+  utxos: UtxoInfo[],
   used: boolean, // Set manually by `addGapLimitAddress`
   displayAddress: string, // base58 or other wallet-ready format
   path: string, // TODO: Define the contents of this member.
@@ -114,10 +114,10 @@ export class EngineState extends EventEmitter {
   // On-disk address information:
   addressCache: {
     [scriptHash: string]: {
-      txids: Array<string>,
+      txids: string[],
       txidStratumHash: string,
 
-      utxos: Array<UtxoInfo>,
+      utxos: UtxoInfo[],
       utxoStratumHash: string,
 
       displayAddress: string, // base58 or other wallet-ready format
@@ -230,7 +230,7 @@ export class EngineState extends EventEmitter {
     }
   }
 
-  markAddressesUsed(scriptHashes: Array<string>) {
+  markAddressesUsed(scriptHashes: string[]) {
     for (const scriptHash of scriptHashes) {
       this.usedAddresses[scriptHash] = true
       this.refreshAddressInfo(scriptHash)
@@ -417,7 +417,7 @@ export class EngineState extends EventEmitter {
   reconnectCounter: number
   progressRatio: number
   txCacheInitSize: number
-  serverList: Array<string>
+  serverList: string[]
 
   constructor(options: EngineStateOptions) {
     super()
@@ -589,8 +589,9 @@ export class EngineState extends EventEmitter {
           delete this.connections[uri]
           error
             ? this.log.error(
-                `${prefix} onClose  !! Connection ERROR !! ${error.message ||
-                  ''}`
+                `${prefix} onClose  !! Connection ERROR !! ${
+                  error.message || ''
+                }`
               )
             : this.log(`${prefix} onClose`)
           this.emit('connectionClose', uri)
@@ -761,7 +762,7 @@ export class EngineState extends EventEmitter {
         const queryTime = Date.now()
         return fetchScriptHashUtxo(
           address,
-          (utxos: Array<StratumUtxo>) => {
+          (utxos: StratumUtxo[]) => {
             this.log(`${prefix} received utxos for: ${address}`)
             addressState.fetchingUtxos = false
             if (!addressState.hash) {
@@ -835,7 +836,7 @@ export class EngineState extends EventEmitter {
         const queryTime = Date.now()
         return fetchScriptHashHistory(
           address,
-          (history: Array<StratumHistoryRow>) => {
+          (history: StratumHistoryRow[]) => {
             this.log(`${prefix} received history for ${address}`)
             addressState.fetchingTxids = false
             if (!addressState.hash) {
@@ -1049,10 +1050,10 @@ export class EngineState extends EventEmitter {
   handleHistoryFetch(
     scriptHash: string,
     addressState: AddressState,
-    history: Array<StratumHistoryRow>
+    history: StratumHistoryRow[]
   ) {
     // Process the txid list:
-    const txidList: Array<string> = []
+    const txidList: string[] = []
     for (const row of history) {
       txidList.push(row.tx_hash)
       this.handleTxidFetch(row.tx_hash, row.height)
@@ -1136,13 +1137,9 @@ export class EngineState extends EventEmitter {
   }
 
   // A server has sent UTXO data, so update the caches:
-  handleUtxoFetch(
-    scriptHash: string,
-    stateHash: string,
-    utxos: Array<StratumUtxo>
-  ) {
+  handleUtxoFetch(scriptHash: string, stateHash: string, utxos: StratumUtxo[]) {
     // Process the UTXO list:
-    const utxoList: Array<UtxoInfo> = []
+    const utxoList: UtxoInfo[] = []
     for (const utxo of utxos) {
       utxoList.push({
         txid: utxo.tx_hash,
@@ -1232,7 +1229,7 @@ export class EngineState extends EventEmitter {
     if (prevUsed !== used) this.onAddressUsed()
   }
 
-  findAffectedAddressesForInputs(txid: string): Array<string> {
+  findAffectedAddressesForInputs(txid: string): string[] {
     const scriptHashSet = []
     for (const input of this.parsedTxs[txid].inputs) {
       const prevTx = this.parsedTxs[input.prevout.rhash()]
@@ -1244,7 +1241,7 @@ export class EngineState extends EventEmitter {
     return scriptHashSet
   }
 
-  findAffectedAddressesForOutput(txid: string): Array<string> {
+  findAffectedAddressesForOutput(txid: string): string[] {
     const scriptHashSet = []
     for (const output of this.parsedTxs[txid].outputs) {
       if (this.addressCache[output.scriptHash]) {
@@ -1254,14 +1251,14 @@ export class EngineState extends EventEmitter {
     return scriptHashSet
   }
 
-  findAffectedAddresses(txid: string): Array<string> {
+  findAffectedAddresses(txid: string): string[] {
     const inputs = this.findAffectedAddressesForInputs(txid)
     const outputs = this.findAffectedAddressesForOutput(txid)
     return inputs.concat(outputs)
   }
 
   // Finds the txids that a are in a block.
-  findAffectedTransactions(height: string): Array<string> {
+  findAffectedTransactions(height: string): string[] {
     const txids = []
     for (const txid in this.txHeightCache) {
       const tx = this.txHeightCache[txid]

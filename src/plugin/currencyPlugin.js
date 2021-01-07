@@ -125,7 +125,7 @@ export class CurrencyTools {
     return Promise.resolve(encodeUri(obj, this.network, this.currencyInfo))
   }
 
-  getSplittableTypes(walletInfo: EdgeWalletInfo): Array<string> {
+  getSplittableTypes(walletInfo: EdgeWalletInfo): string[] {
     const { keys: { format = 'bip32' } = {} } = walletInfo
     const forks = getForksForNetwork(this.network)
     return forks

@@ -28,10 +28,7 @@ export async function secp256k1Sign(message: Buffer, key: Buffer) {
 }
 
 export function hash256Sync(hex: any) {
-  return crypto
-    .createHash('sha256')
-    .update(hex)
-    .digest()
+  return crypto.createHash('sha256').update(hex).digest()
 }
 
 export async function hash160(hex: any) {
@@ -44,18 +41,14 @@ export async function hash160(hex: any) {
 }
 
 export function reverseBufferToHex(rawBuffer: any) {
-  return rawBuffer
-    .toString('hex')
-    .match(/../g)
-    .reverse()
-    .join('')
+  return rawBuffer.toString('hex').match(/../g).reverse().join('')
 }
 
 /**
  * Waits for the first successful promise.
  * If no promise succeeds, returns the last failure.
  */
-export function promiseAny(promises: Array<Promise<any>>): Promise<any> {
+export function promiseAny(promises: Promise<any>[]): Promise<any> {
   return new Promise((resolve: Function, reject: Function) => {
     let pending = promises.length
     for (const promise of promises) {

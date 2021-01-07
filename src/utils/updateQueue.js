@@ -9,7 +9,7 @@ type UpdateQueue = {
   updateFunc: Function
 }
 
-const updateQueue: Array<UpdateQueue> = []
+const updateQueue: UpdateQueue[] = []
 let timeOut
 
 export function pushUpdate(update: UpdateQueue) {

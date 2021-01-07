@@ -20,7 +20,7 @@ const KEEP_ALIVE_MS = 60000
  */
 export interface StratumTask {
   method: string;
-  params: Array<any>;
+  params: any[];
   +onDone: (reply: any, requestMs: number) => void;
   +onFail: OnFailHandler;
 }

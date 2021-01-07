@@ -47,5 +47,5 @@ export type EarnComFee = {
 }
 
 export type EarnComFees = {
-  fees: Array<EarnComFee>
+  fees: EarnComFee[]
 }
