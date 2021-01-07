@@ -335,7 +335,7 @@ export class StratumConnection {
               ? error.message.split('\n')[0]
               : error.code
             // Check for common words found in spam server transaction broadcast responses
-            const spamCheck = new RegExp(/(security|upgrade|image)/i)
+            const spamCheck = /(security|upgrade|image)/i
             if (spamCheck.test(error.message)) {
               this.callbacks.onSpamServerError(this.uri, 100)
               errorMessage = 'A connection error occurred. Try sending again'

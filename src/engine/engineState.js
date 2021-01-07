@@ -473,7 +473,6 @@ export class EngineState extends EventEmitter {
           delete this.reconnectTimer
           this.refillServers()
         }, this.reconnectCounter * 1000)
-      } else {
       }
     }
   }
