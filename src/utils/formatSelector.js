@@ -42,7 +42,7 @@ export type FormatSelector = {
 export const SUPPORTED_BIPS = ['bip32', 'bip44', 'bip49', 'bip84']
 
 export const getAllKeyRings = (
-  privateKeys: Array<string>,
+  privateKeys: string[],
   network: string
 ): Promise<any[]> => {
   const keysPromises = []
@@ -59,7 +59,7 @@ export const getAllKeyRings = (
 }
 
 export const getAllAddresses = (
-  privateKeys: Array<string>,
+  privateKeys: string[],
   network: string
 ): Promise<any[]> =>
   getAllKeyRings(privateKeys, network).then(keyRings =>
@@ -109,10 +109,7 @@ export const formatSelector = (
     branches,
     setKeyType: setKeyTypeWrap,
 
-    sign: (
-      tx: any,
-      keys: Array<any>
-    ): Promise<{ txid: string, signedTx: string }> =>
+    sign: (tx: any, keys: any[]): Promise<{ txid: string, signedTx: string }> =>
       Promise.resolve(tx.template(keys))
         .then(() => {
           tx.network = network
@@ -199,7 +196,7 @@ export const formatSelector = (
 
     keysFromRaw: (rawKeys: any = {}) => {
       const keyRings = {}
-      const branchesNames: Array<string> = ['master']
+      const branchesNames: string[] = ['master']
       for (const n in branches) branchesNames.push(branches[n])
       for (const branchName of branchesNames) {
         const { xpub, xpriv } = rawKeys[branchName] || {}

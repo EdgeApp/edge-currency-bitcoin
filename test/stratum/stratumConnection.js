@@ -36,9 +36,9 @@ fakeLog.error = console.error
 const ELECTRUM_SERVER = 'electrum://electrum.qtornado.com:50001'
 const io = Object.assign({}, makeNodeIo(makeFakeIo()), { console: fakeLogger })
 
-describe.skip('StratumConnection', function() {
+describe.skip('StratumConnection', function () {
   this.timeout(3000)
-  it('fetchVersion', function(done) {
+  it('fetchVersion', function (done) {
     let gotReply = false
     const callbacks: StratumCallbacks = {
       onTimer() {},
@@ -68,7 +68,7 @@ describe.skip('StratumConnection', function() {
     connection.open()
   })
 
-  it('subscribeHeight', function(done) {
+  it('subscribeHeight', function (done) {
     let gotReply = false
     const task = subscribeHeight(
       data => {
@@ -107,7 +107,7 @@ describe.skip('StratumConnection', function() {
     connection.open()
   })
 
-  it('fetchBlockHeader', function(done) {
+  it('fetchBlockHeader', function (done) {
     let gotReply = false
     const task = fetchBlockHeader(
       400000,
@@ -156,7 +156,7 @@ describe.skip('StratumConnection', function() {
     connection.open()
   })
 
-  it('fetchTransaction', function(done) {
+  it('fetchTransaction', function (done) {
     let gotReply = false
     const task = fetchTransaction(
       '0e3e2357e806b6cdb1f70b54c3a3a17b6714ee1f0e68bebb44a74b1efd512098',
@@ -198,7 +198,7 @@ describe.skip('StratumConnection', function() {
     connection.open()
   })
 
-  it('subscribeScriptHash', function(done) {
+  it('subscribeScriptHash', function (done) {
     let gotReply = false
     const task = subscribeScriptHash(
       '187b07664e7f1c6a26911530652b24376c1a8d1ae734d7c9fa925e7f117b077d',
@@ -241,11 +241,11 @@ describe.skip('StratumConnection', function() {
     connection.open()
   })
 
-  it('fetchScriptHashHistory', function(done) {
+  it('fetchScriptHashHistory', function (done) {
     let gotReply = false
     const task = fetchScriptHashHistory(
       '187b07664e7f1c6a26911530652b24376c1a8d1ae734d7c9fa925e7f117b077d',
-      (data: Array<StratumHistoryRow>) => {
+      (data: StratumHistoryRow[]) => {
         assert.equal(data.length > 0, true)
         assert.equal(
           data[0].tx_hash,
@@ -286,11 +286,11 @@ describe.skip('StratumConnection', function() {
     connection.open()
   })
 
-  it('fetchScriptHashUtxo', function(done) {
+  it('fetchScriptHashUtxo', function (done) {
     let gotReply = false
     const task = fetchScriptHashUtxo(
       '187b07664e7f1c6a26911530652b24376c1a8d1ae734d7c9fa925e7f117b077d',
-      (data: Array<StratumUtxo>) => {
+      (data: StratumUtxo[]) => {
         assert.equal(data.length > 0, true)
         assert.equal(
           data[0].tx_hash,

@@ -230,7 +230,7 @@ export type StratumHistoryRow = {
  */
 export function fetchScriptHashHistory(
   scriptHash: string,
-  onDone: (arrayTx: Array<StratumHistoryRow>) => void,
+  onDone: (arrayTx: StratumHistoryRow[]) => void,
   onFail: OnFailHandler
 ): StratumTask {
   return {
@@ -266,7 +266,7 @@ export type StratumUtxo = {
  */
 export function fetchScriptHashUtxo(
   scriptHash: string,
-  onDone: (arrayTx: Array<StratumUtxo>) => void,
+  onDone: (arrayTx: StratumUtxo[]) => void,
   onFail: OnFailHandler
 ): StratumTask {
   return {

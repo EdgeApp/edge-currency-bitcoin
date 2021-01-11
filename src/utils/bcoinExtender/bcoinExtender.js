@@ -8,8 +8,8 @@ import { patchTransaction } from './replayProtection.js'
 export type BcoinCurrencyInfo = {
   type: string,
   magic: number,
-  formats: Array<string>,
-  forks?: Array<string>,
+  formats: string[],
+  forks?: string[],
   keyPrefix: {
     privkey: number,
     xpubkey: number,

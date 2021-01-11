@@ -8,8 +8,8 @@ import { FixCurrencyCode, InfoServer } from '../info/constants'
 import { ServerCache } from './serverCache.js'
 
 export type CurrencySettings = {
-  customFeeSettings: Array<string>,
-  electrumServers: Array<string>,
+  customFeeSettings: string[],
+  electrumServers: string[],
   disableFetchingServers?: boolean
 }
 
@@ -67,10 +67,10 @@ export class PluginState extends ServerCache {
   // ------------------------------------------------------------------------
   io: EdgeIo
   disableFetchingServers: boolean
-  defaultServers: Array<string>
+  defaultServers: string[]
   infoServerUris: string
 
-  engines: Array<EngineState>
+  engines: EngineState[]
   disklet: Disklet
 
   headerCacheDirty: boolean

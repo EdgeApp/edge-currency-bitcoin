@@ -70,7 +70,7 @@ export type EngineCurrencyInfo = {
   gapLimit: number,
   defaultFee: number,
   feeUpdateInterval: number,
-  customFeeSettings: Array<string>,
+  customFeeSettings: string[],
   simpleFeeSettings: {
     highFee: string,
     lowFee: string,
@@ -81,7 +81,7 @@ export type EngineCurrencyInfo = {
   },
 
   // Optional Settings
-  forks?: Array<string>,
+  forks?: string[],
   minRelay?: number,
   earnComFeeInfoServer?: string,
   mempoolSpaceFeeInfoServer?: string,
@@ -438,15 +438,15 @@ export class CurrencyEngine {
     return this.pluginState.height
   }
 
-  async enableTokens(tokens: Array<string>): Promise<void> {}
+  async enableTokens(tokens: string[]): Promise<void> {}
 
-  async getEnabledTokens(): Promise<Array<string>> {
+  async getEnabledTokens(): Promise<string[]> {
     return []
   }
 
   async addCustomToken(token: any): Promise<void> {}
 
-  async disableTokens(tokens: Array<string>): Promise<void> {}
+  async disableTokens(tokens: string[]): Promise<void> {}
 
   getTokenStatus(token: string): boolean {
     return false
@@ -462,7 +462,7 @@ export class CurrencyEngine {
 
   async getTransactions(
     options: EdgeGetTransactionsOptions
-  ): Promise<Array<EdgeTransaction>> {
+  ): Promise<EdgeTransaction[]> {
     const rawTxs = this.engineState.txCache
     const edgeTransactions = []
     for (const txid in rawTxs) {
@@ -485,14 +485,14 @@ export class CurrencyEngine {
     return { publicAddress, legacyAddress }
   }
 
-  addGapLimitAddresses(addresses: Array<string>, options: any): void {
+  addGapLimitAddresses(addresses: string[], options: any): void {
     const scriptHashPromises = addresses.map(address => {
       const scriptHash = this.engineState.scriptHashes[address]
       if (typeof scriptHash === 'string') return Promise.resolve(scriptHash)
       else return addressToScriptHash(address, this.network)
     })
     Promise.all(scriptHashPromises)
-      .then((scriptHashs: Array<string>) => {
+      .then((scriptHashs: string[]) => {
         this.engineState.markAddressesUsed(scriptHashs)
         if (this.keyManager) this.keyManager.setLookAhead()
       })

@@ -7,7 +7,7 @@ import parse from 'url-parse'
 import { toLegacyFormat, toNewFormat } from '../utils/addressFormat.js'
 
 const getSpendTargets = (
-  outputs: Array<any>,
+  outputs: any[],
   network: string,
   currencyCode: string
 ) => {

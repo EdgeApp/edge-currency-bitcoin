@@ -33,9 +33,9 @@ for (const fixture of fixtures) {
       fakeLogger.info(keys)
     }
   }
-  describe(`Key Manager for ${fixture.network}`, function() {
+  describe(`Key Manager for ${fixture.network}`, function () {
     let keyManager
-    it('creates new key manager', function() {
+    it('creates new key manager', function () {
       const options = { ...fixture, callbacks: keyManagerCallbacks }
       keyManager = new KeyManager(options)
       return keyManager.load().then(() => {
