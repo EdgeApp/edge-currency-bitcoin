@@ -13,7 +13,10 @@ import type {
   StratumCallbacks,
   StratumTask
 } from '../stratum/stratumConnection.js'
-import { StratumConnection } from '../stratum/stratumConnection.js'
+import {
+  type StratumError,
+  StratumConnection
+} from '../stratum/stratumConnection.js'
 import type {
   StratumBlockHeader,
   StratumHistoryRow,
@@ -285,11 +288,16 @@ export class EngineState extends EventEmitter {
             resolve(txid)
           }
         },
-        (e?: Error) => {
+        (e?: StratumError) => {
+          if (e) {
+            this.log.error(
+              `broadcastTx fail: ${e.uri.replace('electrum://', '')}\n${
+                e.message
+              }\n${rawTx}`
+            )
+          }
           // We fail if every server failed:
           if (++bad === uris.length) {
-            const msg = e ? `With error ${e.toString()}` : ''
-            this.log.error(`broadcastTx fail: ${rawTx}\n${msg}}`)
             reject(e)
           }
         }
@@ -678,7 +686,7 @@ export class EngineState extends EventEmitter {
           this.pluginState.updateHeight(height)
           this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
         },
-        (e: Error) => {
+        (e: StratumError) => {
           serverState.fetchingHeight = false
           this.handleMessageError(uri, 'subscribing to height', e)
         }
@@ -705,7 +713,7 @@ export class EngineState extends EventEmitter {
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleHeaderFetch(height, header)
           },
-          (e: Error) => {
+          (e: StratumError) => {
             this.fetchingHeaders[height] = false
             if (!serverState.headers[height]) {
               this.handleMessageError(
@@ -736,7 +744,7 @@ export class EngineState extends EventEmitter {
             this.handleTxFetch(txid, txData)
             this.updateProgressRatio()
           },
-          (e: Error) => {
+          (e: StratumError) => {
             this.fetchingTxs[txid] = false
             if (!serverState.txids[txid]) {
               this.handleMessageError(uri, `getting transaction ${txid}`, e)
@@ -772,7 +780,7 @@ export class EngineState extends EventEmitter {
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleUtxoFetch(address, addressState.hash || '', utxos)
           },
-          (e: Error) => {
+          (e: StratumError) => {
             addressState.fetchingUtxos = false
             this.handleMessageError(uri, `fetching utxos for: ${address}`, e)
           }
@@ -814,7 +822,7 @@ export class EngineState extends EventEmitter {
               this.updateProgressRatio()
             }
           },
-          (e: Error) => {
+          (e: StratumError) => {
             addressState.subscribing = false
             this.handleMessageError(uri, `subscribing to ${address}`, e)
           }
@@ -846,7 +854,7 @@ export class EngineState extends EventEmitter {
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.handleHistoryFetch(address, addressState, history)
           },
-          (e: Error) => {
+          (e: StratumError) => {
             addressState.fetchingTxids = false
             this.handleMessageError(
               uri,
@@ -1266,7 +1274,7 @@ export class EngineState extends EventEmitter {
     return txids
   }
 
-  handleMessageError(uri: string, task: string, e: Error) {
+  handleMessageError(uri: string, task: string, e: StratumError) {
     const msg = `connection closed ERROR: ${e.message}`
     this.log.error(`${uri.replace('electrum://', '')}: ${msg}: task: ${task}`)
     if (this.connections[uri]) {
