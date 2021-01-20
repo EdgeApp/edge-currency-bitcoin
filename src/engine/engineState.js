@@ -290,11 +290,7 @@ export class EngineState extends EventEmitter {
         },
         (e?: StratumError) => {
           if (e) {
-            this.log.error(
-              `broadcastTx fail: ${e.uri.replace('electrum://', '')}\n${
-                e.message
-              }\n${rawTx}`
-            )
+            this.log.error(`broadcastTx fail: ${e.uri}\n${e.message}\n${rawTx}`)
           }
           // We fail if every server failed:
           if (++bad === uris.length) {
@@ -688,7 +684,7 @@ export class EngineState extends EventEmitter {
         },
         (e: StratumError) => {
           serverState.fetchingHeight = false
-          this.handleMessageError(uri, 'subscribing to height', e)
+          this.handleMessageError('subscribing to height', e)
         }
       )
     }
@@ -717,7 +713,6 @@ export class EngineState extends EventEmitter {
             this.fetchingHeaders[height] = false
             if (!serverState.headers[height]) {
               this.handleMessageError(
-                uri,
                 `getting header for block number ${height}`,
                 e
               )
@@ -747,7 +742,7 @@ export class EngineState extends EventEmitter {
           (e: StratumError) => {
             this.fetchingTxs[txid] = false
             if (!serverState.txids[txid]) {
-              this.handleMessageError(uri, `getting transaction ${txid}`, e)
+              this.handleMessageError(`getting transaction ${txid}`, e)
             } else {
               // TODO: Don't penalize the server score either.
             }
@@ -782,7 +777,7 @@ export class EngineState extends EventEmitter {
           },
           (e: StratumError) => {
             addressState.fetchingUtxos = false
-            this.handleMessageError(uri, `fetching utxos for: ${address}`, e)
+            this.handleMessageError(`fetching utxos for: ${address}`, e)
           }
         )
       }
@@ -824,7 +819,7 @@ export class EngineState extends EventEmitter {
           },
           (e: StratumError) => {
             addressState.subscribing = false
-            this.handleMessageError(uri, `subscribing to ${address}`, e)
+            this.handleMessageError(`subscribing to ${address}`, e)
           }
         )
       }
@@ -856,11 +851,7 @@ export class EngineState extends EventEmitter {
           },
           (e: StratumError) => {
             addressState.fetchingTxids = false
-            this.handleMessageError(
-              uri,
-              `getting history for address ${address}`,
-              e
-            )
+            this.handleMessageError(`getting history for address ${address}`, e)
           }
         )
       }
@@ -1274,11 +1265,11 @@ export class EngineState extends EventEmitter {
     return txids
   }
 
-  handleMessageError(uri: string, task: string, e: StratumError) {
+  handleMessageError(task: string, e: StratumError) {
     const msg = `connection closed ERROR: ${e.message}`
-    this.log.error(`${uri.replace('electrum://', '')}: ${msg}: task: ${task}`)
-    if (this.connections[uri]) {
-      this.connections[uri].handleError(e)
+    this.log.error(`${e.uri}: ${msg}: task: ${task}`)
+    if (this.connections[e.uri]) {
+      this.connections[e.uri].handleError(e)
     }
   }
 

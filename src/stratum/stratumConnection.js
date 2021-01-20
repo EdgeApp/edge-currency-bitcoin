@@ -100,7 +100,7 @@ export class StratumConnection {
           this.callbacks.onVersion(version, requestMs)
         },
         (error: StratumError) => {
-          this.log.error(`Failed initial ping ${this.uri}`)
+          this.log.error(`Failed initial ping ${error.uri}`)
           this.handleError(error)
         }
       )
