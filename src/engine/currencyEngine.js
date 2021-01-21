@@ -79,6 +79,7 @@ export type EngineCurrencyInfo = {
     standardFeeLowAmount: string,
     standardFeeHighAmount: string
   },
+  minRelayFee: string,
 
   // Optional Settings
   forks?: string[],
@@ -378,9 +379,14 @@ export class CurrencyEngine {
     }
     const customFeeSetting = this.engineInfo.customFeeSettings[0]
     const customFeeAmount = customNetworkFee[customFeeSetting] || '0'
-    if (networkFeeOption === 'custom' && customFeeAmount !== '0') {
+    if (
+      networkFeeOption === 'custom' &&
+      bns.lt(customFeeAmount, this.engineInfo.minRelayFee)
+    ) {
+      throw new Error('Custom fee is less than minimum network relay fee')
+    } else if (networkFeeOption === 'custom') {
       // customNetworkFee is in sat/Bytes in need to be converted to sat/KB
-      return parseInt(customFeeAmount) * BYTES_TO_KB
+      return parseFloat(customFeeAmount) * BYTES_TO_KB
     } else {
       const amountForTx = spendTargets
         .reduce((s, { nativeAmount }) => s + parseInt(nativeAmount), 0)
