@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.9.9 (2021-01-20)
+
+- Add StratumError to carry the throwing server's URI
+- Update to eslint-config-standard-kit to v0.15.1
+
 # 4.9.8 (2021-01-05)
 
 - Adjust log levels
