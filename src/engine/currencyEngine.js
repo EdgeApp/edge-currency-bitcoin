@@ -378,9 +378,15 @@ export class CurrencyEngine {
     }
     const customFeeSetting = this.engineInfo.customFeeSettings[0]
     const customFeeAmount = customNetworkFee[customFeeSetting] || '0'
-    if (networkFeeOption === 'custom' && customFeeAmount !== '0') {
+    if (networkFeeOption === 'custom') {
+      const customFeeNumber = Number(customFeeAmount)
+      if (customFeeNumber < 1 || isNaN(customFeeNumber)) {
+        const e = new Error(`1 satPerByte`)
+        e.name = 'ErrorBelowMinimumFee'
+        throw e
+      }
       // customNetworkFee is in sat/Bytes in need to be converted to sat/KB
-      return parseInt(customFeeAmount) * BYTES_TO_KB
+      return customFeeNumber * BYTES_TO_KB
     } else {
       const amountForTx = spendTargets
         .reduce((s, { nativeAmount }) => s + parseInt(nativeAmount), 0)
