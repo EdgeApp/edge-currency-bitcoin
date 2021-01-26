@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.10 (2021-01-25)
+
+- Throw error when custom fee is below 1 sat/byte
+
 # 4.9.9 (2021-01-20)
 
 - Add StratumError to carry the throwing server's URI
