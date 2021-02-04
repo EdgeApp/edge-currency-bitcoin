@@ -1,5 +1,6 @@
 // @flow
 
+import BN from 'bn.js'
 import { type Disklet } from 'disklet'
 import { type EdgeLog } from 'edge-core-js/types'
 import EventEmitter from 'eventemitter3'
@@ -32,7 +33,9 @@ import {
   subscribeScriptHash
 } from '../stratum/stratumMessages.js'
 import {
+  type BcoinTransaction,
   bitcoinTimestampFromHeader,
+  BN_ZERO,
   parseTransaction
 } from '../utils/coinUtils.js'
 import { pushUpdate, removeIdFromQueue } from '../utils/updateQueue.js'
@@ -41,7 +44,7 @@ import { type EngineCurrencyInfo } from './currencyEngine.js'
 export type UtxoInfo = {
   txid: string, // tx_hash from Stratum
   index: number, // tx_pos from Stratum
-  value: number // Satoshis fit in a number
+  value: string // Satoshis fit in a number
 }
 
 export type AddressInfo = {
@@ -50,7 +53,7 @@ export type AddressInfo = {
   used: boolean, // Set manually by `addGapLimitAddress`
   displayAddress: string, // base58 or other wallet-ready format
   path: string, // TODO: Define the contents of this member.
-  balance: number,
+  balance: string,
   redeemScript?: string
 }
 
@@ -151,7 +154,7 @@ export class EngineState extends EventEmitter {
   }
 
   // Cache of parsed transaction data:
-  parsedTxs: { [txid: string]: any }
+  parsedTxs: { [txid: string]: BcoinTransaction }
 
   // True if `startEngine` has been called:
   engineStarted: boolean
@@ -1142,7 +1145,7 @@ export class EngineState extends EventEmitter {
       utxoList.push({
         txid: utxo.tx_hash,
         index: utxo.tx_pos,
-        value: utxo.value
+        value: new BN(utxo.value).toString()
       })
       this.handleTxidFetch(utxo.tx_hash, utxo.height)
     }
@@ -1203,9 +1206,11 @@ export class EngineState extends EventEmitter {
       utxo => !spends[`${utxo.txid}:${utxo.index}`]
     )
 
-    const balance = utxosWithUnconfirmed.reduce((s, utxo) => utxo.value + s, 0)
+    const balance = utxosWithUnconfirmed
+      .reduce((s, utxo) => new BN(utxo.value).add(s), BN_ZERO)
+      .toString()
 
-    let prevBalance = 0
+    let prevBalance = '0'
     let prevUsed = false
     if (this.addressInfos[scriptHash]) {
       prevBalance = this.addressInfos[scriptHash].balance

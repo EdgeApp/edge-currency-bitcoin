@@ -1,0 +1,223 @@
+{
+  "Matches a known transaction": [
+    "0100000001e7a4a70f71e090157bc7c1b47ee83af56beb3579d8fa24110a97d1ee717d9afb010000006b483045022100de863ece760a873d673851f9c81ed148519dfc237d3fd7d43600896d5c5ba651022003e1620cdbbca12596a34fc97495486eb3f8f523453cb031ac531d623af4c7430121038600604184c04d944cd711e08a903043961a8a01d32e738beec1937dea75ae35ffffffff0277060000000000001976a91491c5eab4339b77e897005c3fcf0c123c62fccf9988ac53150000000000001976a914f783b9f78fe45bae833babfa5f2ebf10dd0cb79788ac00000000",
+    {
+      "inputs": [
+        {
+          "txid":
+            "fb9a7d71eed1970a1124fad87935eb6bf53ae87eb4c1c77b1590e0710fa7a4e7",
+          "index": 1
+        }
+      ],
+      "outputs": [
+        {
+          "scriptHash":
+            "b44600cd86fe9aa07b69417c81b8e59bd26a6965cba19882b9c7b001b98df1fa",
+          "value": 1655
+        },
+        {
+          "scriptHash":
+            "052c80d8ec3d76cabca31765e54ee5bcce26125a459ce10f1775d0608f203463",
+          "value": 5459
+        }
+      ]
+    }
+  ],
+  "Handles Bitcoin genesis transaction": [
+    "01000000010000000000000000000000000000000000000000000000000000000000000000ffffffff4d04ffff001d0104455468652054696d65732030332f4a616e2f32303039204368616e63656c6c6f72206f6e206272696e6b206f66207365636f6e64206261696c6f757420666f722062616e6b73ffffffff0100f2052a01000000434104678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5fac00000000",
+    {
+      "inputs": [
+        {
+          "txid":
+            "0000000000000000000000000000000000000000000000000000000000000000",
+          "index": 4294967295
+        }
+      ],
+      "outputs": [
+        {
+          "scriptHash":
+            "740485f380ff6379d11ef6fe7d7cdd68aea7f8bd0d953d9fdf3531fb7d531833",
+          "value": 5000000000
+        }
+      ]
+    }
+  ],
+  "Big Number transaction": [
+    "0100000001fb00f4f8d5cad6d253d8432aaa1a3d68a4f9b35dc7617419b8d239b81a5d0423140000006b483045022100e1dbc44a0e48cc3de1984d6d920766724559363f9ebd5cd8fcd0546e1ebbd68402205996f48ae45010cba01a65002370d0057a6edc55225b3aab1f6f758f1ca36b670121032c4e8d2f650c803a621fd0efa9a3ce9459c07118f539169c1d758a21263cda40feffffff2900c28257c50200001976a914359242e944e8a39097946e54efee86a37a0f439288ac03c6a9887d0000001976a9145df18343d49c0e91841e0502e897e5e3122f67b688ac203f052dfd0200001976a914c2174546da4b31c1cd935da7cc1193d56252d38e88ace003ebef450000001976a9144637a99be669d529dcf71b405afd1dd6053ccc3088ac00ae0198d95100001976a9142471fd1c001e4851e2bfdbf2a66026625859985388acb2bd9999480000001976a91453863b02e4541aa6298a5f3992303ce19de75dce88ac20addd5eea0600001976a914bdf3fc70b8088f99b86affcce08d70bfc2c23eec88ace0a779a7330000001976a914827893e4bd2fd62ed2df78fae410500b2fadf2da88ac00db1f8b7e0000001976a914ddb09fcf2c6d7d2a21696c35a35f83a044f4f1a088acd08ab03a190000001976a914cff4bf49cf23820d6f6d395f69d1e730ff7d9fa588ac00204096180000001976a9148db9b0b093dc1d4bb3b5a2a5e6d363f97a4f59eb88ac0055d48b1d0000001976a914d9e45c5185c834d4cc916eec70a60c338cdfb2c888ac00b4f135010000001976a914882a466a0cf2b5febe3bb6c752a6531e1270304188acc0c1b1b51e0200001976a9147383530a19b32ab2bcefb43163984be5b72c68a988ac802e7108320000001976a9143fea4044039f43173939c55e861712de41a0cbf288acc0cca4a7190800001976a914a15c7a249c3ec90739a5ea2735a227e73ef221da88ac00fdd256330000001976a914eb753ce1bd7870865dba0e77b5da5c2f6fee652988ac7263097e960500001976a914a55c752efccca62c289b84916fd38c746da76a3088ac00f9b39d190000001976a9147f0ab78ed79122a62212010517cfb5b955139ed088acc01b55319f7100001976a914f93c68660dacd11641edb91c8ac4a03e8314392188ac00c2a77f340000001976a914fac1af31ea3743f39c37d65eccde28f7c5fc194c88ac003800658a0000001976a9145d0d5fa8c896fcd21212bf4536237c555072606b88ac009aea25490200001976a914e54fb45863bdc14e57445428affeea5559eafa0488ac00961c0ffa3400001976a914ce48ad5eb2bcf4ceb1ddc6038d72e79efa00c14888ac00d603842d01000017a914b0d010e6b3933e73f8b40571525a77438910703f8700559e26590000001976a91450b319c4a0581e3838b4333d4fe0e6b97d9e90f188ace416082f94837a011976a91481d86003f4a253e023e2a1cd7ab49485aabfc02088aca07b1cea320000001976a914a21f60b30591a0adc285dbc820b1eb4247e6907888ac00bd378eb80000001976a914418f8deba1551795d35283b1cc9e93eb8167a40f88ac0070d85e260000001976a9147614087971cafe966dfef7aae866a47aa2e76a4488ac10fe3172070000001976a914b8369ad9daaaad9c3ad5950c445bd5d64cbc0dfa88ac00157b18160000001976a9147a1ed1f4d58fb61feab33e69d14f15c21428266c88ac804771962b0000001976a914aef6cd3ba6a7331e14e7b333aa1d6875d3c38c3488acce57732ebe0700001976a9149ddaa9e39338db4b10a2069482f7d5b304a3cfdd88ac600c45000d0000001976a91445fe8cfc2fccfc6d4fe17691b7e83c73ddc5d05c88ac84f912527d0000001976a9148d6b366995f7ed692c9fb34954ebc79f440c207f88ac13d614c52e0d00001976a9148e49509b6e75e39ba6da07bd392e267b219aa28988ac003ed9f5590200001976a914db1fe479c0cf09b21fc8f74dd9af49313796d0d488ac000e8f49c14800001976a9140e7a9430fb5b549ea4deaf00b00f124c5537517c88acc0324427392700001976a914098c392e562e1d1e4d48f5a8fe24b3bd2863d10088ac0048f9f66c00000017a914a44341656c610f79d7bcdc0690ce9ff5bc30b3fd87d7b93600",
+    {
+      "inputs": [
+        {
+          "txid":
+            "23045d1ab839d2b8197461c75db3f9a4683d1aaa2a43d853d2d6cad5f8f400fb",
+          "index": 0
+        }
+      ],
+      "outputs": [
+        {
+          "scriptHash": "76a914359242e944e8a39097946e54efee86a37a0f439288ac",
+          "value": 3046600000000
+        },
+        {
+          "scriptHash": "76a9145df18343d49c0e91841e0502e897e5e3122f67b688ac",
+          "value": 539163739651
+        },
+        {
+          "scriptHash": "76a914c2174546da4b31c1cd935da7cc1193d56252d38e88ac",
+          "value": 3286405300000
+        },
+        {
+          "scriptHash": "76a9144637a99be669d529dcf71b405afd1dd6053ccc3088ac",
+          "value": 300377900000
+        },
+        {
+          "scriptHash": "76a9142471fd1c001e4851e2bfdbf2a66026625859985388ac",
+          "value": 89995000000000
+        },
+        {
+          "scriptHash": "76a91453863b02e4541aa6298a5f3992303ce19de75dce88ac",
+          "value": 311814634930
+        },
+        {
+          "scriptHash": "76a914bdf3fc70b8088f99b86affcce08d70bfc2c23eec88ac",
+          "value": 7603683700000
+        },
+        {
+          "scriptHash": "76a914827893e4bd2fd62ed2df78fae410500b2fadf2da88ac",
+          "value": 221853100000
+        },
+        {
+          "scriptHash": "76a914ddb09fcf2c6d7d2a21696c35a35f83a044f4f1a088ac",
+          "value": 543500000000
+        },
+        {
+          "scriptHash": "76a914cff4bf49cf23820d6f6d395f69d1e730ff7d9fa588ac",
+          "value": 108358830800
+        },
+        {
+          "scriptHash": "76a9148db9b0b093dc1d4bb3b5a2a5e6d363f97a4f59eb88ac",
+          "value": 105600000000
+        },
+        {
+          "scriptHash": "76a914d9e45c5185c834d4cc916eec70a60c338cdfb2c888ac",
+          "value": 126900000000
+        },
+        {
+          "scriptHash": "76a914882a466a0cf2b5febe3bb6c752a6531e1270304188ac",
+          "value": 5200000000
+        },
+        {
+          "scriptHash": "76a9147383530a19b32ab2bcefb43163984be5b72c68a988ac",
+          "value": 2330920600000
+        },
+        {
+          "scriptHash": "76a9143fea4044039f43173939c55e861712de41a0cbf288ac",
+          "value": 214890000000
+        },
+        {
+          "scriptHash": "76a914a15c7a249c3ec90739a5ea2735a227e73ef221da88ac",
+          "value": 8906279800000
+        },
+        {
+          "scriptHash": "76a914eb753ce1bd7870865dba0e77b5da5c2f6fee652988ac",
+          "value": 220500000000
+        },
+        {
+          "scriptHash": "76a914a55c752efccca62c289b84916fd38c746da76a3088ac",
+          "value": 6143917777778
+        },
+        {
+          "scriptHash": "76a9147f0ab78ed79122a62212010517cfb5b955139ed088ac",
+          "value": 110020000000
+        },
+        {
+          "scriptHash": "76a914f93c68660dacd11641edb91c8ac4a03e8314392188ac",
+          "value": 124928541400000
+        },
+        {
+          "scriptHash": "76a914fac1af31ea3743f39c37d65eccde28f7c5fc194c88ac",
+          "value": 225480000000
+        },
+        {
+          "scriptHash": "76a9145d0d5fa8c896fcd21212bf4536237c555072606b88ac",
+          "value": 594400000000
+        },
+        {
+          "scriptHash": "76a914e54fb45863bdc14e57445428affeea5559eafa0488ac",
+          "value": 2513192000000
+        },
+        {
+          "scriptHash": "76a914ce48ad5eb2bcf4ceb1ddc6038d72e79efa00c14888ac",
+          "value": 58248600000000
+        },
+        {
+          "scriptHash": "a914b0d010e6b3933e73f8b40571525a77438910703f87",
+          "value": 1295000000000
+        },
+        {
+          "scriptHash": "76a91450b319c4a0581e3838b4333d4fe0e6b97d9e90f188ac",
+          "value": 382900000000
+        },
+        {
+          "scriptHash": "76a91481d86003f4a253e023e2a1cd7ab49485aabfc02088ac",
+          "value": 106542213664085732
+        },
+        {
+          "scriptHash": "76a914a21f60b30591a0adc285dbc820b1eb4247e6907888ac",
+          "value": 218676100000
+        },
+        {
+          "scriptHash": "76a914418f8deba1551795d35283b1cc9e93eb8167a40f88ac",
+          "value": 792660000000
+        },
+        {
+          "scriptHash": "76a9147614087971cafe966dfef7aae866a47aa2e76a4488ac",
+          "value": 164800000000
+        },
+        {
+          "scriptHash": "76a914b8369ad9daaaad9c3ad5950c445bd5d64cbc0dfa88ac",
+          "value": 31980650000
+        },
+        {
+          "scriptHash": "76a9147a1ed1f4d58fb61feab33e69d14f15c21428266c88ac",
+          "value": 94900000000
+        },
+        {
+          "scriptHash": "76a914aef6cd3ba6a7331e14e7b333aa1d6875d3c38c3488ac",
+          "value": 187207600000
+        },
+        {
+          "scriptHash": "76a9149ddaa9e39338db4b10a2069482f7d5b304a3cfdd88ac",
+          "value": 8513404491726
+        },
+        {
+          "scriptHash": "76a91445fe8cfc2fccfc6d4fe17691b7e83c73ddc5d05c88ac",
+          "value": 55839100000
+        },
+        {
+          "scriptHash": "76a9148d6b366995f7ed692c9fb34954ebc79f440c207f88ac",
+          "value": 538247887236
+        },
+        {
+          "scriptHash": "76a9148e49509b6e75e39ba6da07bd392e267b219aa28988ac",
+          "value": 14494526133779
+        },
+        {
+          "scriptHash": "76a914db1fe479c0cf09b21fc8f74dd9af49313796d0d488ac",
+          "value": 2585400000000
+        },
+        {
+          "scriptHash": "76a9140e7a9430fb5b549ea4deaf00b00f124c5537517c88ac",
+          "value": 79995000000000
+        },
+        {
+          "scriptHash": "76a914098c392e562e1d1e4d48f5a8fe24b3bd2863d10088ac",
+          "value": 43126425400000
+        },
+        {
+          "scriptHash": "a914a44341656c610f79d7bcdc0690ce9ff5bc30b3fd87",
+          "value": 468000000000
+        }
+      ]
+    }
+  ]
+}

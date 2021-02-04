@@ -8,6 +8,7 @@ import {
   script,
   utils
 } from 'bcoin'
+import BN from 'bn.js'
 import { Buffer } from 'buffer'
 
 import { type EngineState } from '../engine/engineState.js'
@@ -21,6 +22,7 @@ import {
 
 const RBF_SEQUENCE_NUM = 0xffffffff - 2
 const MESSAGE_HEADER = Buffer.from('\x18Bitcoin Signed Message:\n', 'utf8')
+export const BN_ZERO = new BN(0)
 
 export type RawTx = string
 export type BlockHeight = number
@@ -34,12 +36,32 @@ export type Script = {
 export type Output = {
   address?: string,
   script?: Script,
-  value: number
+  value: string
+}
+
+export type BcoinOutput = {
+  value: string,
+  scriptHash: any,
+  script: any,
+  getType: () => string,
+  getJSON: (
+    network: string
+  ) => {
+    value: string,
+    address: string
+  }
+}
+
+export type BcoinTransaction = {
+  inputs: any,
+  getJSON: any,
+  getSizes: any,
+  outputs: BcoinOutput[]
 }
 
 export type StandardOutput = {
   address: string,
-  value: number
+  value: string
 }
 
 export type Utxo = {
@@ -240,12 +262,12 @@ export const createTX = async ({
   outputs.forEach(({ address, value }) => {
     const bcoinAddress = toBcoinFormat(address, network)
     const addressScript = script.fromAddress(bcoinAddress)
-    mtx.addOutput(addressScript, value)
+    mtx.addOutput(addressScript, value) // TODO:
   })
 
   // Create coins
   const coins = utxos.map(({ tx, index, height }) => {
-    const coin = primitives.Coin.fromTX(tx, index, height)
+    const coin = primitives.Coin.fromTX(tx, index, height) // TODO:
     const { serializers = {} } = networks[network] || {}
     if (serializers.txHash) {
       coin.hash = serializers.txHash(tx.toNormal().toString('hex'))
@@ -255,6 +277,7 @@ export const createTX = async ({
 
   // Try to fund the transaction
   await mtx.fund(coins, {
+    // TODO:
     selection,
     changeAddress: toBcoinFormat(changeAddress, network),
     subtractFee,
@@ -299,21 +322,22 @@ export const addressToScriptHash = (
     .then(scriptHashRaw => reverseBufferToHex(scriptHashRaw))
 }
 
-export const verifyTxAmount = (
-  rawTx: string,
-  bcoinTx: any = primitives.TX.fromRaw(rawTx, 'hex')
-) =>
-  filterOutputs(bcoinTx.outputs).find(({ value }) => parseInt(value) <= 0)
+export const verifyTxAmount = (rawTx: string, bcoinTx?: BcoinTransaction) => {
+  bcoinTx = bcoinTx ?? primitives.TX.fromRaw(rawTx, 'hex')
+  return filterOutputs(bcoinTx.outputs).find(({ value }) =>
+    new BN(value).lte(BN_ZERO)
+  )
     ? false
     : bcoinTx
+}
 
-export const parseTransaction = (
-  rawTx: string,
-  bcoinTx: any = primitives.TX.fromRaw(rawTx, 'hex')
-) =>
-  !bcoinTx.outputs.forEach(output => {
+export const parseTransaction = (rawTx: string, bcoinTx?: BcoinTransaction) => {
+  bcoinTx = bcoinTx ?? primitives.TX.fromRaw(rawTx, 'hex')
+  bcoinTx.outputs.forEach(output => {
     output.scriptHash = reverseBufferToHex(hash256Sync(output.script.toRaw()))
-  }) && bcoinTx
+  })
+  return bcoinTx
+}
 
 // Creates a Bcoin Transaction instance from a static JSON object
 export const parseJsonTransaction = (txJson: Object): Object => {
@@ -337,7 +361,12 @@ export const parsePath = (path: string = '', masterPath: string): number[] =>
     .map(i => parseInt(i))
 
 export const sumUtxos = (utxos: Utxo[]) =>
-  utxos.reduce((s, { tx, index }) => s + parseInt(tx.outputs[index].value), 0)
+  utxos
+    .reduce(
+      (s, { tx, index }) => new BN(tx.outputs[index].value).add(s),
+      BN_ZERO
+    )
+    .toString()
 
 export const getLock = () => new utils.Lock()
 
@@ -363,16 +392,16 @@ export const addressFromKey = async (
 }
 
 export const sumTransaction = (
-  bcoinTransaction: any,
+  bcoinTransaction: BcoinTransaction,
   network: string,
   engineState: EngineState
 ) => {
   const ourReceiveAddresses = []
-  let totalOutputAmount = 0
-  let totalInputAmount = 0
-  let nativeAmount = 0
+  let totalOutputAmount = BN_ZERO
+  let totalInputAmount = BN_ZERO
+  let nativeAmountBN = BN_ZERO
   let address = ''
-  let value = 0
+  let value = BN_ZERO
   let output = null
   let type = null
 
@@ -385,7 +414,8 @@ export const sumTransaction = (
       continue
     }
     output = output.getJSON(network)
-    value = output.value
+    const bigValue = new BN(output.value)
+    value = value.add(bigValue)
     try {
       address = toNewFormat(output.address, network)
       const { serializers = {} } = networks[network] || {}
@@ -394,15 +424,15 @@ export const sumTransaction = (
         : address
     } catch (e) {
       engineState.log.error(e)
-      if (value <= 0) {
+      if (value.gt(BN_ZERO)) {
         continue
       } else {
         address = ''
       }
     }
-    totalOutputAmount += value
+    totalOutputAmount = totalOutputAmount.add(value)
     if (engineState.scriptHashes[address]) {
-      nativeAmount += value
+      nativeAmountBN = nativeAmountBN.add(value)
       ourReceiveAddresses.push(address)
     }
   }
@@ -421,21 +451,25 @@ export const sumTransaction = (
       prevoutBcoinTX = engineState.parsedTxs[hash]
       if (prevoutBcoinTX) {
         output = prevoutBcoinTX.outputs[index].getJSON(network)
-        value = output.value
+        const bigValue = new BN(output.value)
+        value = value.add(bigValue)
         address = toNewFormat(output.address, network)
         const { serializers = {} } = networks[network] || {}
         address = serializers.address
           ? serializers.address.encode(address)
           : address
-        totalInputAmount += value
+        totalInputAmount = totalInputAmount.add(value)
         if (engineState.scriptHashes[address]) {
-          nativeAmount -= value
+          nativeAmountBN = nativeAmountBN.sub(value)
         }
       }
     }
   }
 
-  const fee = totalInputAmount ? totalInputAmount - totalOutputAmount : 0
+  const fee: string = totalInputAmount.isZero()
+    ? '0'
+    : totalInputAmount.sub(totalOutputAmount).toString()
+  const nativeAmount = nativeAmountBN.toString()
   return { nativeAmount, fee, ourReceiveAddresses }
 }
 

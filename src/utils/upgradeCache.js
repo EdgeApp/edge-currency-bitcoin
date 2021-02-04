@@ -9,7 +9,11 @@ import { toNewFormat } from '../utils/addressFormat.js'
 import { parsePath } from '../utils/coinUtils.js'
 import { formatSelector } from '../utils/formatSelector.js'
 
-const versionNumber = 3
+const versionNumber = 4
+
+const version4 = async () => {
+
+}
 
 const version3 = async (
   options: EdgeCurrencyEngineOptions,
@@ -70,5 +74,6 @@ export const checkCacheVersion = async (
     if (parseInt(version) < versionNumber) throw new Error()
   } catch (e) {
     await version3(options, walletInfo, engineInfo)
+    await version4()
   }
 }

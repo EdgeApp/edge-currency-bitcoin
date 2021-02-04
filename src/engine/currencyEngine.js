@@ -279,8 +279,8 @@ export class CurrencyEngine {
       txid: txid,
       date: date,
       blockHeight: height === -1 ? 0 : height,
-      nativeAmount: `${nativeAmount}`,
-      networkFee: `${fee}`,
+      nativeAmount,
+      networkFee: fee,
       signedTx: this.engineState.txCache[txid]
     }
     return edgeTransaction
@@ -626,7 +626,7 @@ export class CurrencyEngine {
           nativeAmount,
           otherParams: { script } = {}
         } = spendTarget
-        const value = parseInt(nativeAmount || '0')
+        const value = typeof nativeAmount === 'string' ? nativeAmount : '0'
         if (address && nativeAmount) outputs.push({ address, value })
         else if (script) outputs.push({ script, value })
       }
@@ -642,11 +642,11 @@ export class CurrencyEngine {
 
       const { scriptHashes } = this.engineState
       const sumOfTx = spendTargets.reduce(
-        (s, { publicAddress, nativeAmount }: EdgeSpendTarget) =>
+        (s, { publicAddress, nativeAmount = '0' }: EdgeSpendTarget) =>
           publicAddress && scriptHashes[publicAddress]
             ? s
-            : s - parseInt(nativeAmount),
-        0
+            : bns.sub(s, nativeAmount),
+        '0'
       )
 
       const addresses = getReceiveAddresses(bcoinTx, this.network)
@@ -655,7 +655,7 @@ export class CurrencyEngine {
         address => scriptHashes[address]
       )
 
-      const networkFee = bcoinTx.getFee()
+      const networkFee: string = bcoinTx.getFee() // TODO:
 
       const edgeTransaction: EdgeTransaction = {
         ourReceiveAddresses,
@@ -668,8 +668,8 @@ export class CurrencyEngine {
         txid: '',
         date: 0,
         blockHeight: 0,
-        nativeAmount: `${sumOfTx - parseInt(networkFee)}`,
-        networkFee: `${networkFee}`,
+        nativeAmount: bns.sub(sumOfTx, networkFee),
+        networkFee,
         feeRateUsed: {
           satPerVByte: rate / 1000
         },
