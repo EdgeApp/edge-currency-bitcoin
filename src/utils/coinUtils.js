@@ -323,7 +323,7 @@ export const addressToScriptHash = (
 }
 
 export const verifyTxAmount = (rawTx: string, bcoinTx?: BcoinTransaction) => {
-  bcoinTx = bcoinTx ?? primitives.TX.fromRaw(rawTx, 'hex')
+  bcoinTx = bcoinTx || primitives.TX.fromRaw(rawTx, 'hex')
   return filterOutputs(bcoinTx.outputs).find(({ value }) =>
     new BN(value).lte(BN_ZERO)
   )
@@ -332,7 +332,7 @@ export const verifyTxAmount = (rawTx: string, bcoinTx?: BcoinTransaction) => {
 }
 
 export const parseTransaction = (rawTx: string, bcoinTx?: BcoinTransaction) => {
-  bcoinTx = bcoinTx ?? primitives.TX.fromRaw(rawTx, 'hex')
+  bcoinTx = bcoinTx || primitives.TX.fromRaw(rawTx, 'hex')
   bcoinTx.outputs.forEach(output => {
     output.scriptHash = reverseBufferToHex(hash256Sync(output.script.toRaw()))
   })
