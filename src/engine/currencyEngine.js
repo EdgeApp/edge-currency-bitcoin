@@ -607,6 +607,8 @@ export class CurrencyEngine {
     // Try and get UTXOs from `txOptions`, if unsuccessful use our own utxo's
     const { utxos = this.engineState.getUTXOs() } = txOptions
     // Test if we have enough to spend
+    console.log('610. totalAmountToSend', totalAmountToSend)
+    console.log('611. sumUtxos(utxos)', sumUtxos(utxos))
     if (bns.gt(totalAmountToSend, `${sumUtxos(utxos)}`)) {
       this.log.error(`InsufficientFundError ${this.currencyCode}`)
       throw new InsufficientFundsError(this.currencyCode)

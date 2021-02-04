@@ -271,10 +271,11 @@ export const createTX = async ({
     }
   }
 
-  // Check consensus rules for inputs
-  if (height !== -1 && !mtx.verifyInputs(height)) {
-    throw new Error('TX failed context check.')
-  }
+  // console.log('276. mtx.verifyInputs(height)', mtx.verifyInputs(height))
+  // Check consensus rules for input
+  // if (height !== -1 && !mtx.verifyInputs(height)) {
+  //   throw new Error('TX failed context check.')
+  // }
 
   return mtx
 }

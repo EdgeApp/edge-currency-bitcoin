@@ -275,6 +275,7 @@ export class KeyManager {
       for (const input of tx.inputs) {
         const { prevout } = input
         if (prevout) {
+          console.log('278. prevout', prevout)
           const { branch, index, redeemScript } = this.utxoToAddress(prevout)
           const branchName = branches[`${branch}`]
           const keyRing = this.keys[branchName]
@@ -354,6 +355,7 @@ export class KeyManager {
   ): { branch: number, index: number, redeemScript?: string } {
     const { parsedTxs, addressInfos } = this.engineState
 
+    console.log('358. prevout.rhash()', prevout.rhash())
     const parsedTx = parsedTxs[prevout.rhash()]
     if (!parsedTx) throw new Error('UTXO not synced yet')
     const output = parsedTx.outputs[prevout.index]

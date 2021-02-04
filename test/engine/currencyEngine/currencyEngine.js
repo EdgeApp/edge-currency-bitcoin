@@ -1,5 +1,6 @@
 // @flow
 
+import { primitives } from 'bcoin'
 import { assert } from 'chai'
 import { downgradeDisklet, navigateDisklet } from 'disklet'
 import {
@@ -419,14 +420,34 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
       it(`Should build transaction with ${test}`, function () {
         this.timeout(3000)
         const templateSpend = spendTests[test]
-        return engine
-          .makeSpend(templateSpend)
-          .then(a => {
-            return engine.signTx(a)
-          })
-          .then(a => {
-            fakeLogger.info('sign', a)
-          })
+        if (templateSpend.txOptions && templateSpend.txOptions.utxos) {
+          templateSpend.txOptions.utxos = templateSpend.txOptions.utxos.map(
+            utxo => {
+              console.log(
+                '426. primitives.MTX.fromJSON(utxo.tx)',
+                primitives.MTX.fromJSON(utxo.tx).toRaw().toString('hex')
+              )
+              return { ...utxo, tx: primitives.MTX.fromJSON(utxo.tx) }
+            }
+          )
+        }
+        return (
+          engine
+            // $FlowFixMe
+            .makeSpend(templateSpend, templateSpend.txOptions)
+            .then(a => {
+              // $FlowFixMe
+              console.log(
+                '427. a',
+                // $FlowFixMe
+                JSON.stringify(a.otherParams.txJson, null, 2)
+              )
+              return engine.signTx(a)
+            })
+            .then(a => {
+              fakeLogger.info('sign', a)
+            })
+        )
       })
     })
 
