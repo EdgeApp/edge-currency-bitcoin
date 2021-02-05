@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.9.11 (2021-02-04)
+
+- Refactor parseTransaction test
+- Add support for large input values
+
 # 4.9.10 (2021-01-25)
 
 - Throw error when custom fee is below 1 sat/byte
