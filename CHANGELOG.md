@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.12 (2021-02-11)
+
+- Rename TBTC to TESTBTC to avoid conflict with tBTC ERC20 token
+
 # 4.9.11 (2021-02-04)
 
 - Refactor parseTransaction test
