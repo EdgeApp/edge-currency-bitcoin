@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.13 (2021-03-09)
+
+- RVN: Support old specification of blockheader check in newer blocks
+
 # 4.9.12 (2021-02-11)
 
 - Rename TBTC to TESTBTC to avoid conflict with tBTC ERC20 token
