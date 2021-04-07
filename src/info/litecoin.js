@@ -24,7 +24,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
     scripthashLegacy: 0x05,
     witnesspubkeyhash: 0x06,
     witnessscripthash: 0x0a,
-    bech32: 'lc'
+    bech32: 'ltc'
   }
 }
 
