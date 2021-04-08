@@ -1,5 +1,10 @@
 # edge-currency-bitcoin
 
+# 4.9.14 (2021-04-07)
+
+- LTC: Fix bech32 prefix
+- Update image content URL
+
 # 4.9.13 (2021-03-09)
 
 - RVN: Support old specification of blockheader check in newer blocks
