@@ -27,7 +27,12 @@ const fakeLogger = {
   warn: (...args) => {},
   error: (...args) => {}
 }
-const log = Object.assign(() => {}, { error() {}, warn() {} })
+const log = Object.assign(() => {}, {
+  breadcrumb: () => {},
+  crash: () => {},
+  error() {},
+  warn() {}
+})
 
 const DATA_STORE_FOLDER = 'txEngineFolderBTC'
 const FIXTURES_FOLDER = join(__dirname, 'fixtures')
@@ -82,6 +87,7 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
 
   const emitter = new EventEmitter()
   const callbacks = {
+    onAddressChanged() {},
     onAddressesChecked(progressRatio) {
       fakeLogger.info('onAddressesCheck', progressRatio)
       emitter.emit('onAddressesCheck', progressRatio)
@@ -386,9 +392,9 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   // })
 
   describe(`Get Fresh Address for Wallet type ${WALLET_TYPE}`, function () {
-    it('Should provide a non used BTC address when no options are provided', function () {
+    it('Should provide a non used BTC address when no options are provided', async function () {
       this.timeout(3000)
-      const address = engine.getFreshAddress({}) // TODO
+      const address = await engine.getFreshAddress({}) // TODO
       // $FlowFixMe
       const engineState: any = engine.engineState
       const scriptHash = engineState.scriptHashes[address.publicAddress]
@@ -463,14 +469,13 @@ for (const dir of dirs(FIXTURES_FOLDER)) {
   })
 
   describe(`Stop Engine for Wallet type ${WALLET_TYPE}`, function () {
-    it('dump the wallet data', function (done) {
-      const dataDump = engine.dumpData()
+    it('dump the wallet data', async function () {
+      const dataDump = await engine.dumpData()
       const { id } = fixture['Make Engine']
       assert(dataDump.walletId === id, 'walletId')
       assert(dataDump.walletType === WALLET_TYPE, 'walletType')
       // $FlowFixMe
       assert(dataDump.walletFormat === WALLET_FORMAT, 'walletFormat')
-      done()
     })
 
     it('changeSettings', function (done) {

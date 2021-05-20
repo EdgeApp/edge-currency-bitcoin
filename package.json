@@ -71,7 +71,7 @@
     "@babel/runtime": "^7.0.0",
     "babel-eslint": "^10.1.0",
     "babel-loader": "^8.0.5",
-    "edge-core-js": "0.17.8",
+    "edge-core-js": "^0.17.33",
     "eslint": "^7.14.0",
     "eslint-config-standard-kit": "0.15.1",
     "eslint-plugin-flowtype": "^5.2.0",

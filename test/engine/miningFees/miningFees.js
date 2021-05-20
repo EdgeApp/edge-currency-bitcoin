@@ -13,7 +13,12 @@ import {
 import type { BitcoinFees } from '../../../src/utils/flowTypes.js'
 import earnComTestFees from './earnComTestFees.json'
 
-const log = Object.assign(() => {}, { error() {}, warn() {} })
+const log = Object.assign(() => {}, {
+  breadcrumb: () => {},
+  crash: () => {},
+  error() {},
+  warn() {}
+})
 
 describe(`Mining Fees`, function () {
   it('calcFeesFromEarnCom from earn.com', function () {

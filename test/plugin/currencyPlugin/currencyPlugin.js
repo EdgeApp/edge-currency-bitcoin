@@ -18,7 +18,12 @@ const fakeLogger = {
   warn: () => {},
   error: () => {}
 }
-const log = Object.assign(() => {}, { error() {}, warn() {} })
+const log = Object.assign(() => {}, {
+  breadcrumb: () => {},
+  crash: () => {},
+  error() {},
+  warn() {}
+})
 
 for (const fixture of fixtures) {
   const WALLET_TYPE = fixture.WALLET_TYPE
