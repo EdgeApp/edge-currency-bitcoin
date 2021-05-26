@@ -46,10 +46,9 @@ const engineInfo: EngineCurrencyInfo = {
           `Cannot interpret block header ${header.toString('hex')}`
         )
       }
-    } else if (header.length !== 120 && header.length !== 80){ // Allow for both 120 and 80 in case miner mines a old block
-        throw new Error(
-          `Cannot interpret block header ${header.toString('hex')}`
-        )
+    } else if (header.length !== 120 && header.length !== 80) {
+      // Allow for both 120 and 80 in case miner mines a old block
+      throw new Error(`Cannot interpret block header ${header.toString('hex')}`)
     }
     return header.readUInt32LE(4 + 32 + 32)
   }
