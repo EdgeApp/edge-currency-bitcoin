@@ -7,7 +7,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const isBech32 = address => {
   try {
@@ -121,11 +120,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   addressExplorer:
     'https://blockchair.com/groestlcoin/address/%s?from=edgeapp?from=edgeapp',
   transactionExplorer:
-    'https://blockchair.com/groestlcoin/transaction/%s?from=edgeapp',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/groestlcoin-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/groestlcoin-logo-solo-64.png`
+    'https://blockchair.com/groestlcoin/transaction/%s?from=edgeapp'
 }
 
 export const groestlcoin = { bcoinInfo, engineInfo, currencyInfo }

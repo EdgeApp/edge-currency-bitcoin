@@ -4,7 +4,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'zcoin',
@@ -77,11 +76,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Explorers:
   addressExplorer: 'https://insight.zcoin.io/address/%s',
   blockExplorer: 'https://insight.zcoin.io/block/%s',
-  transactionExplorer: 'https://insight.zcoin.io/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/firo-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/firo-logo-solo-64.png`
+  transactionExplorer: 'https://insight.zcoin.io/tx/%s'
 }
 
 export const zcoin = { bcoinInfo, engineInfo, currencyInfo }

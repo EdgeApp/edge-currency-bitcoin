@@ -4,7 +4,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'badcoin',
@@ -68,11 +67,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Explorers:
   addressExplorer: 'https://www.blockingbad.com/address/%s',
   blockExplorer: 'https://www.blockingbad.com/block/%s',
-  transactionExplorer: 'https://www.blockingbad.com/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/bad-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bad-logo-solo-64.png`
+  transactionExplorer: 'https://www.blockingbad.com/tx/%s'
 }
 
 export const badcoin = { bcoinInfo, engineInfo, currencyInfo }

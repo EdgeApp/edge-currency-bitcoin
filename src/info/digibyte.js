@@ -4,7 +4,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'digibyte',
@@ -72,11 +71,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Explorers:
   blockExplorer: 'https://digiexplorer.info/block/%s',
   addressExplorer: 'https://digiexplorer.info/address/%s',
-  transactionExplorer: 'https://digiexplorer.info/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/digibyte-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/digibyte-logo-solo-64.png`
+  transactionExplorer: 'https://digiexplorer.info/tx/%s'
 }
 
 export const digibyte = { bcoinInfo, engineInfo, currencyInfo }

@@ -4,7 +4,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcoingold',
@@ -100,11 +99,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Explorers:
   blockExplorer: 'https://explorer.bitcoingold.org/insight/block/%s',
   addressExplorer: 'https://explorer.bitcoingold.org/insight/address/%s',
-  transactionExplorer: 'https://explorer.bitcoingold.org/insight/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/bitcoingold-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bitcoingold-logo-solo-64.png`
+  transactionExplorer: 'https://explorer.bitcoingold.org/insight/tx/%s'
 }
 
 export const bitcoingold = { bcoinInfo, engineInfo, currencyInfo }

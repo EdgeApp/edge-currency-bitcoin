@@ -4,7 +4,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'qtum',
@@ -76,11 +75,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Explorers:
   blockExplorer: 'https://explorer.qtum.org/block/%s',
   addressExplorer: 'https://explorer.qtum.org/address/%s',
-  transactionExplorer: 'https://explorer.qtum.org/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/qtum-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/qtum-logo-solo-64.png`
+  transactionExplorer: 'https://explorer.qtum.org/tx/%s'
 }
 
 export const qtum = { bcoinInfo, engineInfo, currencyInfo }

@@ -7,7 +7,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const base58 = {
   decode: (address: string) => {
@@ -100,11 +99,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Explorers:
   addressExplorer: 'https://insight.smartcash.cc/address/%s',
   blockExplorer: 'https://insight.smartcash.cc/block/%s',
-  transactionExplorer: 'https://insight.smartcash.cc/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/smartcash-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/smartcash-logo-solo-64.png`
+  transactionExplorer: 'https://insight.smartcash.cc/tx/%s'
 }
 
 export const smartcash = { bcoinInfo, engineInfo, currencyInfo }

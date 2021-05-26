@@ -4,7 +4,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'dash',
@@ -73,12 +72,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Explorers:
   blockExplorer: 'https://blockchair.com/dash/block/%s?from=edgeapp',
   addressExplorer: 'https://blockchair.com/dash/address/%s?from=edgeapp',
-  transactionExplorer:
-    'https://blockchair.com/dash/transaction/%s?from=edgeapp',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/dash-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/dash-logo-solo-64.png`
+  transactionExplorer: 'https://blockchair.com/dash/transaction/%s?from=edgeapp'
 }
 
 export const dash = { bcoinInfo, engineInfo, currencyInfo }

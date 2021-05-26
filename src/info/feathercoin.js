@@ -4,7 +4,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'feathercoin',
@@ -71,11 +70,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Explorers:
   addressExplorer: 'https://fsight.chain.tips/address/%s',
   blockExplorer: 'https://fsight.chain.tips/block/%s',
-  transactionExplorer: 'https://fsight.chain.tips/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/feathercoin-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/feathercoin-logo-solo-64.png`
+  transactionExplorer: 'https://fsight.chain.tips/tx/%s'
 }
 
 export const feathercoin = { bcoinInfo, engineInfo, currencyInfo }
