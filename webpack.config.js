@@ -1,5 +1,6 @@
 const path = require('path')
 const webpack = require('webpack')
+const TerserPlugin = require('terser-webpack-plugin')
 
 const babelOptions = {
   // For debugging, just remove "@babel/preset-env":
@@ -21,6 +22,10 @@ module.exports = {
     ]
   },
   plugins: [new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'] })],
+  optimization: {
+    minimize: true,
+    minimizer: [new TerserPlugin({ terserOptions: { safari10: true } })]
+  },
   resolve: {
     fallback: {
       url: require.resolve('url/'),
