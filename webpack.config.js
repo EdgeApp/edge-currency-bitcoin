@@ -1,4 +1,6 @@
 const path = require('path')
+const webpack = require('webpack')
+const TerserPlugin = require('terser-webpack-plugin')
 
 const babelOptions = {
   // For debugging, just remove "@babel/preset-env":
@@ -19,8 +21,21 @@ module.exports = {
       }
     ]
   },
+  plugins: [new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'] })],
+  optimization: {
+    minimize: true,
+    minimizer: [new TerserPlugin({ terserOptions: { safari10: true } })]
+  },
+  resolve: {
+    fallback: {
+      url: require.resolve('url/'),
+      crypto: require.resolve('crypto-browserify'),
+      stream: require.resolve('stream/')
+    }
+  },
   output: {
     path: path.resolve(__dirname, './lib/react-native/'),
     filename: 'edge-currency-bitcoin.js'
-  }
+  },
+  target: ['web', 'es5']
 }
