@@ -1,5 +1,12 @@
 # edge-currency-bitcoin
 
+# 4.9.15 (2021-06-03)
+
+- Remove icon URLs
+- Upgrade edge-core-js to v0.17.33
+- Upgrade to Webpack 5
+- Upgrade cleaners to v0.3.9
+
 # 4.9.14 (2021-04-07)
 
 - LTC: Fix bech32 prefix
