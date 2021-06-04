@@ -5,7 +5,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const hash256 = (rawTx: string) => {
   const buf = Buffer.from(rawTx, 'hex')
@@ -82,11 +81,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Explorers:
   blockExplorer: 'https://live.blockcypher.com/btc-testnet/block/%s',
   addressExplorer: 'https://live.blockcypher.com/btc-testnet/address/%s',
-  transactionExplorer: 'https://live.blockcypher.com/btc-testnet/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/bitcoin-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bitcoin-logo-solo-64.png`
+  transactionExplorer: 'https://live.blockcypher.com/btc-testnet/tx/%s'
 }
 
 export const bitcoinTestnet = { bcoinInfo, engineInfo, currencyInfo }

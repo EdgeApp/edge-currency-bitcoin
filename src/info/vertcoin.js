@@ -4,7 +4,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'vertcoin',
@@ -71,11 +70,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Explorers:
   blockExplorer: 'https://insight.vertcoin.org/block/%s',
   addressExplorer: 'https://insight.vertcoin.org/address/%s',
-  transactionExplorer: 'https://insight.vertcoin.org/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/vertcoin-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/vertcoin-logo-solo-64.png`
+  transactionExplorer: 'https://insight.vertcoin.org/tx/%s'
 }
 
 export const vertcoin = { bcoinInfo, engineInfo, currencyInfo }

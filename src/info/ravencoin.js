@@ -4,7 +4,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'ravencoin',
@@ -73,11 +72,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Explorers:
   addressExplorer: 'https://ravencoin.network/address/%s',
   blockExplorer: 'https://ravencoin.network/block/%s',
-  transactionExplorer: 'https://ravencoin.network/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/ravencoin-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/ravencoin-logo-solo-64.png`
+  transactionExplorer: 'https://ravencoin.network/tx/%s'
 }
 
 export const ravencoin = { bcoinInfo, engineInfo, currencyInfo }

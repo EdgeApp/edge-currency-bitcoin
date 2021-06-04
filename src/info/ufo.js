@@ -4,7 +4,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'uniformfiscalobject',
@@ -73,11 +72,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   // Explorers:
   addressExplorer: 'https://explorer.ufobject.com/address/%s',
   blockExplorer: 'https://explorer.ufobject.com/block/%s',
-  transactionExplorer: 'https://explorer.ufobject.com/tx/%s',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/ufo-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/ufo-logo-solo-64.png`
+  transactionExplorer: 'https://explorer.ufobject.com/tx/%s'
 }
 
 export const ufo = { bcoinInfo, engineInfo, currencyInfo }
