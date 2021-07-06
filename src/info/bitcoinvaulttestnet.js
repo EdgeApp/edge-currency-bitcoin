@@ -4,7 +4,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcoinvaulttestnet',
@@ -71,11 +70,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   addressExplorer:
     'https://explorer.testnet.bitcoinvault.global/address/%s?from=edgeapp',
   transactionExplorer:
-    'https://explorer.testnet.bitcoinvault.global/tx/%s?from=edgeapp',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/bitcoinvault-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bitcoinvault-logo-solo-64.png`
+    'https://explorer.testnet.bitcoinvault.global/tx/%s?from=edgeapp'
 }
 
 export const bitcoinvaultTestnet = { bcoinInfo, engineInfo, currencyInfo }

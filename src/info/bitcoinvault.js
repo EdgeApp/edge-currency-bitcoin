@@ -4,7 +4,6 @@ import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
-import { imageServerUrl } from './constants.js'
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'bitcoinvault',
@@ -61,8 +60,8 @@ const currencyInfo: EdgeCurrencyInfo = {
   defaultSettings: {
     customFeeSettings: ['satPerByte'],
     electrumServers: [
-      'electrum://electrumx-mainnet1.bitcoinvault.global:50001',
-      'electrum://electrumx-mainnet2.bitcoinvault.global:50001'
+      'electrums://electrumx-mainnet1.bitcoinvault.global:443',
+      'electrums://electrumx-mainnet2.bitcoinvault.global:443'
     ],
     disableFetchingServers: false
   },
@@ -72,12 +71,7 @@ const currencyInfo: EdgeCurrencyInfo = {
   blockExplorer: 'https://explorer.bitcoinvault.global/block/%s?from=edgeapp',
   addressExplorer:
     'https://explorer.bitcoinvault.global/address/%s?from=edgeapp',
-  transactionExplorer:
-    'https://explorer.bitcoinvault.global/tx/%s?from=edgeapp',
-
-  // Images:
-  symbolImage: `${imageServerUrl}/bitcoinvault-logo-solo-64.png`,
-  symbolImageDarkMono: `${imageServerUrl}/bitcoinvault-logo-solo-64.png`
+  transactionExplorer: 'https://explorer.bitcoinvault.global/tx/%s?from=edgeapp'
 }
 
 export const bitcoinvault = { bcoinInfo, engineInfo, currencyInfo }
