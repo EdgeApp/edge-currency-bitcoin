@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.16 (2021-07-12)
+
+- Fix typo in BSV wallet type in BCH forks array
+
 # 4.9.15 (2021-06-03)
 
 - Remove icon URLs
