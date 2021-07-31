@@ -7,11 +7,7 @@ import { decode, encode } from './base32.js'
 import BN from './bn'
 
 const GENERATOR = [
-  0x98f2bc8e61,
-  0x79b76d99e2,
-  0xf33e5fb3c4,
-  0xae2eabe2a8,
-  0x1e4f43e470
+  0x98f2bc8e61, 0x79b76d99e2, 0xf33e5fb3c4, 0xae2eabe2a8, 0x1e4f43e470
 ].map(x => new BN(x))
 
 const polymod = (data: any) => {

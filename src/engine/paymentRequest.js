@@ -41,14 +41,8 @@ const getBitPayPayment = async (
     throw new Error(error)
   }
   const paymentRequest = await result.json()
-  const {
-    outputs,
-    memo,
-    paymentUrl,
-    paymentId,
-    requiredFeeRate,
-    currency
-  } = paymentRequest
+  const { outputs, memo, paymentUrl, paymentId, requiredFeeRate, currency } =
+    paymentRequest
   const parsedOutputs = outputs.map(({ amount, address }) => {
     const legacyAddress = toLegacyFormat(address, network)
     return primitives.Output.fromOptions({

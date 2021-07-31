@@ -47,16 +47,14 @@ const cds = (sig: string, msg: string, pubKey: string, hdKey: any) => {
 export const scriptTemplates = {
   replayProtection: (hdKey: any) =>
     cds(SIGNATURE, MESSAGE, PUBKEY, hdKey).join(OP_CHECKDATASIGVERIFY),
-  checkdatasig: (hdKey: any) => (
-    sig: string = '',
-    msg: string = '',
-    pubKey: string = ''
-  ) => cds(sig, msg, pubKey, hdKey).join(OP_CHECKDATASIG),
-  checkdatasigverify: (hdKey: any) => (
-    sig: string = '',
-    msg: string = '',
-    pubKey: string = ''
-  ) => cds(sig, msg, pubKey, hdKey).join(OP_CHECKDATASIGVERIFY)
+  checkdatasig:
+    (hdKey: any) =>
+    (sig: string = '', msg: string = '', pubKey: string = '') =>
+      cds(sig, msg, pubKey, hdKey).join(OP_CHECKDATASIG),
+  checkdatasigverify:
+    (hdKey: any) =>
+    (sig: string = '', msg: string = '', pubKey: string = '') =>
+      cds(sig, msg, pubKey, hdKey).join(OP_CHECKDATASIGVERIFY)
 }
 
 const decode = (network: string) => (address: string) => {
