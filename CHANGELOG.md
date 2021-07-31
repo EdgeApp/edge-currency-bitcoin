@@ -1,5 +1,13 @@
 # edge-currency-bitcoin
 
+# 4.9.17 (2021-07-31)
+
+- Linting fixes
+- Update travis file to use node 14, fix the yarn install step and added more testing steps
+- Add plugin test fixtures for Digibyte including all the supported WIF variations
+- Add a wif serializer to Digibyte's to keep supporting the old Private Key prefix
+- Update Digibyte's Private Key prefix to match the new standard
+
 # 4.9.16 (2021-07-12)
 
 - Fix typo in BSV wallet type in BCH forks array
