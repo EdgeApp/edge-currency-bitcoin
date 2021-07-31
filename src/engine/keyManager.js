@@ -349,9 +349,11 @@ export class KeyManager {
     return key
   }
 
-  utxoToAddress(
-    prevout: any
-  ): { branch: number, index: number, redeemScript?: string } {
+  utxoToAddress(prevout: any): {
+    branch: number,
+    index: number,
+    redeemScript?: string
+  } {
     const { parsedTxs, addressInfos } = this.engineState
 
     const parsedTx = parsedTxs[prevout.rhash()]

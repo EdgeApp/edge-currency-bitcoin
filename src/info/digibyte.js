@@ -1,9 +1,26 @@
 // @flow
 
+import { utils } from 'bcoin'
 import { type EdgeCurrencyInfo } from 'edge-core-js/types'
 
 import type { EngineCurrencyInfo } from '../engine/currencyEngine.js'
 import type { BcoinCurrencyInfo } from '../utils/bcoinExtender/bcoinExtender.js'
+
+const OLD_PRIV_KEY_PREFIX = 0x9e
+
+const base58 = {
+  ...utils.base58,
+  decode: (address: string) => {
+    const payload = utils.base58.decode(address)
+    if (payload[0] === OLD_PRIV_KEY_PREFIX) {
+      payload[0] = bcoinInfo.keyPrefix.privkey
+    }
+    const bw = new utils.StaticWriter(payload.length)
+    bw.writeBytes(payload.slice(0, payload.length - 4))
+    bw.writeChecksum()
+    return utils.base58.encode(bw.render())
+  }
+}
 
 const bcoinInfo: BcoinCurrencyInfo = {
   type: 'digibyte',
@@ -11,7 +28,7 @@ const bcoinInfo: BcoinCurrencyInfo = {
   formats: ['bip49', 'bip84', 'bip44', 'bip32'],
   forks: [],
   keyPrefix: {
-    privkey: 0x9e,
+    privkey: 0x80,
     xpubkey: 0x0488b21e,
     xprivkey: 0x0488ade4,
     xpubkey58: 'xpub',
@@ -25,6 +42,9 @@ const bcoinInfo: BcoinCurrencyInfo = {
     witnesspubkeyhash: 0x06,
     witnessscripthash: 0x0a,
     bech32: 'dgb'
+  },
+  serializers: {
+    wif: base58
   }
 }
 
