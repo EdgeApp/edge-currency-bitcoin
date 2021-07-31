@@ -1,3 +1,9 @@
 language: node_js
 node_js:
-  - "11"
+  - "14"
+install:
+  - yarn install --frozen-lockfile --ignore-optional --network-concurrency 1
+script:
+  - yarn lint
+  - yarn flow
+  - yarn test
