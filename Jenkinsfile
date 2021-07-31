@@ -1,7 +1,7 @@
 pipeline {
   agent any
   tools {
-    nodejs 'v11.4.0'
+    nodejs "stable"
   }
   options {
     timestamps()
@@ -22,21 +22,27 @@ pipeline {
       }
     }
 
-    stage ("install modules") {
+    stage ("Install Dependencies") {
       steps {
         sh "yarn"
       }
     }
 
-    stage ("Module Security Check") {
+    stage ("Check Lint") {
       steps {
-        sh "npm run security"
+        sh "yarn lint"
       }
     }
 
-    stage ("Test Module") {
+    stage ("Check Flow Type") {
       steps {
-        sh "npm test"
+        sh "yarn flow"
+      }
+    }
+
+    stage ("Test Package") {
+      steps {
+        sh "yarn test"
       }
     }
   }
