@@ -108,7 +108,7 @@ const currencyInfo: EdgeCurrencyInfo = {
     'https://blockchair.com/bitcoin-cash/address/%s?from=edgeapp',
   transactionExplorer:
     'https://blockchair.com/bitcoin-cash/transaction/%s?from=edgeapp',
-  xpubExplorer: 'https://blockchair.com/bitcoin-cash/xpub/%s?from=edgeapp'
+  xpubExplorer: 'https://bch1.trezor.io/xpub/%s'
 }
 
 export const bitcoincash = { bcoinInfo, engineInfo, currencyInfo }
