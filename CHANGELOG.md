@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.18 (2021-08-18)
+
+- BCH: Update xpub explorer URL
+
 # 4.9.17 (2021-07-31)
 
 - Linting fixes
