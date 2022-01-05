@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.19 (2022-01-05)
+
+- Add support for RenBridge Gateway address URI
+
 # 4.9.18 (2021-08-18)
 
 - BCH: Update xpub explorer URL
