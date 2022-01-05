@@ -44,6 +44,10 @@ export const parseUri = (
   network: string,
   { pluginId, currencyCode, denominations }: EdgeCurrencyInfo
 ): EdgeParsedUri => {
+  // Add support for renproject Gateway URI type
+  const isGateway = uri.startsWith(`${network}://`)
+  if (isGateway) uri = uri.replace('//', '')
+
   const uriObj = parse(uri, {}, true)
   const { protocol, pathname, query } = uriObj
   // If the currency URI belongs to the wrong network then error
@@ -69,6 +73,8 @@ export const parseUri = (
   if (message) Object.assign(metadata, { notes: message })
   if (r) parsedUri.paymentProtocolURL = r
   if (category) Object.assign(metadata, { category: category })
+  // Notify the user that this address is gateway and as such, should not be used more then once
+  if (isGateway) Object.assign(metadata, { gateway: true })
   Object.assign(parsedUri, { metadata })
   // Get amount in native denomination if exists
   if (amount && typeof amount === 'string') {
