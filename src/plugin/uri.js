@@ -26,7 +26,7 @@ const parsePathname = (pathname: string, network: string) => {
   let address = pathname
   let legacyAddress = ''
   if (validAddress(address, network)) {
-    parsedAddress.publicAddress = address
+    parsedAddress.publicAddress = toNewFormat(address, network)
   } else {
     legacyAddress = address
     address = toNewFormat(address, network)
@@ -45,7 +45,7 @@ export const parseUri = (
   { pluginId, currencyCode, denominations }: EdgeCurrencyInfo
 ): EdgeParsedUri => {
   // Add support for renproject Gateway URI type
-  const isGateway = uri.startsWith(`${network}://`)
+  const isGateway = uri.toLocaleLowerCase().startsWith(`${network}://`)
   if (isGateway) uri = uri.replace('//', '')
 
   const uriObj = parse(uri, {}, true)

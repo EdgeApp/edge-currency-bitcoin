@@ -47,6 +47,18 @@
           "gateway": true
         }
       }],
+      "Ren Bridge p2wpkhp2sh Gateway address mixed caps": ["bitCoin://3Lx24A66XeL1HtegyNoku77qvNBCbEqePj", {
+        "publicAddress": "3Lx24A66XeL1HtegyNoku77qvNBCbEqePj",
+        "metadata": {
+          "gateway": true
+        }
+      }],
+      "Ren Bridge p2pkh Gateway address mixed caps": ["Bitcoin://1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX", {
+        "publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX",
+        "metadata": {
+          "gateway": true
+        }
+      }],
       "Ren Bridge p2pkh Gateway address with amount, label & message": ["bitcoin://1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX?amount=1234.56789&label=Johnny%20Bitcoin&message=Hello%20World,%20I%20miss%20you%20!", {
         "publicAddress": "1F1tAaz5x1HUXrCNLbtMDqcw6o5GNn4xqX",
         "metadata": {
@@ -607,8 +619,33 @@
           "gateway": true
         }
       }],
+      "Ren Bridge Legacy Gateway address mixed caps": ["bitCoinCash://1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu", {
+        "publicAddress": "qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a",
+        "legacyAddress": "1BpEi6DfDAUFd7GtittLSdBeYJvcoaVggu",
+        "metadata": {
+          "gateway": true
+        }
+      }],
       "Ren Bridge new Gateway address": ["bitcoincash://qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a", {
         "publicAddress": "qpm2qsznhks23z7629mms6s4cwef74vcwvy22gdx6a",
+        "metadata": {
+          "gateway": true
+        }
+      }],
+      "Ren Bridge mixed caps Gateway address with address prefix": ["bitcoinCash://bitcoincash:pzyt5lcqp4u4wcwpwl8f8eq0hzpdnntzuy2h3nnalf", {
+        "publicAddress": "pzyt5lcqp4u4wcwpwl8f8eq0hzpdnntzuy2h3nnalf",
+        "metadata": {
+          "gateway": true
+        }
+      }],
+      "Ren Bridge mixed caps Gateway address w/o address prefix": ["bitcoinCash://pzyt5lcqp4u4wcwpwl8f8eq0hzpdnntzuy2h3nnalf", {
+        "publicAddress": "pzyt5lcqp4u4wcwpwl8f8eq0hzpdnntzuy2h3nnalf",
+        "metadata": {
+          "gateway": true
+        }
+      }],
+      "Ren Bridge weird caps Gateway address": ["BiTcOiNcAsH://bitcoincash:pzyt5lcqp4u4wcwpwl8f8eq0hzpdnntzuy2h3nnalf", {
+        "publicAddress": "pzyt5lcqp4u4wcwpwl8f8eq0hzpdnntzuy2h3nnalf",
         "metadata": {
           "gateway": true
         }
