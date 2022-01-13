@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.20 (2022-01-12)
+
+- Support mixed case Bridge Address prefix
+
 # 4.9.19 (2022-01-05)
 
 - Add support for RenBridge Gateway address URI
