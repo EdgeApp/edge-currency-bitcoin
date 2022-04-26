@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.21 (2022-04-26)
+
+- Round up fees for segwit transactions
+
 # 4.9.20 (2022-01-12)
 
 - Support mixed case Bridge Address prefix
