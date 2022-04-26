@@ -222,7 +222,7 @@ export const formatSelector = (
           // Varint witness items length.
           size += 1
           // Calculate vsize
-          size = ((size + witScale - 1) / witScale) | 0
+          size = Math.ceil((size + witScale) / witScale)
           // witness portion
           // OP_PUSHDATA0 [signature]
           let witness = 1 + 73
