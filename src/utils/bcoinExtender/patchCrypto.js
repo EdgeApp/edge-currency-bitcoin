@@ -1,3 +1,4 @@
+import { crypto } from 'bcoin'
 import { Buffer } from 'buffer'
 import { assert } from 'chai'
 import { nfkd } from 'unorm'
@@ -259,13 +260,24 @@ export const patchPbkdf2 = function (bcoin, pbkdf2) {
     const phrase = nfkd(mnemonic.getPhrase())
     const passwd = nfkd('mnemonic' + passphrase)
 
-    let derived = await pbkdf2.deriveAsync(
-      Buffer.from(phrase, 'utf8'),
-      Buffer.from(passwd, 'utf8'),
-      2048,
-      64,
-      'sha512'
-    )
+    let derived = await pbkdf2
+      .deriveAsync(
+        Buffer.from(phrase, 'utf8'),
+        Buffer.from(passwd, 'utf8'),
+        2048,
+        64,
+        'sha512'
+      )
+      .catch(() =>
+        crypto.pbkdf2.derive(
+          Buffer.from(phrase, 'utf8'),
+          Buffer.from(passwd, 'utf8'),
+          2048,
+          64,
+          'sha512'
+        )
+      )
+
     derived = Buffer.from(derived)
     return this.fromSeed(derived, network)
   }
