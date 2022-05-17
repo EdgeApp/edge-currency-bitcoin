@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.22 (2022-05-16)
+
+- Work around Android PBKDF2 failures
+
 # 4.9.21 (2022-04-26)
 
 - Round up fees for segwit transactions
