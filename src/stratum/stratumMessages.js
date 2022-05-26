@@ -166,15 +166,21 @@ export function fetchBlockHeader(
  */
 export function fetchTransaction(
   txid: string,
-  onDone: (txData: string) => void,
+  instantlock?: boolean = false,
+  onDone: (txData: string, instantlock: boolean) => void,
   onFail: OnFailHandler
 ): StratumTask {
   return {
     method: 'blockchain.transaction.get',
-    params: [txid],
+    params: [txid, instantlock],
     onDone(reply: any) {
+      let lock = false
+      if (instantlock) {
+        lock = reply.instantlock ?? false
+        reply = reply.hex
+      }
       if (typeof reply === 'string') {
-        return onDone(reply)
+        return onDone(reply, lock)
       }
       throw new Error(
         `Bad Stratum transaction.get reply ${JSON.stringify(reply)}`

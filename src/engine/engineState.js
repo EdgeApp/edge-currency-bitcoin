@@ -146,7 +146,8 @@ export class EngineState extends EventEmitter {
   txHeightCache: {
     [txid: string]: {
       height: number,
-      firstSeen: number // Timestamp for unconfirmed stuff
+      firstSeen: number, // Timestamp for unconfirmed stuff
+      instantlock?: boolean
     }
   }
 
@@ -732,11 +733,12 @@ export class EngineState extends EventEmitter {
         const queryTime = Date.now()
         return fetchTransaction(
           txid,
-          (txData: string) => {
+          this.engineInfo.instantlock,
+          (txData: string, instantlock: boolean = false) => {
             this.log(`${prefix} ** RECEIVED TX ** ${txid}`)
             this.pluginState.serverScoreUp(uri, Date.now() - queryTime)
             this.fetchingTxs[txid] = false
-            this.handleTxFetch(txid, txData)
+            this.handleTxFetch(txid, txData, instantlock)
             this.updateProgressRatio()
           },
           (e: StratumError) => {
@@ -1067,7 +1069,10 @@ export class EngineState extends EventEmitter {
   }
 
   // A server has sent a transaction, so update the caches:
-  handleTxFetch(txid: string, txData: string) {
+  handleTxFetch(txid: string, txData: string, instantlock?: boolean = false) {
+    if (instantlock && this.txHeightCache[txid] != null) {
+      this.txHeightCache[txid].instantlock = true
+    }
     const parsedTx = parseTransaction(txData)
     this.txCache[txid] = txData
     this.parsedTxs[txid] = parsedTx
