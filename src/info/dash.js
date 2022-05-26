@@ -37,7 +37,8 @@ const engineInfo: EngineCurrencyInfo = {
     standardFeeHigh: '200',
     standardFeeLowAmount: '20000000',
     standardFeeHighAmount: '981000000'
-  }
+  },
+  instantlock: true
 }
 
 const currencyInfo: EdgeCurrencyInfo = {

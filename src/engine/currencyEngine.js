@@ -85,7 +85,8 @@ export type EngineCurrencyInfo = {
   minRelay?: number,
   earnComFeeInfoServer?: string,
   mempoolSpaceFeeInfoServer?: string,
-  timestampFromHeader?: (header: Buffer, height: number) => number
+  timestampFromHeader?: (header: Buffer, height: number) => number,
+  instantlock?: boolean
 }
 
 export type CurrencyEngineSettings = {
@@ -247,8 +248,11 @@ export class CurrencyEngine {
   }
 
   getTransactionSync(txid: string): EdgeTransaction {
-    const { height = -1, firstSeen = Date.now() / 1000 } =
-      this.engineState.txHeightCache[txid] || {}
+    const {
+      instantlock = false,
+      height = -1,
+      firstSeen = Date.now() / 1000
+    } = this.engineState.txHeightCache[txid] || {}
     let date = firstSeen
     // If confirmed, we will try and take the timestamp as the date
     if (height && height !== -1) {
@@ -278,7 +282,7 @@ export class CurrencyEngine {
       },
       txid: txid,
       date: date,
-      blockHeight: height === -1 ? 0 : height,
+      blockHeight: height !== -1 ? height : instantlock ? 1 : 0,
       nativeAmount: `${nativeAmount}`,
       networkFee: `${fee}`,
       signedTx: this.engineState.txCache[txid]
