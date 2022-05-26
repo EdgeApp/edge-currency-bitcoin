@@ -1,5 +1,9 @@
 # edge-currency-bitcoin
 
+# 4.9.23 (2022-05-26)
+
+- DASH: Recognize the Instantlock for incoming Dash transactions
+
 # 4.9.22 (2022-05-16)
 
 - Work around Android PBKDF2 failures
